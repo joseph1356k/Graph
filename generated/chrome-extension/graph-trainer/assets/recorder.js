@@ -398,6 +398,82 @@ window.WorkflowRecorder = (() => {
     return firstMeaningfulSemanticTarget(collectSemanticTextCandidates(element));
   }
 
+  function findAlternativeTargetFromContainer(container, fallbackElement) {
+    if (!(container instanceof Element)) {
+      return '';
+    }
+
+    const interactive = container.matches?.('a, button, [role="button"]')
+      ? container
+      : container.querySelector?.('a, button, [role="button"]');
+
+    if (!interactive) {
+      return '';
+    }
+
+    if (fallbackElement && interactive === fallbackElement) {
+      return inferSemanticClickTarget(interactive);
+    }
+
+    return inferSemanticClickTarget(interactive);
+  }
+
+  function collectAlternativeTargets(element) {
+    if (!(element instanceof Element)) {
+      return [];
+    }
+
+    const unique = [];
+    const seen = new Set();
+    let cursor = element;
+    let depth = 0;
+
+    while (cursor && depth < 5) {
+      const parent = cursor.parentElement;
+      if (!parent) {
+        break;
+      }
+
+      const candidates = Array.from(parent.children || [])
+        .map((child) => findAlternativeTargetFromContainer(child, element))
+        .map((value) => `${value || ''}`.trim())
+        .filter(Boolean);
+
+      if (candidates.length >= 2) {
+        candidates.forEach((value) => {
+          const normalized = normalizePlaceholderText(value);
+          if (!normalized || seen.has(normalized)) {
+            return;
+          }
+          seen.add(normalized);
+          unique.push(value);
+        });
+      }
+
+      if (unique.length >= 2) {
+        break;
+      }
+
+      cursor = parent;
+      depth += 1;
+    }
+
+    return unique.slice(0, 8);
+  }
+
+  function buildSurfaceHints(element) {
+    const learnedTarget = inferSemanticClickTarget(element);
+    const alternativeTargets = collectAlternativeTargets(element);
+    if (!learnedTarget && alternativeTargets.length === 0) {
+      return null;
+    }
+
+    return {
+      learnedTarget,
+      alternativeTargets
+    };
+  }
+
   function buildPendingClickIntent(element) {
     const href = element?.getAttribute?.('href') || '';
     return {
@@ -408,6 +484,7 @@ window.WorkflowRecorder = (() => {
       selector: selectorForElement(element),
       label: labelForElement(element),
       semanticTarget: inferSemanticClickTarget(element),
+      surfaceHints: buildSurfaceHints(element),
       text: describeElementText(element),
       href,
       tagName: `${element?.tagName || ''}`.toLowerCase(),
@@ -442,6 +519,9 @@ window.WorkflowRecorder = (() => {
       label: intent?.label || '',
       text: intent?.text || '',
       semanticTarget: intent?.semanticTarget || '',
+      alternativeTargets: Array.isArray(intent?.surfaceHints?.alternativeTargets)
+        ? intent.surfaceHints.alternativeTargets
+        : [],
       href: intent?.href || '',
       pageUrl: intent?.pageUrl || '',
       pageTitle: intent?.pageTitle || '',
@@ -680,6 +760,9 @@ window.WorkflowRecorder = (() => {
         selector: payload.selector,
         label: payload.label,
         semanticTarget: payload.semanticTarget || '',
+        alternativeTargets: Array.isArray(payload.surfaceHints?.alternativeTargets)
+          ? payload.surfaceHints.alternativeTargets
+          : [],
         href: payload.href || '',
         stepOrder: payload.stepOrder
       });
@@ -763,6 +846,7 @@ window.WorkflowRecorder = (() => {
         selector: selectorForElement(target),
         label: labelForElement(target),
         semanticTarget: inferSemanticClickTarget(target),
+        surfaceHints: buildSurfaceHints(target),
         value: '',
         href: target.getAttribute?.('href') || '',
         __pendingClickIntentId: clickIntent.id,

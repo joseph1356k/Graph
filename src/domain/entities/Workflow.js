@@ -5,6 +5,7 @@ class Workflow {
     this.id = data.id;
     this.description = data.description || '';
     this.summary = data.summary || '';
+    this.executionGuide = data.executionGuide || '';
     this.status = data.status || 'draft';
     this.appId = data.appId || '';
     this.sourceUrl = data.sourceUrl || '';
@@ -62,6 +63,15 @@ class Workflow {
       const clickTargetHint = isTransversalClickStep
         ? ' This is a visible target on the page that can be replaced by another similar visible entity when the same workflow pattern still applies.'
         : '';
+      const alternativeTargets = isTransversalClickStep && Array.isArray(step.surfaceHints?.alternativeTargets)
+        ? step.surfaceHints.alternativeTargets
+            .map((value) => `${value || ''}`.trim())
+            .filter(Boolean)
+            .slice(0, 8)
+        : [];
+      const alternativeHint = alternativeTargets.length > 0
+        ? ` Similar visible alternatives seen during learning: ${alternativeTargets.join('; ')}.`
+        : '';
       const fallbackPrompt = step.controlType === 'select' && !step.value
         ? `Choose a value for ${step.label || step.selector || `step ${step.stepOrder}`}.`
         : isTransversalClickStep
@@ -79,7 +89,7 @@ class Workflow {
         fieldLabel: step.semanticTarget || step.label || '',
         selectedLabel: step.selectedLabel || '',
         allowedOptions: step.allowedOptions,
-        prompt: `${step.explanation || fallbackPrompt}${optionSummary}${controlHint}${clickTargetHint}`.trim()
+        prompt: `${step.explanation || fallbackPrompt}${optionSummary}${controlHint}${clickTargetHint}${alternativeHint}`.trim()
       });
     }
 
@@ -131,6 +141,7 @@ class Workflow {
       id: this.id,
       description: this.description,
       summary: this.summary,
+      executionGuide: this.executionGuide,
       status: this.status,
       appId: this.appId,
       sourceUrl: this.sourceUrl,

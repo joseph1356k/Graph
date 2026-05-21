@@ -17,6 +17,21 @@ function parseAllowedOptions(rawValue) {
   }
 }
 
+function parseJsonObject(rawValue) {
+  if (rawValue && typeof rawValue === 'object' && !Array.isArray(rawValue)) {
+    return rawValue;
+  }
+  if (!rawValue || typeof rawValue !== 'string') {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(rawValue);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+  } catch (error) {
+    return null;
+  }
+}
+
 class Step {
   constructor(data = {}) {
     this.actionType = normalizeText(data.actionType) || 'unknown';
@@ -29,6 +44,7 @@ class Step {
     this.selectedValue = typeof data.selectedValue === 'string' ? data.selectedValue : '';
     this.selectedLabel = normalizeText(data.selectedLabel);
     this.semanticTarget = normalizeText(data.semanticTarget);
+    this.surfaceHints = parseJsonObject(data.surfaceHints) || null;
     
     this.allowedOptions = parseAllowedOptions(data.allowedOptions)
       .map((option) => ({
@@ -36,7 +52,7 @@ class Step {
           label: normalizeText(option?.label),
           text: normalizeText(option?.text)
         }))
-      
+    
     this.stepOrder = Number.isFinite(data.stepOrder) ? data.stepOrder : Number(data.stepOrder);
   }
 

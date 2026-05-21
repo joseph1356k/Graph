@@ -1,10 +1,12 @@
 const workflowAssistantPolicy = require('./WorkflowAssistantPolicy');
+const WorkflowDecisionNormalizer = require('./WorkflowDecisionNormalizer');
 
 class AgentChat {
   constructor(llmProvider, catalogService, executor) {
     this.llmProvider = llmProvider;
     this.catalogService = catalogService;
     this.executor = executor;
+    this.decisionNormalizer = new WorkflowDecisionNormalizer();
   }
 
   wantsInventedValues(message = '', history = []) {
@@ -296,6 +298,8 @@ class AgentChat {
           workflows: workflows.map((workflow) => ({
             id: workflow.id,
             description: workflow.description,
+            summary: workflow.summary,
+            executionGuide: workflow.executionGuide,
             appId: workflow.appId,
             sourceUrl: workflow.sourceUrl,
             sourceOrigin: workflow.sourceOrigin,
@@ -307,6 +311,8 @@ class AgentChat {
               selector: step.selector,
               explanation: step.explanation,
               controlType: step.controlType,
+              semanticTarget: step.semanticTarget,
+              surfaceHints: step.surfaceHints,
               selectedValue: step.selectedValue,
               selectedLabel: step.selectedLabel,
               allowedOptions: step.allowedOptions
@@ -368,6 +374,13 @@ class AgentChat {
             : `Voy a completar la prueba con datos inventados y ejecutar ${chosenWorkflow.id}.`
         };
         decision.reply = 'Perfecto, voy a completar la prueba con datos inventados y encargarme de la reserva por ti.';
+      }
+    }
+
+    if (decision?.workflowId) {
+      const chosenWorkflow = workflows.find((workflow) => workflow.id === decision.workflowId);
+      if (chosenWorkflow) {
+        decision = this.decisionNormalizer.normalizeDecision(decision, chosenWorkflow, message);
       }
     }
 

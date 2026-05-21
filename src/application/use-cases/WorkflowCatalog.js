@@ -31,6 +31,7 @@ class WorkflowCatalog {
           id: row.id,
           description: row.description,
           summary: row.summary,
+          executionGuide: row.executionGuide,
           status: row.status,
           appId: row.appId,
           sourceUrl: row.sourceUrl,
@@ -56,6 +57,8 @@ class WorkflowCatalog {
           controlType: row.controlType,
           selectedValue: row.selectedValue,
           selectedLabel: row.selectedLabel,
+          semanticTarget: row.semanticTarget,
+          surfaceHints: row.surfaceHints,
           allowedOptions: row.allowedOptions,
           stepOrder: row.stepOrder
         });
@@ -97,7 +100,18 @@ class WorkflowCatalog {
     if (!existing) {
       throw new Error('Workflow not found');
     }
-    await this.repository.updateFullWorkflow(workflow.toJSON());
+
+    const mergedWorkflow = new Workflow({
+      ...existing,
+      ...workflowData,
+      executionGuide: Object.prototype.hasOwnProperty.call(workflowData || {}, 'executionGuide')
+        ? workflowData.executionGuide
+        : existing.executionGuide,
+      steps: Array.isArray(workflowData?.steps) ? workflowData.steps : existing.steps,
+      contextNotes: Array.isArray(workflowData?.contextNotes) ? workflowData.contextNotes : existing.contextNotes
+    });
+
+    await this.repository.updateFullWorkflow(mergedWorkflow.toJSON());
     
     if (this.catalogWriter) {
       this.catalogWriter.writeCatalog(await this.getCatalog());

@@ -27,6 +27,10 @@ class MarkdownCatalogWriter {
       lines.push(`- Context notes: ${Array.isArray(workflow.contextNotes) ? workflow.contextNotes.length : 0}`);
       lines.push(`- CLI: \`${this.formatCliExample(workflow.id, workflow.variables)}\``);
       lines.push('');
+      lines.push('### Execution Guide');
+      lines.push('');
+      lines.push(workflow.executionGuide || 'No execution guide available.');
+      lines.push('');
       lines.push('### Variables');
 
       if (!workflow.variables || workflow.variables.length === 0) {
@@ -49,6 +53,10 @@ class MarkdownCatalogWriter {
         if (step.label) extras.push(`label="${step.label}"`);
         if (step.controlType) extras.push(`control=${step.controlType}`);
         if (step.selectedLabel && step.selectedLabel !== step.value) extras.push(`selected="${step.selectedLabel}"`);
+        if (step.semanticTarget) extras.push(`semanticTarget="${step.semanticTarget}"`);
+        if (Array.isArray(step.surfaceHints?.alternativeTargets) && step.surfaceHints.alternativeTargets.length > 0) {
+          extras.push(`alternatives=${step.surfaceHints.alternativeTargets.join(', ')}`);
+        }
         if (Array.isArray(step.allowedOptions) && step.allowedOptions.length > 0) {
           extras.push(`options=${step.allowedOptions.filter((option) => option.value).map((option) => `${option.value}:${option.label || option.text || option.value}`).join(', ')}`);
         }

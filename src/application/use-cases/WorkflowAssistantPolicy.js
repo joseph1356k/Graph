@@ -32,6 +32,7 @@ function summarizeWorkflow(workflow = {}) {
     id: workflow.id || '',
     description: workflow.description || '',
     summary: workflow.summary || '',
+    executionGuide: workflow.executionGuide || '',
     sourcePathname: workflow.sourcePathname || '',
     variables: Array.isArray(workflow.variables)
       ? workflow.variables.map((variable) => summarizeWorkflowVariable(variable))
@@ -79,8 +80,10 @@ function buildSharedBehaviorPrompt(context = {}, workflows = []) {
     'If the user intent matches an option label better than an option value, convert it to the corresponding option value.',
     'Use the field label and option meaning, not position in the dropdown.',
     'Some workflow variables may represent a visible click target on the page rather than a form value.',
+    'If a workflow includes an executionGuide, treat it as the authoritative map for where transversal substitutions are allowed.',
     'When a variable has kind click-target, you may keep the same workflow and replace only that visible target if the page pattern is the same.',
     'Use click-target variables to generalize one learned example into another similar visible entity on the same page.',
+    'Never map a catalog entity, product name, service name, or card title into a notes or observations field if the workflow guide marks a visible selection step for that entity.',
     'If the requested visible entity is not clear enough, ask one short disambiguation question instead of guessing.',
     'Any date you choose or invent must be today or later, never in the past.',
     'Return dates must be the same day as pickup or later.',

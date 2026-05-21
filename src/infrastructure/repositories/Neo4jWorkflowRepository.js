@@ -13,6 +13,16 @@ class Neo4jWorkflowRepository {
     return '[]';
   }
 
+  serializeJsonObject(rawValue) {
+    if (rawValue && typeof rawValue === 'object' && !Array.isArray(rawValue)) {
+      return JSON.stringify(rawValue);
+    }
+    if (typeof rawValue === 'string') {
+      return rawValue;
+    }
+    return '';
+  }
+
   parseJsonArray(rawValue) {
     if (Array.isArray(rawValue)) {
       return rawValue;
@@ -72,6 +82,7 @@ class Neo4jWorkflowRepository {
       RETURN w.id as id,
              w.description as description,
              w.summary as summary,
+             w.executionGuide as executionGuide,
              w.status as status,
              w.appId as appId,
              w.sourceUrl as sourceUrl,
@@ -92,6 +103,7 @@ class Neo4jWorkflowRepository {
              s.selectedValue as selectedValue,
              s.selectedLabel as selectedLabel,
              s.semanticTarget as semanticTarget,
+             s.surfaceHints as surfaceHints,
              s.allowedOptions as allowedOptions,
              s.stepOrder as stepOrder
       ORDER BY w.id ASC, s.stepOrder ASC
@@ -147,6 +159,7 @@ class Neo4jWorkflowRepository {
         selectedValue: $selectedValue,
         selectedLabel: $selectedLabel,
         semanticTarget: $semanticTarget,
+        surfaceHints: $surfaceHints,
         allowedOptions: $allowedOptions,
         stepOrder: $stepOrder,
         timestamp: timestamp()
@@ -155,6 +168,7 @@ class Neo4jWorkflowRepository {
     `, {
       wfId: workflowId,
       ...step,
+      surfaceHints: this.serializeJsonObject(step.surfaceHints),
       allowedOptions: this.serializeAllowedOptions(step.allowedOptions),
       stepOrder: nextStepOrder
     });
@@ -335,6 +349,7 @@ class Neo4jWorkflowRepository {
              s.selectedValue as selectedValue,
              s.selectedLabel as selectedLabel,
              s.semanticTarget as semanticTarget,
+             s.surfaceHints as surfaceHints,
              s.allowedOptions as allowedOptions,
              s.stepOrder as stepOrder
       ORDER BY s.stepOrder ASC
@@ -349,10 +364,10 @@ class Neo4jWorkflowRepository {
     return wf.length > 0 ? wf[0].desc : 'No description';
   }
 
-  async completeWorkflow(workflowId, summary) {
+  async completeWorkflow(workflowId, summary, executionGuide = '') {
     await this.db.run(
-      'MATCH (w:Workflow {id: $id}) SET w.status = "done", w.summary = $summary, w.completedAt = timestamp()',
-      { id: workflowId, summary }
+      'MATCH (w:Workflow {id: $id}) SET w.status = "done", w.summary = $summary, w.executionGuide = $executionGuide, w.completedAt = timestamp()',
+      { id: workflowId, summary, executionGuide }
     );
   }
 
@@ -362,6 +377,7 @@ class Neo4jWorkflowRepository {
         id: $id,
         description: $description,
         summary: $summary,
+        executionGuide: $executionGuide,
         status: $status,
         appId: $appId,
         sourceUrl: $sourceUrl,
@@ -385,6 +401,7 @@ class Neo4jWorkflowRepository {
         selectedValue: step.selectedValue,
         selectedLabel: step.selectedLabel,
         semanticTarget: step.semanticTarget,
+        surfaceHints: step.surfaceHints,
         allowedOptions: step.allowedOptions,
         stepOrder: step.stepOrder,
         timestamp: timestamp()
@@ -395,6 +412,7 @@ class Neo4jWorkflowRepository {
       steps: Array.isArray(workflow.steps)
         ? workflow.steps.map((step) => ({
             ...step,
+            surfaceHints: this.serializeJsonObject(step.surfaceHints),
             allowedOptions: this.serializeAllowedOptions(step.allowedOptions)
           }))
         : []
@@ -406,6 +424,7 @@ class Neo4jWorkflowRepository {
       MATCH (w:Workflow {id: $id})
       SET w.description = $description,
           w.summary = $summary,
+          w.executionGuide = $executionGuide,
           w.status = $status,
           w.appId = $appId,
           w.sourceUrl = $sourceUrl,
@@ -431,6 +450,7 @@ class Neo4jWorkflowRepository {
         selectedValue: step.selectedValue,
         selectedLabel: step.selectedLabel,
         semanticTarget: step.semanticTarget,
+        surfaceHints: step.surfaceHints,
         allowedOptions: step.allowedOptions,
         stepOrder: step.stepOrder,
         timestamp: timestamp()
@@ -441,6 +461,7 @@ class Neo4jWorkflowRepository {
       steps: Array.isArray(workflow.steps)
         ? workflow.steps.map((step) => ({
             ...step,
+            surfaceHints: this.serializeJsonObject(step.surfaceHints),
             allowedOptions: this.serializeAllowedOptions(step.allowedOptions)
           }))
         : []

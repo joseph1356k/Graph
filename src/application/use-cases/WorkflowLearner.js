@@ -1,9 +1,13 @@
+const Workflow = require('../../domain/entities/Workflow');
+const WorkflowExecutionGuideBuilder = require('./WorkflowExecutionGuideBuilder');
+
 class WorkflowLearner {
   constructor(repository, llmProvider, catalogWriter, catalogService) {
     this.repository = repository;
     this.llmProvider = llmProvider;
     this.catalogWriter = catalogWriter;
     this.catalogService = catalogService; // To rebuild catalog after stopping
+    this.executionGuideBuilder = new WorkflowExecutionGuideBuilder(llmProvider);
   }
 
   async startSession(description, context = {}) {
@@ -35,8 +39,14 @@ class WorkflowLearner {
 
     const steps = await this.repository.getWorkflowSteps(workflowId);
     const initialDesc = await this.repository.getWorkflowDescription(workflowId);
+    const workflow = new Workflow({
+      id: workflowId,
+      description: initialDesc,
+      steps
+    });
 
     let summary = initialDesc;
+    let executionGuide = '';
     try {
       if (!this.llmProvider.hasApiKey()) {
         const firstActions = steps
@@ -54,11 +64,20 @@ class WorkflowLearner {
         ];
         summary = await this.llmProvider.chat(messages);
       }
+
+      executionGuide = await this.executionGuideBuilder.buildGuide({
+        ...workflow.toJSON(),
+        summary
+      });
     } catch (err) {
       console.warn(`[WorkflowLearner] LLM Warning: ${err.message}`);
     }
 
-    await this.repository.completeWorkflow(workflowId, summary);
+    if (!executionGuide) {
+      executionGuide = this.executionGuideBuilder.buildDraft(summary || initialDesc, workflow.steps || []);
+    }
+
+    await this.repository.completeWorkflow(workflowId, summary, executionGuide);
 
     // Rebuild catalog
     if (this.catalogService && this.catalogWriter) {
