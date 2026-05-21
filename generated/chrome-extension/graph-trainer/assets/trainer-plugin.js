@@ -119,6 +119,34 @@
         }
     }
 
+    function lifecycleLog(scope, message, details = null) {
+        const normalizedScope = `${scope || ''}`.trim() || 'page';
+        const detailPayload = {
+            level: 'info',
+            scope: normalizedScope,
+            message: `${message || 'lifecycle_event'}`.trim() || 'lifecycle_event',
+            details: details && typeof details === 'object' ? details : null
+        };
+
+        try {
+            document.dispatchEvent(new CustomEvent('graph-trainer-extension-log', {
+                detail: detailPayload
+            }));
+        } catch (error) {
+            // Ignore logging bridge issues.
+        }
+
+        try {
+            window.postMessage({
+                source: 'graph-trainer-extension',
+                type: 'log',
+                detail: detailPayload
+            }, '*');
+        } catch (error) {
+            // Ignore logging bridge issues.
+        }
+    }
+
     function setElementHtml(element, html) {
         if (!element) {
             return;
@@ -3197,6 +3225,38 @@
                 });
                 pluginEvents()?.on?.('learning.context.captured', (payload) => {
                     persistLearningContextNote(payload?.note || null);
+                    lifecycleLog('learning', 'Learning context note captured.', {
+                        sessionId: payload?.sessionId || '',
+                        noteCount: Number(payload?.noteCount) || 0,
+                        role: payload?.note?.role || '',
+                        mode: payload?.note?.mode || ''
+                    });
+                });
+                pluginEvents()?.on?.('learning.session.started', (payload) => {
+                    lifecycleLog('learning', 'Learning session started.', {
+                        sessionId: payload?.sessionId || '',
+                        description: payload?.description || '',
+                        sourceUrl: payload?.context?.sourceUrl || '',
+                        sourceTitle: payload?.context?.sourceTitle || ''
+                    });
+                });
+                pluginEvents()?.on?.('learning.step.captured', (payload) => {
+                    lifecycleLog('learning', 'Learning step captured.', {
+                        stepOrder: Number(payload?.step?.stepOrder) || null,
+                        actionType: payload?.step?.actionType || '',
+                        selector: payload?.step?.selector || '',
+                        label: payload?.step?.label || '',
+                        controlType: payload?.step?.controlType || ''
+                    });
+                });
+                pluginEvents()?.on?.('learning.session.finished', (payload) => {
+                    lifecycleLog('learning', 'Learning session finished.', {
+                        sessionId: payload?.sessionId || '',
+                        redirectTo: payload?.redirectTo || ''
+                    });
+                });
+                pluginEvents()?.on?.('learning.session.reset', () => {
+                    lifecycleLog('learning', 'Learning session reset.');
                 });
                 pluginEvents()?.on?.('workflow.execution.started', () => {
                     setExecutionStopButtonVisible(true);

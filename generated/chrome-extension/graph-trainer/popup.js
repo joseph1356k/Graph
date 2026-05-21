@@ -2,8 +2,10 @@ const DEFAULT_BACKEND_URL = 'https://graph-1-hap6.onrender.com';
 const LOG_STORAGE_KEY = 'graphTrainerExtensionLogs';
 const LOG_PANEL_STATE_KEY = 'graphTrainerPopupShowLogs';
 const VOICE_LOG_PANEL_STATE_KEY = 'graphTrainerPopupShowVoiceLogs';
+const TRACE_LOG_PANEL_STATE_KEY = 'graphTrainerPopupShowTraceLogs';
 const EXECUTION_LOG_SCOPES = new Set(['execution']);
 const VOICE_LOG_SCOPES = new Set(['voice']);
+const LEARNING_LOG_SCOPES = new Set(['learning']);
 const RECORDER_LOG_SCOPE = 'recorder';
 const SELECTED_ELEMENT_STORAGE_KEY = 'graphTrainerSelectedElement';
 const AUTO_CAPTURE_ANALYSIS_STORAGE_KEY = 'graphTrainerAutoCaptureAnalysis';
@@ -57,6 +59,15 @@ function isRecorderDiagnostic(entry = {}) {
 function isVoiceDiagnostic(entry = {}) {
   const scope = `${entry.scope || ''}`.trim().toLowerCase();
   return VOICE_LOG_SCOPES.has(scope);
+}
+
+function isLearningTrace(entry = {}) {
+  const scope = `${entry.scope || ''}`.trim().toLowerCase();
+  return LEARNING_LOG_SCOPES.has(scope);
+}
+
+function isSessionTrace(entry = {}) {
+  return isExecutionDiagnostic(entry) || isLearningTrace(entry);
 }
 
 function isDiagnosticEntry(entry = {}) {
@@ -203,6 +214,15 @@ async function loadVoiceLogPanelState() {
   });
 }
 
+async function loadTraceLogPanelState() {
+  const storage = getLocalStorage();
+  return new Promise((resolve) => {
+    storage.get({ [TRACE_LOG_PANEL_STATE_KEY]: false }, (result) => {
+      resolve(Boolean(result?.[TRACE_LOG_PANEL_STATE_KEY]));
+    });
+  });
+}
+
 async function saveLogPanelState(isOpen) {
   const storage = getLocalStorage();
   return new Promise((resolve) => {
@@ -214,6 +234,13 @@ async function saveVoiceLogPanelState(isOpen) {
   const storage = getLocalStorage();
   return new Promise((resolve) => {
     storage.set({ [VOICE_LOG_PANEL_STATE_KEY]: Boolean(isOpen) }, resolve);
+  });
+}
+
+async function saveTraceLogPanelState(isOpen) {
+  const storage = getLocalStorage();
+  return new Promise((resolve) => {
+    storage.set({ [TRACE_LOG_PANEL_STATE_KEY]: Boolean(isOpen) }, resolve);
   });
 }
 
@@ -527,6 +554,39 @@ function buildVoiceLogSummary(logs = []) {
   return `${voiceLogs.length} evento(s) de voz recientes, ${errors} error(es), ${warnings} alerta(s).`;
 }
 
+function buildSessionTraceSummary(logs = []) {
+  const traceLogs = logs.filter(isSessionTrace);
+  if (!traceLogs.length) {
+    return 'Sin trazas recientes de aprendizaje o ejecucion todavia.';
+  }
+
+  const learningCount = traceLogs.filter(isLearningTrace).length;
+  const executionCount = traceLogs.filter(isExecutionDiagnostic).length;
+  const errorCount = traceLogs.filter(isErrorDiagnostic).length;
+  const warningCount = traceLogs.filter((entry) => `${entry.level || ''}`.trim().toLowerCase() === 'warn').length;
+
+  return `${traceLogs.length} evento(s) de la sesion: ${learningCount} de aprendizaje, ${executionCount} de ejecucion, ${errorCount} error(es), ${warningCount} alerta(s).`;
+}
+
+async function renderTraceLogs(logOutputEl) {
+  const logs = await readLogs();
+  const traceLogs = logs.filter(isSessionTrace);
+  const summaryEl = document.getElementById('traceSummary');
+  if (summaryEl) {
+    summaryEl.textContent = buildSessionTraceSummary(logs);
+  }
+
+  if (!traceLogs.length) {
+    logOutputEl.textContent = 'No hay trazas recientes de aprendizaje o ejecucion todavia.';
+    return;
+  }
+
+  logOutputEl.textContent = traceLogs
+    .slice(-60)
+    .map((entry) => formatLogEntry(entry))
+    .join('\n\n');
+}
+
 async function renderVoiceLogs(logOutputEl) {
   const logs = await readLogs();
   const voiceLogs = logs.filter(isVoiceDiagnostic);
@@ -564,6 +624,15 @@ async function setVoiceLogPanelOpen(panelEl, buttonEl, logOutputEl, isOpen) {
   }
 }
 
+async function setTraceLogPanelOpen(panelEl, buttonEl, logOutputEl, isOpen) {
+  panelEl.classList.toggle('open', isOpen);
+  buttonEl.textContent = isOpen ? 'Ocultar traza de sesion' : 'Ver traza de sesion';
+  await saveTraceLogPanelState(isOpen);
+  if (isOpen) {
+    await renderTraceLogs(logOutputEl);
+  }
+}
+
 async function init() {
   const enabledEl = document.getElementById('enabled');
   const backendUrlEl = document.getElementById('backendUrl');
@@ -571,8 +640,11 @@ async function init() {
   const showImprovementsButton = document.getElementById('showImprovements');
   const toggleLogsButton = document.getElementById('toggleLogs');
   const toggleVoiceLogsButton = document.getElementById('toggleVoiceLogs');
+  const toggleTraceButton = document.getElementById('toggleTrace');
   const clearLogsButton = document.getElementById('clearLogs');
   const statusEl = document.getElementById('status');
+  const tracePanelEl = document.getElementById('tracePanel');
+  const traceOutputEl = document.getElementById('traceOutput');
   const logPanelEl = document.getElementById('logPanel');
   const logOutputEl = document.getElementById('logOutput');
   const voiceLogPanelEl = document.getElementById('voiceLogPanel');
@@ -588,8 +660,10 @@ async function init() {
   const settings = await loadSettings();
   const showLogs = await loadLogPanelState();
   const showVoiceLogs = await loadVoiceLogPanelState();
+  const showTraceLogs = await loadTraceLogPanelState();
   enabledEl.checked = Boolean(settings.enabled);
   backendUrlEl.value = `${settings.backendUrl || DEFAULT_BACKEND_URL}`.trim() || DEFAULT_BACKEND_URL;
+  await setTraceLogPanelOpen(tracePanelEl, toggleTraceButton, traceOutputEl, showTraceLogs);
   await setLogPanelOpen(logPanelEl, toggleLogsButton, logOutputEl, showLogs);
   await setVoiceLogPanelOpen(voiceLogPanelEl, toggleVoiceLogsButton, voiceLogOutputEl, showVoiceLogs);
   renderDiagnosticsChat();
@@ -662,6 +736,11 @@ async function init() {
     await setLogPanelOpen(logPanelEl, toggleLogsButton, logOutputEl, isOpen);
   });
 
+  toggleTraceButton.addEventListener('click', async () => {
+    const isOpen = !tracePanelEl.classList.contains('open');
+    await setTraceLogPanelOpen(tracePanelEl, toggleTraceButton, traceOutputEl, isOpen);
+  });
+
   toggleVoiceLogsButton.addEventListener('click', async () => {
     const isOpen = !voiceLogPanelEl.classList.contains('open');
     await setVoiceLogPanelOpen(voiceLogPanelEl, toggleVoiceLogsButton, voiceLogOutputEl, isOpen);
@@ -669,6 +748,7 @@ async function init() {
 
   clearLogsButton.addEventListener('click', async () => {
     await clearLogs();
+    await renderTraceLogs(traceOutputEl);
     await renderLogs(logOutputEl);
     await renderVoiceLogs(voiceLogOutputEl);
     statusEl.textContent = 'Logs cleared.';

@@ -3,6 +3,7 @@ const LOG_STORAGE_KEY = 'graphTrainerExtensionLogs';
 const LOG_LIMIT = 200;
 const EXECUTION_LOG_SCOPES = new Set(['execution']);
 const VOICE_LOG_SCOPES = new Set(['voice']);
+const LEARNING_LOG_SCOPES = new Set(['learning']);
 const SELECTED_ELEMENT_STORAGE_KEY = 'graphTrainerSelectedElement';
 
 let inspectModeActive = false;
@@ -289,6 +290,10 @@ function shouldPersistLogEntry(entry = {}) {
   }
 
   if (VOICE_LOG_SCOPES.has(scope)) {
+    return true;
+  }
+
+  if (LEARNING_LOG_SCOPES.has(scope)) {
     return true;
   }
 

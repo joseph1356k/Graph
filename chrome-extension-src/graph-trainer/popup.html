@@ -128,6 +128,32 @@
       font: 11px/1.45 Consolas, monospace;
       color: #203040;
     }
+    #tracePanel {
+      display: none;
+      margin-top: 12px;
+      padding: 10px;
+      border: 1px solid #c7d7e6;
+      border-radius: 10px;
+      background: #ffffff;
+    }
+    #tracePanel.open {
+      display: block;
+    }
+    #traceSummary {
+      margin: 0 0 10px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #4c5c6c;
+    }
+    #traceOutput {
+      margin: 0;
+      max-height: 220px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font: 11px/1.45 Consolas, monospace;
+      color: #203040;
+    }
     .diagnostics-chat {
       margin-top: 12px;
       border-top: 1px solid #e4edf5;
@@ -400,11 +426,18 @@
       <button id="showImprovements" type="button" class="secondary-button">Mostrar mejoras para la pagina</button>
     </div>
     <div class="button-row">
+      <button id="toggleTrace" type="button" class="secondary-button">Ver traza de sesion</button>
+    </div>
+    <div class="button-row">
       <button id="toggleLogs" type="button" class="secondary-button">Ver diagnostico</button>
       <button id="toggleVoiceLogs" type="button" class="secondary-button">Ver logs de voz</button>
       <button id="clearLogs" type="button" class="danger-button">Limpiar</button>
     </div>
     <div id="status"></div>
+    <div id="tracePanel" aria-live="polite">
+      <p id="traceSummary">Sin trazas recientes de aprendizaje o ejecucion todavia.</p>
+      <pre id="traceOutput">No hay trazas recientes de aprendizaje o ejecucion todavia.</pre>
+    </div>
     <div id="logPanel" aria-live="polite">
       <p id="logSummary">Sin diagnosticos de ejecucion todavia.</p>
       <pre id="logOutput">No hay diagnosticos de ejecucion todavia.</pre>
