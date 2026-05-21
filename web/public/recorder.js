@@ -323,6 +323,81 @@ window.WorkflowRecorder = (() => {
       .slice(0, 220);
   }
 
+  function normalizeSemanticTargetText(value) {
+    return `${value || ''}`
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  }
+
+  function isGenericSemanticTarget(value) {
+    const normalized = normalizeSemanticTargetText(value);
+    if (!normalized || normalized.length < 4) {
+      return true;
+    }
+
+    return [
+      'ver mas',
+      'ver más',
+      'detalle',
+      'detalles',
+      'abrir',
+      'seleccionar',
+      'comprar',
+      'agregar',
+      'agregar al carrito',
+      'anadir al carrito',
+      'añadir al carrito',
+      'continuar',
+      'siguiente',
+      'menu',
+      'inicio'
+    ].some((token) => normalized === token || normalized.includes(token));
+  }
+
+  function firstMeaningfulSemanticTarget(candidates = []) {
+    for (const candidate of candidates) {
+      const value = `${candidate || ''}`.replace(/\s+/g, ' ').trim();
+      if (!value || isGenericSemanticTarget(value)) {
+        continue;
+      }
+      return value.slice(0, 180);
+    }
+    return '';
+  }
+
+  function collectSemanticTextCandidates(element) {
+    if (!(element instanceof Element)) {
+      return [];
+    }
+
+    const directHeading = element.querySelector?.('h1, h2, h3, h4, h5, h6');
+    const directImage = element.querySelector?.('img[alt]');
+    const closestContainer = element.closest?.(
+      'article, li, [class*="card"], [class*="item"], [class*="product"], [data-testid], [data-product], section'
+    );
+    const containerHeading = closestContainer?.querySelector?.('h1, h2, h3, h4, h5, h6');
+    const containerImage = closestContainer?.querySelector?.('img[alt]');
+
+    return [
+      labelForElement(element),
+      element.getAttribute?.('title') || '',
+      element.getAttribute?.('aria-label') || '',
+      directHeading?.textContent || '',
+      directImage?.getAttribute?.('alt') || '',
+      describeElementText(element),
+      containerHeading?.textContent || '',
+      containerImage?.getAttribute?.('alt') || '',
+      describeElementText(closestContainer)
+    ];
+  }
+
+  function inferSemanticClickTarget(element) {
+    return firstMeaningfulSemanticTarget(collectSemanticTextCandidates(element));
+  }
+
   function buildPendingClickIntent(element) {
     const href = element?.getAttribute?.('href') || '';
     return {
@@ -332,6 +407,7 @@ window.WorkflowRecorder = (() => {
       pageTitle: document.title || '',
       selector: selectorForElement(element),
       label: labelForElement(element),
+      semanticTarget: inferSemanticClickTarget(element),
       text: describeElementText(element),
       href,
       tagName: `${element?.tagName || ''}`.toLowerCase(),
@@ -365,6 +441,7 @@ window.WorkflowRecorder = (() => {
       selector: intent?.selector || '',
       label: intent?.label || '',
       text: intent?.text || '',
+      semanticTarget: intent?.semanticTarget || '',
       href: intent?.href || '',
       pageUrl: intent?.pageUrl || '',
       pageTitle: intent?.pageTitle || '',
@@ -602,6 +679,7 @@ window.WorkflowRecorder = (() => {
       emitExtensionLog('info', 'Recorded click step.', {
         selector: payload.selector,
         label: payload.label,
+        semanticTarget: payload.semanticTarget || '',
         href: payload.href || '',
         stepOrder: payload.stepOrder
       });
@@ -684,6 +762,7 @@ window.WorkflowRecorder = (() => {
         actionType: 'click',
         selector: selectorForElement(target),
         label: labelForElement(target),
+        semanticTarget: inferSemanticClickTarget(target),
         value: '',
         href: target.getAttribute?.('href') || '',
         __pendingClickIntentId: clickIntent.id,

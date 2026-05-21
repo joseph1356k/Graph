@@ -40,11 +40,14 @@ class Workflow {
     const variableMap = new Map();
 
     for (const step of this.steps) {
+      const isTransversalClickStep = this.isTransversalClickStep(step);
       const isSelectableField = step.actionType === 'select' && Array.isArray(step.allowedOptions) && step.allowedOptions.length > 0;
-      if (!['input', 'select'].includes(step.actionType)) continue;
-      if (!step.value && !isSelectableField) continue;
+      if (!['input', 'select'].includes(step.actionType) && !isTransversalClickStep) continue;
+      if (!step.value && !isSelectableField && !isTransversalClickStep) continue;
       
-      const variableName = `input_${step.stepOrder}`;
+      const variableName = isTransversalClickStep
+        ? `target_${step.stepOrder}`
+        : `input_${step.stepOrder}`;
       const optionPairs = step.controlType === 'select' && Array.isArray(step.allowedOptions) && step.allowedOptions.length > 0
         ? step.allowedOptions
             .filter((option) => option.value)
@@ -56,25 +59,71 @@ class Workflow {
       const controlHint = step.controlType === 'select'
         ? ' Choose the exact option value whose meaning best matches the request.'
         : '';
+      const clickTargetHint = isTransversalClickStep
+        ? ' This is a visible target on the page that can be replaced by another similar visible entity when the same workflow pattern still applies.'
+        : '';
       const fallbackPrompt = step.controlType === 'select' && !step.value
         ? `Choose a value for ${step.label || step.selector || `step ${step.stepOrder}`}.`
-        : `Value for ${step.label || step.selector || `step ${step.stepOrder}`}`;
+        : isTransversalClickStep
+          ? `Visible target to activate for ${step.semanticTarget || step.label || step.selector || `step ${step.stepOrder}`}.`
+          : `Value for ${step.label || step.selector || `step ${step.stepOrder}`}`;
       
       variableMap.set(variableName, {
         name: variableName,
         selector: step.selector,
         controlType: step.controlType || '',
         actionType: step.actionType,
+        kind: isTransversalClickStep ? 'click-target' : 'field-value',
         sourceStep: step.stepOrder,
-        defaultValue: step.value,
-        fieldLabel: step.label || '',
+        defaultValue: isTransversalClickStep ? (step.semanticTarget || step.label || '') : step.value,
+        fieldLabel: step.semanticTarget || step.label || '',
         selectedLabel: step.selectedLabel || '',
         allowedOptions: step.allowedOptions,
-        prompt: `${step.explanation || fallbackPrompt}${optionSummary}${controlHint}`.trim()
+        prompt: `${step.explanation || fallbackPrompt}${optionSummary}${controlHint}${clickTargetHint}`.trim()
       });
     }
 
     return Array.from(variableMap.values());
+  }
+
+  isTransversalClickStep(step) {
+    if (!step || step.actionType !== 'click') {
+      return false;
+    }
+
+    const semanticTarget = `${step.semanticTarget || ''}`.trim();
+    if (!semanticTarget) {
+      return false;
+    }
+
+    const normalized = semanticTarget
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+
+    if (!normalized || normalized.length < 4) {
+      return false;
+    }
+
+    const genericTargets = [
+      'ver mas',
+      'ver más',
+      'detalle',
+      'detalles',
+      'comprar',
+      'agregar',
+      'agregar al carrito',
+      'anadir al carrito',
+      'añadir al carrito',
+      'continuar',
+      'siguiente',
+      'abrir',
+      'seleccionar'
+    ];
+
+    return !genericTargets.some((token) => normalized === token || normalized.includes(token));
   }
 
   toJSON() {

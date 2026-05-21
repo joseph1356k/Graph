@@ -91,6 +91,7 @@ class Neo4jWorkflowRepository {
              s.controlType as controlType,
              s.selectedValue as selectedValue,
              s.selectedLabel as selectedLabel,
+             s.semanticTarget as semanticTarget,
              s.allowedOptions as allowedOptions,
              s.stepOrder as stepOrder
       ORDER BY w.id ASC, s.stepOrder ASC
@@ -145,6 +146,7 @@ class Neo4jWorkflowRepository {
         controlType: $controlType,
         selectedValue: $selectedValue,
         selectedLabel: $selectedLabel,
+        semanticTarget: $semanticTarget,
         allowedOptions: $allowedOptions,
         stepOrder: $stepOrder,
         timestamp: timestamp()
@@ -332,6 +334,7 @@ class Neo4jWorkflowRepository {
              s.controlType as controlType,
              s.selectedValue as selectedValue,
              s.selectedLabel as selectedLabel,
+             s.semanticTarget as semanticTarget,
              s.allowedOptions as allowedOptions,
              s.stepOrder as stepOrder
       ORDER BY s.stepOrder ASC
@@ -381,6 +384,7 @@ class Neo4jWorkflowRepository {
         controlType: step.controlType,
         selectedValue: step.selectedValue,
         selectedLabel: step.selectedLabel,
+        semanticTarget: step.semanticTarget,
         allowedOptions: step.allowedOptions,
         stepOrder: step.stepOrder,
         timestamp: timestamp()
@@ -426,6 +430,7 @@ class Neo4jWorkflowRepository {
         controlType: step.controlType,
         selectedValue: step.selectedValue,
         selectedLabel: step.selectedLabel,
+        semanticTarget: step.semanticTarget,
         allowedOptions: step.allowedOptions,
         stepOrder: step.stepOrder,
         timestamp: timestamp()

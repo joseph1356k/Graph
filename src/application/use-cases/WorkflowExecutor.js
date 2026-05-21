@@ -1,8 +1,11 @@
+const TransversalWorkflowComposer = require('./TransversalWorkflowComposer');
+
 class WorkflowExecutor {
   constructor(catalogService, runner, llmProvider) {
     this.catalogService = catalogService;
     this.runner = runner; // Expects an object with an `executeWorkflow` method
     this.llmProvider = llmProvider;
+    this.transversalComposer = new TransversalWorkflowComposer();
   }
 
   defaultSelectChoices(selects) {
@@ -26,7 +29,9 @@ class WorkflowExecutor {
       throw new Error(`Workflow ${workflow?.id || 'unknown'} not found or has no steps.`);
     }
 
-    const executableSteps = workflow.steps.filter((step) => this.isExecutableStep(step));
+    const executableSteps = this.transversalComposer
+      .composeSteps(workflow.steps, variables)
+      .filter((step) => this.isExecutableStep(step));
     if (executableSteps.length === 0) {
       throw new Error(`Workflow ${workflow.id} has no executable steps.`);
     }

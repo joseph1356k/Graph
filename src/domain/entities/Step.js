@@ -28,6 +28,7 @@ class Step {
     this.controlType = normalizeText(data.controlType);
     this.selectedValue = typeof data.selectedValue === 'string' ? data.selectedValue : '';
     this.selectedLabel = normalizeText(data.selectedLabel);
+    this.semanticTarget = normalizeText(data.semanticTarget);
     
     this.allowedOptions = parseAllowedOptions(data.allowedOptions)
       .map((option) => ({

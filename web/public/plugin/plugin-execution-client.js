@@ -227,6 +227,128 @@
             }
         }
 
+        function normalizeSemanticTargetText(value) {
+            return `${value || ''}`
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .toLowerCase();
+        }
+
+        function getTransversalTargetOverride(step, variables = {}) {
+            if (`${step?.actionType || ''}`.trim().toLowerCase() !== 'click') {
+                return '';
+            }
+
+            const key = `target_${step?.stepOrder}`;
+            const requested = `${variables?.[key] || ''}`.trim();
+            const baseline = `${step?.transversalSourceTarget || step?.semanticTarget || step?.label || ''}`.trim();
+            if (!requested || !baseline) {
+                return '';
+            }
+
+            return normalizeSemanticTargetText(requested) === normalizeSemanticTargetText(baseline)
+                ? ''
+                : requested;
+        }
+
+        function getSemanticTextCandidates(element) {
+            if (!element || !(element instanceof Element)) {
+                return [];
+            }
+
+            const directHeading = element.querySelector?.('h1, h2, h3, h4, h5, h6');
+            const directImage = element.querySelector?.('img[alt]');
+            const closestContainer = element.closest?.('article, li, [class*="card"], [class*="item"], [class*="product"], [data-testid], [data-product], section');
+            const containerHeading = closestContainer?.querySelector?.('h1, h2, h3, h4, h5, h6');
+            const containerImage = closestContainer?.querySelector?.('img[alt]');
+            const normalize = (value) => `${value || ''}`.replace(/\s+/g, ' ').trim();
+
+            return [
+                element.getAttribute?.('aria-label') || '',
+                element.getAttribute?.('title') || '',
+                directHeading?.textContent || '',
+                directImage?.getAttribute?.('alt') || '',
+                element.textContent || '',
+                containerHeading?.textContent || '',
+                containerImage?.getAttribute?.('alt') || '',
+                closestContainer?.textContent || ''
+            ].map(normalize).filter(Boolean);
+        }
+
+        function scoreTransversalTargetCandidate(element, targetText = '', preferredElement = null) {
+            const target = normalizeSemanticTargetText(targetText);
+            if (!target) {
+                return -1;
+            }
+
+            let score = 0;
+            const candidateTexts = getSemanticTextCandidates(element).map((entry) => normalizeSemanticTargetText(entry));
+            const targetTokens = target.split(/\s+/).filter((token) => token.length >= 3);
+
+            candidateTexts.forEach((candidateText, index) => {
+                if (!candidateText) {
+                    return;
+                }
+                if (candidateText === target) {
+                    score = Math.max(score, 500 - (index * 10));
+                    return;
+                }
+                if (candidateText.includes(target) || target.includes(candidateText)) {
+                    score = Math.max(score, 320 - (index * 8));
+                }
+                const overlapCount = targetTokens.filter((token) => candidateText.includes(token)).length;
+                score = Math.max(score, (overlapCount * 45) - (index * 6));
+            });
+
+            if (preferredElement) {
+                if (preferredElement.tagName === element.tagName) {
+                    score += 25;
+                }
+
+                const preferredClasses = new Set(Array.from(preferredElement.classList || []));
+                const sharedClasses = Array.from(element.classList || []).filter((className) => preferredClasses.has(className)).length;
+                score += sharedClasses * 8;
+            }
+
+            return score;
+        }
+
+        function resolveElementFromTransversalTarget(step, variables = {}) {
+            const override = getTransversalTargetOverride(step, variables);
+            if (!override) {
+                return null;
+            }
+
+            const preferredElement = step?.selector
+                ? (safeQuerySelectorAll(step.selector).elements || []).find(isElementActionable) || null
+                : null;
+            const candidates = Array.from(document.querySelectorAll('a, button, [role="button"], input[type="button"], input[type="submit"]'))
+                .filter(isElementActionable);
+
+            let bestElement = null;
+            let bestScore = -1;
+            candidates.forEach((candidate) => {
+                const score = scoreTransversalTargetCandidate(candidate, override, preferredElement);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestElement = candidate;
+                }
+            });
+
+            if (bestElement && bestScore >= 90) {
+                emitExtensionLog('info', 'Resolved workflow step by transversal target override.', buildStepDiagnostics(step, {
+                    resolution: 'transversal_target',
+                    transversalTarget: override,
+                    transversalSourceTarget: `${step?.transversalSourceTarget || step?.semanticTarget || step?.label || ''}`.trim()
+                }));
+                return bestElement;
+            }
+
+            return null;
+        }
+
         function resolveElementFromStep(step) {
             if (!step?.selector) {
                 return null;
@@ -271,7 +393,12 @@
             return fallbackMatch;
         }
 
-        function resolveStepSilently(step) {
+        function resolveStepSilently(step, variables = {}) {
+            const transversalMatch = resolveElementFromTransversalTarget(step, variables);
+            if (transversalMatch) {
+                return transversalMatch;
+            }
+
             if (!step?.selector) {
                 return null;
             }
@@ -296,8 +423,8 @@
             }) || null;
         }
 
-        function canResolveStepImmediately(step) {
-            return Boolean(resolveStepSilently(step));
+        function canResolveStepImmediately(step, variables = {}) {
+            return Boolean(resolveStepSilently(step, variables));
         }
 
         function getViewportHeight() {
@@ -324,7 +451,7 @@
             });
             await waitMs(180);
 
-            const resolved = resolveStepSilently(step);
+            const resolved = resolveStepSilently(step, options.variables || {});
             if (resolved) {
                 try {
                     resolved.scrollIntoView({ block: 'center', inline: 'nearest' });
@@ -340,13 +467,13 @@
             return resolved;
         }
 
-        async function sweepSurfaceForStep(step) {
+        async function sweepSurfaceForStep(step, variables = {}) {
             const maxScroll = Math.max(0, getDocumentScrollHeight() - getViewportHeight());
             const initialScrollY = window.scrollY || window.pageYOffset || 0;
             const maxDownSweeps = Math.max(1, Math.ceil(maxScroll / Math.max(1, Math.round(getViewportHeight() * 0.75))));
 
             for (let index = 0; index < maxDownSweeps; index += 1) {
-                const resolved = await nudgeSurfaceForStepDiscovery(step, { direction: 'down' });
+                const resolved = await nudgeSurfaceForStepDiscovery(step, { direction: 'down', variables });
                 if (resolved) {
                     return resolved;
                 }
@@ -356,7 +483,7 @@
             }
 
             for (let index = 0; index < maxDownSweeps; index += 1) {
-                const resolved = await nudgeSurfaceForStepDiscovery(step, { direction: 'up' });
+                const resolved = await nudgeSurfaceForStepDiscovery(step, { direction: 'up', variables });
                 if (resolved) {
                     return resolved;
                 }
@@ -374,11 +501,15 @@
             return null;
         }
 
-        async function waitForStepElement(step, timeoutMs = waitTimeoutMs) {
+        async function waitForStepElement(step, variables = {}, timeoutMs = waitTimeoutMs) {
             const startedAt = Date.now();
             let scrollSweepAttempted = false;
             while (Date.now() - startedAt < timeoutMs) {
                 throwIfExecutionCancelled();
+                const transversalElement = resolveElementFromTransversalTarget(step, variables);
+                if (transversalElement) {
+                    return transversalElement;
+                }
                 const element = resolveElementFromStep(step);
                 if (element) {
                     return element;
@@ -386,7 +517,7 @@
 
                 if (!scrollSweepAttempted && step?.actionType === 'click' && Date.now() - startedAt > Math.min(1200, timeoutMs / 3)) {
                     scrollSweepAttempted = true;
-                    const discoveredAfterScroll = await sweepSurfaceForStep(step);
+                    const discoveredAfterScroll = await sweepSurfaceForStep(step, variables);
                     if (discoveredAfterScroll) {
                         return discoveredAfterScroll;
                     }
@@ -427,7 +558,7 @@
                     };
                 }
 
-                if (nextStep?.selector && (!nextExpectedUrl || currentUrl === nextExpectedUrl) && canResolveStepImmediately(nextStep)) {
+                if (nextStep?.selector && (!nextExpectedUrl || currentUrl === nextExpectedUrl) && canResolveStepImmediately(nextStep, options.variables || {})) {
                     return {
                         progress: 'next_step_available',
                         currentUrl
@@ -963,12 +1094,13 @@
                         return;
                     }
 
-                    const element = await waitForStepElement(step);
+                    const element = await waitForStepElement(step, currentPlan.variables || {});
                     throwIfExecutionCancelled();
                     if (step.actionType === 'click') {
                         const baselineUrl = window.location.href;
                         element.scrollIntoView({ block: 'center', inline: 'nearest' });
-                        notifyAutomationStep(step, `Estoy interactuando con ${step.label || step.selector || 'este control'}.`);
+                        const transversalTarget = getTransversalTargetOverride(step, currentPlan.variables || {});
+                        notifyAutomationStep(step, `Estoy interactuando con ${transversalTarget || step.semanticTarget || step.label || step.selector || 'este control'}.`);
                         if ('disabled' in element && element.disabled) {
                             emitExtensionLog('error', 'Workflow click target is disabled.', buildStepDiagnostics(step, {
                                 workflowId: currentPlan.workflowId,
@@ -991,7 +1123,8 @@
                         if (nextStep) {
                             const postClickProgress = await waitForPostClickProgress(step, nextStep, {
                                 baselineUrl,
-                                timeoutMs: waitTimeoutMs
+                                timeoutMs: waitTimeoutMs,
+                                variables: currentPlan.variables || {}
                             });
                             emitExtensionLog(
                                 postClickProgress.progress === 'timeout' ? 'warn' : 'info',

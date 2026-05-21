@@ -18,8 +18,11 @@ function summarizeWorkflowVariable(variable = {}) {
 
   return {
     name: variable.name || '',
+    kind: variable.kind || '',
+    actionType: variable.actionType || '',
     label: variable.fieldLabel || variable.prompt || variable.selector || variable.name || '',
     defaultValue: variable.defaultValue || '',
+    prompt: variable.prompt || '',
     allowedOptions
   };
 }
@@ -75,6 +78,10 @@ function buildSharedBehaviorPrompt(context = {}, workflows = []) {
     'When a variable belongs to a select control, prefer one of the allowed option values exactly.',
     'If the user intent matches an option label better than an option value, convert it to the corresponding option value.',
     'Use the field label and option meaning, not position in the dropdown.',
+    'Some workflow variables may represent a visible click target on the page rather than a form value.',
+    'When a variable has kind click-target, you may keep the same workflow and replace only that visible target if the page pattern is the same.',
+    'Use click-target variables to generalize one learned example into another similar visible entity on the same page.',
+    'If the requested visible entity is not clear enough, ask one short disambiguation question instead of guessing.',
     'Any date you choose or invent must be today or later, never in the past.',
     'Return dates must be the same day as pickup or later.',
     'Never choose the first option just because it is first; choose based on semantic fit.',
@@ -93,7 +100,7 @@ function buildChatDecisionPrompt(context = {}, workflows = []) {
     'Return JSON only with keys: reply, workflowId, variables, shouldExecute.',
     'reply: short assistant message to show the user.',
     'workflowId: exact workflow id or null.',
-    'variables: object mapping variable names like input_2 to their values.',
+    'variables: object mapping variable names like input_2 or target_2 to their values.',
     'shouldExecute: true only if the workflow and needed variables are clear enough to run now.',
     'If the request is ambiguous or missing required values, set shouldExecute to false and ask only for the missing information in reply.'
   ].join(' ');

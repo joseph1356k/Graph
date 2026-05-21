@@ -51,6 +51,10 @@ class AgentChat {
   }
 
   buildSyntheticValue(variable = {}, index = 0) {
+    if (`${variable.kind || ''}`.trim().toLowerCase() === 'click-target' && `${variable.defaultValue || ''}`.trim()) {
+      return `${variable.defaultValue || ''}`.trim();
+    }
+
     const label = `${variable.fieldLabel || variable.prompt || variable.selector || ''}`.toLowerCase();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
