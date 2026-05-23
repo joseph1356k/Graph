@@ -82,7 +82,7 @@ function registerWorkflowRoutes(app, deps = {}) {
   app.post('/api/workflows/:id/plan', async (req, res) => {
     try {
       const workflowId = (req.params.id || '').trim();
-      const plan = await workflowExecutor.getExecutionPlanById(workflowId, req.body?.variables || {});
+      const plan = await workflowExecutor.getExecutionPlanById(workflowId, req.body?.variables || {}, req.body?.executionIntent || {});
       res.json({ executionPlan: plan });
     } catch (err) {
       console.error(`[Workflows] Plan Error: ${err.message}`);

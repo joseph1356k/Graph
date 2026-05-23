@@ -409,7 +409,10 @@ class AgentChat {
       };
     }
 
-    const executionPlan = await this.executor.getExecutionPlanById(decision.workflowId, variables);
+    const executionPlan = await this.executor.getExecutionPlanById(decision.workflowId, variables, {
+      userMessage: message,
+      assistantReply: decision.reply || ''
+    });
 
     return {
       reply: decision.reply || 'Voy a encargarme de esto ahora mismo.',

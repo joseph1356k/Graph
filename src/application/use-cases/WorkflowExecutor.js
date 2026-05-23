@@ -24,7 +24,7 @@ class WorkflowExecutor {
     return false;
   }
 
-  buildExecutionPlan(workflow, variables = {}) {
+  buildExecutionPlan(workflow, variables = {}, executionIntent = {}) {
     if (!workflow || !workflow.steps || workflow.steps.length === 0) {
       throw new Error(`Workflow ${workflow?.id || 'unknown'} not found or has no steps.`);
     }
@@ -46,6 +46,7 @@ class WorkflowExecutor {
       sourceTitle: workflow.sourceTitle || '',
       executionGuide: workflow.executionGuide || '',
       variables: { ...variables },
+      executionIntent: { ...(executionIntent || {}) },
       runtimeIntelligence: {
         maxCallsPerStep: 5,
         decisions: []
@@ -54,13 +55,13 @@ class WorkflowExecutor {
     };
   }
 
-  async getExecutionPlanById(workflowId, variables = {}) {
+  async getExecutionPlanById(workflowId, variables = {}, executionIntent = {}) {
     const workflow = await this.catalogService.getWorkflowById(workflowId);
     if (!workflow) {
       throw new Error(`Workflow ${workflowId} not found or has no steps.`);
     }
 
-    return this.buildExecutionPlan(workflow, variables);
+    return this.buildExecutionPlan(workflow, variables, executionIntent);
   }
 
   async chooseDynamicOptions(selects, context = {}) {

@@ -1041,6 +1041,7 @@
                 currentStep,
                 nextSteps: steps.slice(stepIndex + 1, stepIndex + 6),
                 variables: plan.variables || {},
+                executionIntent: plan.executionIntent || {},
                 pageSnapshot: captureSurfaceSnapshot(),
                 previousRuntimeDecisions: Array.isArray(plan.runtimeIntelligence?.decisions)
                     ? plan.runtimeIntelligence.decisions.slice(-6)
@@ -1224,6 +1225,13 @@
                 resolution: 'runtime_intelligence_applied',
                 runtimeAction: decision.action || '',
                 runtimeReason: decision.reason || '',
+                runtimeStepPatches: Array.isArray(decision.stepPatches)
+                    ? decision.stepPatches.map((patch) => ({
+                        stepOrder: patch?.stepOrder,
+                        selectedValue: patch?.selectedValue,
+                        selectedLabel: patch?.selectedLabel
+                    }))
+                    : [],
                 skipStepOrders: decision.skipStepOrders || []
             }));
             return { plan: patchedPlan, decision };

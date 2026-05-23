@@ -67,18 +67,101 @@ class ExecutionIntelligenceService {
     };
   }
 
+  normalizeText(value = '') {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  }
+
+  findAllowedOption(variable = {}, value = '') {
+    const normalizedValue = this.normalizeText(value);
+    if (!normalizedValue || !Array.isArray(variable.allowedOptions)) {
+      return null;
+    }
+
+    return variable.allowedOptions.find((option) => {
+      const optionValue = this.normalizeText(option?.value || '');
+      const optionLabel = this.normalizeText(option?.label || option?.text || '');
+      return optionValue === normalizedValue || optionLabel === normalizedValue;
+    }) || null;
+  }
+
+  scoreVariableForStep(variable = {}, currentStep = {}, activeVariables = {}) {
+    if (!variable?.name) {
+      return 0;
+    }
+
+    let score = 0;
+    const directName = currentStep?.stepOrder ? 'input_' + currentStep.stepOrder : '';
+    const variableValue = activeVariables?.[variable.name];
+    const hasActiveValue = Object.prototype.hasOwnProperty.call(activeVariables || {}, variable.name)
+      && String(variableValue || '').trim();
+
+    if (variable.name === directName) score += 70;
+    if (Number(variable.sourceStep) === Number(currentStep?.stepOrder)) score += 60;
+    if (variable.selector && currentStep?.selector && variable.selector === currentStep.selector) score += 90;
+    if (this.normalizeText(variable.fieldLabel) && this.normalizeText(variable.fieldLabel) === this.normalizeText(currentStep?.label)) score += 50;
+    if (variable.actionType && currentStep?.actionType && variable.actionType === currentStep.actionType) score += 20;
+    if (variable.controlType && currentStep?.controlType && variable.controlType === currentStep.controlType) score += 20;
+    if (hasActiveValue) score += 40;
+
+    return score;
+  }
+
+  buildStepVariableContext(workflowVariables = [], currentStep = {}, activeVariables = {}) {
+    const directName = currentStep?.stepOrder ? 'input_' + currentStep.stepOrder : '';
+    const candidates = workflowVariables
+      .map((variable) => {
+        const score = this.scoreVariableForStep(variable, currentStep, activeVariables);
+        const value = activeVariables?.[variable?.name];
+        const hasValue = Object.prototype.hasOwnProperty.call(activeVariables || {}, variable?.name)
+          && String(value || '').trim();
+        if (score <= 0 || (!hasValue && variable?.name !== directName)) {
+          return null;
+        }
+
+        return {
+          name: variable.name,
+          value,
+          matchedAllowedOption: this.findAllowedOption(variable, value),
+          metadata: variable,
+          score
+        };
+      })
+      .filter(Boolean)
+      .sort((left, right) => right.score - left.score)
+      .slice(0, 5);
+
+    if (candidates.length > 0) {
+      return {
+        primary: candidates[0],
+        candidates
+      };
+    }
+
+    return {
+      primary: directName
+        ? {
+            name: directName,
+            value: activeVariables?.[directName],
+            matchedAllowedOption: null,
+            metadata: workflowVariables.find((variable) => variable?.name === directName) || null,
+            score: 0
+          }
+        : null,
+      candidates: []
+    };
+  }
+
   buildMessages(workflow = {}, payload = {}) {
     const currentStep = payload.currentStep || null;
     const nextSteps = Array.isArray(payload.nextSteps) ? payload.nextSteps : [];
     const workflowVariables = Array.isArray(workflow.variables) ? workflow.variables : [];
-    const stepVariableName = currentStep?.stepOrder ? 'input_' + currentStep.stepOrder : '';
-    const stepVariable = stepVariableName
-      ? {
-          name: stepVariableName,
-          value: payload.variables?.[stepVariableName],
-          metadata: workflowVariables.find((variable) => variable?.name === stepVariableName) || null
-        }
-      : null;
+    const stepVariableContext = this.buildStepVariableContext(workflowVariables, currentStep, payload.variables || {});
+    const stepVariable = stepVariableContext.primary;
 
     const messagePayload = {
       reason: payload.reason || '',
@@ -93,11 +176,14 @@ class ExecutionIntelligenceService {
         pageSnapshot: payload.pageSnapshot || {}
       },
       currentExecutionIntent: {
+        userMessage: payload.executionIntent?.userMessage || '',
+        assistantReply: payload.executionIntent?.assistantReply || '',
         stepIndex: payload.stepIndex,
         currentStep,
         nextSteps,
         variables: payload.variables || {},
         stepVariable,
+        stepVariableCandidates: stepVariableContext.candidates,
         failure: payload.failure || null,
         previousRuntimeDecisions: payload.previousRuntimeDecisions || []
       },
