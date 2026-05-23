@@ -70,16 +70,48 @@ class ExecutionIntelligenceService {
   buildMessages(workflow = {}, payload = {}) {
     const currentStep = payload.currentStep || null;
     const nextSteps = Array.isArray(payload.nextSteps) ? payload.nextSteps : [];
-    const stepVariableName = currentStep?.stepOrder ? `input_${currentStep.stepOrder}` : '';
+    const workflowVariables = Array.isArray(workflow.variables) ? workflow.variables : [];
+    const stepVariableName = currentStep?.stepOrder ? 'input_' + currentStep.stepOrder : '';
     const stepVariable = stepVariableName
       ? {
           name: stepVariableName,
           value: payload.variables?.[stepVariableName],
-          metadata: Array.isArray(workflow.variables)
-            ? workflow.variables.find((variable) => variable?.name === stepVariableName) || null
-            : null
+          metadata: workflowVariables.find((variable) => variable?.name === stepVariableName) || null
         }
       : null;
+
+    const messagePayload = {
+      reason: payload.reason || '',
+      trigger: payload.trigger || '',
+      authorityOrder: [
+        'currentPage',
+        'currentExecutionIntent',
+        'learnedWorkflowMemory'
+      ],
+      currentPage: {
+        url: payload.currentUrl || '',
+        pageSnapshot: payload.pageSnapshot || {}
+      },
+      currentExecutionIntent: {
+        stepIndex: payload.stepIndex,
+        currentStep,
+        nextSteps,
+        variables: payload.variables || {},
+        stepVariable,
+        failure: payload.failure || null,
+        previousRuntimeDecisions: payload.previousRuntimeDecisions || []
+      },
+      learnedWorkflowMemory: {
+        id: workflow.id || payload.workflowId || '',
+        description: workflow.description || '',
+        summary: workflow.summary || '',
+        executionGuide: workflow.executionGuide || payload.executionGuide || '',
+        variables: workflowVariables,
+        currentStep,
+        nextSteps
+      }
+    };
+
     return [
       {
         role: 'system',
@@ -87,28 +119,7 @@ class ExecutionIntelligenceService {
       },
       {
         role: 'user',
-        content: JSON.stringify({
-          reason: payload.reason || '',
-          trigger: payload.trigger || '',
-          currentUrl: payload.currentUrl || '',
-          workflow: {
-            id: workflow.id || payload.workflowId || '',
-            description: workflow.description || '',
-            summary: workflow.summary || '',
-            executionGuide: workflow.executionGuide || payload.executionGuide || '',
-            variables: workflow.variables || []
-          },
-          executionState: {
-            stepIndex: payload.stepIndex,
-            currentStep,
-            nextSteps,
-            variables: payload.variables || {},
-            failure: payload.failure || null,
-            stepVariable,
-            previousRuntimeDecisions: payload.previousRuntimeDecisions || []
-          },
-          pageSnapshot: payload.pageSnapshot || {}
-        })
+        content: JSON.stringify(messagePayload)
       }
     ];
   }
