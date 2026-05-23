@@ -44,7 +44,12 @@ class WorkflowExecutor {
       sourceOrigin: workflow.sourceOrigin || '',
       sourcePathname: workflow.sourcePathname || '',
       sourceTitle: workflow.sourceTitle || '',
+      executionGuide: workflow.executionGuide || '',
       variables: { ...variables },
+      runtimeIntelligence: {
+        maxCallsPerStep: 2,
+        decisions: []
+      },
       steps: executableSteps
     };
   }

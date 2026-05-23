@@ -5,6 +5,7 @@
         const runtime = typeof deps.runtime === 'function' ? deps.runtime : () => null;
         const emitPluginEvent = typeof deps.emitPluginEvent === 'function' ? deps.emitPluginEvent : () => {};
         const updateWorkflowPanelStatus = typeof deps.updateWorkflowPanelStatus === 'function' ? deps.updateWorkflowPanelStatus : () => {};
+        const requestRuntimeIntelligence = typeof deps.requestRuntimeIntelligence === 'function' ? deps.requestRuntimeIntelligence : null;
         const executionState = deps.executionState || { running: false, cancelRequested: false, workflowId: '' };
         const executionStoragePrefix = deps.executionStoragePrefix || 'graph-browser-workflow-execution-v1';
         const waitTimeoutMs = Number.isFinite(deps.waitTimeoutMs) ? deps.waitTimeoutMs : 15000;
@@ -988,6 +989,185 @@
             }));
         }
 
+        function getRuntimeStepKey(step = {}, stepIndex = 0, reason = '') {
+            const stepOrder = Number.isFinite(step?.stepOrder) ? step.stepOrder : stepIndex;
+            return `${stepOrder}:${reason || 'runtime'}`;
+        }
+
+        function getRuntimeCallCount(plan = {}, step = {}, stepIndex = 0, reason = '') {
+            const key = getRuntimeStepKey(step, stepIndex, reason);
+            return Number(plan?.runtimeIntelligence?.callCounts?.[key] || 0);
+        }
+
+        function incrementRuntimeCallCount(plan = {}, step = {}, stepIndex = 0, reason = '') {
+            const key = getRuntimeStepKey(step, stepIndex, reason);
+            return {
+                ...plan,
+                runtimeIntelligence: {
+                    ...(plan.runtimeIntelligence || {}),
+                    callCounts: {
+                        ...(plan.runtimeIntelligence?.callCounts || {}),
+                        [key]: getRuntimeCallCount(plan, step, stepIndex, reason) + 1
+                    }
+                }
+            };
+        }
+
+        function buildRuntimeIntelligencePayload(plan = {}, stepIndex = 0, reason = '', trigger = 'panel', failure = null) {
+            const steps = Array.isArray(plan.steps) ? plan.steps : [];
+            const currentStep = steps[stepIndex] || null;
+            return {
+                reason,
+                trigger,
+                workflowId: plan.workflowId || '',
+                executionGuide: plan.executionGuide || '',
+                currentUrl: window.location.href,
+                stepIndex,
+                currentStep,
+                nextSteps: steps.slice(stepIndex + 1, stepIndex + 6),
+                variables: plan.variables || {},
+                pageSnapshot: captureSurfaceSnapshot(),
+                previousRuntimeDecisions: Array.isArray(plan.runtimeIntelligence?.decisions)
+                    ? plan.runtimeIntelligence.decisions.slice(-6)
+                    : [],
+                failure
+            };
+        }
+
+        function sanitizeStepPatch(patch = {}) {
+            const allowed = [
+                'selector',
+                'value',
+                'selectedValue',
+                'selectedLabel',
+                'label',
+                'url',
+                'actionType',
+                'controlType',
+                'explanation'
+            ];
+            return allowed.reduce((output, key) => {
+                if (Object.prototype.hasOwnProperty.call(patch, key)) {
+                    output[key] = patch[key];
+                }
+                return output;
+            }, {});
+        }
+
+        function applyRuntimeDecisionToPlan(plan = {}, decision = {}) {
+            const nextPlan = {
+                ...plan,
+                variables: {
+                    ...(plan.variables || {}),
+                    ...(decision.variablePatch || {})
+                },
+                steps: Array.isArray(plan.steps) ? plan.steps.map((step) => ({ ...step })) : [],
+                runtimeIntelligence: {
+                    ...(plan.runtimeIntelligence || {}),
+                    decisions: [
+                        ...(Array.isArray(plan.runtimeIntelligence?.decisions) ? plan.runtimeIntelligence.decisions : []),
+                        {
+                            action: decision.action || 'continue',
+                            reason: decision.reason || '',
+                            at: Date.now()
+                        }
+                    ].slice(-20)
+                }
+            };
+
+            const patches = Array.isArray(decision.stepPatches) ? decision.stepPatches : [];
+            patches.forEach((patch) => {
+                const stepOrder = Number(patch?.stepOrder);
+                const index = Number.isFinite(stepOrder)
+                    ? nextPlan.steps.findIndex((step) => Number(step.stepOrder) === stepOrder)
+                    : -1;
+                if (index < 0) {
+                    return;
+                }
+                nextPlan.steps[index] = {
+                    ...nextPlan.steps[index],
+                    ...sanitizeStepPatch(patch)
+                };
+            });
+
+            const skipOrders = new Set(
+                (Array.isArray(decision.skipStepOrders) ? decision.skipStepOrders : [])
+                    .map((value) => Number(value))
+                    .filter((value) => Number.isFinite(value))
+            );
+            if (decision.action === 'skip_step' && Number.isFinite(Number(decision.stepOrder))) {
+                skipOrders.add(Number(decision.stepOrder));
+            }
+
+            if (skipOrders.size > 0) {
+                nextPlan.steps = nextPlan.steps.map((step) => skipOrders.has(Number(step.stepOrder))
+                    ? { ...step, __runtimeSkipped: true }
+                    : step);
+            }
+
+            return nextPlan;
+        }
+
+        function buildRuntimeAbortError(decision = {}, fallback = 'No pude continuar la automatizacion en esta pagina.') {
+            const error = new Error(decision.userMessage || decision.reason || fallback);
+            error.code = decision.action === 'ask_user' ? 'EXECUTION_NEEDS_USER' : 'EXECUTION_RUNTIME_ABORT';
+            return error;
+        }
+
+        async function requestAndApplyRuntimeIntelligence(plan = {}, stepIndex = 0, reason = '', trigger = 'panel', failure = null) {
+            if (!requestRuntimeIntelligence || !plan?.workflowId) {
+                return { plan, decision: { action: 'continue', reason: 'runtime intelligence unavailable' } };
+            }
+
+            const step = Array.isArray(plan.steps) ? plan.steps[stepIndex] : null;
+            const maxCallsPerStep = Number(plan.runtimeIntelligence?.maxCallsPerStep || 2);
+            if (getRuntimeCallCount(plan, step, stepIndex, reason) >= maxCallsPerStep) {
+                emitExtensionLog('warn', 'Runtime intelligence step limit reached.', buildStepDiagnostics(step, {
+                    workflowId: plan.workflowId || '',
+                    trigger,
+                    stepIndex,
+                    failureKind: 'runtime_intelligence_limit',
+                    reason
+                }));
+                return { plan, decision: { action: 'continue', reason: 'runtime intelligence limit reached' } };
+            }
+
+            const countedPlan = incrementRuntimeCallCount(plan, step, stepIndex, reason);
+            const payload = buildRuntimeIntelligencePayload(countedPlan, stepIndex, reason, trigger, failure);
+            emitExtensionLog('info', 'Requesting runtime execution intelligence.', buildStepDiagnostics(step, {
+                workflowId: countedPlan.workflowId || '',
+                trigger,
+                stepIndex,
+                resolution: 'runtime_intelligence_requested',
+                reason
+            }));
+
+            let response;
+            try {
+                response = await requestRuntimeIntelligence(countedPlan.workflowId, payload);
+            } catch (error) {
+                emitExtensionLog('warn', 'Runtime execution intelligence request failed.', buildStepDiagnostics(step, {
+                    workflowId: countedPlan.workflowId || '',
+                    trigger,
+                    stepIndex,
+                    failureKind: 'runtime_intelligence_request_failed',
+                    errorMessage: error?.message || 'Unknown runtime intelligence error'
+                }));
+                return { plan: countedPlan, decision: { action: 'continue', reason: 'runtime intelligence request failed' } };
+            }
+            const decision = response?.decision || { action: 'continue', reason: 'empty runtime intelligence response' };
+            const patchedPlan = applyRuntimeDecisionToPlan(countedPlan, decision);
+            emitExtensionLog('info', 'Applied runtime execution intelligence decision.', buildStepDiagnostics(step, {
+                workflowId: patchedPlan.workflowId || '',
+                trigger,
+                stepIndex,
+                resolution: 'runtime_intelligence_applied',
+                runtimeAction: decision.action || '',
+                runtimeReason: decision.reason || '',
+                skipStepOrders: decision.skipStepOrders || []
+            }));
+            return { plan: patchedPlan, decision };
+        }
         function updateExecutionProgress(plan, nextStepIndex) {
             const nextPlan = {
                 ...plan,
@@ -1056,6 +1236,17 @@
                         stepIndex
                     }));
 
+                    if (step.__runtimeSkipped) {
+                        emitExtensionLog('info', 'Skipping workflow step by runtime intelligence decision.', buildStepDiagnostics(step, {
+                            workflowId: currentPlan.workflowId,
+                            trigger,
+                            stepIndex,
+                            resolution: 'runtime_step_skipped'
+                        }));
+                        currentPlan = updateExecutionProgress(currentPlan, stepIndex + 1);
+                        continue;
+                    }
+
                     if (step.actionType === 'navigation') {
                         const targetUrl = normalizeExecutionUrl(step.url);
                         notifyAutomationStep(step, `Abriendo ${step.label || targetUrl}.`, {
@@ -1094,7 +1285,28 @@
                         return;
                     }
 
-                    const element = await waitForStepElement(step, currentPlan.variables || {});
+                    let element;
+                    try {
+                        element = await waitForStepElement(step, currentPlan.variables || {});
+                    } catch (error) {
+                        const runtimeResult = await requestAndApplyRuntimeIntelligence(currentPlan, stepIndex, 'element_not_found', trigger, {
+                            message: error?.message || 'element not found',
+                            failureKind: 'element_not_found'
+                        });
+                        currentPlan = updateExecutionProgress(runtimeResult.plan, stepIndex);
+                        if (runtimeResult.decision?.action === 'ask_user' || runtimeResult.decision?.action === 'abort') {
+                            throw buildRuntimeAbortError(runtimeResult.decision, error?.message);
+                        }
+                        if (currentPlan.steps?.[stepIndex]?.__runtimeSkipped) {
+                            currentPlan = updateExecutionProgress(currentPlan, stepIndex + 1);
+                            continue;
+                        }
+                        if (runtimeResult.decision?.retry || runtimeResult.decision?.action === 'patch_step' || runtimeResult.decision?.action === 'retry_step') {
+                            stepIndex -= 1;
+                            continue;
+                        }
+                        throw error;
+                    }
                     throwIfExecutionCancelled();
                     if (step.actionType === 'click') {
                         const baselineUrl = window.location.href;
@@ -1139,6 +1351,18 @@
                                     progressedUrl: postClickProgress.currentUrl || ''
                                 })
                             );
+
+                            if (transversalTarget) {
+                                const runtimeResult = await requestAndApplyRuntimeIntelligence(currentPlan, stepIndex + 1, 'after_transversal_click', trigger, {
+                                    clickedStepOrder: Number.isFinite(step.stepOrder) ? step.stepOrder : null,
+                                    transversalTarget,
+                                    postClickProgress
+                                });
+                                currentPlan = updateExecutionProgress(runtimeResult.plan, currentPlan.nextStepIndex);
+                                if (runtimeResult.decision?.action === 'ask_user' || runtimeResult.decision?.action === 'abort') {
+                                    throw buildRuntimeAbortError(runtimeResult.decision);
+                                }
+                            }
                         }
                     } else if (step.actionType === 'input') {
                         notifyAutomationStep(step, `Estoy completando ${step.label || step.selector || 'este campo'}.`);

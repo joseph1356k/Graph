@@ -9,7 +9,6 @@ const LEARNING_LOG_SCOPES = new Set(['learning']);
 const RECORDER_LOG_SCOPE = 'recorder';
 const SELECTED_ELEMENT_STORAGE_KEY = 'graphTrainerSelectedElement';
 const AUTO_CAPTURE_ANALYSIS_STORAGE_KEY = 'graphTrainerAutoCaptureAnalysis';
-const diagnosticsChatHistory = [];
 
 function getStorage() {
   return chrome.storage?.sync || chrome.storage?.local;
@@ -287,170 +286,6 @@ function buildBackendUrl(pathname) {
   return `${normalizedBase}${pathname.startsWith('/') ? pathname : `/${pathname}`}`;
 }
 
-function renderDiagnosticsChat() {
-  const logEl = document.getElementById('diagnosticsChatLog');
-  const emptyEl = document.getElementById('diagnosticsChatEmpty');
-  if (!logEl) {
-    return;
-  }
-
-  logEl.innerHTML = '';
-  if (!diagnosticsChatHistory.length) {
-    if (emptyEl) {
-      emptyEl.classList.remove('hidden');
-      logEl.appendChild(emptyEl);
-    }
-    return;
-  }
-
-  diagnosticsChatHistory.forEach((message) => {
-    const article = document.createElement('article');
-    article.className = `diagnostics-chat-message ${message.role === 'assistant' ? 'assistant' : 'user'}`;
-    article.textContent = `${message.content || ''}`.trim();
-    logEl.appendChild(article);
-  });
-
-  if (emptyEl) {
-    emptyEl.classList.add('hidden');
-  }
-  logEl.scrollTop = logEl.scrollHeight;
-}
-
-async function requestDiagnosticsAnalysis(userMessage) {
-  const logs = await readLogs();
-  const selectedElement = await readSelectedElement();
-  const { executionLogs, selectedEntries } = collectErrorContextWindows(logs, 3);
-  const relevantLogs = selectedEntries
-    .filter((item) => item.type === 'entry')
-    .map((item) => item.entry);
-
-  const payload = {
-    userMessage,
-    history: diagnosticsChatHistory.slice(0, -1).slice(-6),
-    logs: relevantLogs.length > 0 ? relevantLogs : executionLogs.slice(-12),
-    selectedElement
-  };
-
-  const response = await fetch(buildBackendUrl('/api/diagnostics/analyze'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(result.error || 'No pude analizar el problema.');
-  }
-  return result;
-}
-
-function buildSelectedElementFingerprint(selectedElement) {
-  if (!selectedElement) {
-    return '';
-  }
-
-  return JSON.stringify({
-    selector: `${selectedElement.selector || ''}`.trim(),
-    href: `${selectedElement.href || ''}`.trim(),
-    text: `${selectedElement.text || ''}`.trim(),
-    pageUrl: `${selectedElement.pageUrl || ''}`.trim()
-  });
-}
-
-async function requestCaptureGapAnalysis() {
-  const logs = await readLogs();
-  const selectedElement = await readSelectedElement();
-  if (!selectedElement) {
-    return null;
-  }
-
-  const relevantLogs = logs.filter((entry) => {
-    const scope = `${entry.scope || ''}`.trim().toLowerCase();
-    return scope === 'execution' || scope === 'recorder';
-  }).slice(-24);
-
-  const response = await fetch(buildBackendUrl('/api/diagnostics/analyze'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      analysisMode: 'capture-gap',
-      userMessage: 'Analiza automaticamente si este elemento marcado se puede capturar con el recorder actual o si falta un metodo especifico para persistirlo correctamente.',
-      logs: relevantLogs,
-      selectedElement,
-      history: []
-    })
-  });
-
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(result.error || 'No pude analizar la capacidad de captura del elemento.');
-  }
-
-  return {
-    fingerprint: buildSelectedElementFingerprint(selectedElement),
-    selectedElement,
-    reply: `${result.reply || ''}`.trim()
-  };
-}
-
-async function renderSelectedElementSummary() {
-  const summaryEl = document.getElementById('diagnosticsSelectedElementSummary');
-  if (!summaryEl) {
-    return;
-  }
-
-  const selectedElement = await readSelectedElement();
-  if (!selectedElement) {
-    summaryEl.textContent = 'No has señalado ningún elemento todavía.';
-    return;
-  }
-
-  summaryEl.textContent = [
-    selectedElement.selector ? `selector: ${selectedElement.selector}` : '',
-    selectedElement.text ? `texto: ${selectedElement.text}` : '',
-    selectedElement.pageUrl ? `url: ${selectedElement.pageUrl}` : ''
-  ].filter(Boolean).join('\n');
-}
-
-async function runAutomaticCaptureGapAnalysis(diagnosticsChatStatus) {
-  const selectedElement = await readSelectedElement();
-  if (!selectedElement) {
-    return;
-  }
-
-  const fingerprint = buildSelectedElementFingerprint(selectedElement);
-  const cached = await readAutoCaptureAnalysisCache();
-
-  if (cached?.fingerprint === fingerprint && `${cached.reply || ''}`.trim()) {
-    diagnosticsChatHistory.splice(0, diagnosticsChatHistory.length, {
-      role: 'assistant',
-      content: `${cached.reply}`.trim()
-    });
-    renderDiagnosticsChat();
-    diagnosticsChatStatus.textContent = 'Analisis automatico de captura cargado para el elemento marcado.';
-    return;
-  }
-
-  diagnosticsChatStatus.textContent = 'Analizando automaticamente si el recorder sabe capturar este elemento...';
-  try {
-    const result = await requestCaptureGapAnalysis();
-    if (!result?.reply) {
-      diagnosticsChatStatus.textContent = 'No pude formular un analisis automatico util todavia.';
-      return;
-    }
-
-    diagnosticsChatHistory.splice(0, diagnosticsChatHistory.length, {
-      role: 'assistant',
-      content: result.reply
-    });
-    renderDiagnosticsChat();
-    await writeAutoCaptureAnalysisCache(result);
-    diagnosticsChatStatus.textContent = 'Analisis automatico de captura listo.';
-  } catch (error) {
-    diagnosticsChatStatus.textContent = error.message || 'No pude analizar automaticamente la captura del elemento.';
-  }
-}
-
 function renderImprovementsView(payload = {}) {
   const settingsViewEl = document.getElementById('settingsView');
   const improvementsViewEl = document.getElementById('improvementsView');
@@ -649,11 +484,6 @@ async function init() {
   const logOutputEl = document.getElementById('logOutput');
   const voiceLogPanelEl = document.getElementById('voiceLogPanel');
   const voiceLogOutputEl = document.getElementById('voiceLogOutput');
-  const diagnosticsChatInput = document.getElementById('diagnosticsChatInput');
-  const diagnosticsChatSend = document.getElementById('diagnosticsChatSend');
-  const diagnosticsChatStatus = document.getElementById('diagnosticsChatStatus');
-  const diagnosticsSelectElement = document.getElementById('diagnosticsSelectElement');
-  const diagnosticsClearElement = document.getElementById('diagnosticsClearElement');
   const refreshImprovementsButton = document.getElementById('popupImprovementsRefresh');
   const overlayToggleButton = document.getElementById('popupOverlayToggle');
 
@@ -666,9 +496,6 @@ async function init() {
   await setTraceLogPanelOpen(tracePanelEl, toggleTraceButton, traceOutputEl, showTraceLogs);
   await setLogPanelOpen(logPanelEl, toggleLogsButton, logOutputEl, showLogs);
   await setVoiceLogPanelOpen(voiceLogPanelEl, toggleVoiceLogsButton, voiceLogOutputEl, showVoiceLogs);
-  renderDiagnosticsChat();
-  await renderSelectedElementSummary();
-  await runAutomaticCaptureGapAnalysis(diagnosticsChatStatus);
 
   saveButton.addEventListener('click', async () => {
     const nextSettings = {
@@ -757,61 +584,6 @@ async function init() {
     }, 1600);
   });
 
-  diagnosticsChatSend.addEventListener('click', async () => {
-    const userMessage = `${diagnosticsChatInput?.value || ''}`.trim();
-    if (!userMessage) {
-      diagnosticsChatStatus.textContent = 'Cuéntame qué viste para que el agente pueda analizarlo.';
-      return;
-    }
-
-    diagnosticsChatHistory.push({ role: 'user', content: userMessage });
-    diagnosticsChatInput.value = '';
-    diagnosticsChatStatus.textContent = 'Analizando logs y buscando la causa raíz...';
-    diagnosticsChatSend.disabled = true;
-    renderDiagnosticsChat();
-
-    try {
-      const result = await requestDiagnosticsAnalysis(userMessage);
-      diagnosticsChatHistory.push({
-        role: 'assistant',
-        content: `${result.reply || 'No pude formular una respuesta útil todavía.'}`.trim()
-      });
-      diagnosticsChatStatus.textContent = '';
-      renderDiagnosticsChat();
-    } catch (error) {
-      diagnosticsChatStatus.textContent = error.message || 'No pude analizar el problema.';
-    } finally {
-      diagnosticsChatSend.disabled = false;
-    }
-  });
-
-  diagnosticsSelectElement.addEventListener('click', async () => {
-    const activeTabId = await getActiveTabId();
-    if (!activeTabId) {
-      diagnosticsChatStatus.textContent = 'No pude encontrar la pestaña activa.';
-      return;
-    }
-
-    diagnosticsChatStatus.textContent = 'Haz click en la página sobre el elemento que quieres enseñarle al agente y luego vuelve a abrir este popup.';
-    try {
-      await writeAutoCaptureAnalysisCache(null);
-      await chrome.tabs.sendMessage(activeTabId, { type: 'graph:start-element-inspection' });
-    } catch (error) {
-      diagnosticsChatStatus.textContent = 'No pude activar el modo de selección de elemento.';
-    }
-  });
-
-  diagnosticsClearElement.addEventListener('click', async () => {
-    await writeSelectedElement(null);
-    await writeAutoCaptureAnalysisCache(null);
-    diagnosticsChatHistory.length = 0;
-    renderDiagnosticsChat();
-    await renderSelectedElementSummary();
-    diagnosticsChatStatus.textContent = 'Elemento señalado eliminado.';
-    window.setTimeout(() => {
-      diagnosticsChatStatus.textContent = '';
-    }, 1400);
-  });
 }
 
 init().catch((error) => {

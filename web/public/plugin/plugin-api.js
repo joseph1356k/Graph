@@ -108,6 +108,13 @@
                     })
                 }, fetchImpl);
             },
+            requestExecutionIntelligence(workflowId, payload) {
+                return createJsonRequest(baseUrl, `/api/workflows/${encodeURIComponent(workflowId)}/intelligence`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload || {})
+                }, fetchImpl);
+            },
             sendAgentMessage(message, history, context) {
                 return createJsonRequest(baseUrl, '/api/agent/chat', {
                     method: 'POST',

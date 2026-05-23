@@ -20,11 +20,11 @@ const GeneratePitchArtifacts = require('../src/application/use-cases/GeneratePit
 const ConversationInsights = require('../src/application/use-cases/ConversationInsights');
 const SurfaceProfileService = require('../src/application/use-cases/SurfaceProfileService');
 const LearningSessionService = require('../src/application/use-cases/LearningSessionService');
-const ExecutionDiagnosticsAssistant = require('../src/application/use-cases/ExecutionDiagnosticsAssistant');
+const ExecutionIntelligenceService = require('../src/application/use-cases/ExecutionIntelligenceService');
 const registerLearningRoutes = require('./api/registerLearningRoutes');
 const registerWorkflowRoutes = require('./api/registerWorkflowRoutes');
 const registerContextRoutes = require('./api/registerContextRoutes');
-const registerDiagnosticsRoutes = require('./api/registerDiagnosticsRoutes');
+const registerExecutionIntelligenceRoutes = require('./api/registerExecutionIntelligenceRoutes');
 const registerVoiceRoutes = require('./api/registerVoiceRoutes');
 
 const GetGraphVisualization = require('../src/application/use-cases/GetGraphVisualization');
@@ -57,7 +57,7 @@ const conversationInsights = new ConversationInsights(
 const surfaceProfileService = new SurfaceProfileService(repository, llmProvider);
 const learningSessionService = new LearningSessionService(workflowLearner);
 const getGraphVisualization = new GetGraphVisualization(repository);
-const executionDiagnosticsAssistant = new ExecutionDiagnosticsAssistant(llmProvider);
+const executionIntelligenceService = new ExecutionIntelligenceService(llmProvider);
 
 app.use(bodyParser.json());
 
@@ -579,7 +579,7 @@ registerContextRoutes(app, {
   catalogService,
   surfaceProfileService
 });
-registerDiagnosticsRoutes(app, { executionDiagnosticsAssistant });
+registerExecutionIntelligenceRoutes(app, { catalogService, executionIntelligenceService });
 registerVoiceRoutes(app, {
   express,
   agentChat,

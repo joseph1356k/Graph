@@ -83,6 +83,16 @@ class WorkflowExecutionGuideBuilder {
       lines.push('');
     }
 
+    if (clickTargets.length > 0) {
+      lines.push('## Runtime Intelligence Triggers');
+      clickTargets.forEach((entry) => {
+        lines.push(`- After Step ${entry.stepOrder}, runtime intelligence may briefly reinterpret the next controls if a transversal target changed the entity page.`);
+      });
+      lines.push('- Use runtime intelligence only to patch current/upcoming step values, skip controls that are not applicable on the current surface, ask for help, or abort safely.');
+      lines.push('- Return to the stable learned path as soon as the current runtime uncertainty is resolved.');
+      lines.push('');
+    }
+
     if (freeTextSteps.length > 0) {
       lines.push('## Free Text Boundaries');
       freeTextSteps.forEach((entry) => {

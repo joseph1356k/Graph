@@ -282,7 +282,8 @@
             executionState,
             executionStoragePrefix: EXECUTION_STORAGE_PREFIX,
             waitTimeoutMs: EXECUTION_WAIT_TIMEOUT_MS,
-            stepDelayMs: EXECUTION_STEP_DELAY_MS
+            stepDelayMs: EXECUTION_STEP_DELAY_MS,
+            requestRuntimeIntelligence: (workflowId, payload) => requireApiClient().requestExecutionIntelligence(workflowId, payload)
         }) || null;
     }
 

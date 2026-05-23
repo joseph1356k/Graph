@@ -28,7 +28,16 @@
                     || element.name
                     || element.id
                     || '',
-                optionCount: Array.from(element.options || []).filter((option) => `${option.value || ''}`.trim()).length
+                value: element.value || '',
+                optionCount: Array.from(element.options || []).filter((option) => `${option.value || ''}`.trim()).length,
+                options: Array.from(element.options || [])
+                    .filter((option) => `${option.value || ''}`.trim())
+                    .slice(0, 20)
+                    .map((option) => ({
+                        value: `${option.value || ''}`.trim(),
+                        label: (option.label || option.text || '').trim(),
+                        text: (option.text || option.label || '').trim()
+                    }))
             }));
 
         const forms = Array.from(document.querySelectorAll('form'))
