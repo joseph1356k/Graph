@@ -47,7 +47,7 @@ class WorkflowExecutor {
       executionGuide: workflow.executionGuide || '',
       variables: { ...variables },
       runtimeIntelligence: {
-        maxCallsPerStep: 2,
+        maxCallsPerStep: 5,
         decisions: []
       },
       steps: executableSteps

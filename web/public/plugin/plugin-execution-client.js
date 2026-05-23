@@ -1120,7 +1120,7 @@
             }
 
             const step = Array.isArray(plan.steps) ? plan.steps[stepIndex] : null;
-            const maxCallsPerStep = Number(plan.runtimeIntelligence?.maxCallsPerStep || 2);
+            const maxCallsPerStep = Number(plan.runtimeIntelligence?.maxCallsPerStep || 5);
             if (getRuntimeCallCount(plan, step, stepIndex, reason) >= maxCallsPerStep) {
                 emitExtensionLog('warn', 'Runtime intelligence step limit reached.', buildStepDiagnostics(step, {
                     workflowId: plan.workflowId || '',

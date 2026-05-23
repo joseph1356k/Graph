@@ -2,6 +2,58 @@
     function resolveAdapter(config) {
         return window.GraphPluginAdapters?.resolve?.(config) || null;
     }
+    function buildSnapshotSelector(element, fallback = '') {
+        if (!element) {
+            return fallback;
+        }
+        if (element.id) {
+            return `#${element.id}`;
+        }
+        if (element.name) {
+            return `[name="${element.name}"]`;
+        }
+        const href = element.getAttribute?.('href') || '';
+        if (element.tagName?.toLowerCase() === 'a' && href) {
+            return `a[href="${href.replace(/"/g, '\\"')}"]`;
+        }
+        return fallback || element.tagName?.toLowerCase() || '';
+    }
+
+    function buildControlSnapshot(element, index = 0) {
+        const tagName = element.tagName?.toLowerCase() || '';
+        const selector = buildSnapshotSelector(element, `${tagName}:nth-of-type(${index + 1})`);
+        const label = element.id
+            ? document.querySelector(`label[for="${element.id}"]`)?.textContent?.trim()
+            : '';
+        const options = tagName === 'select'
+            ? Array.from(element.options || [])
+                .filter((option) => `${option.value || ''}`.trim())
+                .slice(0, 20)
+                .map((option) => ({
+                    value: `${option.value || ''}`.trim(),
+                    label: (option.label || option.text || '').trim(),
+                    text: (option.text || option.label || '').trim()
+                }))
+            : [];
+
+        return {
+            selector,
+            tagName,
+            type: element.getAttribute?.('type') || '',
+            role: element.getAttribute?.('role') || '',
+            label: label
+                || element.getAttribute?.('aria-label')
+                || element.getAttribute?.('placeholder')
+                || element.name
+                || element.id
+                || '',
+            text: (element.textContent || element.value || '').trim().slice(0, 180),
+            value: tagName === 'select' || tagName === 'input' || tagName === 'textarea' ? `${element.value || ''}` : '',
+            href: element.getAttribute?.('href') || '',
+            optionCount: options.length,
+            options
+        };
+    }
 
     function capturePageSnapshot() {
         const headings = Array.from(document.querySelectorAll('h1, h2, h3'))
@@ -40,6 +92,10 @@
                     }))
             }));
 
+        const controls = Array.from(document.querySelectorAll('input, textarea, select, button, a, [role="button"]'))
+            .slice(0, 40)
+            .map((element, index) => buildControlSnapshot(element, index));
+
         const forms = Array.from(document.querySelectorAll('form'))
             .slice(0, 6)
             .map((form, index) => ({
@@ -55,6 +111,7 @@
             buttons,
             fieldLabels,
             selects,
+            controls,
             forms
         };
     }
