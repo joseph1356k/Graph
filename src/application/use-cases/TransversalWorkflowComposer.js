@@ -50,9 +50,10 @@ class TransversalWorkflowComposer {
   composeSteps(steps = [], variables = {}) {
     const composedSteps = [];
     const inputSteps = Array.isArray(steps) ? steps : [];
+    let followingTransversalClick = false;
 
     for (const step of inputSteps) {
-      const composedStep = this.hasTargetOverride(step, variables)
+      let composedStep = this.hasTargetOverride(step, variables)
         ? {
             ...step,
             transversalTarget: this.getRequestedTarget(step, variables),
@@ -66,10 +67,26 @@ class TransversalWorkflowComposer {
       // Future "relax" strategy: keep the navigation step but allow it when the post-click URL
       // still represents valid progress for the same surface pattern.
       if (this.shouldSkipNavigationAfterTransversalClick(previousStep, composedStep)) {
+        followingTransversalClick = true;
         continue;
       }
 
+      if (followingTransversalClick) {
+        if (String(composedStep.actionType || "").trim().toLowerCase() === "navigation") {
+          followingTransversalClick = false;
+        } else if (composedStep.url) {
+          composedStep = {
+            ...composedStep,
+            url: ""
+          };
+        }
+      }
+
       composedSteps.push(composedStep);
+
+      if (composedStep.transversalTarget && String(composedStep.actionType || "").trim().toLowerCase() === "click") {
+        followingTransversalClick = true;
+      }
     }
 
     return composedSteps;
