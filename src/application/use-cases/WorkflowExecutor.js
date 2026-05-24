@@ -1,4 +1,5 @@
 const TransversalWorkflowComposer = require('./TransversalWorkflowComposer');
+const WorkflowBranchPlanner = require('./WorkflowBranchPlanner');
 
 class WorkflowExecutor {
   constructor(catalogService, runner, llmProvider) {
@@ -6,6 +7,7 @@ class WorkflowExecutor {
     this.runner = runner; // Expects an object with an `executeWorkflow` method
     this.llmProvider = llmProvider;
     this.transversalComposer = new TransversalWorkflowComposer();
+    this.branchPlanner = new WorkflowBranchPlanner(this.transversalComposer);
   }
 
   defaultSelectChoices(selects) {
@@ -29,9 +31,8 @@ class WorkflowExecutor {
       throw new Error(`Workflow ${workflow?.id || 'unknown'} not found or has no steps.`);
     }
 
-    const executableSteps = this.transversalComposer
-      .composeSteps(workflow.steps, variables)
-      .filter((step) => this.isExecutableStep(step));
+    const branchPlan = this.branchPlanner.plan(workflow, variables, workflow.branches || []);
+    const executableSteps = branchPlan.steps.filter((step) => this.isExecutableStep(step));
     if (executableSteps.length === 0) {
       throw new Error(`Workflow ${workflow.id} has no executable steps.`);
     }
@@ -51,6 +52,7 @@ class WorkflowExecutor {
         maxCallsPerStep: 5,
         decisions: []
       },
+      branchContext: branchPlan.branchContext,
       steps: executableSteps
     };
   }
@@ -115,7 +117,7 @@ class WorkflowExecutor {
       console.warn(`[DEBUG] LLM select choice fallback to defaults: ${error.message}`);
       return this.defaultSelectChoices(selects);
     }
-    
+
     let parsed;
     try {
       parsed = this.llmProvider.parseJsonObject(content);
@@ -125,14 +127,14 @@ class WorkflowExecutor {
     }
 
     let rawChoices = Array.isArray(parsed) ? parsed : (parsed.choices || parsed.fields || parsed.selects);
-    
+
     if (!Array.isArray(rawChoices)) {
       // Fallback: If the LLM returned a key-value mapping directly
       const keys = Object.keys(parsed);
       if (keys.length > 0 && typeof parsed[keys[0]] === 'string') {
         rawChoices = keys.map(key => ({ field: key, value: parsed[key] }));
       } else {
-        console.warn(`[DEBUG] Parsed JSON does not contain an array of choices. Parsed:`, parsed);
+        console.warn('[DEBUG] Parsed JSON does not contain an array of choices. Parsed:', parsed);
         return this.defaultSelectChoices(selects);
       }
     }
@@ -145,11 +147,11 @@ class WorkflowExecutor {
     const executableSteps = plan.steps;
 
     console.log(`\x1b[33mActivating Workflow: ${workflowId}\x1b[0m`);
-    
+
     // Inject the dynamic option chooser into the runner
-    await this.runner.executeWorkflow(executableSteps, variables, { 
-      workflowId, 
-      optionGuesser: this.chooseDynamicOptions.bind(this) 
+    await this.runner.executeWorkflow(executableSteps, variables, {
+      workflowId,
+      optionGuesser: this.chooseDynamicOptions.bind(this)
     });
     return `Workflow ${workflowId} executed successfully.`;
   }

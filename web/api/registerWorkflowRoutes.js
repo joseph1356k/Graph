@@ -1,3 +1,5 @@
+const WorkflowBranchLearning = require('../../src/application/use-cases/WorkflowBranchLearning');
+
 function registerWorkflowRoutes(app, deps = {}) {
   const catalogService = deps.catalogService;
   const workflowExecutor = deps.workflowExecutor;
@@ -5,6 +7,9 @@ function registerWorkflowRoutes(app, deps = {}) {
   if (!app || !catalogService || !workflowExecutor) {
     throw new Error('registerWorkflowRoutes requires app, catalogService, and workflowExecutor');
   }
+
+  const workflowBranchLearning = deps.workflowBranchLearning
+    || new WorkflowBranchLearning(catalogService.repository, catalogService);
 
   app.get('/api/workflows', async (req, res) => {
     try {
@@ -89,6 +94,17 @@ function registerWorkflowRoutes(app, deps = {}) {
       if ((err.message || '').includes('not found')) {
         return res.status(404).json({ error: err.message });
       }
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/workflows/:id/branch-observation', async (req, res) => {
+    try {
+      const workflowId = (req.params.id || '').trim();
+      const result = await workflowBranchLearning.recordObservation(workflowId, req.body || {});
+      res.json(result);
+    } catch (err) {
+      console.error(`[Workflows] Branch Observation Error: ${err.message}`);
       res.status(500).json({ error: err.message });
     }
   });

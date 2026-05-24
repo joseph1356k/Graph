@@ -53,6 +53,16 @@ class Neo4jWorkflowRepository {
     }
   }
 
+  serializeJsonArray(rawValue) {
+    if (Array.isArray(rawValue)) {
+      return JSON.stringify(rawValue);
+    }
+    if (typeof rawValue === 'string') {
+      return rawValue;
+    }
+    return '[]';
+  }
+
   buildSurfaceProfileId(appId, sourceOrigin, sourcePathname, scope = 'global', ownerId = '', languageCode = 'es') {
     const normalizedAppId = `${appId || 'page'}`.trim() || 'page';
     const normalizedOrigin = `${sourceOrigin || 'unknown-origin'}`.trim() || 'unknown-origin';
@@ -108,6 +118,92 @@ class Neo4jWorkflowRepository {
              s.stepOrder as stepOrder
       ORDER BY w.id ASC, s.stepOrder ASC
     `, params);
+  }
+
+  async listWorkflowBranches(workflowId) {
+    const rows = await this.db.run(`
+      MATCH (w:Workflow {id: $workflowId})-[:HAS_BRANCH]->(b:WorkflowBranch)
+      RETURN b.id as id,
+             b.workflowId as workflowId,
+             b.branchPointStepOrder as branchPointStepOrder,
+             b.branchKey as branchKey,
+             b.affordanceTarget as affordanceTarget,
+             b.sourceAffordanceTarget as sourceAffordanceTarget,
+             b.skippedBaseStepOrders as skippedBaseStepOrders,
+             b.stepPatches as stepPatches,
+             b.insertedSteps as insertedSteps,
+             b.replacementSteps as replacementSteps,
+             b.notes as notes,
+             b.evidence as evidence,
+             b.status as status,
+             b.createdAt as createdAt,
+             b.updatedAt as updatedAt
+      ORDER BY b.branchPointStepOrder ASC, b.affordanceTarget ASC
+    `, { workflowId });
+
+    return rows.map((row) => ({
+      id: row.id || '',
+      workflowId: row.workflowId || workflowId,
+      branchPointStepOrder: this.toNativeNumber(row.branchPointStepOrder),
+      branchKey: row.branchKey || '',
+      affordanceTarget: row.affordanceTarget || '',
+      sourceAffordanceTarget: row.sourceAffordanceTarget || '',
+      skippedBaseStepOrders: this.parseJsonArray(row.skippedBaseStepOrders).map((value) => Number(value)).filter((value) => Number.isFinite(value)),
+      stepPatches: this.parseJsonArray(row.stepPatches),
+      insertedSteps: this.parseJsonArray(row.insertedSteps),
+      replacementSteps: this.parseJsonArray(row.replacementSteps),
+      notes: this.parseJsonArray(row.notes),
+      evidence: this.parseJsonObject(row.evidence) || {},
+      status: row.status || 'active',
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    }));
+  }
+
+  async upsertWorkflowBranch(branch = {}) {
+    const branchId = `${branch.id || ''}`.trim();
+    const workflowId = `${branch.workflowId || ''}`.trim();
+    const branchKey = `${branch.branchKey || ''}`.trim();
+    if (!branchId || !workflowId || !branchKey) {
+      throw new Error('Workflow branch requires id, workflowId, and branchKey');
+    }
+
+    await this.db.run(`
+      MATCH (w:Workflow {id: $workflowId})
+      MERGE (b:WorkflowBranch {id: $id})
+      ON CREATE SET b.createdAt = timestamp()
+      SET b.workflowId = $workflowId,
+          b.branchPointStepOrder = $branchPointStepOrder,
+          b.branchKey = $branchKey,
+          b.affordanceTarget = $affordanceTarget,
+          b.sourceAffordanceTarget = $sourceAffordanceTarget,
+          b.skippedBaseStepOrders = $skippedBaseStepOrders,
+          b.stepPatches = $stepPatches,
+          b.insertedSteps = $insertedSteps,
+          b.replacementSteps = $replacementSteps,
+          b.notes = $notes,
+          b.evidence = $evidence,
+          b.status = $status,
+          b.updatedAt = timestamp()
+      MERGE (w)-[:HAS_BRANCH]->(b)
+    `, {
+      id: branchId,
+      workflowId,
+      branchPointStepOrder: Number(branch.branchPointStepOrder),
+      branchKey,
+      affordanceTarget: `${branch.affordanceTarget || ''}`.trim(),
+      sourceAffordanceTarget: `${branch.sourceAffordanceTarget || ''}`.trim(),
+      skippedBaseStepOrders: this.serializeJsonArray(branch.skippedBaseStepOrders),
+      stepPatches: this.serializeJsonArray(branch.stepPatches),
+      insertedSteps: this.serializeJsonArray(branch.insertedSteps),
+      replacementSteps: this.serializeJsonArray(branch.replacementSteps),
+      notes: this.serializeJsonArray(branch.notes),
+      evidence: this.serializeJsonObject(branch.evidence),
+      status: `${branch.status || 'active'}`.trim() || 'active'
+    });
+
+    const branches = await this.listWorkflowBranches(workflowId);
+    return branches.find((entry) => entry.id === branchId) || branch;
   }
 
   async startWorkflow(id, description, context = {}) {
@@ -472,8 +568,10 @@ class Neo4jWorkflowRepository {
     await this.db.run(`
       MATCH (w:Workflow {id: $id})
       OPTIONAL MATCH (w)-[:HAS_STEP]->(s:Step)
-      WITH w, collect(s) AS steps
+      OPTIONAL MATCH (w)-[:HAS_BRANCH]->(b:WorkflowBranch)
+      WITH w, collect(s) AS steps, collect(b) AS branches
       FOREACH (step IN [item IN steps WHERE item IS NOT NULL] | DETACH DELETE step)
+      FOREACH (branch IN [item IN branches WHERE item IS NOT NULL] | DETACH DELETE branch)
       DETACH DELETE w
     `, { id: workflowId });
   }

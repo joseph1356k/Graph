@@ -66,6 +66,33 @@ class MarkdownCatalogWriter {
         lines.push(`- ${base}${extras.length ? ` | ${extras.join(' | ')}` : ''}`);
       }
 
+      if (Array.isArray(workflow.branches) && workflow.branches.length > 0) {
+        lines.push('');
+        lines.push('### Branches');
+
+        for (const branch of workflow.branches) {
+          lines.push(`- Branch from step ${branch.branchPointStepOrder}: target="${branch.affordanceTarget || ''}" key=\`${branch.branchKey || ''}\``);
+          if (branch.sourceAffordanceTarget) {
+            lines.push(`  - Source target: ${branch.sourceAffordanceTarget}`);
+          }
+          if (Array.isArray(branch.skippedBaseStepOrders) && branch.skippedBaseStepOrders.length > 0) {
+            lines.push(`  - Skips base steps: ${branch.skippedBaseStepOrders.join(', ')}`);
+          }
+          if (Array.isArray(branch.stepPatches) && branch.stepPatches.length > 0) {
+            lines.push(`  - Step patches: ${branch.stepPatches.length}`);
+          }
+          if (Array.isArray(branch.insertedSteps) && branch.insertedSteps.length > 0) {
+            lines.push(`  - Inserted steps: ${branch.insertedSteps.length}`);
+          }
+          if (Array.isArray(branch.replacementSteps) && branch.replacementSteps.length > 0) {
+            lines.push(`  - Replacement groups: ${branch.replacementSteps.length}`);
+          }
+          if (Array.isArray(branch.notes) && branch.notes.length > 0) {
+            branch.notes.forEach((note) => lines.push(`  - Note: ${note}`));
+          }
+        }
+      }
+
       lines.push('');
     }
 

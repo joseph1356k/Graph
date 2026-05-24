@@ -65,18 +65,36 @@ class WorkflowCatalog {
       }
     }
 
-    return Array.from(grouped.values()).map(data => new Workflow(data).toJSON());
+    return Array.from(grouped.values()).map(data => {
+      const workflow = new Workflow(data).toJSON();
+      workflow.branches = Array.isArray(data.branches) ? data.branches : [];
+      return workflow;
+    });
   }
 
   async getCatalog() {
     const rows = await this.repository.getWorkflowRows();
-    return this.groupWorkflowRows(rows);
+    const workflows = this.groupWorkflowRows(rows);
+    if (typeof this.repository.listWorkflowBranches !== 'function') {
+      return workflows;
+    }
+    for (const workflow of workflows) {
+      workflow.branches = await this.repository.listWorkflowBranches(workflow.id);
+    }
+    return workflows;
   }
 
   async getWorkflowById(workflowId) {
     const rows = await this.repository.getWorkflowRows(workflowId);
     const workflows = this.groupWorkflowRows(rows);
-    return workflows[0] || null;
+    const workflow = workflows[0] || null;
+    if (!workflow) {
+      return null;
+    }
+    if (typeof this.repository.listWorkflowBranches === 'function') {
+      workflow.branches = await this.repository.listWorkflowBranches(workflowId);
+    }
+    return workflow;
   }
 
   async saveWorkflow(workflowData) {

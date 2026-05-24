@@ -115,6 +115,13 @@
                     body: JSON.stringify(payload || {})
                 }, fetchImpl);
             },
+            recordBranchObservation(workflowId, payload) {
+                return createJsonRequest(baseUrl, `/api/workflows/${encodeURIComponent(workflowId)}/branch-observation`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload || {})
+                }, fetchImpl);
+            },
             sendAgentMessage(message, history, context) {
                 return createJsonRequest(baseUrl, '/api/agent/chat', {
                     method: 'POST',
@@ -164,4 +171,119 @@
     window.GraphPluginApi = {
         createClient
     };
+
+    function installBranchObservationWrapper() {
+        let executionClientValue = window.GraphPluginExecutionClient;
+
+        function wrapExecutionClient(client) {
+            if (!client || typeof client.create !== 'function' || client.__branchObservationWrapped) {
+                return client;
+            }
+
+            const originalCreate = client.create;
+            const wrappedClient = {
+                ...client,
+                __branchObservationWrapped: true,
+                create(deps = {}) {
+                    const executionClient = originalCreate.call(client, deps);
+                    if (!executionClient || typeof executionClient.executeWorkflowPlan !== 'function') {
+                        return executionClient;
+                    }
+
+                    const originalExecuteWorkflowPlan = executionClient.executeWorkflowPlan;
+                    return {
+                        ...executionClient,
+                        async executeWorkflowPlan(plan, trigger = 'panel') {
+                            const branchContext = plan?.branchContext || null;
+                            if (!branchContext?.branchKey || !branchContext?.affordanceTarget) {
+                                return originalExecuteWorkflowPlan.call(executionClient, plan, trigger);
+                            }
+
+                            const decisions = [];
+                            const onLog = (event) => {
+                                const detail = event?.detail || {};
+                                const details = detail.details || {};
+                                if (detail.scope !== 'execution' || details.workflowId !== plan.workflowId) {
+                                    return;
+                                }
+                                if (details.resolution !== 'runtime_intelligence_applied') {
+                                    return;
+                                }
+                                decisions.push({
+                                    action: details.runtimeAction || '',
+                                    reason: details.runtimeReason || '',
+                                    stepIndex: details.stepIndex,
+                                    stepOrder: details.stepOrder,
+                                    skipStepOrders: Array.isArray(details.skipStepOrders) ? details.skipStepOrders : [],
+                                    stepPatches: Array.isArray(details.runtimeStepPatches) ? details.runtimeStepPatches : []
+                                });
+                            };
+
+                            document.addEventListener('graph-trainer-extension-log', onLog);
+                            try {
+                                const result = await originalExecuteWorkflowPlan.call(executionClient, plan, trigger);
+                                const skippedBaseStepOrders = [];
+                                const stepPatches = [];
+                                decisions.forEach((decision) => {
+                                    (decision.skipStepOrders || []).forEach((stepOrder) => {
+                                        const numeric = Number(stepOrder);
+                                        if (Number.isFinite(numeric) && !skippedBaseStepOrders.includes(numeric)) {
+                                            skippedBaseStepOrders.push(numeric);
+                                        }
+                                    });
+                                    (decision.stepPatches || []).forEach((patch) => {
+                                        if (patch && Number.isFinite(Number(patch.stepOrder))) {
+                                            stepPatches.push(patch);
+                                        }
+                                    });
+                                });
+
+                                if (skippedBaseStepOrders.length > 0 || stepPatches.length > 0) {
+                                    const config = window.TrainerPlugin?.getConfig?.() || {};
+                                    const host = window.GraphPluginHost?.createHost?.(config) || null;
+                                    createClient({
+                                        baseUrl: host?.apiBaseUrl || config.apiBaseUrl || '',
+                                        fetchImpl: host?.fetchImpl || null
+                                    }).recordBranchObservation(plan.workflowId, {
+                                        source: 'browser_runtime',
+                                        trigger,
+                                        completed: true,
+                                        branchContext,
+                                        skippedBaseStepOrders,
+                                        stepPatches,
+                                        notes: decisions
+                                            .map((decision) => decision.reason)
+                                            .filter(Boolean),
+                                        decisions
+                                    }).catch(() => {});
+                                }
+
+                                return result;
+                            } finally {
+                                document.removeEventListener('graph-trainer-extension-log', onLog);
+                            }
+                        }
+                    };
+                }
+            };
+
+            return wrappedClient;
+        }
+
+        Object.defineProperty(window, 'GraphPluginExecutionClient', {
+            configurable: true,
+            get() {
+                return executionClientValue;
+            },
+            set(value) {
+                executionClientValue = wrapExecutionClient(value);
+            }
+        });
+
+        if (executionClientValue) {
+            executionClientValue = wrapExecutionClient(executionClientValue);
+        }
+    }
+
+    installBranchObservationWrapper();
 })();
