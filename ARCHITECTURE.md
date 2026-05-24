@@ -9,6 +9,8 @@ Graph is a reusable learning-and-replay system. The demos matter, but they are n
 3. discover the right workflow for the current page and user request
 4. execute it through an assistant-driven runtime
 
+For the next architectural core, see [SELF_IMPROVEMENT_ARCHITECTURE.md](./SELF_IMPROVEMENT_ARCHITECTURE.md). It defines the self-improvement vision and the move from linear workflows to graph-based workflow route extensions.
+
 ## System Goal
 
 Graph should behave like a page-attachable assistant plugin that can:
