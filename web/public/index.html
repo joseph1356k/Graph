@@ -982,6 +982,13 @@
             color: rgba(255, 255, 255, 0.76);
         }
 
+        .contact-panel.centered {
+            max-width: 880px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 38px;
+        }
+
         .contact-list {
             display: grid;
             gap: 14px;
@@ -1014,6 +1021,11 @@
             line-height: 1.5;
         }
 
+        .contact-panel.centered .contact-list {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            text-align: left;
+        }
+
         .whatsapp-cta {
             margin-top: 24px;
         }
@@ -1022,14 +1034,15 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-height: 54px;
-            padding: 0 22px;
+            min-height: 62px;
+            padding: 0 30px;
             border-radius: 999px;
             background: #fff;
             color: #111418;
             text-decoration: none;
             font-weight: 700;
             box-shadow: 0 16px 32px rgba(0, 0, 0, 0.18);
+            font-size: 1rem;
         }
 
         .actions-strip {
@@ -1204,7 +1217,8 @@
 
             .hero-proof,
             .metric-grid,
-            .field-grid {
+            .field-grid,
+            .contact-panel.centered .contact-list {
                 grid-template-columns: 1fr;
             }
 
@@ -1284,16 +1298,16 @@
                     <span class="brand-mark">M</span>
                     <span class="brand-copy">
                         <strong>Miracle</strong>
-                        <span>AI agent for clinical operations</span>
+                        <span>Agente de IA para operaciones clinicas</span>
                     </span>
                 </a>
 
                 <nav class="top-nav" aria-label="Primary">
-                    <a href="#product">Product</a>
+                    <a href="#product">Producto</a>
                     <a href="#demo">Demo</a>
-                    <a href="#trust">Why Miracle</a>
-                    <button id="clear-emr" type="button">Reset Demo</button>
-                    <a class="nav-cta" href="https://wa.me/573172550953" target="_blank" rel="noreferrer">Book a WhatsApp demo</a>
+                    <a href="#trust">Por que Miracle</a>
+                    <button id="clear-emr" type="button">Reiniciar demo</button>
+                    <a class="nav-cta" href="https://wa.me/573172550953" target="_blank" rel="noreferrer">Agendar demo por WhatsApp</a>
                 </nav>
             </div>
         </header>
@@ -1301,29 +1315,29 @@
         <main id="top">
             <section class="hero">
                 <div class="hero-copy">
-                    <div class="eyebrow">Operational AI for frontline care teams</div>
-                    <h1>Miracle gives clinicians an AI agent that can operate the computer for them.</h1>
+                    <div class="eyebrow">IA operativa para equipos de salud</div>
+                    <h1>Miracle le da al medico un agente de inteligencia artificial que puede operar el computador por el.</h1>
                     <p class="hero-lead">
-                        Miracle sits inside the clinical workflow, understands the screen in front of the physician, and executes repetitive EMR actions with precision. The result is a calmer clinical experience, better operational consistency, and more time focused on the patient.
+                        Miracle se integra al flujo clinico, entiende lo que hay en pantalla y ejecuta tareas repetitivas del software medico con precision. El resultado es menos friccion operativa, mas consistencia en el trabajo y mas tiempo para enfocarse en el paciente.
                     </p>
 
                     <div class="hero-actions">
-                        <a class="btn btn-primary" href="https://wa.me/573172550953" target="_blank" rel="noreferrer">Request a private walkthrough</a>
-                        <a class="btn btn-secondary" href="#demo">See the product demo</a>
+                        <a class="btn btn-primary" href="#demo">Verlo en accion</a>
+                        <a class="btn btn-secondary" href="https://wa.me/573172550953" target="_blank" rel="noreferrer">Solicitar demo privada</a>
                     </div>
 
                     <div class="hero-proof" aria-label="Miracle value points">
                         <div class="proof-card">
-                            <strong>Screen-aware</strong>
-                            <span>Miracle understands the page, the controls, and the next action needed for the task.</span>
+                            <strong>Entiende la pantalla</strong>
+                            <span>Miracle reconoce la interfaz, los controles y el siguiente paso necesario para completar la tarea.</span>
                         </div>
                         <div class="proof-card">
-                            <strong>Operational</strong>
-                            <span>It does not stop at suggestions. It can help complete work across the actual workflow.</span>
+                            <strong>Ejecuta trabajo real</strong>
+                            <span>No se queda en sugerencias. Puede ayudar a completar trabajo directamente sobre el flujo operativo.</span>
                         </div>
                         <div class="proof-card">
-                            <strong>Clinical-fit</strong>
-                            <span>Designed for environments where trust, accuracy, and clarity matter to every stakeholder.</span>
+                            <strong>Hecho para salud</strong>
+                            <span>Disenado para entornos donde la confianza, la claridad y la precision importan para todos los involucrados.</span>
                         </div>
                     </div>
                 </div>
@@ -1340,23 +1354,23 @@
                                     </div>
                                     <div class="window-meta">
                                         <strong>Miracle Clinical Workspace</strong>
-                                        <span>AI-assisted intake, charting, and workflow execution</span>
+                                        <span>Intake, charting y ejecucion asistida por IA</span>
                                     </div>
                                 </div>
                                 <div class="window-right">
-                                    <span class="window-badge">Assistant active</span>
+                                    <span class="window-badge">Asistente activo</span>
                                 </div>
                             </div>
                             <div class="side-block assistant-card" style="margin: 18px;">
                                 <span class="assistant-badge">Miracle Agent</span>
-                                <h3>“I can complete the chart while the physician stays in control.”</h3>
-                                <p>Miracle is built to work like a trusted operating layer across medical software, not just another chatbot floating on top of it.</p>
+                                <h3>"Puedo completar el flujo mientras el medico mantiene el control."</h3>
+                                <p>Miracle esta construido para funcionar como una capa operativa confiable sobre el software medico, no como otro chatbot flotando encima.</p>
                             </div>
                         </div>
                     </div>
                     <div class="preview-orbit">
-                        <strong>Designed for enterprise trust</strong>
-                        <span>Clean interaction patterns, controlled execution, and a product language that feels credible in front of hospital leadership.</span>
+                        <strong>Disenado para inspirar confianza</strong>
+                        <span>Interacciones limpias, ejecucion controlada y un lenguaje de producto que se siente creible frente a liderazgo hospitalario.</span>
                     </div>
                 </div>
             </section>
@@ -1365,16 +1379,16 @@
                 <div class="section-inner">
                     <div class="signal-grid">
                         <div class="signal-card">
-                            <strong>Designed for healthcare leadership</strong>
-                            <span>Miracle is positioned to be discussed with operators, founders, medical directors, and software partners in the same meeting.</span>
+                            <strong>Pensado para liderazgo en salud</strong>
+                            <span>Miracle esta posicionado para ser evaluado por operadores, directores medicos, liderazgo institucional y aliados de software en la misma conversacion.</span>
                         </div>
                         <div class="signal-card">
-                            <strong>Execution model</strong>
-                            <span>An AI agent that helps operate existing clinical software instead of replacing it.</span>
+                            <strong>Modelo de ejecucion</strong>
+                            <span>Un agente de IA que ayuda a operar el software clinico existente, en lugar de reemplazarlo.</span>
                         </div>
                         <div class="signal-card">
-                            <strong>Commercial entry point</strong>
-                            <span>Start with high-friction workflows where administrative time is visible and measurable.</span>
+                            <strong>Punto de entrada comercial</strong>
+                            <span>Empezar por workflows de alta friccion, donde el tiempo administrativo es visible y medible.</span>
                         </div>
                     </div>
                 </div>
@@ -1383,25 +1397,25 @@
             <section class="section" id="product">
                 <div class="section-inner">
                     <div class="section-head">
-                        <span class="section-kicker">What Miracle is</span>
-                        <h2>A startup product with the composure that large healthcare organizations expect.</h2>
+                        <span class="section-kicker">Que es Miracle</span>
+                        <h2>Un producto de IA con ambicion de plataforma, presentado con la seriedad que esperan las organizaciones de salud.</h2>
                         <p>
-                            Miracle is an AI agent that helps clinicians operate software faster and with less administrative friction. It observes the working context, understands the workflow, and helps execute charting tasks directly on the screen. The value proposition is concrete: fewer repetitive clicks, cleaner handoffs, and more clinical attention where it matters most.
+                            Miracle es un agente de IA que ayuda a los clinicos a operar software mas rapido y con menos friccion administrativa. Observa el contexto de trabajo, entiende el workflow y ayuda a ejecutar tareas directamente en pantalla. La propuesta de valor es concreta: menos clicks repetitivos, handoffs mas limpios y mas atencion clinica donde realmente importa.
                         </p>
                     </div>
 
                     <div class="info-grid">
                         <article class="info-card">
-                            <h3>Works inside the workflow</h3>
-                            <p>Miracle is designed to act where the clinical team already works, instead of asking the team to leave their software and adapt to a separate process.</p>
+                            <h3>Trabaja dentro del workflow</h3>
+                            <p>Miracle actua donde el equipo clinico ya trabaja, en lugar de obligarlo a salir de su software y adaptarse a un proceso aparte.</p>
                         </article>
                         <article class="info-card">
-                            <h3>Built for precision and calm</h3>
-                            <p>The experience is intentionally restrained, legible, and execution-oriented. Every surface is designed to feel trustworthy in front of operational and medical leadership.</p>
+                            <h3>Disenado para precision y calma</h3>
+                            <p>La experiencia es deliberadamente sobria, legible y orientada a ejecucion. Cada superficie esta pensada para verse confiable frente a liderazgo medico, operativo y tecnologico.</p>
                         </article>
                         <article class="info-card">
-                            <h3>Demonstrates real operational leverage</h3>
-                            <p>From intake to follow-up actions, Miracle shows how an AI agent can reduce repetitive navigation and turn complex digital workflows into guided execution.</p>
+                            <h3>Demuestra palanca operativa real</h3>
+                            <p>Desde intake hasta acciones posteriores, Miracle muestra como un agente de IA puede reducir navegacion repetitiva y convertir workflows complejos en ejecucion guiada.</p>
                         </article>
                     </div>
                 </div>
@@ -1410,10 +1424,10 @@
             <section class="section" id="demo">
                 <div class="section-inner">
                     <div class="section-head">
-                        <span class="section-kicker">Interactive product demo</span>
-                        <h2>A medical intake example, presented as a real desktop application.</h2>
+                        <span class="section-kicker">Demo interactiva</span>
+                        <h2>Mira como Miracle puede operar un intake medico real sobre la pantalla.</h2>
                         <p>
-                            The form below keeps the exact functional fields from the current EMR intake demo, now reframed inside a polished clinical workspace. It demonstrates how Miracle can be presented as a serious operational product rather than a fragile concept demo.
+                            El formulario de abajo conserva exactamente los mismos campos funcionales del intake actual del EMR, ahora enmarcados dentro de una experiencia de producto mas solida y presentable para cliente.
                         </p>
                     </div>
 
@@ -1428,11 +1442,11 @@
                                     </div>
                                     <div class="window-meta">
                                         <strong>Miracle Intake Workspace</strong>
-                                        <span>Patient registration and triage assistant</span>
+                                        <span>Asistente para registro y triage</span>
                                     </div>
                                 </div>
                                 <div class="window-right">
-                                    <span class="window-badge">Ready to assist</span>
+                                    <span class="window-badge">Listo para asistir</span>
                                 </div>
                             </div>
 
@@ -1441,80 +1455,80 @@
                                     <div class="workspace-shell">
                                         <div class="workspace-header">
                                             <div>
-                                                <span class="micro-tag">Module 1 · Intake</span>
-                                                <h3>Patient registration and triage</h3>
-                                                <p>Capture demographics, insurance information, presenting complaint, and first vitals before the patient is handed off to the clinician.</p>
+                                                <span class="micro-tag">Modulo 1 · Intake</span>
+                                                <h3>Registro y triage del paciente</h3>
+                                                <p>Captura demografia, asegurador, motivo de consulta y signos vitales iniciales antes de entregar el paciente al medico.</p>
                                             </div>
                                             <div class="workspace-summary">
-                                                <strong>Miracle support layer</strong>
-                                                <span>Guide data capture, reduce navigation load, and help the team progress through intake with fewer manual steps.</span>
+                                                <strong>Capa operativa de Miracle</strong>
+                                                <span>Guia la captura de datos, reduce carga de navegacion y ayuda al equipo a avanzar con menos pasos manuales.</span>
                                             </div>
                                         </div>
 
                                         <div class="field-grid">
                                             <div class="input-group">
-                                                <label for="intake-patient-id">Medical record number</label>
+                                                <label for="intake-patient-id">Numero de historia clinica</label>
                                                 <input data-testid="intake-patient-id" id="intake-patient-id" placeholder="MRN-2026-00124">
                                             </div>
                                             <div class="input-group">
-                                                <label for="intake-document-type">Document type</label>
+                                                <label for="intake-document-type">Tipo de documento</label>
                                                 <select data-testid="intake-document-type" id="intake-document-type">
-                                                    <option value="">Select</option>
-                                                    <option value="cc">Citizenship ID</option>
-                                                    <option value="passport">Passport</option>
-                                                    <option value="ti">Minor ID</option>
+                                                    <option value="">Seleccionar</option>
+                                                    <option value="cc">Cedula</option>
+                                                    <option value="passport">Pasaporte</option>
+                                                    <option value="ti">Tarjeta de identidad</option>
                                                 </select>
                                             </div>
                                             <div class="input-group">
-                                                <label for="intake-first-name">First name</label>
+                                                <label for="intake-first-name">Nombre</label>
                                                 <input data-testid="intake-first-name" id="intake-first-name" placeholder="Valentina">
                                             </div>
                                             <div class="input-group">
-                                                <label for="intake-last-name">Last name</label>
+                                                <label for="intake-last-name">Apellido</label>
                                                 <input data-testid="intake-last-name" id="intake-last-name" placeholder="Gomez Ruiz">
                                             </div>
                                             <div class="input-group">
-                                                <label for="intake-dob">Date of birth</label>
+                                                <label for="intake-dob">Fecha de nacimiento</label>
                                                 <input data-testid="intake-dob" id="intake-dob" type="date">
                                             </div>
                                             <div class="input-group">
-                                                <label for="intake-sex">Biological sex</label>
+                                                <label for="intake-sex">Sexo biologico</label>
                                                 <select data-testid="intake-sex" id="intake-sex">
-                                                    <option value="">Select</option>
-                                                    <option value="female">Female</option>
-                                                    <option value="male">Male</option>
-                                                    <option value="other">Other</option>
+                                                    <option value="">Seleccionar</option>
+                                                    <option value="female">Femenino</option>
+                                                    <option value="male">Masculino</option>
+                                                    <option value="other">Otro</option>
                                                 </select>
                                             </div>
                                             <div class="input-group">
-                                                <label for="intake-phone">Mobile phone</label>
+                                                <label for="intake-phone">Telefono movil</label>
                                                 <input data-testid="intake-phone" id="intake-phone" placeholder="+57 300 555 1134">
                                             </div>
                                             <div class="input-group">
-                                                <label for="intake-insurance">Insurer / payer</label>
+                                                <label for="intake-insurance">Asegurador / pagador</label>
                                                 <input data-testid="intake-insurance" id="intake-insurance" placeholder="Sura EPS">
                                             </div>
                                             <div class="input-group field-span">
-                                                <label for="intake-chief-complaint">Chief complaint</label>
-                                                <textarea data-testid="intake-chief-complaint" id="intake-chief-complaint" rows="4" placeholder="Patient reports 3 days of fever, sore throat and fatigue."></textarea>
+                                                <label for="intake-chief-complaint">Motivo de consulta</label>
+                                                <textarea data-testid="intake-chief-complaint" id="intake-chief-complaint" rows="4" placeholder="Paciente refiere 3 dias de fiebre, dolor de garganta y fatiga."></textarea>
                                             </div>
                                         </div>
 
                                         <div class="subsection-title">
-                                            <span>Initial vitals</span>
+                                            <span>Signos vitales iniciales</span>
                                         </div>
 
                                         <div class="metric-grid">
                                             <div class="input-group">
-                                                <label for="triage-temperature">Temperature</label>
+                                                <label for="triage-temperature">Temperatura</label>
                                                 <input data-testid="triage-temperature" id="triage-temperature" placeholder="38.2">
                                             </div>
                                             <div class="input-group">
-                                                <label for="triage-heart-rate">Heart rate</label>
+                                                <label for="triage-heart-rate">Frecuencia cardiaca</label>
                                                 <input data-testid="triage-heart-rate" id="triage-heart-rate" placeholder="96">
                                             </div>
                                             <div class="input-group">
-                                                <label for="triage-blood-pressure">Blood pressure</label>
+                                                <label for="triage-blood-pressure">Presion arterial</label>
                                                 <input data-testid="triage-blood-pressure" id="triage-blood-pressure" placeholder="118/74">
                                             </div>
                                             <div class="input-group">
@@ -1524,44 +1538,44 @@
                                         </div>
 
                                         <div class="actions">
-                                            <button class="btn-primary-action" data-testid="intake-save-patient" id="intake-save-patient" type="button">Save registration</button>
-                                            <button class="btn-secondary-action" data-testid="intake-open-chart" id="intake-open-chart" type="button">Open clinical chart</button>
-                                            <a class="toolbar-button btn-ghost-action" href="page1.html">Continue to anamnesis</a>
+                                            <button class="btn-primary-action" data-testid="intake-save-patient" id="intake-save-patient" type="button">Guardar registro</button>
+                                            <button class="btn-secondary-action" data-testid="intake-open-chart" id="intake-open-chart" type="button">Abrir historia clinica</button>
+                                            <a class="toolbar-button btn-ghost-action" href="page1.html">Continuar a anamnesis</a>
                                         </div>
 
                                         <div class="feedback" data-testid="intake-feedback" id="intake-feedback"></div>
 
                                         <div class="workspace-footer">
-                                            <p>This workspace is intentionally functional. It gives a buyer a concrete way to understand how Miracle can sit above a real workflow and make routine digital work easier to complete.</p>
-                                            <span class="status-pill">Interactive sample workflow</span>
+                                            <p>Este workspace es funcional a proposito. Le permite a un comprador institucional entender de forma concreta como Miracle puede ubicarse sobre un workflow real y facilitar el trabajo digital rutinario.</p>
+                                            <span class="status-pill">Workflow interactivo</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <aside class="side-panel">
                                     <div class="side-block assistant-card">
-                                        <span class="assistant-badge">Miracle in action</span>
-                                        <h3>From screen context to safe operational help.</h3>
-                                        <p>Miracle can understand what stage of the workflow the user is in and support the next action with the right tone, structure, and level of automation.</p>
+                                        <span class="assistant-badge">Miracle en accion</span>
+                                        <h3>Del contexto de la pantalla a ayuda operativa segura.</h3>
+                                        <p>Miracle puede entender en que etapa del workflow esta el usuario y apoyar la siguiente accion con el tono, la estructura y el nivel correcto de automatizacion.</p>
                                     </div>
 
                                     <div class="side-block">
-                                        <h4>Why this matters</h4>
+                                        <h4>Por que esto importa</h4>
                                         <ul>
-                                            <li>Reduces navigation overhead during routine charting.</li>
-                                            <li>Helps standardize intake workflows across teams.</li>
-                                            <li>Creates a clearer path from data capture to clinician action.</li>
+                                            <li>Reduce carga de navegacion durante el charting rutinario.</li>
+                                            <li>Ayuda a estandarizar workflows de intake entre equipos.</li>
+                                            <li>Crea un camino mas claro desde la captura hasta la accion clinica.</li>
                                         </ul>
                                     </div>
 
                                     <div class="side-block">
-                                        <h4>For enterprise buyers</h4>
-                                        <p>Miracle is presented with a product language that feels appropriate for health systems, digital health operators, and clinical software partners evaluating strategic AI adoption.</p>
+                                        <h4>Para compradores institucionales</h4>
+                                        <p>Miracle se presenta con un lenguaje de producto apropiado para sistemas de salud, operadores de salud digital y aliados de software evaluando adopcion estrategica de IA.</p>
                                     </div>
 
                                     <div class="side-block">
-                                        <h4>What comes next</h4>
-                                        <p>After intake, the same agent layer can continue into anamnesis, assessment, diagnosis, and downstream administrative actions.</p>
+                                        <h4>Lo que sigue</h4>
+                                        <p>Despues del intake, la misma capa de agente puede continuar hacia anamnesis, assessment, diagnostico y acciones administrativas posteriores.</p>
                                     </div>
                                 </aside>
                             </div>
@@ -1572,10 +1586,10 @@
                         <div class="actions-card">
                             <div class="actions-card-head">
                                 <div>
-                                    <h3>Operational workflow memory</h3>
-                                    <p>Miracle can learn structured clinical flows, preserve them, and help teams reuse proven interaction patterns over time.</p>
+                                    <h3>Memoria operativa del workflow</h3>
+                                    <p>Miracle puede aprender flujos clinicos estructurados, preservarlos y ayudar a los equipos a reutilizar patrones de interaccion probados.</p>
                                 </div>
-                                <a class="btn btn-secondary" href="visualize.html">View workflow model</a>
+                                <a class="btn btn-secondary" href="visualize.html">Ver modelo del workflow</a>
                             </div>
                             <ol id="activity-log"></ol>
                         </div>
@@ -1586,56 +1600,40 @@
             <section class="section" id="trust">
                 <div class="section-inner">
                     <div class="section-head">
-                        <span class="section-kicker">Why Miracle</span>
-                        <h2>An AI interface that looks credible in the boardroom and useful on the clinical floor.</h2>
+                        <span class="section-kicker">Por que Miracle</span>
+                        <h2>Una interfaz de IA que se ve creible frente a directivos y util frente al equipo clinico.</h2>
                         <p>
-                            Miracle is not trying to look loud or futuristic for its own sake. The product is designed to feel premium, controlled, and institution-ready while still carrying the momentum of a serious startup. That balance matters when the audience includes both physicians and executives.
+                            Miracle no intenta verse futurista por capricho. El producto esta disenado para sentirse premium, controlado y listo para instituciones. Ese equilibrio importa cuando la audiencia incluye medicos, directivos, operaciones y tecnologia.
                         </p>
                     </div>
 
-                    <div class="feature-rail">
-                        <article class="feature-panel">
-                            <h3>Designed to earn trust quickly.</h3>
-                            <p>Miracle combines a modern product sensibility with disciplined interface decisions. The result is a system that feels calm, operational, and mature enough to be discussed with healthcare leadership.</p>
-                            <ul class="feature-list">
-                                <li>
-                                    <strong>Executive-ready product story</strong>
-                                    <span>Miracle is easy to explain: an AI agent that can operate software for clinicians, starting with the workflows that consume the most time.</span>
-                                </li>
-                                <li>
-                                    <strong>Clear operational footprint</strong>
-                                    <span>The product value is visible at the workflow level, not hidden behind abstract claims about “AI transformation.”</span>
-                                </li>
-                                <li>
-                                    <strong>Expandable across the care journey</strong>
-                                    <span>What starts at intake can extend to chart review, clinical documentation, order entry support, and patient communication workflows.</span>
-                                </li>
-                            </ul>
-                        </article>
+                    <div class="section-head" style="margin: 0 auto 26px; text-align: center;">
+                        <h2 style="font-size: clamp(2.1rem, 4vw, 3.3rem);">Agenda una demo y te mostramos a Miracle operando un flujo medico en vivo.</h2>
+                        <p>La forma mas clara de entender el producto es verlo funcionando sobre un caso real. Si hay interes, la siguiente conversacion deberia ser una demo en vivo.</p>
+                    </div>
 
-                        <aside class="contact-panel">
-                            <h3>Contact Miracle</h3>
-                            <p>If you want to evaluate Miracle for a clinic, hospital, or healthcare operator, the fastest next step is a focused conversation around the workflow, the current software environment, and the operational bottlenecks worth addressing first.</p>
+                    <div class="contact-panel centered">
+                        <h3>Hablar con Miracle</h3>
+                        <p>Escribenos por WhatsApp y coordinamos una demo enfocada en el workflow, el software actual y las fricciones operativas donde un agente de IA puede generar mas valor desde el inicio.</p>
 
-                            <div class="contact-list">
-                                <div class="contact-card">
-                                    <strong>WhatsApp</strong>
-                                    <span>+57 317 255 0953</span>
-                                </div>
-                                <div class="contact-card">
-                                    <strong>Best for</strong>
-                                    <span>Live demos, pilot discussions, design partner conversations, and workflow evaluation.</span>
-                                </div>
-                                <div class="contact-card">
-                                    <strong>Positioning</strong>
-                                    <span>Miracle is presented as an AI operating layer for clinicians, not just a clinical note generator.</span>
-                                </div>
+                        <div class="contact-list">
+                            <div class="contact-card">
+                                <strong>WhatsApp</strong>
+                                <span>+57 317 255 0953</span>
                             </div>
-
-                            <div class="whatsapp-cta">
-                                <a href="https://wa.me/573172550953" target="_blank" rel="noreferrer">Open WhatsApp and schedule a demo</a>
+                            <div class="contact-card">
+                                <strong>Ideal para</strong>
+                                <span>Demos ejecutivas, evaluacion de pilotos, conversaciones de adopcion institucional y revision comercial.</span>
                             </div>
-                        </aside>
+                            <div class="contact-card">
+                                <strong>Enfoque</strong>
+                                <span>Miracle se presenta como una capa operativa de IA para clinicos, no solo como generador de notas.</span>
+                            </div>
+                        </div>
+
+                        <div class="whatsapp-cta">
+                            <a href="https://wa.me/573172550953" target="_blank" rel="noreferrer">Agendar demo por WhatsApp</a>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -1645,12 +1643,12 @@
             <div class="footer-inner">
                 <div class="footer-copy">
                     <strong>Miracle</strong>
-                    <span>AI agent for clinical operations and medical software execution.</span>
+                    <span>Agente de IA para operaciones clinicas y ejecucion sobre software medico.</span>
                 </div>
                 <div class="footer-links">
-                    <a href="#top">Back to top</a>
-                    <a href="#demo">Product demo</a>
-                    <a href="#trust">Why Miracle</a>
+                    <a href="#top">Volver arriba</a>
+                    <a href="#demo">Ver demo</a>
+                    <a href="#trust">Contacto</a>
                     <a href="https://wa.me/573172550953" target="_blank" rel="noreferrer">WhatsApp</a>
                 </div>
             </div>
@@ -1724,15 +1722,15 @@
             const firstName = document.getElementById('intake-first-name').value.trim();
             const lastName = document.getElementById('intake-last-name').value.trim();
             document.getElementById('intake-feedback').innerText = firstName && lastName
-                ? `Registration saved for ${firstName} ${lastName}.`
-                : 'Complete at least first and last name before saving.';
+                ? `Registro guardado para ${firstName} ${lastName}.`
+                : 'Completa al menos nombre y apellido antes de guardar.';
         });
 
         document.getElementById('intake-open-chart').addEventListener('click', () => {
             const complaint = document.getElementById('intake-chief-complaint').value.trim();
             document.getElementById('intake-feedback').innerText = complaint
-                ? 'Clinical chart prepared. Continue to anamnesis.'
-                : 'Add the chief complaint before opening the clinical chart.';
+                ? 'Historia clinica preparada. Continua a anamnesis.'
+                : 'Agrega el motivo de consulta antes de abrir la historia clinica.';
         });
 
         document.getElementById('clear-emr').addEventListener('click', () => {
