@@ -72,7 +72,11 @@ app.use((req, res, next) => {
 });
 
 app.get('/', (req, res) => {
-  res.redirect('/examples/car-demo');
+  res.redirect('/index.html');
+});
+
+app.get('/examples/medical-demo', (req, res) => {
+  res.redirect('/index.html');
 });
 
 app.use(express.static('web/public'));
@@ -782,4 +786,3 @@ const voiceGateway = new VoiceRealtimeGateway({
 voiceGateway.attach(server);
 
 server.listen(PORT, () => console.log(`[Server] Running on http://localhost:${PORT}`));
-
