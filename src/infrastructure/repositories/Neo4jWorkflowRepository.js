@@ -78,12 +78,56 @@ class Neo4jWorkflowRepository {
     return Number(value);
   }
 
-  async getWorkflowRows(workflowId = null) {
+  normalizeWorkflowAccess(access = null) {
+    if (!access || typeof access !== 'object') {
+      return { restricted: false, ownerId: '', includeGlobal: true };
+    }
+    const ownerId = `${access.ownerId || ''}`.trim();
+    return {
+      restricted: Boolean(ownerId),
+      ownerId,
+      includeGlobal: access.includeGlobal !== false,
+      canManageGlobalWorkflows: Boolean(access.canManageGlobalWorkflows)
+    };
+  }
+
+  buildWorkflowVisibilityClause(alias = 'w', access = null, params = {}) {
+    const normalized = this.normalizeWorkflowAccess(access);
+    if (!normalized.restricted) {
+      return '';
+    }
+    params.accessOwnerId = normalized.ownerId;
+    const ownedClause = `${alias}.ownerId = $accessOwnerId`;
+    if (!normalized.includeGlobal) {
+      return ownedClause;
+    }
+    return `(${ownedClause} OR ${alias}.scope = 'global' OR coalesce(${alias}.ownerId, '') = '')`;
+  }
+
+  buildMutableWorkflowClause(alias = 'w', access = null, params = {}) {
+    const normalized = this.normalizeWorkflowAccess(access);
+    if (!normalized.restricted) {
+      return '';
+    }
+    params.accessOwnerId = normalized.ownerId;
+    if (normalized.canManageGlobalWorkflows) {
+      return `((${alias}.ownerId = $accessOwnerId AND coalesce(${alias}.scope, 'private') <> 'global') OR ${alias}.scope = 'global')`;
+    }
+    return `(${alias}.ownerId = $accessOwnerId AND coalesce(${alias}.scope, 'private') <> 'global')`;
+  }
+
+  async getWorkflowRows(workflowId = null, access = null) {
     const params = {};
-    const whereClause = workflowId ? 'WHERE w.id = $id' : '';
+    const clauses = [];
     if (workflowId) {
       params.id = workflowId;
+      clauses.push('w.id = $id');
     }
+    const visibilityClause = this.buildWorkflowVisibilityClause('w', access, params);
+    if (visibilityClause) {
+      clauses.push(visibilityClause);
+    }
+    const whereClause = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
 
     return this.db.run(`
       MATCH (w:Workflow)
@@ -94,6 +138,8 @@ class Neo4jWorkflowRepository {
              w.summary as summary,
              w.executionGuide as executionGuide,
              w.status as status,
+             w.scope as scope,
+             w.ownerId as ownerId,
              w.appId as appId,
              w.sourceUrl as sourceUrl,
              w.sourceOrigin as sourceOrigin,
@@ -103,6 +149,9 @@ class Neo4jWorkflowRepository {
              w.createdAt as createdAt,
              w.updatedAt as updatedAt,
              w.completedAt as completedAt,
+             w.publishedFromWorkflowId as publishedFromWorkflowId,
+             w.publishedByOwnerId as publishedByOwnerId,
+             w.publishedAt as publishedAt,
              s.actionType as actionType,
              s.selector as selector,
              s.value as value,
@@ -113,6 +162,7 @@ class Neo4jWorkflowRepository {
              s.selectedValue as selectedValue,
              s.selectedLabel as selectedLabel,
              s.semanticTarget as semanticTarget,
+             s.surfaceSection as surfaceSection,
              s.surfaceHints as surfaceHints,
              s.allowedOptions as allowedOptions,
              s.stepOrder as stepOrder
@@ -120,9 +170,14 @@ class Neo4jWorkflowRepository {
     `, params);
   }
 
-  async listWorkflowBranches(workflowId) {
+  async listWorkflowBranches(workflowId, access = null) {
+    const params = { workflowId };
+    const visibilityClause = this.buildWorkflowVisibilityClause('w', access, params);
+    const whereClause = visibilityClause ? `WHERE ${visibilityClause}` : '';
     const rows = await this.db.run(`
-      MATCH (w:Workflow {id: $workflowId})-[:HAS_BRANCH]->(b:WorkflowBranch)
+      MATCH (w:Workflow {id: $workflowId})
+      ${whereClause}
+      MATCH (w)-[:HAS_BRANCH]->(b:WorkflowBranch)
       RETURN b.id as id,
              b.workflowId as workflowId,
              b.branchPointStepOrder as branchPointStepOrder,
@@ -139,7 +194,7 @@ class Neo4jWorkflowRepository {
              b.createdAt as createdAt,
              b.updatedAt as updatedAt
       ORDER BY b.branchPointStepOrder ASC, b.affordanceTarget ASC
-    `, { workflowId });
+    `, params);
 
     return rows.map((row) => ({
       id: row.id || '',
@@ -160,7 +215,7 @@ class Neo4jWorkflowRepository {
     }));
   }
 
-  async upsertWorkflowBranch(branch = {}) {
+  async upsertWorkflowBranch(branch = {}, access = null) {
     const branchId = `${branch.id || ''}`.trim();
     const workflowId = `${branch.workflowId || ''}`.trim();
     const branchKey = `${branch.branchKey || ''}`.trim();
@@ -168,8 +223,27 @@ class Neo4jWorkflowRepository {
       throw new Error('Workflow branch requires id, workflowId, and branchKey');
     }
 
+    const params = {
+      id: branchId,
+      workflowId,
+      branchPointStepOrder: Number(branch.branchPointStepOrder),
+      branchKey,
+      affordanceTarget: `${branch.affordanceTarget || ''}`.trim(),
+      sourceAffordanceTarget: `${branch.sourceAffordanceTarget || ''}`.trim(),
+      skippedBaseStepOrders: this.serializeJsonArray(branch.skippedBaseStepOrders),
+      stepPatches: this.serializeJsonArray(branch.stepPatches),
+      insertedSteps: this.serializeJsonArray(branch.insertedSteps),
+      replacementSteps: this.serializeJsonArray(branch.replacementSteps),
+      notes: this.serializeJsonArray(branch.notes),
+      evidence: this.serializeJsonObject(branch.evidence),
+      status: `${branch.status || 'active'}`.trim() || 'active'
+    };
+    const mutableClause = this.buildMutableWorkflowClause('w', access, params);
+    const whereClause = mutableClause ? `WHERE ${mutableClause}` : '';
+
     await this.db.run(`
       MATCH (w:Workflow {id: $workflowId})
+      ${whereClause}
       MERGE (b:WorkflowBranch {id: $id})
       ON CREATE SET b.createdAt = timestamp()
       SET b.workflowId = $workflowId,
@@ -186,32 +260,25 @@ class Neo4jWorkflowRepository {
           b.status = $status,
           b.updatedAt = timestamp()
       MERGE (w)-[:HAS_BRANCH]->(b)
-    `, {
-      id: branchId,
-      workflowId,
-      branchPointStepOrder: Number(branch.branchPointStepOrder),
-      branchKey,
-      affordanceTarget: `${branch.affordanceTarget || ''}`.trim(),
-      sourceAffordanceTarget: `${branch.sourceAffordanceTarget || ''}`.trim(),
-      skippedBaseStepOrders: this.serializeJsonArray(branch.skippedBaseStepOrders),
-      stepPatches: this.serializeJsonArray(branch.stepPatches),
-      insertedSteps: this.serializeJsonArray(branch.insertedSteps),
-      replacementSteps: this.serializeJsonArray(branch.replacementSteps),
-      notes: this.serializeJsonArray(branch.notes),
-      evidence: this.serializeJsonObject(branch.evidence),
-      status: `${branch.status || 'active'}`.trim() || 'active'
-    });
+    `, params);
 
-    const branches = await this.listWorkflowBranches(workflowId);
+    const branches = await this.listWorkflowBranches(workflowId, access);
     return branches.find((entry) => entry.id === branchId) || branch;
   }
 
-  async startWorkflow(id, description, context = {}) {
+  async startWorkflow(id, description, context = {}, access = null) {
+    const normalizedAccess = this.normalizeWorkflowAccess(access);
+    const ownerId = normalizedAccess.restricted
+      ? normalizedAccess.ownerId
+      : `${context.ownerId || ''}`.trim();
+    const scope = ownerId ? 'private' : `${context.scope || 'global'}`.trim() || 'global';
     await this.db.run(
       `CREATE (w:Workflow {
         id: $id,
         description: $desc,
         status: "recording",
+        scope: $scope,
+        ownerId: $ownerId,
         appId: $appId,
         sourceUrl: $sourceUrl,
         sourceOrigin: $sourceOrigin,
@@ -223,6 +290,8 @@ class Neo4jWorkflowRepository {
       {
         id,
         desc: description,
+        scope,
+        ownerId,
         appId: context.appId || '',
         sourceUrl: context.sourceUrl || '',
         sourceOrigin: context.sourceOrigin || '',
@@ -233,17 +302,31 @@ class Neo4jWorkflowRepository {
     );
   }
 
-  async getStepCount(workflowId) {
+  async getStepCount(workflowId, access = null) {
+    const params = { wfId: workflowId };
+    const mutableClause = this.buildMutableWorkflowClause('w', access, params);
+    const whereClause = mutableClause ? `WHERE ${mutableClause}` : '';
     const countResult = await this.db.run(`
       MATCH (w:Workflow {id: $wfId})-[:HAS_STEP]->(s:Step)
+      ${whereClause}
       RETURN count(s) as total
-    `, { wfId: workflowId });
+    `, params);
     return this.toNativeNumber(countResult[0]?.total || 0);
   }
 
-  async addStep(workflowId, step, nextStepOrder) {
+  async addStep(workflowId, step, nextStepOrder, access = null) {
+    const params = {
+      wfId: workflowId,
+      ...step,
+      surfaceHints: this.serializeJsonObject(step.surfaceHints),
+      allowedOptions: this.serializeAllowedOptions(step.allowedOptions),
+      stepOrder: nextStepOrder
+    };
+    const mutableClause = this.buildMutableWorkflowClause('w', access, params);
+    const whereClause = mutableClause ? `WHERE ${mutableClause}` : '';
     await this.db.run(`
       MATCH (w:Workflow {id: $wfId})
+      ${whereClause}
       CREATE (s:Step {
         actionType: $actionType,
         selector: $selector,
@@ -255,26 +338,27 @@ class Neo4jWorkflowRepository {
         selectedValue: $selectedValue,
         selectedLabel: $selectedLabel,
         semanticTarget: $semanticTarget,
+        surfaceSection: $surfaceSection,
         surfaceHints: $surfaceHints,
         allowedOptions: $allowedOptions,
         stepOrder: $stepOrder,
         timestamp: timestamp()
       })
       CREATE (w)-[:HAS_STEP]->(s)
-    `, {
-      wfId: workflowId,
-      ...step,
-      surfaceHints: this.serializeJsonObject(step.surfaceHints),
-      allowedOptions: this.serializeAllowedOptions(step.allowedOptions),
-      stepOrder: nextStepOrder
-    });
+    `, params);
   }
 
-  async addContextNote(workflowId, note) {
+  async addContextNote(workflowId, note, access = null) {
+    const params = { id: workflowId };
+    const mutableClause = this.buildMutableWorkflowClause('w', access, params);
+    const whereClause = mutableClause ? `WHERE ${mutableClause}` : '';
     const existing = await this.db.run(
-      'MATCH (w:Workflow {id: $id}) RETURN w.contextNotes as contextNotes',
-      { id: workflowId }
+      `MATCH (w:Workflow {id: $id}) ${whereClause} RETURN w.contextNotes as contextNotes`,
+      params
     );
+    if (this.normalizeWorkflowAccess(access).restricted && existing.length === 0) {
+      throw new Error('Workflow not found');
+    }
 
     const raw = existing[0]?.contextNotes || '[]';
     let currentNotes = [];
@@ -299,9 +383,9 @@ class Neo4jWorkflowRepository {
     });
 
     await this.db.run(
-      'MATCH (w:Workflow {id: $id}) SET w.contextNotes = $contextNotes, w.updatedAt = timestamp()',
+      `MATCH (w:Workflow {id: $id}) ${whereClause} SET w.contextNotes = $contextNotes, w.updatedAt = timestamp()`,
       {
-        id: workflowId,
+        ...params,
         contextNotes: JSON.stringify(currentNotes)
       }
     );
@@ -432,9 +516,13 @@ class Neo4jWorkflowRepository {
     );
   }
 
-  async getWorkflowSteps(workflowId) {
+  async getWorkflowSteps(workflowId, access = null) {
+    const params = { id: workflowId };
+    const visibilityClause = this.buildWorkflowVisibilityClause('w', access, params);
+    const whereClause = visibilityClause ? `WHERE ${visibilityClause}` : '';
     return this.db.run(`
       MATCH (w:Workflow {id: $id})-[:HAS_STEP]->(s:Step)
+      ${whereClause}
       RETURN s.actionType as actionType,
              s.selector as selector,
              s.value as value,
@@ -445,25 +533,32 @@ class Neo4jWorkflowRepository {
              s.selectedValue as selectedValue,
              s.selectedLabel as selectedLabel,
              s.semanticTarget as semanticTarget,
+             s.surfaceSection as surfaceSection,
              s.surfaceHints as surfaceHints,
              s.allowedOptions as allowedOptions,
              s.stepOrder as stepOrder
       ORDER BY s.stepOrder ASC
-    `, { id: workflowId });
+    `, params);
   }
 
-  async getWorkflowDescription(workflowId) {
+  async getWorkflowDescription(workflowId, access = null) {
+    const params = { id: workflowId };
+    const visibilityClause = this.buildWorkflowVisibilityClause('w', access, params);
+    const whereClause = visibilityClause ? `WHERE ${visibilityClause}` : '';
     const wf = await this.db.run(
-      'MATCH (w:Workflow {id: $id}) RETURN w.description as desc',
-      { id: workflowId }
+      `MATCH (w:Workflow {id: $id}) ${whereClause} RETURN w.description as desc`,
+      params
     );
     return wf.length > 0 ? wf[0].desc : 'No description';
   }
 
-  async completeWorkflow(workflowId, summary, executionGuide = '') {
+  async completeWorkflow(workflowId, summary, executionGuide = '', access = null) {
+    const params = { id: workflowId, summary, executionGuide };
+    const mutableClause = this.buildMutableWorkflowClause('w', access, params);
+    const whereClause = mutableClause ? `WHERE ${mutableClause}` : '';
     await this.db.run(
-      'MATCH (w:Workflow {id: $id}) SET w.status = "done", w.summary = $summary, w.executionGuide = $executionGuide, w.completedAt = timestamp()',
-      { id: workflowId, summary, executionGuide }
+      `MATCH (w:Workflow {id: $id}) ${whereClause} SET w.status = "done", w.summary = $summary, w.executionGuide = $executionGuide, w.completedAt = timestamp()`,
+      params
     );
   }
 
@@ -475,12 +570,17 @@ class Neo4jWorkflowRepository {
         summary: $summary,
         executionGuide: $executionGuide,
         status: $status,
+        scope: $scope,
+        ownerId: $ownerId,
         appId: $appId,
         sourceUrl: $sourceUrl,
         sourceOrigin: $sourceOrigin,
         sourcePathname: $sourcePathname,
         sourceTitle: $sourceTitle,
         contextNotes: $contextNotes,
+        publishedFromWorkflowId: $publishedFromWorkflowId,
+        publishedByOwnerId: $publishedByOwnerId,
+        publishedAt: $publishedAt,
         createdAt: timestamp(),
         updatedAt: timestamp()
       })
@@ -497,6 +597,7 @@ class Neo4jWorkflowRepository {
         selectedValue: step.selectedValue,
         selectedLabel: step.selectedLabel,
         semanticTarget: step.semanticTarget,
+        surfaceSection: step.surfaceSection,
         surfaceHints: step.surfaceHints,
         allowedOptions: step.allowedOptions,
         stepOrder: step.stepOrder,
@@ -505,6 +606,9 @@ class Neo4jWorkflowRepository {
       CREATE (w)-[:HAS_STEP]->(s)
     `, {
       ...workflow,
+      publishedFromWorkflowId: `${workflow.publishedFromWorkflowId || ''}`.trim(),
+      publishedByOwnerId: `${workflow.publishedByOwnerId || ''}`.trim(),
+      publishedAt: Number.isFinite(Number(workflow.publishedAt)) ? Number(workflow.publishedAt) : 0,
       steps: Array.isArray(workflow.steps)
         ? workflow.steps.map((step) => ({
             ...step,
@@ -522,12 +626,17 @@ class Neo4jWorkflowRepository {
           w.summary = $summary,
           w.executionGuide = $executionGuide,
           w.status = $status,
+          w.scope = $scope,
+          w.ownerId = $ownerId,
           w.appId = $appId,
           w.sourceUrl = $sourceUrl,
           w.sourceOrigin = $sourceOrigin,
           w.sourcePathname = $sourcePathname,
           w.sourceTitle = $sourceTitle,
           w.contextNotes = $contextNotes,
+          w.publishedFromWorkflowId = $publishedFromWorkflowId,
+          w.publishedByOwnerId = $publishedByOwnerId,
+          w.publishedAt = $publishedAt,
           w.updatedAt = timestamp()
       WITH w
       OPTIONAL MATCH (w)-[rel:HAS_STEP]->(old:Step)
@@ -546,6 +655,7 @@ class Neo4jWorkflowRepository {
         selectedValue: step.selectedValue,
         selectedLabel: step.selectedLabel,
         semanticTarget: step.semanticTarget,
+        surfaceSection: step.surfaceSection,
         surfaceHints: step.surfaceHints,
         allowedOptions: step.allowedOptions,
         stepOrder: step.stepOrder,
@@ -554,6 +664,9 @@ class Neo4jWorkflowRepository {
       CREATE (w)-[:HAS_STEP]->(s)
     `, {
       ...workflow,
+      publishedFromWorkflowId: `${workflow.publishedFromWorkflowId || ''}`.trim(),
+      publishedByOwnerId: `${workflow.publishedByOwnerId || ''}`.trim(),
+      publishedAt: Number.isFinite(Number(workflow.publishedAt)) ? Number(workflow.publishedAt) : 0,
       steps: Array.isArray(workflow.steps)
         ? workflow.steps.map((step) => ({
             ...step,
@@ -564,21 +677,47 @@ class Neo4jWorkflowRepository {
     });
   }
 
-  async deleteWorkflow(workflowId) {
+  async deleteWorkflow(workflowId, access = null) {
+    const params = { id: workflowId };
+    const mutableClause = this.buildMutableWorkflowClause('w', access, params);
+    const whereClause = mutableClause ? `WHERE ${mutableClause}` : '';
     await this.db.run(`
       MATCH (w:Workflow {id: $id})
+      ${whereClause}
       OPTIONAL MATCH (w)-[:HAS_STEP]->(s:Step)
       OPTIONAL MATCH (w)-[:HAS_BRANCH]->(b:WorkflowBranch)
       WITH w, collect(s) AS steps, collect(b) AS branches
       FOREACH (step IN [item IN steps WHERE item IS NOT NULL] | DETACH DELETE step)
       FOREACH (branch IN [item IN branches WHERE item IS NOT NULL] | DETACH DELETE branch)
       DETACH DELETE w
-    `, { id: workflowId });
+    `, params);
   }
 
-  async getGraphVisualization() {
-    const rawNodes = await this.db.run('MATCH (n) RETURN labels(n)[0] as type, properties(n) as props, id(n) as id');
-    const rawEdges = await this.db.run('MATCH (a)-[r]->(b) RETURN id(a) as from, id(b) as to, type(r) as label');
+  async getGraphVisualization(access = null) {
+    const normalized = this.normalizeWorkflowAccess(access);
+    if (!normalized.restricted) {
+      const rawNodes = await this.db.run('MATCH (n) RETURN labels(n)[0] as type, properties(n) as props, id(n) as id');
+      const rawEdges = await this.db.run('MATCH (a)-[r]->(b) RETURN id(a) as from, id(b) as to, type(r) as label');
+      return { rawNodes, rawEdges };
+    }
+
+    const params = {};
+    const visibilityClause = this.buildWorkflowVisibilityClause('w', access, params);
+    const rawNodes = await this.db.run(`
+      MATCH (w:Workflow)
+      WHERE ${visibilityClause}
+      OPTIONAL MATCH (w)-[:HAS_STEP|HAS_BRANCH]->(related)
+      WITH collect(DISTINCT w) + collect(DISTINCT related) AS nodes
+      UNWIND nodes AS n
+      WITH DISTINCT n
+      WHERE n IS NOT NULL
+      RETURN labels(n)[0] as type, properties(n) as props, id(n) as id
+    `, params);
+    const rawEdges = await this.db.run(`
+      MATCH (w:Workflow)-[r:HAS_STEP|HAS_BRANCH]->(b)
+      WHERE ${visibilityClause}
+      RETURN id(w) as from, id(b) as to, type(r) as label
+    `, params);
     return { rawNodes, rawEdges };
   }
 }

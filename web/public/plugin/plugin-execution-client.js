@@ -12,6 +12,14 @@
         const stepDelayMs = Number.isFinite(deps.stepDelayMs) ? deps.stepDelayMs : 180;
         const emittedDiagnostics = new Set();
 
+        function postStepDelayMs(step) {
+            const actionType = `${step?.actionType || ''}`.trim().toLowerCase();
+            if (actionType === 'input' || actionType === 'select') {
+                return Math.min(stepDelayMs, 60);
+            }
+            return stepDelayMs;
+        }
+
         function cloneJson(value) {
             return JSON.parse(JSON.stringify(value));
         }
@@ -203,6 +211,119 @@
                 'elige',
                 'seleccione'
             ].some((token) => normalized === token || normalized.includes(token));
+        }
+
+        function getCurrentSurfaceSection() {
+            const activeToggle = document.querySelector('[data-view-target].active');
+            const activeTarget = `${activeToggle?.getAttribute?.('data-view-target') || ''}`.trim();
+            if (activeTarget) {
+                return activeTarget;
+            }
+
+            const visibleView = Array.from(document.querySelectorAll('[data-view]')).find((element) => {
+                if (!(element instanceof Element)) {
+                    return false;
+                }
+                if (element.hasAttribute('hidden')) {
+                    return false;
+                }
+                const style = window.getComputedStyle(element);
+                return style.display !== 'none' && style.visibility !== 'hidden';
+            });
+            return `${visibleView?.getAttribute?.('data-view') || ''}`.trim();
+        }
+
+        function inferSurfaceSectionFromStep(step) {
+            const explicit = `${step?.surfaceSection || ''}`.trim();
+            if (explicit) {
+                return explicit;
+            }
+
+            if (`${step?.actionType || ''}`.trim().toLowerCase() === 'click' && `${step?.selector || ''}`.includes('data-view-target')) {
+                return '';
+            }
+
+            const haystack = `${step?.selector || ''} ${step?.label || ''} ${step?.semanticTarget || ''}`
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase();
+
+            if (/(^|[^a-z])(intake|triage)([^a-z]|$)/.test(haystack)) {
+                return 'intake';
+            }
+            if (/(^|[^a-z])(anamnesis|exam)([^a-z]|$)/.test(haystack)) {
+                return 'anamnesis';
+            }
+            if (/(^|[^a-z])(assessment|orders|rx|plan)([^a-z]|$)/.test(haystack)) {
+                return 'orders';
+            }
+            if (/(^|[^a-z])(closure|disposition)([^a-z]|$)/.test(haystack)) {
+                return 'closure';
+            }
+
+            return '';
+        }
+
+        async function ensureSurfaceSection(step, context = {}) {
+            const requiredSection = inferSurfaceSectionFromStep(step);
+            if (!requiredSection) {
+                return false;
+            }
+
+            const currentSection = getCurrentSurfaceSection();
+            if (currentSection === requiredSection) {
+                return false;
+            }
+
+            const escapedSection = requiredSection.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+            const toggleSelector = `[data-view-target="${escapedSection}"]`;
+            const toggle = document.querySelector(toggleSelector);
+            if (!(toggle instanceof HTMLElement)) {
+                emitExtensionLog('warn', 'Required surface section toggle was not found.', buildStepDiagnostics(step, {
+                    workflowId: context.workflowId || '',
+                    trigger: context.trigger || '',
+                    stepIndex: context.stepIndex,
+                    failureKind: 'surface_section_toggle_missing',
+                    requiredSurfaceSection: requiredSection,
+                    currentSurfaceSection: currentSection
+                }));
+                return false;
+            }
+
+            if ('disabled' in toggle && toggle.disabled) {
+                throw new Error(`No pude cambiar al modulo ${requiredSection} porque el control esta deshabilitado.`);
+            }
+
+            updateWorkflowPanelStatus(`Abriendo ${requiredSection} para continuar la automatizacion...`);
+            emitExtensionLog('info', 'Switching surface section before workflow step.', buildStepDiagnostics(step, {
+                workflowId: context.workflowId || '',
+                trigger: context.trigger || '',
+                stepIndex: context.stepIndex,
+                resolution: 'surface_section_switch_started',
+                requiredSurfaceSection: requiredSection,
+                currentSurfaceSection: currentSection
+            }));
+
+            toggle.scrollIntoView({ block: 'center', inline: 'nearest' });
+            toggle.click();
+
+            const startedAt = Date.now();
+            while (Date.now() - startedAt < waitTimeoutMs) {
+                if (getCurrentSurfaceSection() === requiredSection) {
+                    await waitMs(Math.min(stepDelayMs, 120));
+                    emitExtensionLog('info', 'Switched surface section before workflow step.', buildStepDiagnostics(step, {
+                        workflowId: context.workflowId || '',
+                        trigger: context.trigger || '',
+                        stepIndex: context.stepIndex,
+                        resolution: 'surface_section_switch_applied',
+                        requiredSurfaceSection: requiredSection
+                    }));
+                    return true;
+                }
+                await waitMs(60);
+            }
+
+            throw new Error(`No pude abrir el modulo ${requiredSection} antes de continuar.`);
         }
 
         function isRequiredFieldLabel(label = '') {
@@ -1340,6 +1461,12 @@
                         continue;
                     }
 
+                    await ensureSurfaceSection(step, {
+                        workflowId: currentPlan.workflowId,
+                        trigger,
+                        stepIndex
+                    });
+
                     if (step.actionType === 'navigation') {
                         if (currentPlan.runtimeIntelligence?.strictAfterTransversal) {
                             currentPlan = {
@@ -1484,7 +1611,7 @@
                         currentPlan = updateExecutionProgress(currentPlan, stepIndex + 1);
                     }
 
-                    await waitMs(stepDelayMs);
+                    await waitMs(postStepDelayMs(step));
                 }
 
                 clearPendingExecution();
@@ -1546,6 +1673,287 @@
             }
         }
 
+        function createDynamicFillSession(initialPlan, sessionDeps = {}) {
+            if (!initialPlan || !Array.isArray(initialPlan.steps)) {
+                throw new Error('createDynamicFillSession requires a plan with steps.');
+            }
+            const requestNoteFieldMatches = typeof sessionDeps.requestNoteFieldMatches === 'function'
+                ? sessionDeps.requestNoteFieldMatches
+                : null;
+            if (!requestNoteFieldMatches) {
+                throw new Error('createDynamicFillSession requires requestNoteFieldMatches.');
+            }
+
+            const plan = cloneJson(initialPlan);
+            const fulfilledStepOrders = new Set();
+            const lastAppliedValue = new Map();
+            let pendingNoteContent = '';
+            let debounceTimer = null;
+            let visualHoldTimer = null;
+            let visualHoldToken = 0;
+            let inflight = false;
+            let stopped = false;
+            let needsAnotherPass = false;
+            const debounceMs = Number.isFinite(sessionDeps.debounceMs) ? sessionDeps.debounceMs : 350;
+            const interMatchDelayMs = Number.isFinite(sessionDeps.interMatchDelayMs)
+                ? sessionDeps.interMatchDelayMs
+                : Math.max(60, Math.min(stepDelayMs, 120));
+            const visualHoldMs = Number.isFinite(sessionDeps.visualHoldMs) ? sessionDeps.visualHoldMs : 5000;
+
+            function cancelVisualHold() {
+                visualHoldToken += 1;
+                if (visualHoldTimer) {
+                    window.clearTimeout(visualHoldTimer);
+                    visualHoldTimer = null;
+                }
+            }
+
+            function scheduleVisualHoldRelease() {
+                cancelVisualHold();
+                if (visualHoldMs <= 0) {
+                    runtime()?.clearSpotlight?.();
+                    return;
+                }
+
+                const token = visualHoldToken;
+                visualHoldTimer = window.setTimeout(() => {
+                    if (stopped || token !== visualHoldToken) return;
+                    visualHoldTimer = null;
+                    runtime()?.clearSpotlight?.();
+                }, visualHoldMs);
+            }
+
+            function buildFieldsForMatching() {
+                return plan.steps
+                    .filter((step) => Number.isFinite(Number(step?.stepOrder)))
+                    .filter((step) => !fulfilledStepOrders.has(Number(step.stepOrder)))
+                    .filter((step) => ['input', 'select', 'click'].includes(`${step.actionType || ''}`))
+                    .map((step) => ({
+                        stepOrder: Number(step.stepOrder),
+                        actionType: step.actionType || '',
+                        label: step.label || '',
+                        selector: step.selector || '',
+                        controlType: step.controlType || '',
+                        allowedOptions: Array.isArray(step.allowedOptions) ? step.allowedOptions : [],
+                        currentValue: step.value || step.selectedValue || ''
+                    }));
+            }
+
+            function describeMatchAction(step) {
+                const label = step?.label || step?.selector || 'este campo';
+                const actionType = `${step?.actionType || ''}`;
+                if (actionType === 'input') return `Estoy completando ${label}.`;
+                if (actionType === 'select') return `Estoy eligiendo una opcion en ${label}.`;
+                if (actionType === 'click') return `Estoy interactuando con ${step?.semanticTarget || label}.`;
+                return `Estoy trabajando en ${label}.`;
+            }
+
+            async function applyMatchToStep(step, match) {
+                const stepWithUrl = step.url || '';
+                if (stepWithUrl && !urlsMatch(window.location.href, stepWithUrl)) {
+                    return { applied: false, reason: 'other_page' };
+                }
+
+                try {
+                    await ensureSurfaceSection(step, {
+                        workflowId: plan.workflowId || '',
+                        trigger: 'dynamic-fill'
+                    });
+                } catch (error) {
+                    return { applied: false, reason: 'surface_section_switch_failed', error };
+                }
+
+                let element;
+                try {
+                    element = await waitForStepElement(step, plan.variables || {});
+                } catch (error) {
+                    return { applied: false, reason: 'element_not_found', error };
+                }
+
+                cancelVisualHold();
+                notifyAutomationStep(step, describeMatchAction(step));
+
+                const actionType = `${step.actionType || ''}`;
+                // Tag AI-driven fills with their origin + evidence so they are audited
+                // and surfaced as "proposed / unconfirmed" for clinical review.
+                const pageState = (window.PageState && window.PageState.current) || null;
+                const aiMeta = {
+                    source: 'ai',
+                    evidence: match.evidence || '',
+                    confidence: typeof match.confidence === 'number' ? match.confidence : null
+                };
+                if (pageState && typeof pageState.beginProgrammatic === 'function' && (actionType === 'input' || actionType === 'select')) {
+                    pageState.beginProgrammatic(aiMeta);
+                }
+                try {
+                    if (actionType === 'input') {
+                        await applyInputStep(element, { ...step, value: match.value }, plan.variables || {});
+                    } else if (actionType === 'select') {
+                        const patchedStep = {
+                            ...step,
+                            selectedValue: match.value,
+                            selectedLabel: match.value,
+                            __runtimeSelectedValue: match.value,
+                            __runtimeSelectedLabel: match.value
+                        };
+                        await applySelectStep(element, patchedStep, plan.variables || {}, { runtimeStrict: false });
+                    } else if (actionType === 'click') {
+                        element.scrollIntoView({ block: 'center', inline: 'nearest' });
+                        if ('disabled' in element && element.disabled) {
+                            return { applied: false, reason: 'element_disabled' };
+                        }
+                        element.click();
+                    } else {
+                        return { applied: false, reason: 'unsupported_action' };
+                    }
+                } finally {
+                    if (pageState && typeof pageState.endProgrammatic === 'function') {
+                        pageState.endProgrammatic();
+                    }
+                }
+
+                return { applied: true };
+            }
+
+            async function processPendingNote() {
+                if (stopped) return;
+                if (inflight) {
+                    needsAnotherPass = true;
+                    return;
+                }
+                const noteContent = `${pendingNoteContent || ''}`;
+                if (!noteContent.trim()) return;
+                const fields = buildFieldsForMatching();
+                if (fields.length === 0) return;
+
+                inflight = true;
+                let result = null;
+                try {
+                    result = await requestNoteFieldMatches(plan.workflowId, {
+                        noteContent,
+                        fields,
+                        alreadyFulfilled: Array.from(fulfilledStepOrders).map((stepOrder) => ({
+                            stepOrder,
+                            value: lastAppliedValue.get(stepOrder) || ''
+                        })),
+                        pageUrl: window.location.href
+                    });
+                } catch (error) {
+                    emitExtensionLog('warn', 'Note field match request failed.', {
+                        workflowId: plan.workflowId || '',
+                        errorMessage: error?.message || 'Unknown error'
+                    });
+                }
+
+                if (stopped) {
+                    inflight = false;
+                    return;
+                }
+                const matches = Array.isArray(result?.matches) ? result.matches : [];
+                let anyApplied = false;
+                try {
+                    for (const match of matches) {
+                        if (stopped) break;
+                        const stepOrder = Number(match?.stepOrder);
+                        if (!Number.isFinite(stepOrder)) continue;
+                        const step = plan.steps.find((candidate) => Number(candidate?.stepOrder) === stepOrder);
+                        if (!step) continue;
+
+                        if (fulfilledStepOrders.has(stepOrder) && lastAppliedValue.get(stepOrder) === match.value) {
+                            continue;
+                        }
+
+                        let outcome;
+                        try {
+                            outcome = await applyMatchToStep(step, match);
+                        } catch (error) {
+                            outcome = { applied: false, reason: 'apply_threw', error };
+                            emitExtensionLog('warn', 'Dynamic note fill step threw.', {
+                                workflowId: plan.workflowId || '',
+                                stepOrder,
+                                actionType: step.actionType || '',
+                                errorMessage: error?.message || 'Unknown error'
+                            });
+                        }
+                        if (outcome.applied) {
+                            anyApplied = true;
+                            fulfilledStepOrders.add(stepOrder);
+                            lastAppliedValue.set(stepOrder, match.value);
+                            sessionDeps.onFieldFilled?.({
+                                stepOrder,
+                                value: match.value,
+                                evidence: match.evidence || '',
+                                actionType: step.actionType || ''
+                            });
+                            emitExtensionLog('info', 'Dynamic note fill applied step.', {
+                                workflowId: plan.workflowId || '',
+                                stepOrder,
+                                actionType: step.actionType || '',
+                                evidence: match.evidence || ''
+                            });
+                            await waitMs(interMatchDelayMs);
+                        } else {
+                            emitExtensionLog('info', 'Dynamic note fill could not apply step yet.', {
+                                workflowId: plan.workflowId || '',
+                                stepOrder,
+                                actionType: step.actionType || '',
+                                reason: outcome.reason || ''
+                            });
+                        }
+                    }
+                } finally {
+                    if (anyApplied) {
+                        runtime()?.speak?.('Listo, sigo escuchando.', { mode: 'idle' });
+                        scheduleVisualHoldRelease();
+                    }
+                    inflight = false;
+                }
+
+                if (result?.readyToSubmit) {
+                    sessionDeps.onReadyToSubmit?.({
+                        reason: result.submitReason || '',
+                        fulfilledStepOrders: Array.from(fulfilledStepOrders)
+                    });
+                }
+
+                if (needsAnotherPass) {
+                    needsAnotherPass = false;
+                    window.setTimeout(() => {
+                        processPendingNote().catch(() => {});
+                    }, 0);
+                }
+            }
+
+            function ingestNoteContent(content) {
+                if (stopped) return;
+                pendingNoteContent = `${content || ''}`;
+                if (debounceTimer) {
+                    window.clearTimeout(debounceTimer);
+                }
+                debounceTimer = window.setTimeout(() => {
+                    debounceTimer = null;
+                    processPendingNote().catch(() => {});
+                }, debounceMs);
+            }
+
+            function stop() {
+                stopped = true;
+                if (debounceTimer) {
+                    window.clearTimeout(debounceTimer);
+                    debounceTimer = null;
+                }
+                cancelVisualHold();
+                runtime()?.clearSpotlight?.();
+            }
+
+            return {
+                ingestNoteContent,
+                stop,
+                isStopped: () => stopped,
+                getFulfilledStepOrders: () => Array.from(fulfilledStepOrders)
+            };
+        }
+
         return {
             cloneJson,
             getExecutionStorageKey,
@@ -1577,7 +1985,8 @@
             waitForMatchingSelectOption,
             applySelectStep,
             updateExecutionProgress,
-            executeWorkflowPlan
+            executeWorkflowPlan,
+            createDynamicFillSession
         };
     }
 

@@ -335,8 +335,8 @@ class GeneratePitchArtifacts {
     return this.llmProvider.chat(messages);
   }
 
-  async execute(context = {}) {
-    const workflows = this.filterWorkflowsForContext(await this.catalogService.getCatalog(), context);
+  async execute(context = {}, access = null) {
+    const workflows = this.filterWorkflowsForContext(await this.catalogService.getCatalog(access), context);
     const outputDir = this.buildOutputDirectory(context);
     fs.mkdirSync(outputDir, { recursive: true });
 
@@ -369,8 +369,8 @@ class GeneratePitchArtifacts {
     };
   }
 
-  async previewImprovements(context = {}) {
-    const workflows = this.filterWorkflowsForContext(await this.catalogService.getCatalog(), context);
+  async previewImprovements(context = {}, access = null) {
+    const workflows = this.filterWorkflowsForContext(await this.catalogService.getCatalog(access), context);
     return {
       workflowCount: workflows.length,
       suggestions: this.buildImprovementSuggestions(context, workflows),

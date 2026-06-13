@@ -2,10 +2,13 @@
   "name": "graph",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "web/server.js",
   "scripts": {
     "start": "node web/server.js",
+    "build:vercel": "node scripts/build-vercel.js",
     "build:chrome-extension": "node scripts/build-chrome-extension.js",
+    "audit:readiness": "node scripts/audit-system-readiness.js",
+    "test:clinical-assistant": "node scripts/verify-clinical-assistant-features.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -17,6 +20,8 @@
     "body-parser": "^2.2.2",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "jose": "^6.2.3",
     "neo4j-driver": "^6.0.1",
     "openai": "^6.36.0",
     "playwright": "^1.59.1",

@@ -370,6 +370,7 @@
                         <div class="toolbar-row">
                             <button class="btn" id="btn-new">New</button>
                             <button class="btn secondary" id="btn-save">Save</button>
+                            <button class="btn secondary" id="btn-publish-global" hidden>Publish Global</button>
                             <button class="btn ghost" id="btn-refresh">Refresh</button>
                             <button class="btn danger" id="btn-delete">Delete</button>
                         </div>
@@ -453,17 +454,43 @@
         </div>
     </div>
 
+    <script src="supabase-client.js"></script>
+    <script src="auth-gate.js"></script>
+    <script src="admin-workspace.js"></script>
     <script>
         const state = {
             workflows: [],
             selectedId: null,
             mode: 'create',
+            currentWorkflow: null,
+            permissions: { canManageGlobalWorkflows: false },
             network: null,
             nodes: null,
             edges: null
         };
 
         const els = {};
+
+        async function authenticatedFetch(url, init = {}) {
+            try {
+                if (window.MiracleAuth && typeof window.MiracleAuth.whenAuthenticated === 'function') {
+                    await window.MiracleAuth.whenAuthenticated();
+                }
+                const token = window.MiracleAuth && typeof window.MiracleAuth.getAccessToken === 'function'
+                    ? window.MiracleAuth.getAccessToken()
+                    : '';
+                if (token) {
+                    return fetch(url, {
+                        ...init,
+                        headers: {
+                            ...(init.headers || {}),
+                            Authorization: `Bearer ${token}`
+                        }
+                    });
+                }
+            } catch (error) { /* fall through to unauthenticated local-dev request */ }
+            return fetch(url, init);
+        }
 
         function $(id) {
             return document.getElementById(id);
@@ -598,6 +625,19 @@
             }
         }
 
+        function updatePublishGlobalButton() {
+            if (!els.btnPublishGlobal) return;
+            const canPublish = Boolean(state.permissions?.canManageGlobalWorkflows);
+            els.btnPublishGlobal.hidden = !canPublish;
+            if (!canPublish) {
+                els.btnPublishGlobal.disabled = true;
+                return;
+            }
+            const workflow = state.currentWorkflow || {};
+            const workflowScope = workflow.scope || (workflow.ownerId ? 'private' : 'global');
+            els.btnPublishGlobal.disabled = state.mode !== 'edit' || !workflow.id || workflowScope === 'global';
+        }
+
         function getFormWorkflow() {
             return {
                 id: els.wfId.value.trim(),
@@ -611,6 +651,7 @@
         function fillForm(workflow, mode = 'edit') {
             state.mode = mode;
             state.selectedId = workflow?.id || null;
+            state.currentWorkflow = workflow || null;
             els.wfId.value = workflow?.id || `wf_${Date.now()}`;
             els.wfDescription.value = workflow?.description || '';
             els.wfSummary.value = workflow?.summary || '';
@@ -618,8 +659,13 @@
             els.wfCreated.value = prettyTime(workflow?.createdAt);
             els.wfUpdated.value = prettyTime(workflow?.updatedAt);
             renderSteps(workflow?.steps || []);
-            els.btnDelete.disabled = mode !== 'edit' || !workflow?.id;
+            const workflowScope = workflow?.scope || (workflow?.ownerId ? 'private' : 'global');
+            const canMutateWorkflow = workflowScope !== 'global' || Boolean(state.permissions?.canManageGlobalWorkflows);
+            els.btnSave.disabled = mode === 'edit' && workflow?.id && !canMutateWorkflow;
+            els.btnDelete.disabled = mode !== 'edit' || !workflow?.id || !canMutateWorkflow;
             els.btnClone.disabled = mode !== 'edit' || !workflow?.id;
+            els.btnAddStep.disabled = mode === 'edit' && workflow?.id && !canMutateWorkflow;
+            updatePublishGlobalButton();
             setEditorState(
                 mode === 'edit' && workflow?.id ? `Editing ${workflow.id}` : 'Creating a new workflow',
                 mode === 'edit' && workflow?.id ? workflow.id : 'new workflow'
@@ -638,13 +684,15 @@
         }
 
         async function refreshWorkflows(selectedId = state.selectedId) {
-            const response = await fetch('/api/workflows');
+            const response = await authenticatedFetch('/api/workflows');
             const payload = await response.json();
             if (!response.ok) {
                 throw new Error(payload.error || 'Unable to load workflows');
             }
 
             state.workflows = payload.workflows || [];
+            state.permissions = payload.permissions || { canManageGlobalWorkflows: false };
+            updatePublishGlobalButton();
             renderWorkflowList(selectedId);
             renderGraph();
         }
@@ -670,12 +718,14 @@
             filtered.forEach((workflow) => {
                 const card = document.createElement('div');
                 card.className = `workflow-card${workflow.id === selectedId ? ' active' : ''}`;
+                const workflowScope = workflow.scope || (workflow.ownerId ? 'private' : 'global');
                 card.innerHTML = `
                     <div class="workflow-card-top">
                         <div class="workflow-card-id">${escapeHtml(workflow.id)}</div>
                         <span class="status-pill" data-status="${escapeHtml(workflow.status || 'draft')}">${escapeHtml(workflow.status || 'draft')}</span>
                     </div>
                     <div class="workflow-card-desc">${escapeHtml(workflow.summary || workflow.description || 'No description available')}</div>
+                    <div class="workflow-card-meta">${escapeHtml(workflowScope)}</div>
                     <div class="workflow-card-meta">${workflow.totalSteps || 0} steps · ${prettyTime(workflow.updatedAt || workflow.completedAt || workflow.createdAt)}</div>
                 `;
                 card.addEventListener('click', () => loadWorkflow(workflow.id));
@@ -684,7 +734,7 @@
         }
 
         async function loadWorkflow(id, mode = 'edit') {
-            const response = await fetch(`/api/workflows/${encodeURIComponent(id)}`);
+            const response = await authenticatedFetch(`/api/workflows/${encodeURIComponent(id)}`);
             const payload = await response.json();
             if (!response.ok) {
                 throw new Error(payload.error || 'Unable to load workflow');
@@ -706,7 +756,7 @@
                 ? '/api/workflows'
                 : `/api/workflows/${encodeURIComponent(state.selectedId || workflow.id)}`;
 
-            const response = await fetch(url, {
+            const response = await authenticatedFetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(workflow)
@@ -727,7 +777,7 @@
             if (!id) return;
             if (!confirm(`Delete workflow ${id}? This will remove its saved steps too.`)) return;
 
-            const response = await fetch(`/api/workflows/${encodeURIComponent(id)}`, { method: 'DELETE' });
+            const response = await authenticatedFetch(`/api/workflows/${encodeURIComponent(id)}`, { method: 'DELETE' });
             const payload = await response.json();
             if (!response.ok) {
                 throw new Error(payload.error || 'Unable to delete workflow');
@@ -741,8 +791,32 @@
         function duplicateCurrentWorkflow() {
             const clone = getFormWorkflow();
             clone.id = `wf_${Date.now()}`;
+            clone.scope = 'private';
+            clone.ownerId = '';
             fillForm(clone, 'create');
             log(`Duplicating into ${clone.id}`, '#f2c94c');
+        }
+
+        async function publishGlobalWorkflow() {
+            const workflow = state.currentWorkflow || {};
+            const workflowId = `${workflow.id || state.selectedId || ''}`.trim();
+            if (!workflowId) return;
+            if (!confirm(`Publish ${workflowId} as a global workflow for every account?`)) return;
+
+            const response = await authenticatedFetch(`/api/workflows/${encodeURIComponent(workflowId)}/publish-global`, {
+                method: 'POST'
+            });
+            const payload = await response.json();
+            if (!response.ok) {
+                throw new Error(payload.error || 'Unable to publish global workflow');
+            }
+
+            const publishedId = payload.workflow?.id || '';
+            log(`Published ${workflowId} as ${publishedId}`, '#6cbf84');
+            await refreshWorkflows(publishedId);
+            if (publishedId) {
+                await loadWorkflow(publishedId, 'edit');
+            }
         }
 
         function addStep() {
@@ -752,7 +826,7 @@
         }
 
         async function renderGraph() {
-            const response = await fetch('/api/visualize');
+            const response = await authenticatedFetch('/api/visualize');
             const payload = await response.json();
             if (!response.ok) {
                 throw new Error(payload.error || 'Unable to load graph');
@@ -842,6 +916,7 @@
             els.btnDelete = $('btn-delete');
             els.btnRefresh = $('btn-refresh');
             els.btnClone = $('btn-clone');
+            els.btnPublishGlobal = $('btn-publish-global');
             els.btnAddStep = $('btn-add-step');
 
             els.btnNew.addEventListener('click', newWorkflow);
@@ -869,6 +944,14 @@
                 }
             });
             els.btnClone.addEventListener('click', duplicateCurrentWorkflow);
+            els.btnPublishGlobal.addEventListener('click', async () => {
+                try {
+                    await publishGlobalWorkflow();
+                } catch (error) {
+                    log(error.message, '#eb6f6f');
+                    alert(error.message);
+                }
+            });
             els.btnAddStep.addEventListener('click', addStep);
             els.search.addEventListener('input', () => renderWorkflowList(state.selectedId));
 

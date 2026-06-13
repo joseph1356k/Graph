@@ -6,6 +6,29 @@
         const emitPluginEvent = typeof deps.emitPluginEvent === 'function' ? deps.emitPluginEvent : () => {};
         const markWorkflowPanelDirty = typeof deps.markWorkflowPanelDirty === 'function' ? deps.markWorkflowPanelDirty : () => {};
 
+        function isAnonymousUser(user) {
+            if (!user) return true;
+            if (user.role === 'local-dev') return false;
+            if (user.is_anonymous === true) return true;
+            const provider = `${user.app_metadata?.provider || user.user_metadata?.provider || ''}`.trim().toLowerCase();
+            const providers = Array.isArray(user.app_metadata?.providers) ? user.app_metadata.providers : [];
+            return provider === 'anonymous'
+                || providers.some((value) => `${value || ''}`.trim().toLowerCase() === 'anonymous');
+        }
+
+        function setLearningAvailable(available, message = '') {
+            const button = document.getElementById('btn-record-toggle');
+            const status = document.getElementById('recording-status');
+            if (button) {
+                button.disabled = !available;
+                button.title = available ? 'Start recording' : (message || 'Workflows require an account');
+                button.setAttribute('aria-label', button.title);
+            }
+            if (!available && status) {
+                status.innerText = message || 'Workflows require an account';
+            }
+        }
+
         async function startWorkflow() {
             const options = getOptions();
             const descField = document.getElementById('wf-desc');
@@ -39,9 +62,25 @@
             markWorkflowPanelDirty();
         }
 
-        function syncRecorderStatus() {
+        async function syncRecorderStatus() {
             if (getOptions()?.autoSyncStatus && window.WorkflowRecorder?.syncStatus) {
-                window.WorkflowRecorder.syncStatus();
+                try {
+                    if (window.MiracleAuth?.whenAuthenticated) {
+                        await window.MiracleAuth.whenAuthenticated();
+                        const user = window.MiracleAuth.getUser?.() || null;
+                        if (isAnonymousUser(user)) {
+                            setLearningAvailable(false, 'Inicia sesión con una cuenta para grabar workflows');
+                            return;
+                        }
+                    }
+                    await window.WorkflowRecorder.syncStatus();
+                    setLearningAvailable(true);
+                } catch (error) {
+                    setLearningAvailable(false, error.message || 'No se pudo conectar con el servicio de workflows');
+                    emitPluginEvent('learning.status.unavailable', {
+                        message: error.message || 'workflow status unavailable'
+                    });
+                }
             }
         }
 

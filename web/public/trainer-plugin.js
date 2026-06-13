@@ -5,6 +5,7 @@
         aiPlaceholder: 'Ask AI to execute a saved flow',
         autoSyncStatus: true,
         apiBaseUrl: '',
+        miracleBaseUrl: 'https://miracle-ai-t0dn.onrender.com',
         adapter: null,
         assistantProfile: null,
         assistantRuntime: {
@@ -59,6 +60,32 @@
         running: false,
         cancelRequested: false,
         workflowId: ''
+    };
+    const miracleNoteState = {
+        visible: false,
+        active: false,
+        busy: false,
+        socket: null,
+        streamSession: null,
+        mediaRecorder: null,
+        mediaRecorderStopped: null,
+        mediaStream: null,
+        finalizeQuietTimer: null,
+        timesliceMs: 250,
+        voiceSessionId: '',
+        eventSequence: 0,
+        finalSegmentCount: 0,
+        committedTranscript: '',
+        pendingDraft: '',
+        noteContent: '',
+        noteTitle: 'Hoja en blanco',
+        diagnosisSuggestions: [],
+        diagnosisReviewNotice: '',
+        diagnosisStatus: '',
+        diagnosisError: '',
+        diagnosisBusy: false,
+        diagnosisSourceContent: '',
+        diagnosisRequestId: 0
     };
     const EXECUTION_STORAGE_PREFIX = 'graph-browser-workflow-execution-v1';
     const PHONE_MIC_SESSION_STORAGE_KEY = 'graph-phone-mic-session-id';
@@ -161,20 +188,49 @@
             || null;
     }
 
+    async function waitForAuthReady() {
+        try {
+            if (window.MiracleAuth && typeof window.MiracleAuth.whenAuthenticated === 'function') {
+                await window.MiracleAuth.whenAuthenticated();
+            }
+        } catch (error) { /* ignore */ }
+    }
+
     function getRealtimeSocketUrl() {
         const baseUrl = pluginHost()?.apiBaseUrl || options.apiBaseUrl || '';
+        let socketUrl = '';
         if (baseUrl) {
             try {
                 const parsed = new URL(baseUrl, window.location.href);
                 const protocol = parsed.protocol === 'https:' ? 'wss:' : 'ws:';
-                return `${protocol}//${parsed.host}/api/voice/realtime`;
+                socketUrl = `${protocol}//${parsed.host}/api/voice/realtime`;
             } catch (error) {
                 // Fall through to current page origin.
             }
         }
 
-        const socketProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        return `${socketProtocol}//${window.location.host}/api/voice/realtime`;
+        if (!socketUrl) {
+            const socketProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            socketUrl = `${socketProtocol}//${window.location.host}/api/voice/realtime`;
+        }
+
+        // Browsers cannot set headers on a WS upgrade, so the Supabase token (when a
+        // session exists) travels as a query param the server validates.
+        try {
+            const token = window.MiracleAuth && typeof window.MiracleAuth.getAccessToken === 'function'
+                ? window.MiracleAuth.getAccessToken()
+                : '';
+            if (token) {
+                socketUrl += `${socketUrl.includes('?') ? '&' : '?'}access_token=${encodeURIComponent(token)}`;
+            }
+        } catch (error) { /* ignore */ }
+
+        return socketUrl;
+    }
+
+    async function openRealtimeSocket() {
+        await waitForAuthReady();
+        return new WebSocket(getRealtimeSocketUrl());
     }
 
     function getStoredPhoneSessionId() {
@@ -417,6 +473,7 @@
     function apiClient() {
         return window.GraphPluginApi?.createClient?.({
             baseUrl: pluginHost()?.apiBaseUrl || options.apiBaseUrl || '',
+            miracleBaseUrl: options.miracleBaseUrl || DEFAULTS.miracleBaseUrl,
             fetchImpl: pluginHost()?.fetchImpl || null
         }) || null;
     }
@@ -1379,6 +1436,491 @@
         return requireTrainerShell().setExecutionStopButtonVisible(active);
     }
 
+    function syncMiracleNotePanel(statusText = null) {
+        runtime()?.setNotePanelState?.({
+            visible: miracleNoteState.visible,
+            title: miracleNoteState.noteTitle,
+            content: miracleNoteState.noteContent,
+            status: statusText !== null ? statusText : undefined,
+            recording: miracleNoteState.active,
+            busy: miracleNoteState.busy,
+            diagnosisSuggestions: miracleNoteState.diagnosisSuggestions,
+            diagnosisReviewNotice: miracleNoteState.diagnosisReviewNotice,
+            diagnosisStatus: miracleNoteState.diagnosisStatus,
+            diagnosisError: miracleNoteState.diagnosisError,
+            diagnosisBusy: miracleNoteState.diagnosisBusy,
+            diagnosisDisabled: !miracleNoteState.noteContent.trim()
+                || miracleNoteState.active
+                || miracleNoteState.busy
+                || miracleNoteState.diagnosisBusy
+        });
+    }
+
+    function clearMiracleDiagnosisSuggestions() {
+        miracleNoteState.diagnosisRequestId += 1;
+        miracleNoteState.diagnosisSuggestions = [];
+        miracleNoteState.diagnosisReviewNotice = '';
+        miracleNoteState.diagnosisStatus = '';
+        miracleNoteState.diagnosisError = '';
+        miracleNoteState.diagnosisBusy = false;
+        miracleNoteState.diagnosisSourceContent = '';
+    }
+
+    function updateMiracleNoteContent(content) {
+        const nextContent = `${content || ''}`;
+        if (nextContent !== miracleNoteState.noteContent) {
+            clearMiracleDiagnosisSuggestions();
+        }
+        miracleNoteState.noteContent = nextContent;
+    }
+
+    async function requestMiracleDiagnosisSuggestions() {
+        const editor = document.getElementById('graph-assistant-note-editor');
+        const noteContent = `${miracleNoteState.noteContent || editor?.innerText || ''}`;
+
+        if (!noteContent.trim()) {
+            miracleNoteState.diagnosisError = 'Escribe o dicta información clínica antes de solicitar sugerencias.';
+            syncMiracleNotePanel();
+            return;
+        }
+        if (miracleNoteState.active || miracleNoteState.busy) {
+            miracleNoteState.diagnosisError = 'Detén el dictado antes de solicitar sugerencias.';
+            syncMiracleNotePanel();
+            return;
+        }
+
+        const requestId = miracleNoteState.diagnosisRequestId + 1;
+        miracleNoteState.diagnosisRequestId = requestId;
+        miracleNoteState.diagnosisBusy = true;
+        miracleNoteState.diagnosisError = '';
+        miracleNoteState.diagnosisStatus = 'Generando sugerencias para revisión médica...';
+        miracleNoteState.diagnosisSuggestions = [];
+        miracleNoteState.diagnosisReviewNotice = '';
+        miracleNoteState.diagnosisSourceContent = noteContent;
+        syncMiracleNotePanel();
+
+        try {
+            const payload = await requireApiClient().requestDiagnosisSuggestions(noteContent);
+            const currentContent = `${miracleNoteState.noteContent || ''}`;
+            if (requestId !== miracleNoteState.diagnosisRequestId || currentContent !== noteContent) {
+                return;
+            }
+            miracleNoteState.diagnosisSuggestions = Array.isArray(payload?.suggestions)
+                ? payload.suggestions
+                : [];
+            miracleNoteState.diagnosisReviewNotice = miracleNoteState.diagnosisSuggestions.length > 0
+                ? `${payload?.reviewNotice || ''}`
+                : '';
+            miracleNoteState.diagnosisStatus = miracleNoteState.diagnosisSuggestions.length > 0
+                ? ''
+                : 'La nota no contiene información suficiente para sugerir un diagnóstico diferencial.';
+        } catch (error) {
+            if (requestId !== miracleNoteState.diagnosisRequestId) {
+                return;
+            }
+            miracleNoteState.diagnosisError = error.message || 'No fue posible generar sugerencias diagnósticas.';
+            miracleNoteState.diagnosisStatus = '';
+        } finally {
+            if (requestId === miracleNoteState.diagnosisRequestId) {
+                miracleNoteState.diagnosisBusy = false;
+                syncMiracleNotePanel();
+            }
+        }
+    }
+
+    function mergeMiracleTranscript(base, addition) {
+        const next = `${addition || ''}`.trim();
+        if (!next) {
+            return `${base || ''}`.trim();
+        }
+        if (!`${base || ''}`.trim()) {
+            return next;
+        }
+        return `${`${base || ''}`.trim()} ${next}`;
+    }
+
+    function readMiracleDeepgramTranscript(payload) {
+        const channel = payload?.channel;
+        const alternatives = Array.isArray(channel?.alternatives) ? channel.alternatives : [];
+        const transcript = alternatives[0]?.transcript;
+        return typeof transcript === 'string' ? transcript.trim() : '';
+    }
+
+    function resetMiracleFinalizeQuietTimer() {
+        if (miracleNoteState.finalizeQuietTimer) {
+            window.clearTimeout(miracleNoteState.finalizeQuietTimer);
+            miracleNoteState.finalizeQuietTimer = null;
+        }
+    }
+
+    function releaseMiracleMicrophone() {
+        if (!miracleNoteState.mediaStream) {
+            return;
+        }
+        miracleNoteState.mediaStream.getTracks().forEach((track) => track.stop());
+        miracleNoteState.mediaStream = null;
+    }
+
+    function chooseMiracleMimeType() {
+        const options = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'];
+        for (const candidate of options) {
+            if (window.MediaRecorder?.isTypeSupported(candidate)) {
+                return candidate;
+            }
+        }
+        return '';
+    }
+
+    async function ensureMiracleMicrophone() {
+        if (!navigator.mediaDevices?.getUserMedia) {
+            throw new Error('Este navegador no expone acceso a microfono.');
+        }
+        if (miracleNoteState.mediaStream && miracleNoteState.mediaStream.active) {
+            return miracleNoteState.mediaStream;
+        }
+        miracleNoteState.mediaStream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+                autoGainControl: true,
+                echoCancellation: true,
+                noiseSuppression: true
+            }
+        });
+        return miracleNoteState.mediaStream;
+    }
+
+    async function closeMiracleSocket() {
+        if (!miracleNoteState.socket) {
+            return;
+        }
+        const socket = miracleNoteState.socket;
+        if (socket.readyState === WebSocket.CLOSED) {
+            if (miracleNoteState.socket === socket) {
+                miracleNoteState.socket = null;
+            }
+            return;
+        }
+        await new Promise((resolve) => {
+            socket.addEventListener('close', resolve, { once: true });
+            socket.close();
+        });
+        if (miracleNoteState.socket === socket) {
+            miracleNoteState.socket = null;
+        }
+    }
+
+    async function waitForMiracleFinalize() {
+        if (!miracleNoteState.socket) {
+            return;
+        }
+        await new Promise((resolve) => {
+            let settled = false;
+            let maxWaitTimer = null;
+            const socket = miracleNoteState.socket;
+            const settle = () => {
+                if (settled) {
+                    return;
+                }
+                settled = true;
+                socket.removeEventListener('message', onMessage);
+                if (maxWaitTimer) {
+                    window.clearTimeout(maxWaitTimer);
+                }
+                resetMiracleFinalizeQuietTimer();
+                resolve();
+            };
+            const onMessage = () => {
+                resetMiracleFinalizeQuietTimer();
+                miracleNoteState.finalizeQuietTimer = window.setTimeout(settle, 900);
+            };
+
+            resetMiracleFinalizeQuietTimer();
+            miracleNoteState.finalizeQuietTimer = window.setTimeout(settle, 900);
+            socket.addEventListener('message', onMessage);
+            maxWaitTimer = window.setTimeout(settle, 2200);
+        });
+    }
+
+    async function sendMiracleFinalSegment(transcript, language) {
+        const trimmedTranscript = `${transcript || ''}`.trim();
+        if (!trimmedTranscript) {
+            return;
+        }
+
+        if (!miracleNoteState.voiceSessionId) {
+            miracleNoteState.voiceSessionId = crypto.randomUUID();
+        }
+
+        miracleNoteState.eventSequence += 1;
+        miracleNoteState.finalSegmentCount += 1;
+        syncMiracleNotePanel('Miracle esta organizando la nota...');
+
+        const response = await requireApiClient().sendMiracleOrchestratorEvent({
+            voice_session_id: miracleNoteState.voiceSessionId,
+            note_path: null,
+            note_title: miracleNoteState.noteTitle,
+            note_content: miracleNoteState.noteContent,
+            tab_id: window.location.href,
+            event_id: `graph_evt_${miracleNoteState.eventSequence}`,
+            sequence: miracleNoteState.eventSequence,
+            segment: {
+                segment_id: `graph_seg_${miracleNoteState.finalSegmentCount}`,
+                kind: 'final',
+                transcript: trimmedTranscript,
+                language: language || null
+            }
+        });
+
+        updateMiracleNoteContent(response?.resolved_note_content || '');
+        syncMiracleNotePanel(miracleNoteState.noteContent ? 'Miracle organizo la nota.' : 'Segmento enviado a Miracle.');
+        dispatchMiracleNoteToDynamicFill(miracleNoteState.noteContent);
+    }
+
+    function handleMiracleSocketMessage(event) {
+        let payload;
+        try {
+            payload = JSON.parse(event.data);
+        } catch (error) {
+            return;
+        }
+
+        const transcript = readMiracleDeepgramTranscript(payload);
+        if (!transcript) {
+            return;
+        }
+
+        if (payload.is_final) {
+            miracleNoteState.committedTranscript = mergeMiracleTranscript(
+                miracleNoteState.committedTranscript,
+                transcript
+            );
+            miracleNoteState.pendingDraft = '';
+            syncMiracleNotePanel('Miracle esta organizando la nota...');
+            sendMiracleFinalSegment(transcript, miracleNoteState.streamSession?.language || null).catch((error) => {
+                syncMiracleNotePanel(error.message || 'No pude enviar el segmento a Miracle.');
+            });
+            return;
+        }
+
+        miracleNoteState.pendingDraft = transcript;
+        syncMiracleNotePanel('Transcribiendo con Miracle...');
+    }
+
+    async function openMiracleSocket() {
+        const session = await requireApiClient().createMiracleStreamSession();
+        miracleNoteState.streamSession = session;
+        miracleNoteState.timesliceMs = Number(session?.timeslice_ms) || 250;
+
+        await new Promise((resolve, reject) => {
+            const authScheme = `${session?.auth_scheme || ''}`.trim() || 'bearer';
+            const socket = new WebSocket(session.websocket_url, [authScheme, session.access_token]);
+            miracleNoteState.socket = socket;
+            socket.addEventListener('message', handleMiracleSocketMessage);
+            socket.addEventListener('open', resolve, { once: true });
+            socket.addEventListener('error', () => {
+                reject(new Error('No fue posible abrir el stream en Deepgram.'));
+            }, { once: true });
+            socket.addEventListener('close', (closeEvent) => {
+                if (miracleNoteState.active && !closeEvent.wasClean) {
+                    syncMiracleNotePanel('El stream de Miracle se cerro antes de tiempo.');
+                    stopMiracleNoteDictation().catch(() => {});
+                }
+            });
+        });
+    }
+
+    async function startMiracleMediaRecorder() {
+        await ensureMiracleMicrophone();
+        const mimeType = chooseMiracleMimeType();
+        const recorder = mimeType
+            ? new MediaRecorder(miracleNoteState.mediaStream, { mimeType })
+            : new MediaRecorder(miracleNoteState.mediaStream);
+        miracleNoteState.mediaRecorder = recorder;
+        miracleNoteState.mediaRecorderStopped = new Promise((resolve, reject) => {
+            recorder.addEventListener('stop', () => resolve(), { once: true });
+            recorder.addEventListener('error', () => reject(new Error('No fue posible capturar audio.')), { once: true });
+        });
+
+        recorder.addEventListener('dataavailable', async (event) => {
+            if (!event.data || event.data.size === 0 || !miracleNoteState.socket || miracleNoteState.socket.readyState !== WebSocket.OPEN) {
+                return;
+            }
+            const audioBuffer = await event.data.arrayBuffer();
+            miracleNoteState.socket.send(audioBuffer);
+        });
+
+        recorder.start(miracleNoteState.timesliceMs);
+    }
+
+    async function startMiracleNoteDictation() {
+        miracleNoteState.busy = true;
+        syncMiracleNotePanel('Preparando dictado con Miracle...');
+        try {
+            if (!miracleNoteState.voiceSessionId) {
+                miracleNoteState.voiceSessionId = crypto.randomUUID();
+            }
+            miracleNoteState.committedTranscript = '';
+            miracleNoteState.pendingDraft = '';
+            miracleNoteState.finalSegmentCount = 0;
+            await openMiracleSocket();
+            await startMiracleMediaRecorder();
+            miracleNoteState.active = true;
+            syncMiracleNotePanel('Dictando hacia Miracle...');
+        } finally {
+            miracleNoteState.busy = false;
+            syncMiracleNotePanel(miracleNoteState.active ? 'Dictando hacia Miracle...' : 'Lista para dictado con Miracle.');
+        }
+    }
+
+    async function stopMiracleNoteDictation() {
+        miracleNoteState.busy = true;
+        syncMiracleNotePanel('Cerrando dictado...');
+        try {
+            if (miracleNoteState.mediaRecorder && miracleNoteState.mediaRecorder.state !== 'inactive') {
+                miracleNoteState.mediaRecorder.stop();
+            }
+            if (miracleNoteState.mediaRecorderStopped) {
+                await miracleNoteState.mediaRecorderStopped;
+            }
+            if (miracleNoteState.socket && miracleNoteState.socket.readyState === WebSocket.OPEN) {
+                miracleNoteState.socket.send(JSON.stringify({ type: 'Finalize' }));
+                await waitForMiracleFinalize();
+            }
+            await closeMiracleSocket();
+            miracleNoteState.pendingDraft = '';
+        } finally {
+            miracleNoteState.mediaRecorder = null;
+            miracleNoteState.mediaRecorderStopped = null;
+            miracleNoteState.streamSession = null;
+            miracleNoteState.active = false;
+            miracleNoteState.busy = false;
+            releaseMiracleMicrophone();
+            stopMiracleDynamicFillSession();
+            syncMiracleNotePanel(miracleNoteState.noteContent ? 'Dictado detenido.' : 'Lista para dictado con Miracle.');
+        }
+    }
+
+    let miracleDynamicFillSession = null;
+    let miracleDynamicFillBootstrapPromise = null;
+    let miracleNoteEditorBound = false;
+
+    async function findWorkflowForCurrentPage() {
+        try {
+            const payload = await requireApiClient().listWorkflows();
+            const filtered = filterWorkflowsForCurrentPage(payload?.workflows || []);
+            if (filtered.length === 0) {
+                return null;
+            }
+            const currentPath = normalizePathname(window.location.pathname);
+            const exactPath = filtered.find((workflow) => {
+                const pathname = normalizePathname(workflow?.sourcePathname || '');
+                return pathname && currentPath && pathname === currentPath;
+            });
+            return exactPath || filtered[0] || null;
+        } catch (error) {
+            emitExtensionLog('warn', 'Could not list workflows for dynamic fill.', {
+                message: error?.message || 'Unknown listWorkflows error'
+            });
+            return null;
+        }
+    }
+
+    async function ensureMiracleDynamicFillSession() {
+        if (miracleDynamicFillSession) {
+            return miracleDynamicFillSession;
+        }
+        if (miracleDynamicFillBootstrapPromise) {
+            return miracleDynamicFillBootstrapPromise;
+        }
+        miracleDynamicFillBootstrapPromise = (async () => {
+            const workflow = await findWorkflowForCurrentPage();
+            if (!workflow?.id) {
+                return null;
+            }
+            let plan = null;
+            try {
+                plan = await fetchExecutionPlan(workflow.id);
+            } catch (error) {
+                emitExtensionLog('warn', 'Could not fetch execution plan for dynamic fill.', {
+                    workflowId: workflow.id,
+                    message: error?.message || 'Unknown plan error'
+                });
+                return null;
+            }
+            if (!plan) {
+                return null;
+            }
+            const session = requireExecutionClient().createDynamicFillSession(plan, {
+                requestNoteFieldMatches: (workflowId, payload) => requireApiClient().requestNoteFieldMatches(workflowId, payload),
+                onFieldFilled: (detail) => {
+                    emitPluginEvent('note.field.filled', detail);
+                },
+                onReadyToSubmit: (detail) => {
+                    emitPluginEvent('note.session.ready_submit', detail);
+                }
+            });
+            miracleDynamicFillSession = session;
+            emitExtensionLog('info', 'Dynamic note fill session started.', {
+                workflowId: workflow.id,
+                stepCount: Array.isArray(plan.steps) ? plan.steps.length : 0
+            });
+            return session;
+        })().finally(() => {
+            miracleDynamicFillBootstrapPromise = null;
+        });
+        return miracleDynamicFillBootstrapPromise;
+    }
+
+    function stopMiracleDynamicFillSession() {
+        if (miracleDynamicFillSession) {
+            miracleDynamicFillSession.stop();
+            miracleDynamicFillSession = null;
+            emitExtensionLog('info', 'Dynamic note fill session stopped.', {});
+        }
+    }
+
+    function dispatchMiracleNoteToDynamicFill(content) {
+        const session = miracleDynamicFillSession;
+        if (!session || session.isStopped?.()) return;
+        const text = `${content || ''}`;
+        if (!text.trim()) return;
+        session.ingestNoteContent(text);
+    }
+
+    function bindMiracleNoteEditorTyping() {
+        if (miracleNoteEditorBound) return;
+        const editor = document.getElementById('graph-assistant-note-editor');
+        if (!editor) return;
+        editor.addEventListener('input', () => {
+            updateMiracleNoteContent(editor.innerText || '');
+            syncMiracleNotePanel();
+            dispatchMiracleNoteToDynamicFill(miracleNoteState.noteContent);
+        });
+        miracleNoteEditorBound = true;
+    }
+
+    async function toggleMiracleNoteDictation() {
+        miracleNoteState.visible = true;
+        runtime()?.setNotePanelState?.({ visible: true });
+        bindMiracleNoteEditorTyping();
+        try {
+            if (miracleNoteState.active) {
+                await stopMiracleNoteDictation();
+                return;
+            }
+            await startMiracleNoteDictation();
+            ensureMiracleDynamicFillSession().catch(() => {});
+        } catch (error) {
+            miracleNoteState.active = false;
+            miracleNoteState.busy = false;
+            miracleNoteState.mediaRecorder = null;
+            miracleNoteState.mediaRecorderStopped = null;
+            miracleNoteState.streamSession = null;
+            releaseMiracleMicrophone();
+            await closeMiracleSocket().catch(() => {});
+            syncMiracleNotePanel(error.message || 'No fue posible procesar la transcripcion.');
+        }
+    }
+
     function syncPhonePairingVisibility() {
         const visible = Boolean(
             voiceState.phonePairingRequested
@@ -2089,7 +2631,7 @@
         greetingState.lastPlayedAt = now;
         voiceLog('preview_tts_start', { text: message.slice(0, 120) });
 
-        const socket = new WebSocket(getRealtimeSocketUrl());
+        const socket = await openRealtimeSocket();
         socket.binaryType = 'arraybuffer';
 
         await new Promise((resolve) => {
@@ -2162,7 +2704,7 @@
             runtime()?.speak('Voy a esperar a que tu telefono se conecte para seguir con la tarea.', { mode: 'listening' });
         }
 
-        const socket = new WebSocket(getRealtimeSocketUrl());
+        const socket = await openRealtimeSocket();
         socket.binaryType = 'arraybuffer';
         voiceState.socket = socket;
 
@@ -2908,7 +3450,7 @@
             if (effectivePhoneSessionId) {
                 voiceState.mode = 'phone';
                 persistVoiceResumeState();
-                const socket = new WebSocket(getRealtimeSocketUrl());
+                const socket = await openRealtimeSocket();
                 socket.binaryType = 'arraybuffer';
                 voiceState.socket = socket;
 
@@ -3194,6 +3736,23 @@
             ensureConsole();
             requireVoiceClient().restoreStoredPhoneSession();
             runtime()?.mount(options.assistantRuntime || DEFAULTS.assistantRuntime);
+            miracleNoteState.visible = false;
+            clearMiracleDiagnosisSuggestions();
+            runtime()?.setNotePanelState?.({
+                visible: false,
+                title: miracleNoteState.noteTitle,
+                content: miracleNoteState.noteContent,
+                status: 'Lista para dictado con Miracle.',
+                recording: false,
+                busy: false,
+                diagnosisSuggestions: [],
+                diagnosisReviewNotice: '',
+                diagnosisStatus: '',
+                diagnosisError: '',
+                diagnosisBusy: false,
+                diagnosisDisabled: !miracleNoteState.noteContent.trim()
+            });
+            bindMiracleNoteEditorTyping();
             if (!runtimeTouchBound) {
                 runtime()?.subscribe?.('touched', () => {
                     const greeting = `${options.assistantRuntime?.idleMessage || 'Puedo ayudarte en esta pagina. Solo dime que necesitas y yo me encargo.'}`.trim();
@@ -3223,6 +3782,22 @@
                     } catch (error) {
                         // The helper already surfaced the error in chat.
                     }
+                });
+                runtime()?.subscribe?.('note-toggle', async (payload) => {
+                    miracleNoteState.visible = Boolean(payload?.open);
+                    if (payload?.open) {
+                        syncMiracleNotePanel(miracleNoteState.active ? 'Dictando hacia Miracle...' : 'Lista para dictado con Miracle.');
+                        return;
+                    }
+                    if (miracleNoteState.active) {
+                        await stopMiracleNoteDictation().catch(() => {});
+                    }
+                });
+                runtime()?.subscribe?.('note-mic-button', async () => {
+                    await toggleMiracleNoteDictation();
+                });
+                runtime()?.subscribe?.('note-diagnosis-button', async () => {
+                    await requestMiracleDiagnosisSuggestions();
                 });
                 pluginEvents()?.on?.('learning.context.captured', (payload) => {
                     persistLearningContextNote(payload?.note || null);
@@ -3369,4 +3944,3 @@
         }
     };
 })();
-

@@ -14,9 +14,32 @@
         return `${normalizedBase}${path.startsWith('/') ? path : `/${path}`}`;
     }
 
+    async function waitForAuthReady() {
+        try {
+            if (window.MiracleAuth && typeof window.MiracleAuth.whenAuthenticated === 'function') {
+                await window.MiracleAuth.whenAuthenticated();
+            }
+        } catch (error) { /* ignore */ }
+    }
+
+    // Attaches the Supabase access token after MiracleAuth has resolved. In
+    // local mode there is no token, and the server falls back to local-dev-user.
+    async function withAuth(init = {}) {
+        await waitForAuthReady();
+        try {
+            const token = window.MiracleAuth && typeof window.MiracleAuth.getAccessToken === 'function'
+                ? window.MiracleAuth.getAccessToken()
+                : '';
+            if (token) {
+                return { ...init, headers: { ...(init.headers || {}), Authorization: `Bearer ${token}` } };
+            }
+        } catch (error) { /* ignore */ }
+        return init;
+    }
+
     function createJsonRequest(baseUrl, path, init, fetchImpl) {
         const effectiveFetch = typeof fetchImpl === 'function' ? fetchImpl : fetch;
-        return effectiveFetch(buildUrl(baseUrl, path), init).then(async (response) => {
+        return withAuth(init).then((authenticatedInit) => effectiveFetch(buildUrl(baseUrl, path), authenticatedInit)).then(async (response) => {
             const payload = await response.json().catch(() => ({}));
             if (!response.ok) {
                 throw new Error(payload.error || `Request failed: ${path}`);
@@ -27,6 +50,7 @@
 
     function createClient(config) {
         const baseUrl = normalizeBaseUrl(config?.baseUrl || '');
+        const miracleBaseUrl = normalizeBaseUrl(config?.miracleBaseUrl || '');
         const fetchImpl = typeof config?.fetchImpl === 'function'
             ? config.fetchImpl
             : fetch;
@@ -115,6 +139,20 @@
                     body: JSON.stringify(payload || {})
                 }, fetchImpl);
             },
+            requestNoteFieldMatches(workflowId, payload) {
+                return createJsonRequest(baseUrl, `/api/workflows/${encodeURIComponent(workflowId)}/note-field-matches`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload || {})
+                }, fetchImpl);
+            },
+            requestDiagnosisSuggestions(noteContent) {
+                return createJsonRequest(baseUrl, '/api/clinical/diagnosis-suggestions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ noteContent: `${noteContent || ''}` })
+                }, fetchImpl);
+            },
             recordBranchObservation(workflowId, payload) {
                 return createJsonRequest(baseUrl, `/api/workflows/${encodeURIComponent(workflowId)}/branch-observation`, {
                     method: 'POST',
@@ -148,6 +186,19 @@
                     body: JSON.stringify(payload || {})
                 }, fetchImpl);
             },
+            createMiracleStreamSession() {
+                return createJsonRequest(miracleBaseUrl, '/api/voice/stream-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                }, fetchImpl);
+            },
+            sendMiracleOrchestratorEvent(payload) {
+                return createJsonRequest(miracleBaseUrl, '/api/voice/orchestrator/events', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload || {})
+                }, fetchImpl);
+            },
             processVoiceComplaints(payload) {
                 return createJsonRequest(baseUrl, '/api/voice/complaints/process', {
                     method: 'POST',
@@ -156,14 +207,14 @@
                 }, fetchImpl);
             },
             createOpenAiRealtimeSession(sdp, headers) {
-                return fetchImpl(buildUrl(baseUrl, '/api/voice/openai/session'), {
+                return withAuth({
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/sdp',
                         ...(headers || {})
                     },
                     body: sdp
-                });
+                }).then((authenticatedInit) => fetchImpl(buildUrl(baseUrl, '/api/voice/openai/session'), authenticatedInit));
             }
         };
     }

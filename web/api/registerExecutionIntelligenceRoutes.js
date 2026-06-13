@@ -9,7 +9,7 @@ function registerExecutionIntelligenceRoutes(app, deps = {}) {
   app.post('/api/workflows/:id/intelligence', async (req, res) => {
     try {
       const workflowId = `${req.params.id || ''}`.trim();
-      const workflow = await catalogService.getWorkflowById(workflowId);
+      const workflow = await catalogService.getWorkflowById(workflowId, req.workflowAccess || null);
       if (!workflow) {
         return res.status(404).json({ error: 'Workflow not found' });
       }
@@ -21,9 +21,10 @@ function registerExecutionIntelligenceRoutes(app, deps = {}) {
       res.json({ decision });
     } catch (err) {
       console.error(`[Execution Intelligence] Decision Error: ${err.message}`);
-      res.status(500).json({ error: err.message });
+      res.status(statusForError(err)).json({ error: publicErrorMessage(err) });
     }
   });
 }
 
 module.exports = registerExecutionIntelligenceRoutes;
+const { statusForError, publicErrorMessage } = require('./httpErrors');

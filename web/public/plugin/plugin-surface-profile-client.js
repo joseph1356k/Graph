@@ -9,6 +9,16 @@
 
         let hydrationPromise = null;
 
+        function isAnonymousUser(user) {
+            if (!user) return true;
+            if (user.role === 'local-dev') return false;
+            if (user.is_anonymous === true) return true;
+            const provider = `${user.app_metadata?.provider || user.user_metadata?.provider || ''}`.trim().toLowerCase();
+            const providers = Array.isArray(user.app_metadata?.providers) ? user.app_metadata.providers : [];
+            return provider === 'anonymous'
+                || providers.some((value) => `${value || ''}`.trim().toLowerCase() === 'anonymous');
+        }
+
         function persistLearningContextNote(note) {
             if (!note || !note.transcript || !requireApiClient) {
                 return Promise.resolve();
@@ -89,6 +99,13 @@
 
             hydrationPromise = (async () => {
                 try {
+                    if (window.MiracleAuth?.whenAuthenticated) {
+                        await window.MiracleAuth.whenAuthenticated();
+                        const user = window.MiracleAuth.getUser?.() || null;
+                        if (isAnonymousUser(user)) {
+                            return null;
+                        }
+                    }
                     const context = getPageContext();
                     const pageSnapshot = window.GraphPluginContext?.capturePageSnapshot?.() || {};
                     const payload = await requireApiClient().ensureSurfaceProfile(context, pageSnapshot);

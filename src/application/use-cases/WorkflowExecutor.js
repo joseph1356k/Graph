@@ -57,8 +57,8 @@ class WorkflowExecutor {
     };
   }
 
-  async getExecutionPlanById(workflowId, variables = {}, executionIntent = {}) {
-    const workflow = await this.catalogService.getWorkflowById(workflowId);
+  async getExecutionPlanById(workflowId, variables = {}, executionIntent = {}, access = null) {
+    const workflow = await this.catalogService.getWorkflowById(workflowId, access);
     if (!workflow) {
       throw new Error(`Workflow ${workflowId} not found or has no steps.`);
     }
@@ -142,8 +142,8 @@ class WorkflowExecutor {
     return rawChoices;
   }
 
-  async executeById(workflowId, variables = {}) {
-    const plan = await this.getExecutionPlanById(workflowId, variables);
+  async executeById(workflowId, variables = {}, access = null) {
+    const plan = await this.getExecutionPlanById(workflowId, variables, {}, access);
     const executableSteps = plan.steps;
 
     console.log(`\x1b[33mActivating Workflow: ${workflowId}\x1b[0m`);

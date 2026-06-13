@@ -85,7 +85,7 @@ function registerVoiceRoutes(app, deps = {}) {
 
       const context = decodeBase64JsonHeader(req.get('x-graph-voice-context'), {});
       const history = decodeBase64JsonHeader(req.get('x-graph-voice-history'), []);
-      const workflows = agentChat.filterWorkflowsForContext(await catalogService.getCatalog(), context);
+      const workflows = agentChat.filterWorkflowsForContext(await catalogService.getCatalog(req.workflowAccess || null), context);
 
       const sessionConfig = {
         type: 'realtime',
@@ -148,6 +148,11 @@ function registerVoiceRoutes(app, deps = {}) {
 
   app.post('/api/voice/phone-session', async (req, res) => {
     try {
+      if (process.env.VERCEL) {
+        return res.status(503).json({
+          error: 'El microfono por telefono requiere el gateway WebSocket persistente y no esta disponible en Vercel.'
+        });
+      }
       const requestedId = `${req.body?.requestedId || ''}`.trim();
       const id = /^[a-zA-Z0-9_-]{12,120}$/.test(requestedId)
         ? requestedId

@@ -63,9 +63,18 @@ class WorkflowBranchLearning {
     );
   }
 
-  async recordObservation(workflowId, observation = {}) {
+  async recordObservation(workflowId, observation = {}, access = null) {
     if (!workflowId) {
       throw new Error('workflowId is required');
+    }
+    if (this.catalogService && typeof this.catalogService.getWorkflowById === 'function') {
+      const workflow = await this.catalogService.getWorkflowById(workflowId, access);
+      if (!workflow) {
+        throw new Error('Workflow not found');
+      }
+      if (typeof this.catalogService.assertMutableWorkflow === 'function') {
+        this.catalogService.assertMutableWorkflow(workflow, access);
+      }
     }
 
     const branch = this.normalizeObservation(workflowId, observation);
@@ -77,9 +86,9 @@ class WorkflowBranchLearning {
       };
     }
 
-    const savedBranch = await this.repository.upsertWorkflowBranch(branch);
+    const savedBranch = await this.repository.upsertWorkflowBranch(branch, access);
     if (this.catalogService && typeof this.catalogService.rebuildCatalogFile === 'function') {
-      await this.catalogService.rebuildCatalogFile();
+      await this.catalogService.rebuildCatalogFile(access);
     }
     return {
       saved: true,

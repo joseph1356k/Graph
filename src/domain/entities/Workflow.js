@@ -7,6 +7,8 @@ class Workflow {
     this.summary = data.summary || '';
     this.executionGuide = data.executionGuide || '';
     this.status = data.status || 'draft';
+    this.scope = data.scope || (data.ownerId ? 'private' : 'global');
+    this.ownerId = data.ownerId || '';
     this.appId = data.appId || '';
     this.sourceUrl = data.sourceUrl || '';
     this.sourceOrigin = data.sourceOrigin || '';
@@ -16,6 +18,9 @@ class Workflow {
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
     this.completedAt = data.completedAt;
+    this.publishedFromWorkflowId = data.publishedFromWorkflowId || '';
+    this.publishedByOwnerId = data.publishedByOwnerId || '';
+    this.publishedAt = data.publishedAt;
     this.steps = Array.isArray(data.steps) ? data.steps.map(s => new Step(s)) : [];
   }
 
@@ -143,6 +148,8 @@ class Workflow {
       summary: this.summary,
       executionGuide: this.executionGuide,
       status: this.status,
+      scope: this.scope,
+      ownerId: this.ownerId,
       appId: this.appId,
       sourceUrl: this.sourceUrl,
       sourceOrigin: this.sourceOrigin,
@@ -152,6 +159,9 @@ class Workflow {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       completedAt: this.completedAt,
+      publishedFromWorkflowId: this.publishedFromWorkflowId,
+      publishedByOwnerId: this.publishedByOwnerId,
+      publishedAt: this.publishedAt,
       steps: this.steps,
       variables: this.variables,
       totalSteps: this.totalSteps

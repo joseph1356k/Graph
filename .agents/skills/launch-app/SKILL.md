@@ -24,10 +24,10 @@ Launch Graph against the Miracle-backed runtime path when possible, then validat
    - Try a lightweight probe such as `curl -sS http://127.0.0.1:8766/api/setup/status`.
    - If that endpoint is unavailable, note the failure and continue checking whether the Graph app itself can still be launched for partial validation.
 2. Start Graph in Miracle-backed mode on a non-default port to avoid collisions:
-   - `WEB_PORT=3001 npm start:miracle`
+   - PowerShell: `$env:WEB_PORT='3001'; $env:MIRACLE_MEDICAL_ENGINE_URL='http://127.0.0.1:8766'; npm.cmd start`
 3. Confirm the app is serving:
-   - `curl -sS http://127.0.0.1:3001/api/status`
-   - `curl -sS http://127.0.0.1:3001/api/medical/notes/session`
+   - `curl.exe -sS http://127.0.0.1:3001/api/public-config`
+   - `curl.exe -sS http://127.0.0.1:3001/api/health`
 4. For UI-touching work, also load:
    - `http://127.0.0.1:3001/`
    - Use browser-based inspection or targeted HTTP checks to verify the changed path.

@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#2f8cff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Miracle">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <title>Miracle EMR Workspace</title>
+    <style>
+        :root {
+            --bg: #eef3f7;
+            --bg-2: #e5edf4;
+            --surface: rgba(255, 255, 255, 0.96);
+            --surface-2: #f6f9fc;
+            --line: rgba(25, 34, 44, 0.1);
+            --line-strong: rgba(25, 34, 44, 0.16);
+            --ink: #18232d;
+            --muted: #667787;
+            --accent: #1f638c;
+            --accent-soft: rgba(31, 99, 140, 0.1);
+            --success: #1f7a53;
+            --warning: #9b6b21;
+            --shadow-lg: 0 24px 48px rgba(19, 37, 51, 0.1);
+            --shadow-md: 0 14px 28px rgba(19, 37, 51, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", "Segoe UI", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(102, 168, 217, 0.18), transparent 28%),
+                linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+        }
+
+        a {
+            color: inherit;
+        }
+
+        button,
+        input,
+        textarea,
+        select {
+            font: inherit;
+        }
+
+        .shell {
+            width: min(calc(100% - 32px), 1560px);
+            margin: 0 auto;
+            padding: 24px 0 120px;
+        }
+
+        .topbar,
+        .surface-card,
+        .workspace-shell,
+        .side-card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 20px 22px;
+            border-radius: 24px;
+            margin-bottom: 18px;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 1.3rem;
+            letter-spacing: -0.03em;
+        }
+
+        .topbar p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .topbar-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 0 16px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #fff;
+            text-decoration: none;
+            color: var(--muted);
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .nav-btn.primary {
+            background: var(--ink);
+            border-color: transparent;
+            color: #fff;
+        }
+
+        .surface-card {
+            padding: 18px;
+            border-radius: 28px;
+        }
+
+        .workspace-shell {
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        .workspace-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--line);
+            background: linear-gradient(180deg, #f7fafc, #f1f5f8);
+        }
+
+        .workspace-top strong,
+        .workspace-top span {
+            display: block;
+        }
+
+        .workspace-top strong {
+            font-size: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .workspace-top span {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .workspace-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            min-height: 36px;
+            padding: 0 12px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--muted);
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .workspace-body {
+            display: block;
+            min-height: 920px;
+        }
+
+        .main-panel {
+            padding: 24px;
+            background: linear-gradient(180deg, rgba(249, 251, 253, 0.96), rgba(244, 248, 251, 0.94));
+        }
+
+        .patient-ribbon {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .ribbon-card {
+            padding: 18px 20px;
+            border-radius: 20px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 250, 252, 0.96));
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow-md);
+        }
+
+        .ribbon-card strong,
+        .ribbon-card span {
+            display: block;
+        }
+
+        .ribbon-card strong {
+            font-size: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .ribbon-card span {
+            margin-top: 6px;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .ribbon-stats {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .stat-box {
+            padding: 14px;
+            border-radius: 16px;
+            background: #fff;
+            border: 1px solid var(--line);
+        }
+
+        .stat-box strong,
+        .stat-box span {
+            display: block;
+        }
+
+        .stat-box strong {
+            color: var(--muted);
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-box span {
+            margin-top: 8px;
+            font-size: 0.96rem;
+            font-weight: 700;
+        }
+
+        .tabbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .tab-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 16px;
+            border-radius: 999px;
+            border: 1px solid #1f638c;
+            background: #2f8cff;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(47, 140, 255, 0.18);
+        }
+
+        .tab-btn.active {
+            background: #145ea8;
+            border-color: #145ea8;
+            color: #fff;
+            box-shadow: 0 14px 28px rgba(20, 94, 168, 0.24);
+        }
+
+        .view[hidden] {
+            display: none;
+        }
+
+        .view-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 16px;
+        }
+
+        .view-header h2 {
+            margin: 6px 0 0;
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+            letter-spacing: -0.05em;
+        }
+
+        .view-header p {
+            margin: 10px 0 0;
+            color: var(--muted);
+            line-height: 1.65;
+            max-width: 760px;
+        }
+
+        .section-pill {
+            display: inline-flex;
+            align-items: center;
+            min-height: 34px;
+            padding: 0 12px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .view-summary {
+            min-width: 280px;
+            padding: 12px;
+            border-radius: 18px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.92);
+        }
+
+        .view-summary-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .summary-chip {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 0 12px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--muted);
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .grid-two,
+        .grid-three,
+        .grid-four {
+            display: grid;
+            gap: 14px;
+        }
+
+        .grid-two {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .grid-three {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .grid-four {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .field-span {
+            grid-column: 1 / -1;
+        }
+
+        .form-card {
+            margin-top: 18px;
+            padding: 20px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow-md);
+        }
+
+        .form-card:first-of-type {
+            margin-top: 0;
+        }
+
+        .form-card-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .form-card-head h3 {
+            margin: 0;
+            font-size: 1.08rem;
+            letter-spacing: -0.03em;
+        }
+
+        .form-card-head p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            line-height: 1.55;
+            font-size: 0.92rem;
+        }
+
+        .form-card-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 34px;
+            padding: 0 12px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--muted);
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            border: 1px solid var(--line-strong);
+            border-radius: 14px;
+            padding: 13px 14px;
+            background: #fff;
+            color: var(--ink);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transition: border-color 160ms ease, box-shadow 160ms ease;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: rgba(31, 99, 140, 0.55);
+            box-shadow: 0 0 0 4px rgba(31, 99, 140, 0.12);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 108px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 22px;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 48px;
+            padding: 0 18px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 160ms ease;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .action-btn.primary {
+            background: var(--ink);
+            color: #fff;
+            box-shadow: 0 12px 24px rgba(24, 35, 45, 0.16);
+        }
+
+        .action-btn.secondary {
+            background: var(--accent-soft);
+            color: var(--accent);
+            border-color: rgba(31, 99, 140, 0.14);
+        }
+
+        .action-btn.ghost {
+            background: rgba(24, 35, 45, 0.04);
+            color: var(--muted);
+            border-color: var(--line);
+        }
+
+        .feedback {
+            min-height: 24px;
+            margin-top: 14px;
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        .side-card {
+            padding: 18px;
+            border-radius: 20px;
+        }
+
+        .side-card h3 {
+            margin: 0 0 8px;
+            font-size: 1rem;
+            letter-spacing: -0.03em;
+        }
+
+        .side-card p,
+        .side-card li {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .side-card ul {
+            margin: 0;
+            padding-left: 18px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .side-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .side-stat {
+            padding: 12px;
+            border-radius: 16px;
+            background: var(--surface-2);
+            border: 1px solid var(--line);
+        }
+
+        .side-stat strong,
+        .side-stat span {
+            display: block;
+        }
+
+        .side-stat strong {
+            color: var(--muted);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .side-stat span {
+            margin-top: 8px;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .side-note {
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: rgba(31, 99, 140, 0.08);
+            border: 1px solid rgba(31, 99, 140, 0.14);
+        }
+
+        .activity-list {
+            margin: 0;
+            padding-left: 18px;
+            display: grid;
+            gap: 10px;
+        }
+
+        @media (max-width: 1280px) {
+        }
+
+        @media (max-width: 980px) {
+            .patient-ribbon,
+            .grid-four,
+            .grid-three {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .view-header,
+            .form-card-head,
+            .workspace-top,
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .view-summary {
+                width: 100%;
+                min-width: 0;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .shell {
+                width: min(calc(100% - 18px), 1560px);
+                padding-top: 18px;
+            }
+
+            .main-panel,
+            .main-panel {
+                padding: 16px;
+            }
+
+            .surface-card {
+                padding: 12px;
+            }
+
+            .patient-ribbon,
+            .grid-two,
+            .grid-three,
+            .grid-four,
+            .ribbon-stats,
+            .side-stat-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions,
+            .topbar-actions {
+                width: 100%;
+            }
+
+            .nav-btn,
+            .action-btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 520px) {
+            /* 16px inputs avoid iOS zoom-on-focus; 44px gives comfortable touch targets. */
+            input, select, textarea {
+                font-size: 16px;
+            }
+            input:not([type="checkbox"]):not([type="radio"]), select, textarea, .nav-btn, .action-btn {
+                min-height: 44px;
+            }
+            .shell {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <header class="topbar">
+            <div>
+                <h1>Miracle EMR Workspace Expanded</h1>
+                <p>Versión ampliada del demo clínico con intake, anamnesis, órdenes, codificación y cierre en una sola experiencia.</p>
+            </div>
+            <div class="topbar-actions">
+                <a class="nav-btn" href="index.html#demo">Volver a landing</a>
+                <a class="nav-btn" href="visualize.html">Workflow Graph</a>
+                <button class="nav-btn primary" id="clear-emr" type="button">Reiniciar EMR</button>
+            </div>
+        </header>
+
+        <div class="surface-card">
+            <div class="workspace-shell">
+                <div class="workspace-body">
+                    <main class="main-panel">
+                        <div class="patient-ribbon">
+                            <div class="ribbon-card">
+                                <strong>Episodio clínico activo</strong>
+                                <span>El demo expandido agrupa admisión, anamnesis, órdenes y cierre en un mismo workspace para que la interacción se sienta más cercana a un EMR profesional.</span>
+                            </div>
+                            <div class="ribbon-stats">
+                                <div class="stat-box">
+                                    <strong>Estado</strong>
+                                    <span>En documentación</span>
+                                </div>
+                                <div class="stat-box">
+                                    <strong>Prioridad</strong>
+                                    <span>Triage ambulatorio</span>
+                                </div>
+                                <div class="stat-box">
+                                    <strong>Servicio</strong>
+                                    <span>Consulta general</span>
+                                </div>
+                                <div class="stat-box">
+                                    <strong>Cobertura</strong>
+                                    <span>Mixta</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tabbar" aria-label="Módulos del EMR">
+                            <button aria-label="Abrir módulo Registro del EMR" class="tab-btn active" data-testid="emr-tab-intake" data-view-target="intake" title="Abrir módulo Registro del EMR" type="button">Registro</button>
+                            <button aria-label="Abrir módulo Anamnesis del EMR" class="tab-btn" data-testid="emr-tab-anamnesis" data-view-target="anamnesis" title="Abrir módulo Anamnesis del EMR" type="button">Anamnesis</button>
+                            <button aria-label="Abrir módulo Órdenes del EMR" class="tab-btn" data-testid="emr-tab-orders" data-view-target="orders" title="Abrir módulo Órdenes del EMR" type="button">Órdenes</button>
+                            <button aria-label="Abrir módulo Cierre del EMR" class="tab-btn" data-testid="emr-tab-closure" data-view-target="closure" title="Abrir módulo Cierre del EMR" type="button">Cierre</button>
+                        </div>
+
+                        <section class="view" data-view="intake">
+                            <div class="view-header">
+                                <div>
+                                    <span class="section-pill">Módulo 1</span>
+                                    <h2>Admisión, identificación y triage</h2>
+                                    <p>Versión extendida del intake con más datos demográficos, administrativos y clínicos iniciales para demostrar una superficie más cercana a un EMR real.</p>
+                                </div>
+                                <div class="view-summary">
+                                    <div class="view-summary-row">
+                                        <span class="summary-chip">Paso 1 de 4</span>
+                                        <span class="summary-chip">Recepción</span>
+                                        <span class="summary-chip">Campos críticos</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <section class="form-card">
+                                <div class="form-card-head">
+                                    <div>
+                                        <h3>Identificación del paciente</h3>
+                                        <p>Registra el núcleo de identidad y contacto con el mismo modelo base usado en la landing, ampliado para una recepción más robusta.</p>
+                                    </div>
+                                    <span class="form-card-tag">Obligatorio</span>
+                                </div>
+
+                                <div class="grid-four">
+                                    <div>
+                                        <label for="intake-patient-id">Número de historia clínica</label>
+                                        <input data-testid="intake-patient-id" id="intake-patient-id" placeholder="MRN-2026-00124">
+                                    </div>
+                                    <div>
+                                        <label for="intake-document-type">Tipo de documento</label>
+                                        <select data-testid="intake-document-type" id="intake-document-type">
+                                            <option value="">Seleccionar</option>
+                                            <option value="cc">Cédula</option>
+                                            <option value="passport">Pasaporte</option>
+                                            <option value="ti">Tarjeta de identidad</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="intake-document-number">Número de documento</label>
+                                        <input data-testid="intake-document-number" id="intake-document-number" placeholder="1023456789">
+                                    </div>
+                                    <div>
+                                        <label for="intake-payer-class">Clase de cobertura</label>
+                                        <select data-testid="intake-payer-class" id="intake-payer-class">
+                                            <option value="">Seleccionar</option>
+                                            <option value="eps">EPS</option>
+                                            <option value="prepaid">Prepagada</option>
+                                            <option value="private">Particular</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="intake-first-name">Nombre</label>
+                                        <input data-testid="intake-first-name" id="intake-first-name" placeholder="Valentina">
+                                    </div>
+                                    <div>
+                                        <label for="intake-last-name">Apellido</label>
+                                        <input data-testid="intake-last-name" id="intake-last-name" placeholder="Gomez Ruiz">
+                                    </div>
+                                    <div>
+                                        <label for="intake-dob">Fecha de nacimiento</label>
+                                        <input data-testid="intake-dob" id="intake-dob" type="date">
+                                    </div>
+                                    <div>
+                                        <label for="intake-sex">Sexo biológico</label>
+                                        <select data-testid="intake-sex" id="intake-sex">
+                                            <option value="">Seleccionar</option>
+                                            <option value="female">Femenino</option>
+                                            <option value="male">Masculino</option>
+                                            <option value="other">Otro</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="intake-phone">Teléfono móvil</label>
+                                        <input data-testid="intake-phone" id="intake-phone" placeholder="+57 300 555 1134">
+                                    </div>
+                                    <div>
+                                        <label for="intake-email">Correo electrónico</label>
+                                        <input data-testid="intake-email" id="intake-email" placeholder="paciente@email.com">
+                                    </div>
+                                    <div class="field-span">
+                                        <label for="intake-address">Dirección</label>
+                                        <input data-testid="intake-address" id="intake-address" placeholder="Carrera 15 # 98-42, Bogotá">
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="form-card">
+                                <div class="form-card-head">
+                                    <div>
+                                        <h3>Administrativo y motivo de consulta</h3>
+                                        <p>Amplía pagador, plan, contactos y contexto de atención para una recepción institucional más completa.</p>
+                                    </div>
+                                    <span class="form-card-tag">Administrativo</span>
+                                </div>
+
+                                <div class="grid-three">
+                                    <div>
+                                        <label for="intake-insurance">Asegurador / pagador</label>
+                                        <input data-testid="intake-insurance" id="intake-insurance" placeholder="Sura EPS">
+                                    </div>
+                                    <div>
+                                        <label for="intake-plan-name">Plan / contrato</label>
+                                        <input data-testid="intake-plan-name" id="intake-plan-name" placeholder="Plan Empresarial 2204">
+                                    </div>
+                                    <div>
+                                        <label for="intake-referral-source">Canal de ingreso</label>
+                                        <select data-testid="intake-referral-source" id="intake-referral-source">
+                                            <option value="">Seleccionar</option>
+                                            <option value="walk-in">Particular</option>
+                                            <option value="referral">Remisión</option>
+                                            <option value="telehealth">Teleorientación</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="intake-emergency-contact-name">Contacto de emergencia</label>
+                                        <input data-testid="intake-emergency-contact-name" id="intake-emergency-contact-name" placeholder="Laura Ruiz">
+                                    </div>
+                                    <div>
+                                        <label for="intake-emergency-contact-phone">Teléfono de emergencia</label>
+                                        <input data-testid="intake-emergency-contact-phone" id="intake-emergency-contact-phone" placeholder="+57 310 222 3311">
+                                    </div>
+                                    <div>
+                                        <label for="intake-language-preference">Idioma preferido</label>
+                                        <select data-testid="intake-language-preference" id="intake-language-preference">
+                                            <option value="">Seleccionar</option>
+                                            <option value="es">Español</option>
+                                            <option value="en">Inglés</option>
+                                        </select>
+                                    </div>
+                                    <div class="field-span">
+                                        <label for="intake-chief-complaint">Motivo de consulta</label>
+                                        <textarea data-testid="intake-chief-complaint" id="intake-chief-complaint" rows="4" placeholder="Paciente refiere 3 días de fiebre, dolor de garganta y fatiga."></textarea>
+                                    </div>
+                                    <div class="field-span">
+                                        <label for="intake-arrival-notes">Notas de ingreso</label>
+                                        <textarea data-testid="intake-arrival-notes" id="intake-arrival-notes" rows="4" placeholder="Consulta por síntomas respiratorios. Llegó caminando, sin acompañante, sin signos de alarma visibles."></textarea>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="form-card">
+                                <div class="form-card-head">
+                                    <div>
+                                        <h3>Triage clínico inicial</h3>
+                                        <p>Registra signos vitales y elementos de priorización que permitan pasar a la valoración médica.</p>
+                                    </div>
+                                    <span class="form-card-tag">Triage</span>
+                                </div>
+
+                                <div class="grid-four">
+                                    <div>
+                                        <label for="triage-temperature">Temperatura</label>
+                                        <input data-testid="triage-temperature" id="triage-temperature" placeholder="38.2">
+                                    </div>
+                                    <div>
+                                        <label for="triage-heart-rate">Frecuencia cardíaca</label>
+                                        <input data-testid="triage-heart-rate" id="triage-heart-rate" placeholder="96">
+                                    </div>
+                                    <div>
+                                        <label for="triage-blood-pressure">Presión arterial</label>
+                                        <input data-testid="triage-blood-pressure" id="triage-blood-pressure" placeholder="118/74">
+                                    </div>
+                                    <div>
+                                        <label for="triage-oxygen">SpO2</label>
+                                        <input data-testid="triage-oxygen" id="triage-oxygen" placeholder="98">
+                                    </div>
+                                    <div>
+                                        <label for="triage-respiratory-rate">Frecuencia respiratoria</label>
+                                        <input data-testid="triage-respiratory-rate" id="triage-respiratory-rate" placeholder="18">
+                                    </div>
+                                    <div>
+                                        <label for="triage-pain-scale">Dolor</label>
+                                        <input data-testid="triage-pain-scale" id="triage-pain-scale" placeholder="4/10">
+                                    </div>
+                                    <div>
+                                        <label for="triage-weight">Peso</label>
+                                        <input data-testid="triage-weight" id="triage-weight" placeholder="68 kg">
+                                    </div>
+                                    <div>
+                                        <label for="triage-height">Talla</label>
+                                        <input data-testid="triage-height" id="triage-height" placeholder="1.66 m">
+                                    </div>
+                                    <div>
+                                        <label for="triage-priority">Prioridad</label>
+                                        <select data-testid="triage-priority" id="triage-priority">
+                                            <option value="">Seleccionar</option>
+                                            <option value="low">Baja</option>
+                                            <option value="medium">Media</option>
+                                            <option value="high">Alta</option>
+                                        </select>
+                                    </div>
+                                    <div class="field-span">
+                                        <label for="triage-red-flags">Signos de alarma / observaciones</label>
+                                        <textarea data-testid="triage-red-flags" id="triage-red-flags" rows="4" placeholder="Sin estridor, sin cianosis, hidratación conservada, alerta y orientada."></textarea>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <div class="actions">
+                                <button class="action-btn primary" data-testid="intake-save-patient" id="intake-save-patient" type="button">Guardar admisión</button>
+                                <button class="action-btn secondary" data-testid="intake-open-chart" id="intake-open-chart" type="button">Abrir historia clínica</button>
+                                <button aria-label="Continuar al módulo Anamnesis" class="action-btn ghost" data-testid="intake-go-anamnesis" data-view-target="anamnesis" title="Continuar al módulo Anamnesis" type="button">Continuar a anamnesis</button>
+                            </div>
+                            <div class="feedback" data-testid="intake-feedback" id="intake-feedback"></div>
+                        </section>
+
+                        <section class="view" data-view="anamnesis" hidden>
+                            <div class="view-header">
+                                <div>
+                                    <span class="section-pill">Módulo 2</span>
+                                    <h2>Anamnesis y evaluación médica</h2>
+                                    <p>Unifica el estilo del intake con una superficie clínica más densa para antecedentes, narrativa, ROS y examen físico.</p>
+                                </div>
+                                <div class="view-summary">
+                                    <div class="view-summary-row">
+                                        <span class="summary-chip">Paso 2 de 4</span>
+                                        <span class="summary-chip">Narrativa clínica</span>
+                                        <span class="summary-chip">Consulta</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <section class="form-card">
+                                <div class="form-card-head">
+                                    <div>
+                                        <h3>Historia de la enfermedad actual</h3>
+                                        <p>Documenta la cronología del cuadro, antecedentes y síntomas asociados.</p>
+                                    </div>
+                                    <span class="form-card-tag">Anamnesis</span>
+                                </div>
+
+                                <div class="grid-three">
+                                    <div>
+                                        <label for="anamnesis-visit-type">Tipo de visita</label>
+                                        <select data-testid="anamnesis-visit-type" id="anamnesis-visit-type">
+                                            <option value="">Seleccionar</option>
+                                            <option value="first-time">Primera vez</option>
+                                            <option value="follow-up">Control</option>
+                                            <option value="urgent">Urgente</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="anamnesis-symptom-days">Días con síntomas</label>
+                                        <input data-testid="anamnesis-symptom-days" id="anamnesis-symptom-days" placeholder="3">
+                                    </div>
+                                    <div>
+                                        <label for="anamnesis-pain-location">Localización principal</label>
+                                        <input data-testid="anamnesis-pain-location" id="anamnesis-pain-location" placeholder="Orofaringe">
+                                    </div>
+                                    <div class="field-span">
+                                        <label for="anamnesis-history-illness">Historia de la enfermedad actual</label>
+                                        <textarea data-testid="anamnesis-history-illness" id="anamnesis-history-illness" rows="5" placeholder="Paciente con 3 días de fiebre, odinofagia y malestar general sin disnea ni dolor torácico."></textarea>
+                                    </div>
+                                    <div>
+                                        <label for="anamnesis-medical-history">Antecedentes relevantes</label>
+                                        <textarea data-testid="anamnesis-medical-history" id="anamnesis-medical-history" rows="4" placeholder="Hipertensión controlada con losartán."></textarea>
+                                    </div>
+                                    <div>
+                                        <label for="anamnesis-allergies">Alergias</label>
+                                        <textarea data-testid="anamnesis-allergies" id="anamnesis-allergies" rows="4" placeholder="Niega alergias medicamentosas conocidas."></textarea>
+                                    </div>
+                                    <div>
+                                        <label for="anamnesis-current-medications">Medicamentos actuales</label>
+                                        <textarea data-testid="anamnesis-current-medications" id="anamnesis-current-medications" rows="4" placeholder="Losartán 50 mg al día."></textarea>
+                                    </div>
+                                    <div class="field-span">
+                                        <label for="anamnesis-review-systems">Revisión por sistemas</label>
+                                        <textarea data-testid="anamnesis-review-systems" id="anamnesis-review-systems" rows="5" placeholder="Positivo para fiebre y odinofagia. Negativo para vómito, diarrea, disnea y dolor torácico."></textarea>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="form-card">
+                                <div class="form-card-head">
+                                    <div>
+                                        <h3>Examen físico y banderas clínicas</h3>
+                                        <p>Captura observación general, hallazgos y factores que afecten la conducta clínica.</p>
+                                    </div>
+                                    <span class="form-card-tag">Examen</span>
+                                </div>
+
+                                <div class="grid-three">
+                                    <div>
+                                        <label for="exam-general-appearance">Apariencia general</label>
+                                        <textarea data-testid="exam-general-appearance" id="exam-general-appearance" rows="4" placeholder="Alerta, hidratada, sin dificultad respiratoria."></textarea>
+                                    </div>
+                                    <div>
+                                        <label for="exam-findings">Hallazgos del examen físico</label>
+                                        <textarea data-testid="exam-findings" id="exam-findings" rows="4" placeholder="Faringe eritematosa sin exudado, campos pulmonares limpios."></textarea>
+                                    </div>
+                                    <div>
+                                        <label for="exam-risk-factors">Factores de riesgo</label>
+                                        <textarea data-testid="exam-risk-factors" id="exam-risk-factors" rows="4" placeholder="Sin inmunosupresión, sin embarazo, sin comorbilidad descompensada."></textarea>
+                                    </div>
+                                    <div class="field-span">
+                                        <label for="exam-clinical-summary">Resumen clínico del médico</label>
+                                        <textarea data-testid="exam-clinical-summary" id="exam-clinical-summary" rows="4" placeholder="Cuadro compatible con infección respiratoria alta no complicada."></textarea>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <div class="actions">
+                                <button class="action-btn primary" data-testid="anamnesis-save-note" id="anamnesis-save-note" type="button">Guardar nota médica</button>
+                                <button class="action-btn secondary" data-testid="anamnesis-request-labs" id="anamnesis-request-labs" type="button">Solicitar ayudas diagnósticas</button>
+                                <button aria-label="Volver al módulo Registro" class="action-btn ghost" data-testid="anamnesis-go-intake" data-view-target="intake" title="Volver al módulo Registro" type="button">Volver a intake</button>
+                                <button aria-label="Continuar al módulo Órdenes" class="action-btn ghost" data-testid="anamnesis-go-orders" data-view-target="orders" title="Continuar al módulo Órdenes" type="button">Ir a órdenes</button>
+                            </div>
+                            <div class="feedback" data-testid="anamnesis-feedback" id="anamnesis-feedback"></div>
+                        </section>
+
+                        <section class="view" data-view="orders" hidden>
+                            <div class="view-header">
+                                <div>
+                                    <span class="section-pill">Módulo 3</span>
+                                    <h2>Órdenes, medicamentos y coordinación</h2>
+                                    <p>Demuestra manejo de UI compleja con medicamentos, ayudas diagnósticas, interconsultas, planes y tareas administrativas.</p>
+                                </div>
+                                <div class="view-summary">
+                                    <div class="view-summary-row">
+                                        <span class="summary-chip">Paso 3 de 4</span>
+                                        <span class="summary-chip">Órdenes</span>
+                                        <span class="summary-chip">Medicación</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <section class="form-card">
+                                <div class="form-card-head">
+                                    <div>
+                                        <h3>Impresión diagnóstica y medicación</h3>
+                                        <p>Consolida diagnóstico preliminar, medicación base e indicaciones terapéuticas.</p>
+                                    </div>
+                                    <span class="form-card-tag">Terapéutico</span>
+                                </div>
+
+                                <div class="grid-three">
+                                    <div>
+                                        <label for="assessment-primary-diagnosis">Diagnóstico principal</label>
+                                        <input data-testid="assessment-primary-diagnosis" id="assessment-primary-diagnosis" placeholder="Faringitis aguda viral">
+                                    </div>
+                                    <div>
+                                        <label for="assessment-icd10">Código CIE-10</label>
+                                        <input data-testid="assessment-icd10" id="assessment-icd10" placeholder="J02.9">
+                                    </div>
+                                    <div>
+                                        <label for="assessment-secondary-diagnosis">Diagnóstico secundario</label>
+                                        <input data-testid="assessment-secondary-diagnosis" id="assessment-secondary-diagnosis" placeholder="Síndrome febril agudo">
+                                    </div>
+                                    <div class="field-span">
+                                        <label for="assessment-clinical-impression">Impresión clínica</label>
+                                        <textarea data-testid="assessment-clinical-impression" id="assessment-clinical-impression" rows="4" placeholder="Hallazgos compatibles con infección respiratoria alta no complicada, sin signos de sepsis ni insuficiencia respiratoria."></textarea>
+                                    </div>
+                                    <div>
+                                        <label for="rx-medication-name">Medicamento</label>
+                                        <input data-testid="rx-medication-name" id="rx-medication-name" placeholder="Acetaminofén">
+                                    </div>
+                                    <div>
+                                        <label for="rx-medication-dose">Dosis</label>
+                                        <input data-testid="rx-medication-dose" id="rx-medication-dose" placeholder="500 mg">
+                                    </div>
+                                    <div>
+                                        <label for="rx-medication-frequency">Frecuencia</label>
+                                        <input data-testid="rx-medication-frequency" id="rx-medication-frequency" placeholder="Cada 8 horas">
+                                    </div>
+                                    <div>
+                                        <label for="rx-medication-duration">Duración</label>
+                                        <input data-testid="rx-medication-duration" id="rx-medication-duration" placeholder="3 días">
+                                    </div>
+                                    <div>
+                                        <label for="rx-route">Vía de administración</label>
+                                        <select data-testid="rx-route" id="rx-route">
+                                            <option value="">Seleccionar</option>
+                                            <option value="oral">Oral</option>
+                                            <option value="iv">Intravenosa</option>
+                                        </select>
+                                    </div>
+                                    <div class="field-span">
+                                        <label for="rx-instructions">Instrucciones al paciente</label>
+                                        <textarea data-testid="rx-instructions" id="rx-instructions" rows="4" placeholder="Tomar con agua, no exceder 3 gramos al día, consultar si persiste fiebre o aparece disnea."></textarea>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="form-card">
+                                <div class="form-card-head">
+                                    <div>
+                                        <h3>Órdenes clínicas y coordinación operativa</h3>
+                                        <p>Incluye ayudas diagnósticas, aislamiento, interconsultas y seguimiento administrativo.</p>
+                                    </div>
+                                    <span class="form-card-tag">Coordinación</span>
+                                </div>
+
+                                <div class="grid-three">
+                                    <div>
+                                        <label for="orders-labs">Laboratorios</label>
+                                        <textarea data-testid="orders-labs" id="orders-labs" rows="4" placeholder="Hemograma, PCR, prueba de antígeno según evolución."></textarea>
+                                    </div>
+                                    <div>
+                                        <label for="orders-imaging">Imágenes</label>
+                                        <textarea data-testid="orders-imaging" id="orders-imaging" rows="4" placeholder="No requiere imágenes al momento."></textarea>
+                                    </div>
+                                    <div>
+                                        <label for="orders-procedures">Procedimientos</label>
+                                        <textarea data-testid="orders-procedures" id="orders-procedures" rows="4" placeholder="Nebulización si presenta broncoespasmo."></textarea>
+                                    </div>
+                                    <div>
+                                        <label for="orders-specialty-referral">Interconsulta</label>
+                                        <select data-testid="orders-specialty-referral" id="orders-specialty-referral">
+                                            <option value="">Seleccionar</option>
+                                            <option value="none">No requiere</option>
+                                            <option value="internal-medicine">Medicina interna</option>
+                                            <option value="ent">Otorrino</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="orders-isolation">Precauciones / aislamiento</label>
+                                        <select data-testid="orders-isolation" id="orders-isolation">
+                                            <option value="">Seleccionar</option>
+                                            <option value="none">Ninguno</option>
+                                            <option value="droplet">Gotas</option>
+                                            <option value="contact">Contacto</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="orders-work-note">Incapacidad / nota laboral</label>
+                                        <input data-testid="orders-work-note" id="orders-work-note" placeholder="2 días">
+                                    </div>
+                                    <div class="field-span">
+                                        <label for="plan-orders">Órdenes adicionales</label>
+                                        <textarea data-testid="plan-orders" id="plan-orders" rows="4" placeholder="Reposo, hidratación oral, vigilancia de fiebre, evitar antibióticos salvo cambio clínico."></textarea>
+                                    </div>
+                                    <div class="field-span">
+                                        <label for="plan-follow-up">Plan de seguimiento</label>
+                                        <textarea data-testid="plan-follow-up" id="plan-follow-up" rows="4" placeholder="Revaloración en 48 a 72 horas o antes si aparece dificultad respiratoria, deshidratación o empeoramiento general."></textarea>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <div class="actions">
+                                <button class="action-btn primary" data-testid="assessment-sign-note" id="assessment-sign-note" type="button">Firmar nota clínica</button>
+                                <button class="action-btn secondary" data-testid="assessment-generate-rx" id="assessment-generate-rx" type="button">Generar fórmula</button>
+                                <button aria-label="Volver al módulo Anamnesis" class="action-btn ghost" data-testid="orders-go-anamnesis" data-view-target="anamnesis" title="Volver al módulo Anamnesis" type="button">Volver a anamnesis</button>
+                                <button aria-label="Continuar al módulo Cierre" class="action-btn ghost" data-testid="orders-go-closure" data-view-target="closure" title="Continuar al módulo Cierre" type="button">Continuar a cierre</button>
+                            </div>
+                            <div class="feedback" data-testid="assessment-feedback" id="assessment-feedback"></div>
+                        </section>
+
+                        <section class="view" data-view="closure" hidden>
+                            <div class="view-header">
+                                <div>
+                                    <span class="section-pill">Módulo 4</span>
+                                    <h2>Codificación, disposición y cierre del encuentro</h2>
+                                    <p>Cierra el recorrido con campos de facturación, seguridad de salida, educación y disposición, completando una demo clínica más institucional.</p>
+                                </div>
+                                <div class="view-summary">
+                                    <div class="view-summary-row">
+                                        <span class="summary-chip">Paso 4 de 4</span>
+                                        <span class="summary-chip">Codificación</span>
+                                        <span class="summary-chip">Disposición</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <section class="form-card">
+                                <div class="form-card-head">
+                                    <div>
+                                        <h3>Facturación clínica y cierre</h3>
+                                        <p>Agrega codificación de salida, disposición final y educación de egreso.</p>
+                                    </div>
+                                    <span class="form-card-tag">Cierre</span>
+                                </div>
+
+                                <div class="grid-three">
+                                    <div>
+                                        <label for="closure-service-line">Línea de servicio</label>
+                                        <select data-testid="closure-service-line" id="closure-service-line">
+                                            <option value="">Seleccionar</option>
+                                            <option value="gp">Consulta general</option>
+                                            <option value="urgent">Urgencias</option>
+                                            <option value="tele">Telemedicina</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="closure-billing-code">Código de facturación</label>
+                                        <input data-testid="closure-billing-code" id="closure-billing-code" placeholder="890201">
+                                    </div>
+                                    <div>
+                                        <label for="disposition-status">Disposición</label>
+                                        <select data-testid="disposition-status" id="disposition-status">
+                                            <option value="">Seleccionar</option>
+                                            <option value="discharge">Alta a domicilio</option>
+                                            <option value="observation">Observación</option>
+                                            <option value="referral">Remisión</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="closure-followup-owner">Responsable del seguimiento</label>
+                                        <select data-testid="closure-followup-owner" id="closure-followup-owner">
+                                            <option value="">Seleccionar</option>
+                                            <option value="doctor">Médico tratante</option>
+                                            <option value="nurse">Enfermería</option>
+                                            <option value="ops">Operaciones</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="closure-return-warning">Señales de alarma explicadas</label>
+                                        <select data-testid="closure-return-warning" id="closure-return-warning">
+                                            <option value="">Seleccionar</option>
+                                            <option value="yes">Sí</option>
+                                            <option value="partial">Parcial</option>
+                                            <option value="no">No</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="closure-final-check">Checklist de salida</label>
+                                        <select data-testid="closure-final-check" id="closure-final-check">
+                                            <option value="">Seleccionar</option>
+                                            <option value="complete">Completo</option>
+                                            <option value="pending">Pendiente</option>
+                                        </select>
+                                    </div>
+                                    <div class="field-span">
+                                        <label for="closure-discharge-summary">Resumen de egreso</label>
+                                        <textarea data-testid="closure-discharge-summary" id="closure-discharge-summary" rows="4" placeholder="Paciente estable para manejo ambulatorio, con indicaciones de hidratación, analgesia y signos de alarma explicados."></textarea>
+                                    </div>
+                                    <div class="field-span">
+                                        <label for="closure-patient-education">Educación al paciente</label>
+                                        <textarea data-testid="closure-patient-education" id="closure-patient-education" rows="4" placeholder="Se explica uso de medicación, hidratación, reposo, control de fiebre y motivo de reconsulta inmediata."></textarea>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <div class="actions">
+                                <button class="action-btn primary" id="closure-complete" type="button">Cerrar encuentro</button>
+                                <button aria-label="Volver al módulo Órdenes" class="action-btn ghost" data-testid="closure-go-orders" data-view-target="orders" title="Volver al módulo Órdenes" type="button">Volver a órdenes</button>
+                                <a class="action-btn ghost" href="index.html#demo">Volver a demo embebida</a>
+                            </div>
+                            <div class="feedback" id="closure-feedback"></div>
+                        </section>
+                    </main>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="page-state.js"></script>
+    <script src="supabase-client.js"></script>
+    <script src="auth-gate.js"></script>
+    <script src="patients.js"></script>
+    <script src="note-sync.js"></script>
+    <script src="clinical-review.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .catch((error) => console.warn('[Miracle PWA] SW registration failed:', error));
+            });
+        }
+    </script>
+    <script src="recorder.js"></script>
+    <script src="assistant-runtime.js"></script>
+    <script src="plugin/plugin-events.js"></script>
+    <script src="plugin/plugin-host.js"></script>
+    <script src="plugin/plugin-adapters.js"></script>
+    <script src="plugin/plugin-context.js"></script>
+    <script src="plugin/plugin-api.js"></script>
+    <script src="plugin/plugin-learning-bridge.js"></script>
+    <script src="plugin/plugin-learning-client.js"></script>
+    <script src="plugin/plugin-voice-client.js"></script>
+    <script src="plugin/plugin-trainer-shell.js"></script>
+    <script src="plugin/plugin-surface-profile-client.js"></script>
+    <script src="plugin/plugin-execution-client.js"></script>
+    <script src="plugin/plugin-workflow-overlay-bridge.js"></script>
+    <script src="trainer-plugin.js"></script>
+    <script src="admin-workspace.js"></script>
+    <script>
+        const views = ['intake', 'anamnesis', 'orders', 'closure'];
+
+        function setActiveView(viewName) {
+            const nextView = views.includes(viewName) ? viewName : 'intake';
+            document.querySelectorAll('[data-view]').forEach((section) => {
+                section.hidden = section.getAttribute('data-view') !== nextView;
+            });
+            document.querySelectorAll('[data-view-target]').forEach((control) => {
+                control.classList.toggle('active', control.getAttribute('data-view-target') === nextView);
+            });
+        }
+
+        function hasValue(id) {
+            return document.getElementById(id).value.trim() !== '';
+        }
+
+        function syncIntakeActions() {
+            const registrationReady = [
+                'intake-patient-id',
+                'intake-document-type',
+                'intake-first-name',
+                'intake-last-name',
+                'intake-dob',
+                'intake-sex',
+                'intake-phone'
+            ].every(hasValue);
+            const chartReady = registrationReady && [
+                'intake-insurance',
+                'intake-chief-complaint',
+                'triage-temperature',
+                'triage-heart-rate',
+                'triage-blood-pressure',
+                'triage-oxygen'
+            ].every(hasValue);
+
+            document.getElementById('intake-save-patient').disabled = !registrationReady;
+            document.getElementById('intake-open-chart').disabled = !chartReady;
+        }
+
+        function syncAnamnesisActions() {
+            const noteReady = [
+                'anamnesis-visit-type',
+                'anamnesis-symptom-days',
+                'anamnesis-history-illness',
+                'anamnesis-medical-history',
+                'anamnesis-allergies',
+                'anamnesis-review-systems',
+                'exam-general-appearance',
+                'exam-findings'
+            ].every(hasValue);
+
+            document.getElementById('anamnesis-save-note').disabled = !noteReady;
+            document.getElementById('anamnesis-request-labs').disabled = !noteReady;
+        }
+
+        function syncOrdersActions() {
+            const ordersReady = [
+                'assessment-primary-diagnosis',
+                'assessment-icd10',
+                'assessment-clinical-impression',
+                'rx-medication-name',
+                'rx-medication-dose',
+                'rx-medication-frequency',
+                'rx-medication-duration',
+                'rx-instructions',
+                'plan-orders',
+                'plan-follow-up'
+            ].every(hasValue);
+
+            document.getElementById('assessment-sign-note').disabled = !ordersReady;
+            document.getElementById('assessment-generate-rx').disabled = !ordersReady;
+        }
+
+        function syncClosureActions() {
+            const closureReady = [
+                'closure-service-line',
+                'closure-billing-code',
+                'disposition-status',
+                'closure-discharge-summary',
+                'closure-patient-education'
+            ].every(hasValue);
+
+            document.getElementById('closure-complete').disabled = !closureReady;
+        }
+
+        [
+            'intake-patient-id',
+            'intake-document-type',
+            'intake-document-number',
+            'intake-payer-class',
+            'intake-first-name',
+            'intake-last-name',
+            'intake-dob',
+            'intake-sex',
+            'intake-phone',
+            'intake-email',
+            'intake-address',
+            'intake-insurance',
+            'intake-plan-name',
+            'intake-referral-source',
+            'intake-emergency-contact-name',
+            'intake-emergency-contact-phone',
+            'intake-language-preference',
+            'intake-chief-complaint',
+            'intake-arrival-notes',
+            'triage-temperature',
+            'triage-heart-rate',
+            'triage-blood-pressure',
+            'triage-oxygen',
+            'triage-respiratory-rate',
+            'triage-pain-scale',
+            'triage-weight',
+            'triage-height',
+            'triage-priority',
+            'triage-red-flags'
+        ].forEach((id) => {
+            document.getElementById(id).addEventListener('input', syncIntakeActions);
+            document.getElementById(id).addEventListener('change', syncIntakeActions);
+        });
+
+        [
+            'anamnesis-visit-type',
+            'anamnesis-symptom-days',
+            'anamnesis-pain-location',
+            'anamnesis-history-illness',
+            'anamnesis-medical-history',
+            'anamnesis-allergies',
+            'anamnesis-current-medications',
+            'anamnesis-review-systems',
+            'exam-general-appearance',
+            'exam-findings',
+            'exam-risk-factors',
+            'exam-clinical-summary'
+        ].forEach((id) => {
+            document.getElementById(id).addEventListener('input', syncAnamnesisActions);
+            document.getElementById(id).addEventListener('change', syncAnamnesisActions);
+        });
+
+        [
+            'assessment-primary-diagnosis',
+            'assessment-icd10',
+            'assessment-secondary-diagnosis',
+            'assessment-clinical-impression',
+            'rx-medication-name',
+            'rx-medication-dose',
+            'rx-medication-frequency',
+            'rx-medication-duration',
+            'rx-route',
+            'rx-instructions',
+            'orders-labs',
+            'orders-imaging',
+            'orders-procedures',
+            'orders-specialty-referral',
+            'orders-isolation',
+            'orders-work-note',
+            'plan-orders',
+            'plan-follow-up'
+        ].forEach((id) => {
+            document.getElementById(id).addEventListener('input', syncOrdersActions);
+            document.getElementById(id).addEventListener('change', syncOrdersActions);
+        });
+
+        [
+            'closure-service-line',
+            'closure-billing-code',
+            'disposition-status',
+            'closure-followup-owner',
+            'closure-return-warning',
+            'closure-final-check',
+            'closure-discharge-summary',
+            'closure-patient-education'
+        ].forEach((id) => {
+            document.getElementById(id).addEventListener('input', syncClosureActions);
+            document.getElementById(id).addEventListener('change', syncClosureActions);
+        });
+
+        document.getElementById('intake-save-patient').addEventListener('click', () => {
+            const firstName = document.getElementById('intake-first-name').value.trim();
+            const lastName = document.getElementById('intake-last-name').value.trim();
+            document.getElementById('intake-feedback').innerText = firstName && lastName
+                ? `Admisión guardada para ${firstName} ${lastName}.`
+                : 'Completa al menos nombre y apellido antes de guardar.';
+        });
+
+        document.getElementById('intake-open-chart').addEventListener('click', () => {
+            const complaint = document.getElementById('intake-chief-complaint').value.trim();
+            document.getElementById('intake-feedback').innerText = complaint
+                ? 'Historia clínica lista. Continúa a anamnesis.'
+                : 'Agrega el motivo de consulta antes de abrir la historia clínica.';
+            if (complaint) {
+                setActiveView('anamnesis');
+            }
+        });
+
+        document.getElementById('anamnesis-save-note').addEventListener('click', () => {
+            const history = document.getElementById('anamnesis-history-illness').value.trim();
+            document.getElementById('anamnesis-feedback').innerText = history
+                ? 'Nota médica guardada dentro del encuentro.'
+                : 'Documenta la enfermedad actual antes de guardar.';
+        });
+
+        document.getElementById('anamnesis-request-labs').addEventListener('click', () => {
+            const review = document.getElementById('anamnesis-review-systems').value.trim();
+            document.getElementById('anamnesis-feedback').innerText = review
+                ? 'Ayudas diagnósticas sugeridas. Continúa a órdenes.'
+                : 'Completa la revisión por sistemas antes de continuar.';
+            if (review) {
+                setActiveView('orders');
+            }
+        });
+
+        document.getElementById('assessment-sign-note').addEventListener('click', () => {
+            const diagnosis = document.getElementById('assessment-primary-diagnosis').value.trim();
+            document.getElementById('assessment-feedback').innerText = diagnosis
+                ? 'Nota clínica firmada y lista para cierre.'
+                : 'Agrega un diagnóstico principal antes de firmar.';
+        });
+
+        document.getElementById('assessment-generate-rx').addEventListener('click', () => {
+            const med = document.getElementById('rx-medication-name').value.trim();
+            document.getElementById('assessment-feedback').innerText = med
+                ? `Fórmula generada para ${med}.`
+                : 'Agrega un medicamento antes de generar la fórmula.';
+        });
+
+        document.getElementById('closure-complete').addEventListener('click', () => {
+            const disposition = document.getElementById('disposition-status').value.trim();
+            document.getElementById('closure-feedback').innerText = disposition
+                ? 'Encuentro cerrado y listo para seguimiento.'
+                : 'Selecciona una disposición antes de cerrar el encuentro.';
+        });
+
+        document.getElementById('clear-emr').addEventListener('click', () => {
+            window.PageState.clearAll();
+            document.getElementById('intake-feedback').innerText = '';
+            document.getElementById('anamnesis-feedback').innerText = '';
+            document.getElementById('assessment-feedback').innerText = '';
+            document.getElementById('closure-feedback').innerText = '';
+            setActiveView('intake');
+        });
+
+        document.querySelectorAll('[data-view-target]').forEach((control) => {
+            control.addEventListener('click', () => {
+                setActiveView(control.getAttribute('data-view-target') || 'intake');
+            });
+        });
+
+        window.onload = () => {
+            window.PageState.init({ storageKey: 'graph-emr-form-state-v1' });
+            window.TrainerPlugin.mount({
+                appId: 'medical-demo'
+            });
+            setActiveView('intake');
+            syncIntakeActions();
+            syncAnamnesisActions();
+            syncOrdersActions();
+            syncClosureActions();
+        };
+    </script>
+</body>
+</html>

@@ -54,6 +54,7 @@ class MarkdownCatalogWriter {
         if (step.controlType) extras.push(`control=${step.controlType}`);
         if (step.selectedLabel && step.selectedLabel !== step.value) extras.push(`selected="${step.selectedLabel}"`);
         if (step.semanticTarget) extras.push(`semanticTarget="${step.semanticTarget}"`);
+        if (step.surfaceSection) extras.push(`surfaceSection="${step.surfaceSection}"`);
         if (Array.isArray(step.surfaceHints?.alternativeTargets) && step.surfaceHints.alternativeTargets.length > 0) {
           extras.push(`alternatives=${step.surfaceHints.alternativeTargets.join(', ')}`);
         }

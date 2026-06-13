@@ -1,5 +1,10 @@
 const WebSocket = require('ws');
 const workflowAssistantPolicy = require('../application/use-cases/WorkflowAssistantPolicy');
+const {
+  verifySupabaseToken,
+  isSupabaseAuthConfigured,
+  isSupabasePayloadAnonymous
+} = require('../../web/api/requireAuth');
 
 class VoiceRealtimeGateway {
   constructor({ deepgramApiKey, openAiApiKey, llmProvider, catalogService, conversationInsights }) {
@@ -98,9 +103,36 @@ class VoiceRealtimeGateway {
     server.on('upgrade', (request, socket, head) => {
       const url = new URL(request.url, 'http://localhost');
       if (url.pathname === '/api/voice/realtime') {
-        wss.handleUpgrade(request, socket, head, (client) => {
-          wss.emit('connection', client, request);
-        });
+        // This socket opens an OpenAI Realtime session with the server's API key,
+        // so it must be authenticated. Browsers cannot set headers on a WS upgrade,
+        // so the token travels as the access_token query param.
+        if (!isSupabaseAuthConfigured()) {
+          wss.handleUpgrade(request, socket, head, (client) => {
+            client.user = { id: 'local-dev-user', email: '' };
+            client.workflowAccess = { ownerId: 'local-dev-user', includeGlobal: true };
+            wss.emit('connection', client, request);
+          });
+          return;
+        }
+
+        const token = (url.searchParams.get('access_token') || '').trim();
+        verifySupabaseToken(token)
+          .then((payload) => {
+            if (isSupabasePayloadAnonymous(payload)) {
+              try { socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n'); } catch (error) { /* ignore */ }
+              socket.destroy();
+              return;
+            }
+            wss.handleUpgrade(request, socket, head, (client) => {
+              client.user = { id: payload.sub, email: payload.email || '' };
+              client.workflowAccess = { ownerId: payload.sub, includeGlobal: true };
+              wss.emit('connection', client, request);
+            });
+          })
+          .catch(() => {
+            try { socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n'); } catch (error) { /* ignore */ }
+            socket.destroy();
+          });
         return;
       }
 
@@ -243,7 +275,7 @@ class VoiceRealtimeGateway {
   }
 
   async buildSettingsPayload(session) {
-    const catalog = this.catalogService ? await this.catalogService.getCatalog() : [];
+    const catalog = this.catalogService ? await this.catalogService.getCatalog(session.workflowAccess || null) : [];
     const workflows = this.filterWorkflowsForContext(catalog, session.context || {});
     session.availableWorkflows = workflows;
 
@@ -263,13 +295,17 @@ class VoiceRealtimeGateway {
             },
             transcription: {
               model: process.env.OPENAI_REALTIME_TRANSCRIPTION_MODEL || 'gpt-4o-mini-transcribe',
-              language: 'es'
+              language: 'es',
+              // Bias prompt: tells the transcriber the domain so proper nouns and
+              // digits (names, IDs, phones, doses) are captured faithfully.
+              prompt: process.env.OPENAI_REALTIME_TRANSCRIPTION_PROMPT
+                || 'Transcripción clínica en español. Un profesional de salud dicta datos de un paciente para llenar una historia clínica: nombres y apellidos hispanos completos, números de documento o cédula, teléfonos, fechas, signos vitales, diagnósticos, medicamentos y dosis. Transcribe los nombres propios y los números de forma literal y fiel, sin traducir ni inventar. Escribe las cifras como dígitos (por ejemplo 32, no "treinta y dos") y deja los números de documento y teléfono como secuencias de dígitos.'
             },
             turn_detection: {
               type: 'server_vad',
               threshold: 0.5,
               prefix_padding_ms: 300,
-              silence_duration_ms: 900,
+              silence_duration_ms: Number(process.env.OPENAI_REALTIME_VAD_SILENCE_MS || 1100),
               create_response: false,
               interrupt_response: true
             }
@@ -326,6 +362,8 @@ class VoiceRealtimeGateway {
     this.log(session.id, 'Sending Voice Agent settings', {
       workflowCount: session.availableWorkflows?.length || 0,
       llmModel: process.env.OPENAI_REALTIME_MODEL || 'gpt-realtime',
+      transcriptionModel: process.env.OPENAI_REALTIME_TRANSCRIPTION_MODEL || 'gpt-4o-mini-transcribe',
+      vadSilenceMs: Number(process.env.OPENAI_REALTIME_VAD_SILENCE_MS || 1100),
       ttsVoice: settings.session?.audio?.output?.voice || process.env.OPENAI_REALTIME_VOICE || 'marin'
     });
     agentSocket.send(JSON.stringify(settings));
@@ -547,6 +585,7 @@ class VoiceRealtimeGateway {
     const session = {
       id: `desktop_${Date.now()}_${++this.sessionCounter}`,
       context: {},
+      workflowAccess: client.workflowAccess || null,
       history: [],
       availableWorkflows: [],
       phoneSessionId: null,

@@ -1,30 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Miracle | AI Agent for Clinical Operations</title>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <title>Miracle | Inteligencia clínica para documentación médica</title>
+    <meta name="description" content="Miracle convierte cada consulta en documentación clínica clara, estructurada y trazable, sobre los sistemas que su institución ya usa. Menos carga administrativa, más tiempo con el paciente. Con revisión médica y control humano.">
+    <meta name="theme-color" content="#0b1424">
+    <meta property="og:title" content="Miracle | Menos tiempo documentando. Más tiempo con el paciente.">
+    <meta property="og:description" content="Inteligencia clínica que asiste la documentación médica con control humano y trazabilidad. Para hospitales, clínicas y direcciones médicas.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Miracle">
+    <meta property="og:locale" content="es_ES">
+    <!-- TODO despliegue: reemplazar https://REEMPLAZAR-DOMINIO por el dominio real de producción -->
+    <meta property="og:url" content="https://REEMPLAZAR-DOMINIO/">
+    <meta property="og:image" content="https://REEMPLAZAR-DOMINIO/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Miracle — Menos tiempo documentando. Más tiempo con el paciente.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Miracle | Menos tiempo documentando. Más tiempo con el paciente.">
+    <meta name="twitter:description" content="Inteligencia clínica que asiste la documentación médica con control humano y trazabilidad.">
+    <meta name="twitter:image" content="https://REEMPLAZAR-DOMINIO/og-image.png">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
         :root {
-            --bg: #f5f5f2;
-            --bg-strong: #ebe9e2;
-            --surface: rgba(255, 255, 255, 0.82);
+            --bg: #f8fafc;
+            --bg-strong: #dceffd;
+            --surface: rgba(248, 250, 252, 0.78);
             --surface-strong: #ffffff;
-            --surface-dark: #151818;
-            --line: rgba(18, 28, 37, 0.11);
-            --line-strong: rgba(18, 28, 37, 0.18);
-            --ink: #111418;
-            --muted: #5d6672;
-            --muted-strong: #424a54;
-            --accent: #0f6fff;
-            --accent-soft: rgba(15, 111, 255, 0.12);
+            --surface-dark: #0f172a;
+            --line: rgba(15, 23, 42, 0.1);
+            --line-strong: rgba(15, 23, 42, 0.18);
+            --ink: #0f172a;
+            --muted: #64748b;
+            --muted-strong: #334155;
+            --accent: #1f6feb;
+            --accent-soft: rgba(220, 239, 253, 0.74);
+            --navy: #0a1424;
+            --navy-2: #111c30;
+            --mint: #b7f0d8;
             --success: #13795b;
-            --hero-glow: rgba(15, 111, 255, 0.16);
-            --shadow-xl: 0 32px 90px rgba(17, 20, 24, 0.12);
-            --shadow-lg: 0 20px 54px rgba(17, 20, 24, 0.1);
-            --shadow-md: 0 12px 28px rgba(17, 20, 24, 0.08);
+            --left-blue-alpha: 0.78;
+            --right-mist-alpha: 0.62;
+            --bg-y: 12%;
+            --shadow-xl: 0 32px 90px rgba(15, 23, 42, 0.12);
+            --shadow-lg: 0 20px 54px rgba(15, 23, 42, 0.1);
+            --shadow-md: 0 12px 28px rgba(15, 23, 42, 0.08);
             --radius-xl: 32px;
             --radius-lg: 24px;
             --radius-md: 18px;
@@ -43,11 +66,12 @@
         body {
             margin: 0;
             color: var(--ink);
-            font-family: "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-family: "Inter", "Sohne", "Söhne", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
             background:
-                radial-gradient(circle at top left, rgba(15, 111, 255, 0.08), transparent 28%),
-                radial-gradient(circle at top right, rgba(17, 20, 24, 0.06), transparent 24%),
-                linear-gradient(180deg, #faf9f6 0%, #f1efe9 100%);
+                radial-gradient(ellipse at 0% var(--bg-y), rgb(220 239 253 / var(--left-blue-alpha)), transparent 42%),
+                radial-gradient(ellipse at 100% calc(var(--bg-y) + 10%), rgb(203 213 225 / var(--right-mist-alpha)), transparent 40%),
+                linear-gradient(115deg, #dceffd 0%, #f8fafc 38%, #f8fafc 62%, #e8edf3 100%);
+            background-attachment: fixed;
         }
 
         a {
@@ -70,28 +94,24 @@
         .page-shell::after {
             content: "";
             position: fixed;
-            inset: auto;
+            inset: 0;
             pointer-events: none;
             z-index: 0;
-            filter: blur(24px);
         }
 
         .page-shell::before {
-            top: 70px;
-            left: -120px;
-            width: 320px;
-            height: 320px;
-            background: var(--hero-glow);
-            border-radius: 999px;
+            background:
+                linear-gradient(90deg, rgb(220 239 253 / 0.5), transparent 38%),
+                linear-gradient(270deg, rgb(203 213 225 / 0.34), transparent 36%);
         }
 
         .page-shell::after {
-            right: -130px;
-            top: 420px;
-            width: 300px;
-            height: 300px;
-            background: rgba(29, 99, 209, 0.1);
-            border-radius: 999px;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.36) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.28) 1px, transparent 1px);
+            background-size: 72px 72px;
+            opacity: 0.2;
+            mask-image: linear-gradient(180deg, black 0%, transparent 62%);
         }
 
         .site-header {
@@ -99,8 +119,8 @@
             top: 0;
             z-index: 30;
             backdrop-filter: blur(18px);
-            background: rgba(245, 245, 242, 0.78);
-            border-bottom: 1px solid rgba(17, 20, 24, 0.06);
+            background: rgba(248, 250, 252, 0.74);
+            border-bottom: 1px solid rgba(15, 23, 42, 0.06);
         }
 
         .header-inner,
@@ -124,14 +144,28 @@
         .brand {
             text-decoration: none;
             flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-mark {
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            background:
+                radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.96), transparent 18%),
+                radial-gradient(circle at 38% 36%, #dceffd 0 22%, #7fb6e6 48%, #0f5f9f 100%);
+            box-shadow: inset -6px -8px 14px rgba(15, 23, 42, 0.22), 0 8px 20px rgba(47, 140, 255, 0.18);
         }
 
         .brand-wordmark {
             display: inline-block;
-            font-family: "Montserrat", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: clamp(1.5rem, 2vw, 1.9rem);
-            font-weight: 700;
-            letter-spacing: -0.06em;
+            font-family: "Sohne", "Söhne", "Inter", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: clamp(1.3rem, 1.7vw, 1.7rem);
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
             color: var(--ink);
         }
 
@@ -180,14 +214,15 @@
 
         .hero {
             display: grid;
-            grid-template-columns: minmax(0, 1.02fr) minmax(420px, 0.98fr);
-            gap: 44px;
+            grid-template-columns: minmax(0, 1fr) minmax(420px, 1fr);
+            gap: 52px;
             align-items: center;
-            padding: 78px 0 42px;
+            min-height: calc(100svh - 74px);
+            padding: 62px 0 34px;
         }
 
         .hero-copy {
-            max-width: 660px;
+            max-width: 620px;
         }
 
         .eyebrow {
@@ -196,14 +231,14 @@
             gap: 10px;
             padding: 8px 12px;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.72);
-            border: 1px solid rgba(17, 20, 24, 0.08);
-            box-shadow: 0 10px 24px rgba(17, 20, 24, 0.04);
+            background: rgba(248, 250, 252, 0.78);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
             font-size: 0.78rem;
             font-weight: 600;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: var(--muted-strong);
+            color: #1d4f86;
         }
 
         .eyebrow::before {
@@ -211,24 +246,26 @@
             width: 8px;
             height: 8px;
             border-radius: 999px;
-            background: linear-gradient(135deg, #2d8cff, #69a9ff);
-            box-shadow: 0 0 0 6px rgba(15, 111, 255, 0.09);
+            background: linear-gradient(135deg, #2f8cff, #b7f0d8);
+            box-shadow: 0 0 0 6px rgba(220, 239, 253, 0.9);
         }
 
         .hero h1 {
             margin: 22px 0 18px;
-            font-size: clamp(3rem, 6vw, 5.4rem);
-            line-height: 0.95;
-            letter-spacing: -0.065em;
-            max-width: 760px;
+            font-family: "Sohne", "Söhne", "Inter", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: clamp(2.9rem, 5.4vw, 5rem);
+            line-height: 1.06;
+            letter-spacing: -0.035em;
+            color: #0f172a;
+            max-width: 680px;
         }
 
         .hero-lead {
             margin: 0;
-            font-size: 1.16rem;
-            line-height: 1.72;
+            font-size: 1.12rem;
+            line-height: 1.68;
             color: var(--muted-strong);
-            max-width: 610px;
+            max-width: 570px;
         }
 
         .hero-actions {
@@ -248,6 +285,7 @@
             border-radius: 999px;
             text-decoration: none;
             border: 1px solid transparent;
+            font-weight: 650;
             transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, border-color 160ms ease;
         }
 
@@ -258,13 +296,13 @@
         .btn-primary {
             background: var(--ink);
             color: #fff;
-            box-shadow: 0 16px 32px rgba(17, 20, 24, 0.16);
+            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.18);
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(248, 250, 252, 0.82);
             color: var(--ink);
-            border-color: rgba(17, 20, 24, 0.12);
+            border-color: rgba(15, 23, 42, 0.12);
         }
 
         .hero-proof {
@@ -277,9 +315,9 @@
         .proof-card {
             padding: 18px 18px 20px;
             border-radius: 22px;
-            background: rgba(255, 255, 255, 0.76);
-            border: 1px solid rgba(17, 20, 24, 0.08);
-            box-shadow: 0 18px 34px rgba(17, 20, 24, 0.04);
+            background: rgba(248, 250, 252, 0.76);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            box-shadow: 0 18px 34px rgba(15, 23, 42, 0.04);
         }
 
         .proof-card strong,
@@ -303,14 +341,31 @@
             position: relative;
         }
 
+        .hero-panel::before {
+            content: "";
+            position: absolute;
+            top: -42px;
+            right: 24px;
+            width: clamp(92px, 12vw, 152px);
+            aspect-ratio: 1;
+            border-radius: 999px;
+            background:
+                radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.96), transparent 15%),
+                radial-gradient(circle at 38% 34%, #f8fafc 0 14%, #dceffd 33%, #79b4e7 58%, #0f5f9f 100%);
+            box-shadow: inset -18px -22px 34px rgba(15, 23, 42, 0.2), 0 30px 70px rgba(47, 140, 255, 0.22);
+            z-index: 2;
+            pointer-events: none;
+        }
+
         .hero-stack {
             position: relative;
             padding: 24px;
             border-radius: 36px;
             background:
-                linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.52));
-            border: 1px solid rgba(17, 20, 24, 0.08);
+                linear-gradient(180deg, rgba(248, 250, 252, 0.88), rgba(248, 250, 252, 0.58));
+            border: 1px solid rgba(15, 23, 42, 0.08);
             box-shadow: var(--shadow-xl);
+            backdrop-filter: blur(18px);
         }
 
         .hero-stack::before {
@@ -318,8 +373,13 @@
             position: absolute;
             inset: 18px;
             border-radius: 28px;
-            background: linear-gradient(135deg, rgba(15, 111, 255, 0.12), rgba(255, 255, 255, 0));
+            background: linear-gradient(135deg, rgba(220, 239, 253, 0.42), rgba(255, 255, 255, 0));
             pointer-events: none;
+        }
+
+        .hero-stack > * {
+            position: relative;
+            z-index: 1;
         }
 
         .preview-orbit {
@@ -328,9 +388,9 @@
             width: 170px;
             padding: 14px;
             border-radius: 22px;
-            background: rgba(17, 20, 24, 0.92);
+            background: rgba(15, 23, 42, 0.94);
             color: #fff;
-            box-shadow: 0 20px 44px rgba(17, 20, 24, 0.22);
+            box-shadow: 0 20px 44px rgba(15, 23, 42, 0.22);
         }
 
         .preview-orbit strong,
@@ -358,11 +418,15 @@
             margin-bottom: 8px;
             font-size: 0.7rem;
             letter-spacing: 0.08em;
-            color: #89b4ff;
+            color: #dceffd;
+        }
+
+        .preview-orbit::before {
+            content: "LIVE";
         }
 
         .section {
-            padding: 44px 0;
+            padding: 64px 0;
             position: relative;
             z-index: 1;
         }
@@ -406,7 +470,7 @@
 
         .section-head {
             max-width: 760px;
-            margin-bottom: 28px;
+            margin-bottom: 40px;
         }
 
         .section-kicker {
@@ -421,9 +485,9 @@
 
         .section-head h2 {
             margin: 0;
-            font-size: clamp(2rem, 4vw, 3.6rem);
-            line-height: 1.02;
-            letter-spacing: -0.055em;
+            font-size: clamp(1.9rem, 3.7vw, 3.3rem);
+            line-height: 1.14;
+            letter-spacing: -0.035em;
         }
 
         .section-head p {
@@ -531,23 +595,90 @@
         }
 
         .window-body {
-            display: grid;
-            grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+            display: block;
             min-height: 640px;
         }
 
         .workspace {
-            padding: 28px;
+            padding: 32px;
             background:
                 linear-gradient(180deg, rgba(252, 252, 251, 0.98), rgba(247, 246, 243, 0.98));
         }
 
         .workspace-shell {
-            padding: 26px;
+            padding: 28px;
             border-radius: 24px;
             background: rgba(255, 255, 255, 0.95);
             border: 1px solid rgba(17, 20, 24, 0.08);
             box-shadow: 0 22px 46px rgba(17, 20, 24, 0.06);
+        }
+
+        .emr-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(17, 20, 24, 0.08);
+        }
+
+        .emr-toolbar-copy strong,
+        .emr-toolbar-copy span {
+            display: block;
+        }
+
+        .emr-toolbar-copy strong {
+            font-size: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .emr-toolbar-copy span {
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .emr-tabbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .emr-tab {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 0 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(17, 20, 24, 0.08);
+            background: #fff;
+            color: var(--muted);
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        button.emr-tab {
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .emr-tab.active {
+            background: rgba(15, 111, 255, 0.1);
+            border-color: rgba(15, 111, 255, 0.18);
+            color: var(--accent);
+        }
+
+        .emr-view[hidden] {
+            display: none;
+        }
+
+        .emr-stage-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-top: 24px;
         }
 
         .workspace-header {
@@ -556,6 +687,10 @@
             justify-content: space-between;
             gap: 18px;
             margin-bottom: 22px;
+        }
+
+        .workspace-header-copy {
+            flex: 1 1 auto;
         }
 
         .workspace-header h3 {
@@ -586,32 +721,214 @@
         }
 
         .workspace-summary {
-            min-width: 180px;
-            padding: 16px;
+            min-width: 280px;
+            padding: 12px;
             border-radius: 18px;
-            background: linear-gradient(180deg, rgba(15, 111, 255, 0.08), rgba(15, 111, 255, 0.02));
-            border: 1px solid rgba(15, 111, 255, 0.16);
+            background: rgba(247, 249, 252, 0.96);
+            border: 1px solid rgba(17, 20, 24, 0.08);
         }
 
-        .workspace-summary strong,
-        .workspace-summary span {
+        .workspace-meta-strip {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .workspace-meta-pill {
+            display: inline-flex;
+            align-items: center;
+            min-height: 40px;
+            padding: 0 14px;
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid rgba(17, 20, 24, 0.08);
+            color: var(--muted-strong);
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .hero-panel .side-block {
+            padding: 18px;
+            border-radius: 22px;
+            background: rgba(17, 20, 24, 0.94);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+            color: #fff;
+        }
+
+        .hero-panel .assistant-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-panel .assistant-card::before {
+            content: "";
+            position: absolute;
+            inset: -20% auto auto -10%;
+            width: 180px;
+            height: 180px;
+            border-radius: 999px;
+            background: rgba(15, 111, 255, 0.18);
+            filter: blur(18px);
+            pointer-events: none;
+        }
+
+        .hero-panel .assistant-card > * {
+            position: relative;
+        }
+
+        .hero-panel .assistant-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(137, 180, 255, 0.16);
+            color: #c6ddff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .hero-panel .assistant-badge::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #6ca8ff;
+            box-shadow: 0 0 0 6px rgba(108, 168, 255, 0.12);
+        }
+
+        .hero-panel .assistant-card h3 {
+            margin: 16px 0 10px;
+            font-size: 1.42rem;
+            line-height: 1.08;
+            letter-spacing: -0.04em;
+        }
+
+        .hero-panel .assistant-card p {
+            margin: 0;
+            max-width: 320px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.7;
+        }
+
+        .patient-banner {
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr);
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .patient-banner-main,
+        .patient-banner-aside {
+            border-radius: 20px;
+            border: 1px solid rgba(17, 20, 24, 0.08);
+            background: linear-gradient(180deg, rgba(246, 249, 252, 0.98), rgba(255, 255, 255, 0.98));
+            padding: 18px 20px;
+        }
+
+        .patient-banner-main strong,
+        .patient-banner-main span,
+        .patient-banner-aside strong,
+        .patient-banner-aside span {
             display: block;
         }
 
-        .workspace-summary strong {
-            font-size: 0.95rem;
+        .patient-banner-main strong {
+            font-size: 1rem;
+            letter-spacing: -0.02em;
         }
 
-        .workspace-summary span {
-            margin-top: 7px;
+        .patient-banner-main span,
+        .patient-banner-aside span {
+            margin-top: 6px;
             color: var(--muted);
-            line-height: 1.45;
-            font-size: 0.84rem;
+            line-height: 1.5;
+            font-size: 0.9rem;
+        }
+
+        .patient-banner-aside {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .patient-banner-stat {
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: #fff;
+            border: 1px solid rgba(17, 20, 24, 0.06);
+        }
+
+        .patient-banner-stat strong {
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+        }
+
+        .patient-banner-stat span {
+            margin-top: 8px;
+            color: var(--ink);
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .form-section-card {
+            margin-top: 18px;
+            padding: 20px;
+            border-radius: 20px;
+            background: rgba(248, 250, 252, 0.9);
+            border: 1px solid rgba(17, 20, 24, 0.07);
+        }
+
+        .form-section-card:first-of-type {
+            margin-top: 0;
+        }
+
+        .form-section-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .form-section-head h4 {
+            margin: 0;
+            font-size: 1.08rem;
+            letter-spacing: -0.03em;
+        }
+
+        .form-section-head p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            line-height: 1.55;
+            font-size: 0.92rem;
+        }
+
+        .form-section-badge {
+            display: inline-flex;
+            align-items: center;
+            min-height: 34px;
+            padding: 0 12px;
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid rgba(17, 20, 24, 0.08);
+            color: var(--muted-strong);
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
         }
 
         .field-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 16px;
         }
 
@@ -660,7 +977,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            margin: 28px 0 16px;
+            margin: 0 0 16px;
         }
 
         .subsection-title::before {
@@ -731,141 +1048,6 @@
             font-weight: 600;
         }
 
-        .workspace-footer {
-            display: flex;
-            justify-content: space-between;
-            gap: 18px;
-            align-items: flex-start;
-            margin-top: 22px;
-            padding-top: 18px;
-            border-top: 1px solid rgba(17, 20, 24, 0.08);
-        }
-
-        .workspace-footer p {
-            margin: 0;
-            max-width: 580px;
-            color: var(--muted);
-            line-height: 1.6;
-            font-size: 0.94rem;
-        }
-
-        .workspace-footer .status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: 999px;
-            background: rgba(19, 121, 91, 0.08);
-            color: var(--success);
-            font-size: 0.82rem;
-            font-weight: 700;
-        }
-
-        .workspace-footer .status-pill::before {
-            content: "";
-            width: 8px;
-            height: 8px;
-            border-radius: 999px;
-            background: currentColor;
-        }
-
-        .side-panel {
-            padding: 24px;
-            background:
-                linear-gradient(180deg, rgba(17, 20, 24, 0.98), rgba(22, 26, 31, 0.94));
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-
-        .side-block {
-            padding: 18px;
-            border-radius: 22px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
-        }
-
-        .side-block h4 {
-            margin: 0 0 10px;
-            font-size: 1.02rem;
-            letter-spacing: -0.02em;
-        }
-
-        .side-block p,
-        .side-block li {
-            margin: 0;
-            color: rgba(255, 255, 255, 0.72);
-            line-height: 1.6;
-            font-size: 0.92rem;
-        }
-
-        .side-block ul {
-            margin: 0;
-            padding-left: 18px;
-            display: grid;
-            gap: 10px;
-        }
-
-        .assistant-card {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .assistant-card::before {
-            content: "";
-            position: absolute;
-            inset: -20% auto auto -10%;
-            width: 180px;
-            height: 180px;
-            border-radius: 999px;
-            background: rgba(15, 111, 255, 0.18);
-            filter: blur(18px);
-            pointer-events: none;
-        }
-
-        .assistant-card > * {
-            position: relative;
-        }
-
-        .assistant-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: 999px;
-            background: rgba(137, 180, 255, 0.16);
-            color: #c6ddff;
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-        }
-
-        .assistant-badge::before {
-            content: "";
-            width: 8px;
-            height: 8px;
-            border-radius: 999px;
-            background: #6ca8ff;
-            box-shadow: 0 0 0 6px rgba(108, 168, 255, 0.12);
-        }
-
-        .assistant-card h3 {
-            margin: 16px 0 10px;
-            font-size: 1.42rem;
-            line-height: 1.08;
-            letter-spacing: -0.04em;
-        }
-
-        .assistant-card p {
-            margin: 0;
-            max-width: 320px;
-            color: rgba(255, 255, 255, 0.8);
-            line-height: 1.7;
-        }
-
         .info-grid {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -896,6 +1078,10 @@
             display: grid;
             grid-template-columns: 1.12fr 0.88fr;
             gap: 20px;
+        }
+
+        .section-offset {
+            margin-top: 34px;
         }
 
         .feature-panel,
@@ -953,13 +1139,23 @@
 
         .contact-panel {
             background:
-                radial-gradient(circle at top right, rgba(15, 111, 255, 0.14), transparent 30%),
-                linear-gradient(180deg, #171a1f 0%, #101317 100%);
+                radial-gradient(circle at top right, rgba(220, 239, 253, 0.16), transparent 30%),
+                linear-gradient(180deg, #0f172a 0%, #111827 100%);
             color: #fff;
+        }
+
+        .contact-panel .section-kicker {
+            color: #dceffd;
         }
 
         .contact-panel p {
             color: rgba(255, 255, 255, 0.76);
+        }
+
+        .impact-panel {
+            background:
+                radial-gradient(circle at top right, rgba(183, 240, 216, 0.18), transparent 30%),
+                linear-gradient(180deg, #0f172a 0%, #142033 100%);
         }
 
         .contact-panel.centered {
@@ -1018,6 +1214,63 @@
             font-weight: 700;
             box-shadow: 0 16px 32px rgba(0, 0, 0, 0.18);
             font-size: 1rem;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 34px;
+        }
+
+        .profile-card {
+            padding: 24px;
+            border-radius: 26px;
+            background: rgba(248, 250, 252, 0.78);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            box-shadow: var(--shadow-md);
+        }
+
+        .profile-card span {
+            display: block;
+            color: #1d4f86;
+            font-size: 0.78rem;
+            font-weight: 750;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .profile-card h3 {
+            margin: 14px 0 10px;
+            font-size: 1.28rem;
+            line-height: 1.08;
+            letter-spacing: -0.04em;
+        }
+
+        .profile-card p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.62;
+        }
+
+        .cta-actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .btn-on-light {
+            background: #ffffff;
+            color: #0f172a;
+            box-shadow: 0 18px 34px rgba(0, 0, 0, 0.18);
+        }
+
+        .btn-on-dark {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.18);
         }
 
         .actions-strip {
@@ -1144,13 +1397,31 @@
         .info-card,
         .showcase-card,
         .feature-panel,
-        .contact-panel {
+        .contact-panel,
+        .profile-card {
             animation: heroEnter 700ms ease both;
         }
 
         .hero-panel { animation-delay: 90ms; }
         .info-card:nth-child(2) { animation-delay: 70ms; }
         .info-card:nth-child(3) { animation-delay: 140ms; }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+
+            .hero-copy,
+            .hero-panel,
+            .section-head,
+            .info-card,
+            .showcase-card,
+            .feature-panel,
+            .contact-panel,
+            .profile-card {
+                animation: none;
+            }
+        }
 
         @media (max-width: 1140px) {
             .hero,
@@ -1161,6 +1432,10 @@
 
             .signal-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .profile-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
             .hero {
@@ -1175,9 +1450,6 @@
                 grid-template-columns: 1fr;
             }
 
-            .side-panel {
-                border-top: 1px solid rgba(255, 255, 255, 0.08);
-            }
         }
 
         @media (max-width: 980px) {
@@ -1203,12 +1475,17 @@
                 width: 100%;
                 min-width: 0;
             }
+
+            .patient-banner {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 860px) {
             .header-inner,
             .workspace-header,
-            .workspace-footer,
+            .emr-toolbar,
+            .form-section-head,
             .actions-card-head,
             .footer-inner {
                 flex-direction: column;
@@ -1217,7 +1494,8 @@
 
             .hero-proof,
             .metric-grid,
-            .field-grid {
+            .field-grid,
+            .profile-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -1251,6 +1529,10 @@
             .top-nav {
                 justify-content: flex-start;
             }
+
+            .patient-banner-aside {
+                grid-template-columns: 1fr 1fr;
+            }
         }
 
         @media (max-width: 640px) {
@@ -1262,12 +1544,18 @@
             }
 
             .hero {
-                padding-top: 52px;
+                min-height: auto;
+                padding-top: 42px;
             }
 
             .hero h1 {
-                font-size: clamp(2.5rem, 13vw, 3.8rem);
-                line-height: 0.98;
+                font-size: clamp(2.5rem, 10.5vw, 3.1rem);
+                line-height: 1.08;
+            }
+
+            .hero-lead {
+                font-size: 1rem;
+                line-height: 1.62;
             }
 
             .showcase-card,
@@ -1276,24 +1564,46 @@
             }
 
             .window-topbar,
-            .workspace,
-            .side-panel {
+            .workspace {
                 padding: 16px;
             }
 
             .workspace-shell,
             .info-card,
+            .profile-card,
             .feature-panel,
             .contact-panel,
             .actions-card {
                 padding: 18px;
             }
 
+            .top-nav {
+                width: 100%;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                overflow: visible;
+                justify-content: stretch;
+                padding-bottom: 4px;
+                scrollbar-width: auto;
+            }
+
+            .top-nav::-webkit-scrollbar {
+                display: initial;
+            }
+
             .top-nav a,
             .top-nav button {
                 width: 100%;
+                min-width: 0;
+                flex: 1 1 auto;
                 justify-content: center;
                 text-align: center;
+                padding: 9px 12px;
+                white-space: normal;
+            }
+
+            .top-nav .nav-cta {
+                grid-column: 1 / -1;
             }
 
             .hero-actions,
@@ -1304,14 +1614,33 @@
             .btn,
             .actions button,
             .toolbar-button,
-            .whatsapp-cta a {
+            .whatsapp-cta a,
+            .cta-actions a {
                 width: 100%;
+            }
+
+            .patient-banner-aside {
+                grid-template-columns: 1fr;
             }
 
             .preview-orbit {
                 position: static;
                 width: 100%;
                 margin-top: 16px;
+            }
+
+            .hero-panel::before {
+                top: -24px;
+                right: 18px;
+                width: 88px;
+            }
+
+            #graph-assistant-bubble {
+                display: none !important;
+            }
+
+            #graph-assistant-shell {
+                --graph-assistant-glass-size: 104px !important;
             }
 
             .proof-card strong {
@@ -1357,13 +1686,13 @@
             }
 
             .workspace,
-            .window-topbar,
-            .side-panel {
+            .window-topbar {
                 padding: 14px;
             }
 
             .workspace-shell,
             .info-card,
+            .profile-card,
             .feature-panel,
             .contact-panel,
             .actions-card {
@@ -1390,6 +1719,912 @@
                 text-align: center;
             }
         }
+
+        /* ============================================================
+           Premium B2B healthcare upgrade — Miracle
+           ============================================================ */
+
+        /* Credibility strip under hero */
+        .cred-strip {
+            margin-top: 34px;
+            padding-top: 26px;
+            border-top: 1px solid var(--line);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 14px 26px;
+        }
+
+        .cred-label {
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .cred-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 12px;
+        }
+
+        .cred-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--line);
+            font-size: 0.86rem;
+            font-weight: 600;
+            color: var(--muted-strong);
+        }
+
+        .cred-pill::before {
+            content: "";
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--accent), var(--mint));
+        }
+
+        /* Impact / cost stat cards */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .stat-card {
+            padding: 32px 28px;
+            border-radius: var(--radius-lg);
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow-md);
+            transition: transform 200ms ease, box-shadow 200ms ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-num {
+            font-family: "Sohne", "Söhne", "Inter", sans-serif;
+            font-size: clamp(2.6rem, 4.4vw, 3.5rem);
+            line-height: 1;
+            letter-spacing: -0.05em;
+            color: var(--ink);
+            font-weight: 700;
+        }
+
+        .stat-num .unit {
+            font-size: 0.46em;
+            color: var(--muted);
+            font-weight: 600;
+            letter-spacing: 0;
+            margin-left: 2px;
+        }
+
+        .stat-label {
+            margin-top: 16px;
+            font-size: 1.04rem;
+            line-height: 1.5;
+            color: var(--muted-strong);
+        }
+
+        .stat-src {
+            margin-top: 16px;
+            display: block;
+            font-size: 0.76rem;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        /* How it works — numbered steps */
+        .step-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .step-card {
+            position: relative;
+            padding: 32px 28px;
+            border-radius: var(--radius-lg);
+            background: rgba(255, 255, 255, 0.76);
+            border: 1px solid var(--line);
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+            transition: transform 200ms ease, box-shadow 200ms ease;
+        }
+
+        .step-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 46px;
+            border-radius: 15px;
+            background: var(--ink);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.12rem;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.2);
+        }
+
+        .step-card h3 {
+            margin: 20px 0 8px;
+            font-size: 1.24rem;
+            letter-spacing: -0.02em;
+        }
+
+        .step-card p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.62;
+            font-size: 0.99rem;
+        }
+
+        .step-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            margin-top: 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--success);
+            letter-spacing: 0.01em;
+        }
+
+        .step-tag::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: var(--success);
+        }
+
+        /* Dark institutional band (evidence / authority) */
+        .band-dark {
+            margin: 20px auto;
+            width: min(calc(100% - 32px), var(--content-width));
+            border-radius: var(--radius-xl);
+            background:
+                radial-gradient(ellipse at 12% 0%, rgba(47, 140, 255, 0.24), transparent 46%),
+                radial-gradient(ellipse at 100% 100%, rgba(183, 240, 216, 0.14), transparent 42%),
+                linear-gradient(160deg, #111c30 0%, #0b1424 60%, #0a1120 100%);
+            color: #e7eef7;
+            padding: clamp(40px, 5vw, 76px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            z-index: 1;
+        }
+
+        .band-dark .section-kicker {
+            color: #7fb6ff;
+        }
+
+        .band-dark h2 {
+            margin: 0;
+            color: #fff;
+            font-size: clamp(1.9rem, 3.4vw, 3rem);
+            letter-spacing: -0.035em;
+            line-height: 1.14;
+        }
+
+        .band-lead {
+            color: rgba(231, 238, 247, 0.74);
+            line-height: 1.7;
+            font-size: 1.06rem;
+            max-width: 720px;
+            margin: 16px 0 0;
+        }
+
+        .evidence-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 36px;
+        }
+
+        .evidence-card {
+            padding: 26px 22px;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(6px);
+        }
+
+        .ev-num {
+            font-family: "Sohne", "Söhne", "Inter", sans-serif;
+            font-size: clamp(2rem, 3vw, 2.7rem);
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            color: #fff;
+        }
+
+        .ev-label {
+            margin-top: 14px;
+            font-size: 0.96rem;
+            line-height: 1.5;
+            color: rgba(231, 238, 247, 0.82);
+        }
+
+        .ev-src {
+            margin-top: 14px;
+            display: block;
+            font-size: 0.74rem;
+            color: rgba(231, 238, 247, 0.5);
+            line-height: 1.45;
+        }
+
+        .ev-src a {
+            color: #9cc4ff;
+            text-decoration: none;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .ev-src a:hover {
+            text-decoration: underline;
+        }
+
+        .stat-src a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .stat-src a:hover {
+            text-decoration: underline;
+        }
+
+        .evidence-foot {
+            margin-top: 32px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 18px;
+            justify-content: space-between;
+        }
+
+        .disclaimer {
+            font-size: 0.82rem;
+            color: rgba(231, 238, 247, 0.55);
+            max-width: 540px;
+            line-height: 1.55;
+            margin: 0;
+        }
+
+        .btn-on-navy {
+            background: #fff;
+            color: var(--ink);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.32);
+        }
+
+        .btn-line-light {
+            background: transparent;
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.32);
+        }
+
+        .btn-line-light:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .section-head.center {
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+        }
+
+        @media (max-width: 900px) {
+            .stat-grid,
+            .step-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .evidence-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 560px) {
+            .evidence-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .evidence-foot {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        /* ============================================================
+           Institutional dark theme — navy header + dark hero
+           ============================================================ */
+
+        .page-shell {
+            overflow-x: clip;
+        }
+
+        /* Dark navy header */
+        .site-header {
+            background: rgba(10, 20, 36, 0.82);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .brand-wordmark {
+            color: #fff;
+        }
+
+        .top-nav a,
+        .top-nav button {
+            color: rgba(231, 238, 247, 0.82);
+        }
+
+        .top-nav a:hover,
+        .top-nav button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.16);
+            color: #fff;
+        }
+
+        .top-nav .nav-cta {
+            background: #fff;
+            color: var(--navy);
+            border-color: #fff;
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
+        }
+
+        .top-nav .nav-cta:hover {
+            background: #eaf2ff;
+            color: var(--navy);
+            border-color: #eaf2ff;
+        }
+
+        /* Full-bleed dark hero */
+        .hero {
+            position: relative;
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            z-index: 0;
+            top: 0;
+            bottom: 0;
+            left: calc(50% - 50vw);
+            width: 100vw;
+            background:
+                radial-gradient(ellipse at 16% -6%, rgba(47, 140, 255, 0.26), transparent 48%),
+                radial-gradient(ellipse at 102% 116%, rgba(183, 240, 216, 0.12), transparent 44%),
+                linear-gradient(165deg, #0f1d33 0%, #0b1424 58%, #0a1120 100%);
+            pointer-events: none;
+        }
+
+        .hero > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            color: #fff;
+        }
+
+        .hero-lead {
+            color: rgba(231, 238, 247, 0.82);
+        }
+
+        .hero .eyebrow {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.16);
+            color: #bcd9ff;
+            box-shadow: none;
+        }
+
+        .hero .eyebrow::before {
+            box-shadow: 0 0 0 6px rgba(47, 140, 255, 0.18);
+        }
+
+        .hero .btn-primary {
+            background: #fff;
+            color: var(--navy);
+            box-shadow: 0 18px 36px rgba(0, 0, 0, 0.34);
+        }
+
+        .hero .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.22);
+        }
+
+        .hero .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        .hero .proof-card {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: none;
+        }
+
+        .hero .proof-card strong {
+            color: #fff;
+        }
+
+        .hero .proof-card span {
+            color: rgba(231, 238, 247, 0.7);
+        }
+
+        .hero .cred-strip {
+            border-top-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .hero .cred-label {
+            color: rgba(231, 238, 247, 0.6);
+        }
+
+        .hero .cred-pill {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.14);
+            color: rgba(231, 238, 247, 0.85);
+        }
+
+        /* Demo showcase (static mockup replacing embedded EMR) */
+        .demo-showcase {
+            display: grid;
+            grid-template-columns: 0.92fr 1.08fr;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .demo-pitch h3 {
+            margin: 0 0 12px;
+            font-size: clamp(1.5rem, 2.4vw, 2rem);
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+
+        .demo-pitch p {
+            margin: 0 0 18px;
+            color: var(--muted-strong);
+            line-height: 1.65;
+            font-size: 1.04rem;
+        }
+
+        .demo-points {
+            list-style: none;
+            margin: 0 0 26px;
+            padding: 0;
+            display: grid;
+            gap: 12px;
+        }
+
+        .demo-points li {
+            position: relative;
+            padding-left: 30px;
+            color: var(--muted-strong);
+            line-height: 1.5;
+        }
+
+        .demo-points li::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 3px;
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            background:
+                radial-gradient(circle at 50% 50%, #fff 0 3px, transparent 4px),
+                linear-gradient(135deg, var(--accent), #0f5f9f);
+            box-shadow: 0 4px 10px rgba(31, 111, 235, 0.3);
+        }
+
+        .demo-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .demo-actions .access-note {
+            display: block;
+            margin-top: 12px;
+            font-size: 0.82rem;
+            color: var(--muted);
+            width: 100%;
+        }
+
+        .demo-actions .access-note::before {
+            content: "🔒 ";
+        }
+
+        /* Mock EMR window (visual only) */
+        .emr-mock {
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .emr-mock-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 18px;
+            background: linear-gradient(180deg, #f7f9fc, #eef2f8);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .emr-mock-bar .dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 999px;
+            background: #cdd6e4;
+        }
+
+        .emr-mock-bar .dot:nth-child(1) { background: #f0a4a4; }
+        .emr-mock-bar .dot:nth-child(2) { background: #f2cf8e; }
+        .emr-mock-bar .dot:nth-child(3) { background: #a8d8b4; }
+
+        .emr-mock-bar .mock-title {
+            margin-left: 8px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: var(--muted-strong);
+        }
+
+        .emr-mock-bar .mock-live {
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: var(--success);
+        }
+
+        .emr-mock-bar .mock-live::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--success);
+            box-shadow: 0 0 0 4px rgba(19, 121, 91, 0.16);
+        }
+
+        .emr-mock-body {
+            padding: 20px;
+            display: grid;
+            gap: 14px;
+            background:
+                radial-gradient(ellipse at 100% 0%, rgba(220, 239, 253, 0.5), transparent 55%),
+                #fff;
+        }
+
+        .emr-mock-steps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .emr-mock-steps span {
+            font-size: 0.76rem;
+            font-weight: 600;
+            padding: 6px 11px;
+            border-radius: 999px;
+            background: #f1f5fb;
+            color: var(--muted);
+            border: 1px solid var(--line);
+        }
+
+        .emr-mock-steps span.on {
+            background: var(--navy);
+            color: #fff;
+            border-color: var(--navy);
+        }
+
+        .emr-mock-note {
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: #fff;
+            box-shadow: var(--shadow-md);
+            padding: 16px 18px;
+        }
+
+        .emr-mock-note .note-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .emr-mock-note .note-head strong {
+            font-size: 0.92rem;
+        }
+
+        .emr-mock-note .note-head .ai-chip {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: var(--accent);
+            background: rgba(31, 111, 235, 0.1);
+            border: 1px solid rgba(31, 111, 235, 0.22);
+            padding: 4px 9px;
+            border-radius: 999px;
+        }
+
+        .emr-mock-line {
+            height: 9px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #e7eef7, #f3f6fb);
+            margin: 9px 0;
+        }
+
+        .emr-mock-line.w-90 { width: 90%; }
+        .emr-mock-line.w-75 { width: 75%; }
+        .emr-mock-line.w-60 { width: 60%; }
+        .emr-mock-line.accent {
+            background: linear-gradient(90deg, rgba(31, 111, 235, 0.5), rgba(31, 111, 235, 0.12));
+        }
+
+        .emr-mock-confirm {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 6px;
+            padding-top: 14px;
+            border-top: 1px dashed var(--line);
+            font-size: 0.84rem;
+            color: var(--muted-strong);
+        }
+
+        .emr-mock-confirm .pill {
+            margin-left: auto;
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: #fff;
+            background: var(--navy);
+            padding: 7px 13px;
+            border-radius: 999px;
+        }
+
+        @media (max-width: 860px) {
+            .demo-showcase {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ============================================================
+           Lead capture form (on the dark contact panel)
+           ============================================================ */
+        .lead-form {
+            margin-top: 26px;
+            text-align: left;
+        }
+
+        .lead-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .lead-field {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .lead-field.lead-span {
+            grid-column: 1 / -1;
+        }
+
+        .lead-field > span {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: rgba(231, 238, 247, 0.78);
+        }
+
+        .lead-field > span i {
+            color: #7fb6ff;
+            font-style: normal;
+        }
+
+        .lead-field > span em {
+            color: rgba(231, 238, 247, 0.5);
+            font-style: normal;
+            font-weight: 500;
+        }
+
+        .lead-form input,
+        .lead-form textarea {
+            width: 100%;
+            font-family: inherit;
+            font-size: 1rem;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 14px;
+            padding: 12px 14px;
+            transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+        }
+
+        .lead-form textarea {
+            resize: vertical;
+            min-height: 84px;
+        }
+
+        .lead-form input::placeholder,
+        .lead-form textarea::placeholder {
+            color: rgba(231, 238, 247, 0.4);
+        }
+
+        .lead-form input:focus,
+        .lead-form textarea:focus {
+            outline: none;
+            border-color: #4f93ff;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 4px rgba(47, 140, 255, 0.18);
+        }
+
+        .lead-form input.invalid,
+        .lead-form textarea.invalid {
+            border-color: #f3a4a4;
+            box-shadow: 0 0 0 4px rgba(243, 100, 100, 0.16);
+        }
+
+        .lead-hp {
+            position: absolute !important;
+            left: -9999px !important;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .lead-hint {
+            margin: 14px 0 0;
+            font-size: 0.8rem;
+            color: rgba(231, 238, 247, 0.5);
+            text-align: center;
+        }
+
+        .lead-form .cta-actions {
+            margin-top: 18px;
+        }
+
+        .lead-form #lead-submit {
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .lead-status {
+            margin: 14px 0 0;
+            text-align: center;
+            font-size: 0.92rem;
+            min-height: 1.2em;
+        }
+
+        .lead-status.ok {
+            color: #8ff0c4;
+        }
+
+        .lead-status.err {
+            color: #ffc2c2;
+        }
+
+        .lead-form.sending #lead-submit {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* ============================================================
+           Mobile hamburger navigation
+           ============================================================ */
+        .nav-toggle {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            cursor: pointer;
+            padding: 0;
+            flex: 0 0 auto;
+        }
+
+        .nav-toggle-bars,
+        .nav-toggle-bars::before,
+        .nav-toggle-bars::after {
+            display: block;
+            width: 18px;
+            height: 2px;
+            border-radius: 2px;
+            background: #fff;
+            transition: transform 200ms ease, opacity 160ms ease, background 160ms ease;
+        }
+
+        .nav-toggle-bars {
+            position: relative;
+        }
+
+        .nav-toggle-bars::before {
+            content: "";
+            position: absolute;
+            top: -6px;
+            left: 0;
+        }
+
+        .nav-toggle-bars::after {
+            content: "";
+            position: absolute;
+            top: 6px;
+            left: 0;
+        }
+
+        .site-header.nav-open .nav-toggle-bars {
+            background: transparent;
+        }
+
+        .site-header.nav-open .nav-toggle-bars::before {
+            transform: translateY(6px) rotate(45deg);
+        }
+
+        .site-header.nav-open .nav-toggle-bars::after {
+            transform: translateY(-6px) rotate(-45deg);
+        }
+
+        @media (max-width: 640px) {
+            .nav-toggle {
+                display: inline-flex;
+            }
+
+            .header-inner {
+                position: relative;
+            }
+
+            .top-nav {
+                position: absolute;
+                top: calc(100% + 8px);
+                left: 0;
+                right: 0;
+                z-index: 40;
+                display: none;
+                grid-template-columns: 1fr;
+                gap: 6px;
+                padding: 12px;
+                border-radius: 16px;
+                background: rgba(10, 20, 36, 0.97);
+                backdrop-filter: blur(18px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+            }
+
+            .site-header.nav-open .top-nav {
+                display: grid;
+            }
+
+            .lead-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1397,15 +2632,21 @@
         <header class="site-header">
             <div class="header-inner">
                 <a class="brand" href="#top" aria-label="Miracle home">
+                    <span class="brand-mark" aria-hidden="true"></span>
                     <span class="brand-wordmark">Miracle</span>
                 </a>
 
-                <nav class="top-nav" aria-label="Primary">
-                    <a href="#product">Producto</a>
-                    <a href="#demo">Demo</a>
-                    <a href="#trust">Por que Miracle</a>
-                    <button id="clear-emr" type="button">Reiniciar demo</button>
-                    <a class="nav-cta" href="https://wa.me/573172550953" target="_blank" rel="noreferrer">Agendar visita</a>
+                <button class="nav-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="top-nav">
+                    <span class="nav-toggle-bars" aria-hidden="true"></span>
+                </button>
+
+                <nav class="top-nav" id="top-nav" aria-label="Primary">
+                    <a href="producto.html">Cómo funciona</a>
+                    <a href="#demo">Demo en vivo</a>
+                    <a href="evidencia.html">Evidencia</a>
+                    <a href="seguridad.html">Seguridad</a>
+                    <a href="casos.html">Casos de uso</a>
+                    <a class="nav-cta" href="https://wa.me/573172550953" target="_blank" rel="noreferrer">Solicitar demo</a>
                 </nav>
             </div>
         </header>
@@ -1413,29 +2654,39 @@
         <main id="top">
             <section class="hero">
                 <div class="hero-copy">
-                    <div class="eyebrow">IA operativa para equipos de salud</div>
-                    <h1>Miracle le da al médico un agente de inteligencia artificial que puede operar el computador por él.</h1>
+                    <div class="eyebrow">Inteligencia clínica para instituciones de salud</div>
+                    <h1>Menos tiempo documentando. Más tiempo con el paciente.</h1>
                     <p class="hero-lead">
-                        Miracle se integra al flujo clínico, entiende lo que hay en pantalla y ejecuta tareas repetitivas del software médico con precisión. El resultado es menos fricción operativa, más consistencia en el trabajo y más tiempo para enfocarse en el paciente.
+                        Miracle convierte cada consulta en una nota clínica clara, estructurada y trazable mientras el médico atiende. Trabaja sobre los sistemas que su institución ya usa, y el profesional revisa y firma cada registro.
                     </p>
 
                     <div class="hero-actions">
-                        <a class="btn btn-primary" href="#demo">Verlo en accion</a>
-                        <a class="btn btn-secondary" href="https://wa.me/573172550953" target="_blank" rel="noreferrer">Solicitar demo privada</a>
+                        <a class="btn btn-primary" href="https://wa.me/573172550953" target="_blank" rel="noreferrer">Solicitar diagnóstico operativo</a>
+                        <a class="btn btn-secondary" href="#producto">Ver cómo funciona</a>
                     </div>
 
-                    <div class="hero-proof" aria-label="Miracle value points">
+                    <div class="hero-proof" aria-label="Por qué Miracle es confiable">
                         <div class="proof-card">
-                            <strong>Entiende la pantalla</strong>
-                            <span>Miracle reconoce la interfaz, los controles y el siguiente paso necesario para completar la tarea.</span>
+                            <strong>No reemplaza al médico</strong>
+                            <span>Le devuelve tiempo clínico. El criterio y la firma siguen siendo del profesional.</span>
                         </div>
                         <div class="proof-card">
-                            <strong>Ejecuta trabajo real</strong>
-                            <span>No se queda en sugerencias. Puede ayudar a completar trabajo directamente sobre el flujo operativo.</span>
+                            <strong>Sobre su sistema actual</strong>
+                            <span>Se integra como una capa operativa, sin obligar a migraciones ni reemplazar el software clínico.</span>
                         </div>
                         <div class="proof-card">
-                            <strong>Hecho para salud</strong>
-                            <span>Diseñado para entornos donde la confianza, la claridad y la precisión importan para todos los involucrados.</span>
+                            <strong>Revisable y trazable</strong>
+                            <span>Cada nota se revisa, edita y confirma. Las acciones quedan registradas para auditoría.</span>
+                        </div>
+                    </div>
+
+                    <div class="cred-strip">
+                        <span class="cred-label">Diseñado para</span>
+                        <div class="cred-items">
+                            <span class="cred-pill">Hospitales</span>
+                            <span class="cred-pill">Clínicas y centros médicos</span>
+                            <span class="cred-pill">Direcciones médicas</span>
+                            <span class="cred-pill">Operaciones y TI clínica</span>
                         </div>
                     </div>
                 </div>
@@ -1460,61 +2711,102 @@
                                 </div>
                             </div>
                             <div class="side-block assistant-card" style="margin: 18px;">
-                                <span class="assistant-badge">Agente Miracle</span>
-                                <h3>"Puedo completar el flujo mientras el médico mantiene el control."</h3>
-                                <p>Miracle está construido para funcionar como una capa operativa confiable sobre el software médico, no como otro chatbot flotando encima.</p>
+                                <span class="assistant-badge">Asistente Miracle</span>
+                                <h3>"Preparé la nota de esta consulta. ¿La revisa y confirma antes de registrarla?"</h3>
+                                <p>Miracle redacta y estructura la documentación mientras el médico atiende. El profesional revisa, edita y firma. Nada se registra sin su confirmación.</p>
                             </div>
                         </div>
                     </div>
                     <div class="preview-orbit">
-                        <strong>Diseñado para inspirar confianza</strong>
-                        <span>Interacciones limpias, ejecución controlada y un lenguaje de producto que se siente creíble frente a liderazgo hospitalario.</span>
+                        <strong>Documentación asistida</strong>
+                        <span>El médico atiende. Miracle estructura la nota. La revisión humana confirma cada registro.</span>
                     </div>
                 </div>
             </section>
 
-            <section class="section signal-band" aria-label="Buyer signals">
-                <div class="section-inner">
-                    <div class="signal-grid">
-                        <div class="signal-card">
-                            <strong>Pensado para liderazgo en salud</strong>
-                            <span>Miracle está posicionado para ser evaluado por operadores, directores médicos, liderazgo institucional y aliados de software en la misma conversación.</span>
-                        </div>
-                        <div class="signal-card">
-                            <strong>Modelo de ejecución</strong>
-                            <span>Un agente de IA que ayuda a operar el software clínico existente, en lugar de reemplazarlo.</span>
-                        </div>
-                        <div class="signal-card">
-                            <strong>Punto de entrada comercial</strong>
-                            <span>Empezar por flujos de alta fricción, donde el tiempo administrativo es visible y medible.</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="section" id="product">
+            <section class="section signal-band" id="problema" aria-label="El costo de la carga administrativa">
                 <div class="section-inner">
                     <div class="section-head">
-                        <span class="section-kicker">Qué es Miracle</span>
-                        <h2>Un producto de IA con ambición de plataforma, presentado con la seriedad que esperan las organizaciones de salud.</h2>
+                        <span class="section-kicker">El costo invisible</span>
+                        <h2>La carga administrativa no solo cansa al médico. Le cuesta a la institución.</h2>
                         <p>
-                            Miracle es un agente de IA que ayuda a los clínicos a operar software más rápido y con menos fricción administrativa. Observa el contexto de trabajo, entiende el flujo y ayuda a ejecutar tareas directamente en pantalla. La propuesta de valor es concreta: menos clics repetitivos, handoffs más limpios y más atención clínica donde realmente importa.
+                            Cada hora frente a la pantalla es una hora menos con el paciente. La documentación lenta o inconsistente afecta la productividad, la calidad del registro y la experiencia clínica. La evidencia es consistente en todo el sector.
+                        </p>
+                    </div>
+
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <div class="stat-num">2<span class="unit">: 1</span></div>
+                            <p class="stat-label">Por cada hora con el paciente, el médico dedica cerca de dos horas al registro clínico y al trabajo de escritorio.</p>
+                            <span class="stat-src">Sinsky et al., Annals of Internal Medicine, 2016. <a href="#evidencia">Ver fuentes →</a></span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-num">~1–2<span class="unit">h/día</span></div>
+                            <p class="stat-label">Tiempo adicional de documentación fuera del horario clínico —el llamado "trabajo en pijama"— que se acumula después de la jornada.</p>
+                            <span class="stat-src">Estudios sobre uso de EHR y tiempo extra-laboral. <a href="#evidencia">Ver fuentes →</a></span>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-num">Burnout</div>
+                            <p class="stat-label">La carga de documentación es uno de los factores más asociados al agotamiento profesional médico.</p>
+                            <span class="stat-src">Literatura sobre burnout y carga de EHR (p. ej. Mayo Clinic / AMA). <a href="#evidencia">Ver fuentes →</a></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="producto">
+                <div class="section-inner">
+                    <div class="section-head">
+                        <span class="section-kicker">La solución</span>
+                        <h2>Una capa de inteligencia clínica sobre los sistemas que ya usa.</h2>
+                        <p>
+                            Miracle no reemplaza su software clínico ni obliga a migraciones. Trabaja sobre los flujos existentes para que la documentación se genere mientras el médico atiende, con menos pasos manuales y más consistencia, sin sacrificar el criterio profesional.
                         </p>
                     </div>
 
                     <div class="info-grid">
                         <article class="info-card">
-                            <h3>Trabaja dentro del flujo</h3>
-                            <p>Miracle actúa donde el equipo clínico ya trabaja, en lugar de obligarlo a salir de su software y adaptarse a un proceso aparte.</p>
+                            <h3>Documenta mientras atiende</h3>
+                            <p>Miracle estructura la nota clínica a partir de la consulta, para que el registro deje de competir con el tiempo del paciente.</p>
                         </article>
                         <article class="info-card">
-                            <h3>Diseñado para precisión y calma</h3>
-                            <p>La experiencia es deliberadamente sobria, legible y orientada a ejecución. Cada superficie está pensada para verse confiable frente a liderazgo médico, operativo y tecnológico.</p>
+                            <h3>Registro consistente y trazable</h3>
+                            <p>Notas estructuradas y estandarizadas que reducen omisiones, facilitan el seguimiento y son más fáciles de auditar.</p>
                         </article>
                         <article class="info-card">
-                            <h3>Demuestra palanca operativa real</h3>
-                            <p>Desde intake hasta acciones posteriores, Miracle muestra cómo un agente de IA puede reducir navegación repetitiva y convertir flujos complejos en ejecución guiada.</p>
+                            <h3>El médico revisa y confirma</h3>
+                            <p>Nada se registra solo. El profesional revisa, edita y firma; las acciones quedan con trazabilidad para la institución.</p>
                         </article>
+                    </div>
+
+                    <div class="section-head section-offset">
+                        <span class="section-kicker">Cómo funciona</span>
+                        <h2>Tres pasos. El médico siempre tiene la última palabra.</h2>
+                    </div>
+
+                    <div class="step-grid">
+                        <article class="step-card">
+                            <span class="step-num">1</span>
+                            <h3>Captura la consulta</h3>
+                            <p>Durante la atención, Miracle recoge la información clínica relevante sobre el flujo que el equipo ya usa, sin interrumpir la conversación con el paciente.</p>
+                            <span class="step-tag">Sin cambiar de sistema</span>
+                        </article>
+                        <article class="step-card">
+                            <span class="step-num">2</span>
+                            <h3>Estructura la documentación</h3>
+                            <p>Convierte lo conversado en una nota clínica clara y estandarizada: motivo, hallazgos, impresión y plan, lista para revisar.</p>
+                            <span class="step-tag">Clara, estructurada y trazable</span>
+                        </article>
+                        <article class="step-card">
+                            <span class="step-num">3</span>
+                            <h3>El médico revisa y firma</h3>
+                            <p>El profesional edita, confirma y registra. Cada acción queda con trazabilidad para seguimiento y auditoría de la institución.</p>
+                            <span class="step-tag">Control humano en cada registro</span>
+                        </article>
+                    </div>
+
+                    <div class="section-offset">
+                        <a class="btn btn-secondary" href="producto.html">Ver cómo funciona en detalle →</a>
                     </div>
                 </div>
             </section>
@@ -1525,12 +2817,11 @@
                         <span class="section-kicker">Demo interactiva</span>
                         <h2>Mira cómo Miracle puede operar un intake médico real sobre la pantalla.</h2>
                         <p>
-                            El formulario de abajo conserva exactamente los mismos campos funcionales del intake actual del EMR, ahora enmarcados dentro de una experiencia de producto más sólida y presentable para cliente.
+                            El intake conserva los mismos controles funcionales del demo médico, ahora organizados como un workspace clínico más cercano a un EMR real.
                         </p>
                     </div>
 
-                    <div class="showcase-card">
-                        <div class="app-window">
+                    <div class="app-window">
                             <div class="window-topbar">
                                 <div class="window-left">
                                     <div class="window-dots" aria-hidden="true">
@@ -1543,142 +2834,388 @@
                                         <span>Asistente para registro y triaje</span>
                                     </div>
                                 </div>
-                                <div class="window-right">
-                                    <span class="window-badge">Listo para asistir</span>
-                                </div>
                             </div>
 
                             <div class="window-body">
                                 <div class="workspace">
                                     <div class="workspace-shell">
-                                        <div class="workspace-header">
-                                            <div>
-                                                <span class="micro-tag">Módulo 1 · Intake</span>
-                                                <h3>Registro y triaje del paciente</h3>
-                                                <p>Captura demografía, asegurador, motivo de consulta y signos vitales iniciales antes de entregar el paciente al médico.</p>
+                                        <div class="emr-toolbar">
+                                            <div class="emr-toolbar-copy">
+                                                <strong>Graph EMR Workspace</strong>
+                                                <span>Admisión, verificación de datos y triage inicial en una sola vista.</span>
                                             </div>
-                                            <div class="workspace-summary">
-                                                <strong>Capa operativa de Miracle</strong>
-                                                <span>Guía la captura de datos, reduce carga de navegación y ayuda al equipo a avanzar con menos pasos manuales.</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="field-grid">
-                                            <div class="input-group">
-                                                <label for="intake-patient-id">Número de historia clínica</label>
-                                                <input data-testid="intake-patient-id" id="intake-patient-id" placeholder="MRN-2026-00124">
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="intake-document-type">Tipo de documento</label>
-                                                <select data-testid="intake-document-type" id="intake-document-type">
-                                                    <option value="">Seleccionar</option>
-                                                    <option value="cc">Cédula</option>
-                                                    <option value="passport">Pasaporte</option>
-                                                    <option value="ti">Tarjeta de identidad</option>
-                                                </select>
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="intake-first-name">Nombre</label>
-                                                <input data-testid="intake-first-name" id="intake-first-name" placeholder="Valentina">
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="intake-last-name">Apellido</label>
-                                                <input data-testid="intake-last-name" id="intake-last-name" placeholder="Gomez Ruiz">
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="intake-dob">Fecha de nacimiento</label>
-                                                <input data-testid="intake-dob" id="intake-dob" type="date">
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="intake-sex">Sexo biológico</label>
-                                                <select data-testid="intake-sex" id="intake-sex">
-                                                    <option value="">Seleccionar</option>
-                                                    <option value="female">Femenino</option>
-                                                    <option value="male">Masculino</option>
-                                                    <option value="other">Otro</option>
-                                                </select>
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="intake-phone">Teléfono móvil</label>
-                                                <input data-testid="intake-phone" id="intake-phone" placeholder="+57 300 555 1134">
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="intake-insurance">Asegurador / pagador</label>
-                                                <input data-testid="intake-insurance" id="intake-insurance" placeholder="Sura EPS">
-                                            </div>
-                                            <div class="input-group field-span">
-                                                <label for="intake-chief-complaint">Motivo de consulta</label>
-                                                <textarea data-testid="intake-chief-complaint" id="intake-chief-complaint" rows="4" placeholder="Paciente refiere 3 días de fiebre, dolor de garganta y fatiga."></textarea>
+                                            <div class="emr-tabbar" aria-label="Estado del flujo">
+                                                <button class="emr-tab active" data-emr-view-target="intake" type="button">Intake</button>
+                                                <button class="emr-tab" data-emr-view-target="anamnesis" type="button">Anamnesis</button>
+                                                <button class="emr-tab" data-emr-view-target="assessment" type="button">Assessment</button>
+                                                <button class="emr-tab" data-emr-view-target="plan" type="button">Plan</button>
                                             </div>
                                         </div>
-
-                                        <div class="subsection-title">
-                                            <span>Signos vitales iniciales</span>
-                                        </div>
-
-                                        <div class="metric-grid">
-                                            <div class="input-group">
-                                                <label for="triage-temperature">Temperatura</label>
-                                                <input data-testid="triage-temperature" id="triage-temperature" placeholder="38.2">
+                                        <section class="emr-view" data-emr-view="intake">
+                                            <div class="workspace-header">
+                                                <div class="workspace-header-copy">
+                                                    <span class="micro-tag">Módulo 1 · Intake</span>
+                                                    <h3>Registro y triaje del paciente</h3>
+                                                    <p>Captura demografía, verificación administrativa y signos vitales iniciales antes de entregar el paciente a consulta.</p>
+                                                </div>
+                                                <div class="workspace-summary">
+                                                    <div class="workspace-meta-strip">
+                                                        <span class="workspace-meta-pill">Recepción activa</span>
+                                                        <span class="workspace-meta-pill">Campos críticos</span>
+                                                        <span class="workspace-meta-pill">Paso 1 de 4</span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="input-group">
-                                                <label for="triage-heart-rate">Frecuencia cardíaca</label>
-                                                <input data-testid="triage-heart-rate" id="triage-heart-rate" placeholder="96">
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="triage-blood-pressure">Presión arterial</label>
-                                                <input data-testid="triage-blood-pressure" id="triage-blood-pressure" placeholder="118/74">
-                                            </div>
-                                            <div class="input-group">
-                                                <label for="triage-oxygen">SpO2</label>
-                                                <input data-testid="triage-oxygen" id="triage-oxygen" placeholder="98">
-                                            </div>
-                                        </div>
 
-                                        <div class="actions">
-                                            <button class="btn-primary-action" data-testid="intake-save-patient" id="intake-save-patient" type="button">Guardar registro</button>
-                                            <button class="btn-secondary-action" data-testid="intake-open-chart" id="intake-open-chart" type="button">Abrir historia clínica</button>
-                                            <a class="toolbar-button btn-ghost-action" href="page1.html">Continuar a anamnesis</a>
-                                        </div>
+                                            <div class="patient-banner">
+                                                <div class="patient-banner-main">
+                                                    <strong>Ingreso del episodio clínico</strong>
+                                                    <span>Verifica identidad, pagador y motivo de consulta para dejar la historia lista antes de pasar a anamnesis.</span>
+                                                </div>
+                                                <div class="patient-banner-aside">
+                                                    <div class="patient-banner-stat">
+                                                        <strong>Estado</strong>
+                                                        <span>En admisión</span>
+                                                    </div>
+                                                    <div class="patient-banner-stat">
+                                                        <strong>Prioridad</strong>
+                                                        <span>Triage inicial</span>
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                        <div class="feedback" data-testid="intake-feedback" id="intake-feedback"></div>
+                                            <section class="form-section-card" aria-labelledby="demographics-section-title">
+                                                <div class="form-section-head">
+                                                    <div>
+                                                        <h4 id="demographics-section-title">Identificación y datos administrativos</h4>
+                                                        <p>Completa el registro básico del paciente y deja la admisión lista para pasar a evaluación clínica.</p>
+                                                    </div>
+                                                    <span class="form-section-badge">Obligatorio</span>
+                                                </div>
 
-                                        <div class="workspace-footer">
-                                            <p>Este workspace es funcional a propósito. Le permite a un comprador institucional entender de forma concreta cómo Miracle puede ubicarse sobre un flujo real y facilitar el trabajo digital rutinario.</p>
-                                            <span class="status-pill">Workflow interactivo</span>
-                                        </div>
+                                                <div class="field-grid">
+                                                    <div class="input-group">
+                                                        <label for="intake-patient-id">Número de historia clínica</label>
+                                                        <input data-testid="intake-patient-id" id="intake-patient-id" placeholder="MRN-2026-00124">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="intake-document-type">Tipo de documento</label>
+                                                        <select data-testid="intake-document-type" id="intake-document-type">
+                                                            <option value="">Seleccionar</option>
+                                                            <option value="cc">Cédula</option>
+                                                            <option value="passport">Pasaporte</option>
+                                                            <option value="ti">Tarjeta de identidad</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="intake-insurance">Asegurador / pagador</label>
+                                                        <input data-testid="intake-insurance" id="intake-insurance" placeholder="Sura EPS">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="intake-first-name">Nombre</label>
+                                                        <input data-testid="intake-first-name" id="intake-first-name" placeholder="Valentina">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="intake-last-name">Apellido</label>
+                                                        <input data-testid="intake-last-name" id="intake-last-name" placeholder="Gomez Ruiz">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="intake-phone">Teléfono móvil</label>
+                                                        <input data-testid="intake-phone" id="intake-phone" placeholder="+57 300 555 1134">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="intake-dob">Fecha de nacimiento</label>
+                                                        <input data-testid="intake-dob" id="intake-dob" type="date">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="intake-sex">Sexo biológico</label>
+                                                        <select data-testid="intake-sex" id="intake-sex">
+                                                            <option value="">Seleccionar</option>
+                                                            <option value="female">Femenino</option>
+                                                            <option value="male">Masculino</option>
+                                                            <option value="other">Otro</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="input-group field-span">
+                                                        <label for="intake-chief-complaint">Motivo de consulta</label>
+                                                        <textarea data-testid="intake-chief-complaint" id="intake-chief-complaint" rows="4" placeholder="Paciente refiere 3 días de fiebre, dolor de garganta y fatiga."></textarea>
+                                                    </div>
+                                                </div>
+                                            </section>
+
+                                            <section class="form-section-card" aria-labelledby="triage-section-title">
+                                                <div class="form-section-head">
+                                                    <div>
+                                                        <h4 id="triage-section-title">Signos vitales iniciales</h4>
+                                                        <p>Registra los valores de triage que habilitan la apertura de la historia clínica para consulta médica.</p>
+                                                    </div>
+                                                    <span class="form-section-badge">Triage</span>
+                                                </div>
+
+                                                <div class="subsection-title">
+                                                    <span>Captura clínica inicial</span>
+                                                </div>
+
+                                                <div class="metric-grid">
+                                                    <div class="input-group">
+                                                        <label for="triage-temperature">Temperatura</label>
+                                                        <input data-testid="triage-temperature" id="triage-temperature" placeholder="38.2">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="triage-heart-rate">Frecuencia cardíaca</label>
+                                                        <input data-testid="triage-heart-rate" id="triage-heart-rate" placeholder="96">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="triage-blood-pressure">Presión arterial</label>
+                                                        <input data-testid="triage-blood-pressure" id="triage-blood-pressure" placeholder="118/74">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="triage-oxygen">SpO2</label>
+                                                        <input data-testid="triage-oxygen" id="triage-oxygen" placeholder="98">
+                                                    </div>
+                                                </div>
+                                            </section>
+
+                                            <div class="actions">
+                                                <button class="btn-primary-action" data-testid="intake-save-patient" id="intake-save-patient" type="button">Guardar registro</button>
+                                                <button class="btn-secondary-action" data-testid="intake-open-chart" id="intake-open-chart" type="button">Abrir historia clínica</button>
+                                                <button class="toolbar-button btn-ghost-action" data-emr-view-target="anamnesis" type="button">Continuar a anamnesis</button>
+                                                <a class="toolbar-button btn-ghost-action" href="emr-workspace.html">Expandir EMR</a>
+                                            </div>
+
+                                            <div class="feedback" data-testid="intake-feedback" id="intake-feedback"></div>
+                                        </section>
+
+                                        <section class="emr-view" data-emr-view="anamnesis" hidden>
+                                            <div class="workspace-header">
+                                                <div class="workspace-header-copy">
+                                                    <span class="micro-tag">Módulo 2 · Anamnesis</span>
+                                                    <h3>Anamnesis y examen físico</h3>
+                                                    <p>Documenta la narrativa clínica, antecedentes y hallazgos físicos sin salir del mismo workspace.</p>
+                                                </div>
+                                                <div class="workspace-summary">
+                                                    <div class="workspace-meta-strip">
+                                                        <span class="workspace-meta-pill">Narrativa clínica</span>
+                                                        <span class="workspace-meta-pill">Examen físico</span>
+                                                        <span class="workspace-meta-pill">Paso 2 de 4</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <section class="form-section-card" aria-labelledby="anamnesis-section-title">
+                                                <div class="form-section-head">
+                                                    <div>
+                                                        <h4 id="anamnesis-section-title">Historia clínica actual</h4>
+                                                        <p>Registra el tipo de visita, evolución de síntomas y antecedentes clínicos relevantes del episodio.</p>
+                                                    </div>
+                                                    <span class="form-section-badge">Consulta</span>
+                                                </div>
+
+                                                <div class="field-grid">
+                                                    <div class="input-group">
+                                                        <label for="anamnesis-visit-type">Visit type</label>
+                                                        <select data-testid="anamnesis-visit-type" id="anamnesis-visit-type">
+                                                            <option value="">Select</option>
+                                                            <option value="first-time">First time</option>
+                                                            <option value="follow-up">Follow-up</option>
+                                                            <option value="urgent">Urgent care</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="anamnesis-symptom-days">Days with symptoms</label>
+                                                        <input data-testid="anamnesis-symptom-days" id="anamnesis-symptom-days" placeholder="3">
+                                                    </div>
+                                                    <div class="input-group field-span">
+                                                        <label for="anamnesis-history-illness">History of present illness</label>
+                                                        <textarea data-testid="anamnesis-history-illness" id="anamnesis-history-illness" rows="4" placeholder="Patient with 3 days of fever, odynophagia and malaise without dyspnea."></textarea>
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="anamnesis-medical-history">Relevant medical history</label>
+                                                        <textarea data-testid="anamnesis-medical-history" id="anamnesis-medical-history" rows="4" placeholder="Hypertension controlled with losartan."></textarea>
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="anamnesis-allergies">Allergies</label>
+                                                        <textarea data-testid="anamnesis-allergies" id="anamnesis-allergies" rows="4" placeholder="No known drug allergies."></textarea>
+                                                    </div>
+                                                    <div class="input-group field-span">
+                                                        <label for="anamnesis-review-systems">Review of systems</label>
+                                                        <textarea data-testid="anamnesis-review-systems" id="anamnesis-review-systems" rows="5" placeholder="Positive for fever and sore throat. Negative for chest pain, dyspnea and vomiting."></textarea>
+                                                    </div>
+                                                </div>
+                                            </section>
+
+                                            <section class="form-section-card" aria-labelledby="exam-section-title">
+                                                <div class="form-section-head">
+                                                    <div>
+                                                        <h4 id="exam-section-title">Examen físico</h4>
+                                                        <p>Completa la evaluación observacional y los hallazgos clínicos antes de pasar al assessment.</p>
+                                                    </div>
+                                                    <span class="form-section-badge">Hallazgos</span>
+                                                </div>
+
+                                                <div class="field-grid">
+                                                    <div class="input-group">
+                                                        <label for="exam-general-appearance">General appearance</label>
+                                                        <textarea data-testid="exam-general-appearance" id="exam-general-appearance" rows="4" placeholder="Alert, hydrated, no respiratory distress."></textarea>
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="exam-findings">Physical exam findings</label>
+                                                        <textarea data-testid="exam-findings" id="exam-findings" rows="4" placeholder="Erythematous pharynx without exudate, lungs clear."></textarea>
+                                                    </div>
+                                                </div>
+                                            </section>
+
+                                            <div class="emr-stage-actions">
+                                                <button class="btn-primary-action" data-testid="anamnesis-save-note" id="anamnesis-save-note" type="button">Save Note</button>
+                                                <button class="btn-secondary-action" data-testid="anamnesis-request-labs" id="anamnesis-request-labs" type="button">Request Labs</button>
+                                                <button class="toolbar-button btn-ghost-action" data-emr-view-target="intake" type="button">Volver a intake</button>
+                                                <button class="toolbar-button btn-ghost-action" data-emr-view-target="assessment" type="button">Continuar a assessment</button>
+                                            </div>
+
+                                            <div class="feedback" data-testid="anamnesis-feedback" id="anamnesis-feedback"></div>
+                                        </section>
+
+                                        <section class="emr-view" data-emr-view="assessment" hidden>
+                                            <div class="workspace-header">
+                                                <div class="workspace-header-copy">
+                                                    <span class="micro-tag">Módulo 3 · Assessment</span>
+                                                    <h3>Assessment, fórmula y seguimiento</h3>
+                                                    <p>Cierra la consulta con diagnóstico, impresión clínica, medicación y plan de disposición dentro del mismo flujo.</p>
+                                                </div>
+                                                <div class="workspace-summary">
+                                                    <div class="workspace-meta-strip">
+                                                        <span class="workspace-meta-pill">Diagnóstico</span>
+                                                        <span class="workspace-meta-pill">Prescripción</span>
+                                                        <span class="workspace-meta-pill">Paso 3 de 4</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <section class="form-section-card" aria-labelledby="assessment-section-title">
+                                                <div class="form-section-head">
+                                                    <div>
+                                                        <h4 id="assessment-section-title">Cierre clínico del encuentro</h4>
+                                                        <p>Finaliza diagnóstico, plan terapéutico, instrucciones y disposición del paciente.</p>
+                                                    </div>
+                                                    <span class="form-section-badge">Cierre</span>
+                                                </div>
+
+                                                <div class="field-grid">
+                                                    <div class="input-group">
+                                                        <label for="assessment-primary-diagnosis">Primary diagnosis</label>
+                                                        <input data-testid="assessment-primary-diagnosis" id="assessment-primary-diagnosis" placeholder="Acute viral pharyngitis">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="assessment-icd10">ICD-10 code</label>
+                                                        <input data-testid="assessment-icd10" id="assessment-icd10" placeholder="J02.9">
+                                                    </div>
+                                                    <div class="input-group field-span">
+                                                        <label for="assessment-clinical-impression">Clinical impression</label>
+                                                        <textarea data-testid="assessment-clinical-impression" id="assessment-clinical-impression" rows="4" placeholder="Findings are compatible with uncomplicated upper respiratory infection without alarm signs."></textarea>
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="rx-medication-name">Medication</label>
+                                                        <input data-testid="rx-medication-name" id="rx-medication-name" placeholder="Acetaminophen">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="rx-medication-dose">Dose</label>
+                                                        <input data-testid="rx-medication-dose" id="rx-medication-dose" placeholder="500 mg tablet">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="rx-medication-frequency">Frequency</label>
+                                                        <input data-testid="rx-medication-frequency" id="rx-medication-frequency" placeholder="Every 8 hours">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="rx-medication-duration">Duration</label>
+                                                        <input data-testid="rx-medication-duration" id="rx-medication-duration" placeholder="3 days">
+                                                    </div>
+                                                    <div class="input-group field-span">
+                                                        <label for="rx-instructions">Patient instructions</label>
+                                                        <textarea data-testid="rx-instructions" id="rx-instructions" rows="4" placeholder="Take with water. Return if persistent fever or respiratory distress."></textarea>
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="plan-orders">Additional orders</label>
+                                                        <textarea data-testid="plan-orders" id="plan-orders" rows="4" placeholder="Rest, oral hydration, no antibiotics for now."></textarea>
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label for="plan-follow-up">Follow-up plan</label>
+                                                        <textarea data-testid="plan-follow-up" id="plan-follow-up" rows="4" placeholder="Reassessment in 48 to 72 hours if symptoms worsen."></textarea>
+                                                    </div>
+                                                    <div class="input-group field-span">
+                                                        <label for="disposition-status">Disposition</label>
+                                                        <select data-testid="disposition-status" id="disposition-status">
+                                                            <option value="">Select</option>
+                                                            <option value="discharge">Discharge home</option>
+                                                            <option value="observation">Observation</option>
+                                                            <option value="referral">Specialist referral</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </section>
+
+                                            <div class="emr-stage-actions">
+                                                <button class="btn-primary-action" data-testid="assessment-sign-note" id="assessment-sign-note" type="button">Sign Clinical Note</button>
+                                                <button class="btn-secondary-action" data-testid="assessment-generate-rx" id="assessment-generate-rx" type="button">Generate Prescription</button>
+                                                <button class="toolbar-button btn-ghost-action" data-emr-view-target="anamnesis" type="button">Volver a anamnesis</button>
+                                                <button class="toolbar-button btn-ghost-action" data-emr-view-target="plan" type="button">Ver cierre</button>
+                                            </div>
+
+                                            <div class="feedback" data-testid="assessment-feedback" id="assessment-feedback"></div>
+                                        </section>
+
+                                        <section class="emr-view" data-emr-view="plan" hidden>
+                                            <div class="workspace-header">
+                                                <div class="workspace-header-copy">
+                                                    <span class="micro-tag">Módulo 4 · Plan</span>
+                                                    <h3>Resumen de cierre y continuidad</h3>
+                                                    <p>La experiencia permanece dentro de la landing mientras el flujo avanza desde intake hasta cierre clínico.</p>
+                                                </div>
+                                                <div class="workspace-summary">
+                                                    <div class="workspace-meta-strip">
+                                                        <span class="workspace-meta-pill">Resumen final</span>
+                                                        <span class="workspace-meta-pill">Disposición</span>
+                                                        <span class="workspace-meta-pill">Paso 4 de 4</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <section class="form-section-card">
+                                                <div class="form-section-head">
+                                                    <div>
+                                                        <h4>Encuentro listo para cerrar</h4>
+                                                        <p>Desde aquí el equipo puede revisar lo documentado, volver a cualquier módulo o entregar el paciente con el flujo completo.</p>
+                                                    </div>
+                                                    <span class="form-section-badge">Resumen</span>
+                                                </div>
+
+                                                <div class="patient-banner">
+                                                    <div class="patient-banner-main">
+                                                        <strong>Historia clínica continua en una sola vista</strong>
+                                                        <span>Intake, anamnesis y assessment ya no requieren navegación entre páginas para demostrar el flujo completo del EMR.</span>
+                                                    </div>
+                                                    <div class="patient-banner-aside">
+                                                        <div class="patient-banner-stat">
+                                                            <strong>Módulos</strong>
+                                                            <span>4 integrados</span>
+                                                        </div>
+                                                        <div class="patient-banner-stat">
+                                                            <strong>Experiencia</strong>
+                                                            <span>Single page</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </section>
+
+                                            <div class="emr-stage-actions">
+                                                <button class="toolbar-button btn-ghost-action" data-emr-view-target="intake" type="button">Ir a intake</button>
+                                                <button class="toolbar-button btn-ghost-action" data-emr-view-target="anamnesis" type="button">Ir a anamnesis</button>
+                                                <button class="toolbar-button btn-ghost-action" data-emr-view-target="assessment" type="button">Ir a assessment</button>
+                                            </div>
+                                        </section>
                                     </div>
                                 </div>
-
-                                <aside class="side-panel">
-                                    <div class="side-block assistant-card">
-                                        <span class="assistant-badge">Miracle en acción</span>
-                                        <h3>Del contexto de la pantalla a ayuda operativa segura.</h3>
-                                        <p>Miracle puede entender en qué etapa del flujo está el usuario y apoyar la siguiente acción con el tono, la estructura y el nivel correcto de automatización.</p>
-                                    </div>
-
-                                    <div class="side-block">
-                                        <h4>Por qué esto importa</h4>
-                                        <ul>
-                                            <li>Reduce carga de navegación durante el registro clínico rutinario.</li>
-                                            <li>Ayuda a estandarizar flujos de intake entre equipos.</li>
-                                            <li>Crea un camino más claro desde la captura hasta la acción clínica.</li>
-                                        </ul>
-                                    </div>
-
-                                    <div class="side-block">
-                                        <h4>Para compradores institucionales</h4>
-                                        <p>Miracle se presenta con un lenguaje de producto apropiado para sistemas de salud, operadores de salud digital y aliados de software evaluando adopción estratégica de IA.</p>
-                                    </div>
-
-                                    <div class="side-block">
-                                        <h4>Lo que sigue</h4>
-                                        <p>Después del intake, la misma capa de agente puede continuar hacia anamnesis, assessment, diagnóstico y acciones administrativas posteriores.</p>
-                                    </div>
-                                </aside>
                             </div>
                         </div>
-                    </div>
 
                     <div class="actions-strip">
                         <div class="actions-card">
@@ -1695,28 +3232,116 @@
                 </div>
             </section>
 
-            <section class="section" id="trust">
+            <section class="section" id="evidencia" aria-label="Evidencia">
+                <div class="band-dark">
+                    <span class="section-kicker">Evidencia</span>
+                    <h2>El problema está documentado. La oportunidad también.</h2>
+                    <p class="band-lead">
+                        No partimos de promesas. La carga administrativa y documental del personal médico está ampliamente estudiada. Estos son algunos de los hallazgos que sustentan por qué vale la pena intervenir el flujo de documentación clínica.
+                    </p>
+
+                    <div class="evidence-grid">
+                        <div class="evidence-card">
+                            <div class="ev-num">≈ 2×</div>
+                            <p class="ev-label">Horas de trabajo en el sistema y de escritorio por cada hora de atención directa al paciente.</p>
+                            <span class="ev-src">Sinsky et al., <em>Annals of Internal Medicine</em> (2016). <a href="https://www.acpjournals.org/doi/10.7326/M16-0961" target="_blank" rel="noreferrer">Ver estudio →</a></span>
+                        </div>
+                        <div class="evidence-card">
+                            <div class="ev-num">~1–2 h</div>
+                            <p class="ev-label">Documentación adicional fuera del horario clínico ("trabajo en pijama") reportada en múltiples estudios.</p>
+                            <span class="ev-src">Arndt et al., <em>Annals of Family Medicine</em> (2017). <a href="https://doi.org/10.1370/afm.2121" target="_blank" rel="noreferrer">Ver estudio →</a></span>
+                        </div>
+                        <div class="evidence-card">
+                            <div class="ev-num">Burnout</div>
+                            <p class="ev-label">La carga de documentación figura entre los principales factores asociados al agotamiento profesional.</p>
+                            <span class="ev-src">Shanafelt et al., <em>Mayo Clinic Proceedings</em> (2016). <a href="https://pubmed.ncbi.nlm.nih.gov/27313121/" target="_blank" rel="noreferrer">Ver estudio →</a></span>
+                        </div>
+                        <div class="evidence-card">
+                            <div class="ev-num">Calidad</div>
+                            <p class="ev-label">El registro inconsistente dificulta el seguimiento, la auditoría y la continuidad asistencial.</p>
+                            <span class="ev-src">Buenas prácticas de registro clínico. <a href="evidencia.html#referencias" target="_blank" rel="noreferrer">Ver referencias →</a></span>
+                        </div>
+                    </div>
+
+                    <div class="evidence-foot">
+                        <p class="disclaimer">
+                            Las cifras citadas resumen hallazgos publicados en la literatura del sector y se presentan como referencia. Las fuentes verificables se detallan en la página de evidencia.
+                        </p>
+                        <a class="btn btn-on-navy" href="evidencia.html">Ver evidencia y fuentes completas →</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="seguridad">
                 <div class="section-inner">
                     <div class="section-head">
-                        <span class="section-kicker">Por qué Miracle</span>
-                        <h2>Una interfaz de IA que se ve creíble frente a directivos y útil frente al equipo clínico.</h2>
+                        <span class="section-kicker">Confianza y seguridad</span>
+                        <h2>Inteligencia con control humano. El criterio siempre es del médico.</h2>
                         <p>
-                            Miracle no intenta verse futurista por capricho. El producto está diseñado para sentirse premium, controlado y listo para instituciones. Ese equilibrio importa cuando la audiencia incluye médicos, directivos, operaciones y tecnología.
+                            Miracle está pensado para entornos donde la privacidad, la precisión y la responsabilidad clínica no son negociables. Asiste el flujo de documentación; no toma decisiones clínicas por su cuenta. Cada registro pasa por revisión humana.
                         </p>
                     </div>
 
-                    <div class="section-head" style="margin: 0 auto 26px; text-align: center;">
-                        <h2 style="font-size: clamp(2.1rem, 4vw, 3.3rem);">Agenda una visita y probemos Miracle sobre tu sistema.</h2>
-                        <p>La mejor demo es verlo funcionando dentro del flujo real de tu hospital.</p>
+                    <div class="info-grid">
+                        <article class="info-card">
+                            <h3>Decisión clínica</h3>
+                            <p>El diagnóstico, el tratamiento y la firma permanecen en el profesional de salud.</p>
+                        </article>
+                        <article class="info-card">
+                            <h3>Confirmación humana</h3>
+                            <p>Nada sensible se registra sin que una persona lo revise y lo apruebe.</p>
+                        </article>
+                        <article class="info-card">
+                            <h3>Uso responsable de IA</h3>
+                            <p>La IA asiste la operación y la documentación, no la responsabilidad médica.</p>
+                        </article>
                     </div>
 
-                    <div class="contact-panel centered">
-                        <h3>Agendar visita</h3>
-                        <p>Escríbenos por WhatsApp para coordinar una prueba real en tu hospital.</p>
+                    <div class="section-offset" style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <a class="btn btn-secondary" href="seguridad.html">Ver seguridad en detalle →</a>
+                        <a class="btn btn-secondary" href="casos.html">Casos de uso →</a>
+                    </div>
 
-                        <div class="whatsapp-cta">
-                            <a href="https://wa.me/573172550953" target="_blank" rel="noreferrer">Agendar visita por WhatsApp</a>
-                        </div>
+                    <div class="contact-panel centered" id="contacto">
+                        <span class="section-kicker">Siguiente paso</span>
+                        <h3>Solicite un diagnóstico operativo para su institución.</h3>
+                        <p>Analizamos un flujo real de su operación y le mostramos, con datos, dónde Miracle puede reducir carga administrativa, acelerar la documentación y mejorar la consistencia del registro. Sin compromiso.</p>
+
+                        <form class="lead-form" id="lead-form" novalidate>
+                            <div class="lead-grid">
+                                <label class="lead-field">
+                                    <span>Nombre y apellido <i>*</i></span>
+                                    <input type="text" name="name" id="lead-name" autocomplete="name" required placeholder="Dr. José David Jaramillo">
+                                </label>
+                                <label class="lead-field">
+                                    <span>Cargo</span>
+                                    <input type="text" name="role" id="lead-role" autocomplete="organization-title" placeholder="Dirección médica, gerencia, TI…">
+                                </label>
+                                <label class="lead-field">
+                                    <span>Institución</span>
+                                    <input type="text" name="institution" id="lead-institution" autocomplete="organization" placeholder="Clínica u hospital">
+                                </label>
+                                <label class="lead-field">
+                                    <span>Correo</span>
+                                    <input type="email" name="email" id="lead-email" autocomplete="email" placeholder="nombre@institucion.com">
+                                </label>
+                                <label class="lead-field">
+                                    <span>Teléfono / WhatsApp</span>
+                                    <input type="tel" name="phone" id="lead-phone" autocomplete="tel" placeholder="+57 …">
+                                </label>
+                                <label class="lead-field lead-span">
+                                    <span>¿Qué flujo quiere mejorar? <em>(opcional)</em></span>
+                                    <textarea name="message" id="lead-message" rows="3" placeholder="Ej: documentación de consulta externa, intake de urgencias…"></textarea>
+                                </label>
+                            </div>
+                            <input type="text" name="company_website" id="lead-hp" class="lead-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+                            <p class="lead-hint">Mínimo: nombre y un medio de contacto (correo o teléfono).</p>
+                            <div class="cta-actions">
+                                <button type="submit" class="btn btn-primary btn-on-light" id="lead-submit">Solicitar diagnóstico operativo</button>
+                                <a class="btn btn-secondary btn-on-dark" href="https://wa.me/573172550953" target="_blank" rel="noreferrer">Prefiero WhatsApp</a>
+                            </div>
+                            <p class="lead-status" id="lead-status" role="status" aria-live="polite"></p>
+                        </form>
                     </div>
                 </div>
             </section>
@@ -1726,12 +3351,13 @@
             <div class="footer-inner">
                 <div class="footer-copy">
                     <strong>Miracle</strong>
-                    <span>Agente de IA para operaciones clínicas y ejecución sobre software médico.</span>
+                    <span>Inteligencia clínica para documentación médica más rápida, consistente y trazable. Con control humano.</span>
                 </div>
                 <div class="footer-links">
-                    <a href="#top">Volver arriba</a>
-                    <a href="#demo">Ver demo</a>
-                    <a href="#trust">Contacto</a>
+                    <a href="producto.html">Cómo funciona</a>
+                    <a href="evidencia.html">Evidencia</a>
+                    <a href="seguridad.html">Seguridad</a>
+                    <a href="casos.html">Casos de uso</a>
                     <a href="https://wa.me/573172550953" target="_blank" rel="noreferrer">WhatsApp</a>
                 </div>
             </div>
@@ -1739,6 +3365,8 @@
     </div>
 
     <script src="page-state.js"></script>
+    <script src="supabase-client.js"></script>
+    <script src="demo-auth.js"></script>
     <script src="recorder.js"></script>
     <script src="assistant-runtime.js"></script>
     <script src="plugin/plugin-events.js"></script>
@@ -1754,7 +3382,36 @@
     <script src="plugin/plugin-execution-client.js"></script>
     <script src="plugin/plugin-workflow-overlay-bridge.js"></script>
     <script src="trainer-plugin.js"></script>
+    <script src="admin-workspace.js"></script>
     <script>
+        function syncBrandGradient() {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                return;
+            }
+
+            const scrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+            const progress = Math.min(window.scrollY / scrollable, 1);
+            document.documentElement.style.setProperty('--left-blue-alpha', (0.78 - progress * 0.18).toFixed(3));
+            document.documentElement.style.setProperty('--right-mist-alpha', (0.62 + progress * 0.12).toFixed(3));
+            document.documentElement.style.setProperty('--bg-y', `${12 + progress * 22}%`);
+        }
+
+        window.addEventListener('scroll', syncBrandGradient, { passive: true });
+        window.addEventListener('resize', syncBrandGradient);
+        syncBrandGradient();
+
+        const emrViews = ['intake', 'anamnesis', 'assessment', 'plan'];
+
+        function setActiveEmrView(viewName) {
+            const nextView = emrViews.includes(viewName) ? viewName : 'intake';
+            document.querySelectorAll('[data-emr-view]').forEach((section) => {
+                section.hidden = section.getAttribute('data-emr-view') !== nextView;
+            });
+            document.querySelectorAll('[data-emr-view-target]').forEach((control) => {
+                control.classList.toggle('active', control.getAttribute('data-emr-view-target') === nextView);
+            });
+        }
+
         function hasValue(id) {
             return document.getElementById(id).value.trim() !== '';
         }
@@ -1782,6 +3439,41 @@
             document.getElementById('intake-open-chart').disabled = !chartReady;
         }
 
+        function syncAnamnesisActions() {
+            const noteReady = [
+                'anamnesis-visit-type',
+                'anamnesis-symptom-days',
+                'anamnesis-history-illness',
+                'anamnesis-medical-history',
+                'anamnesis-allergies',
+                'anamnesis-review-systems',
+                'exam-general-appearance',
+                'exam-findings'
+            ].every(hasValue);
+
+            document.getElementById('anamnesis-save-note').disabled = !noteReady;
+            document.getElementById('anamnesis-request-labs').disabled = !noteReady;
+        }
+
+        function syncAssessmentActions() {
+            const assessmentReady = [
+                'assessment-primary-diagnosis',
+                'assessment-icd10',
+                'assessment-clinical-impression',
+                'rx-medication-name',
+                'rx-medication-dose',
+                'rx-medication-frequency',
+                'rx-medication-duration',
+                'rx-instructions',
+                'plan-orders',
+                'plan-follow-up',
+                'disposition-status'
+            ].every(hasValue);
+
+            document.getElementById('assessment-sign-note').disabled = !assessmentReady;
+            document.getElementById('assessment-generate-rx').disabled = !assessmentReady;
+        }
+
         [
             'intake-patient-id',
             'intake-document-type',
@@ -1801,6 +3493,37 @@
             document.getElementById(id).addEventListener('change', syncRegistrationActions);
         });
 
+        [
+            'anamnesis-visit-type',
+            'anamnesis-symptom-days',
+            'anamnesis-history-illness',
+            'anamnesis-medical-history',
+            'anamnesis-allergies',
+            'anamnesis-review-systems',
+            'exam-general-appearance',
+            'exam-findings'
+        ].forEach((id) => {
+            document.getElementById(id).addEventListener('input', syncAnamnesisActions);
+            document.getElementById(id).addEventListener('change', syncAnamnesisActions);
+        });
+
+        [
+            'assessment-primary-diagnosis',
+            'assessment-icd10',
+            'assessment-clinical-impression',
+            'rx-medication-name',
+            'rx-medication-dose',
+            'rx-medication-frequency',
+            'rx-medication-duration',
+            'rx-instructions',
+            'plan-orders',
+            'plan-follow-up',
+            'disposition-status'
+        ].forEach((id) => {
+            document.getElementById(id).addEventListener('input', syncAssessmentActions);
+            document.getElementById(id).addEventListener('change', syncAssessmentActions);
+        });
+
         document.getElementById('intake-save-patient').addEventListener('click', () => {
             const firstName = document.getElementById('intake-first-name').value.trim();
             const lastName = document.getElementById('intake-last-name').value.trim();
@@ -1814,11 +3537,57 @@
             document.getElementById('intake-feedback').innerText = complaint
                 ? 'Historia clínica preparada. Continúa a anamnesis.'
                 : 'Agrega el motivo de consulta antes de abrir la historia clínica.';
+            if (complaint) {
+                setActiveEmrView('anamnesis');
+            }
         });
 
-        document.getElementById('clear-emr').addEventListener('click', () => {
-            window.PageState.clearAll();
-            document.getElementById('intake-feedback').innerText = '';
+        document.getElementById('anamnesis-save-note').addEventListener('click', () => {
+            const history = document.getElementById('anamnesis-history-illness').value.trim();
+            document.getElementById('anamnesis-feedback').innerText = history
+                ? 'Anamnesis saved to the chart.'
+                : 'Document the history of present illness before saving.';
+        });
+
+        document.getElementById('anamnesis-request-labs').addEventListener('click', () => {
+            const review = document.getElementById('anamnesis-review-systems').value.trim();
+            document.getElementById('anamnesis-feedback').innerText = review
+                ? 'Labs suggested. Continue to diagnostic assessment.'
+                : 'Complete the review of systems before requesting labs.';
+            if (review) {
+                setActiveEmrView('assessment');
+            }
+        });
+
+        document.getElementById('assessment-sign-note').addEventListener('click', () => {
+            const diagnosis = document.getElementById('assessment-primary-diagnosis').value.trim();
+            document.getElementById('assessment-feedback').innerText = diagnosis
+                ? 'Clinical note signed and ready for discharge planning.'
+                : 'Add a primary diagnosis before signing the note.';
+        });
+
+        document.getElementById('assessment-generate-rx').addEventListener('click', () => {
+            const med = document.getElementById('rx-medication-name').value.trim();
+            document.getElementById('assessment-feedback').innerText = med
+                ? `Prescription generated for ${med}.`
+                : 'Add a medication before generating the formula.';
+        });
+
+        const clearEmrBtn = document.getElementById('clear-emr');
+        if (clearEmrBtn) {
+            clearEmrBtn.addEventListener('click', () => {
+                window.PageState.clearAll();
+                document.getElementById('intake-feedback').innerText = '';
+                document.getElementById('anamnesis-feedback').innerText = '';
+                document.getElementById('assessment-feedback').innerText = '';
+                setActiveEmrView('intake');
+            });
+        }
+
+        document.querySelectorAll('[data-emr-view-target]').forEach((control) => {
+            control.addEventListener('click', () => {
+                setActiveEmrView(control.getAttribute('data-emr-view-target') || 'intake');
+            });
         });
 
         window.onload = () => {
@@ -1826,8 +3595,120 @@
             window.TrainerPlugin.mount({
                 appId: 'medical-demo'
             });
+            setActiveEmrView('intake');
             syncRegistrationActions();
+            syncAnamnesisActions();
+            syncAssessmentActions();
         };
+    </script>
+
+    <script>
+        // --- Mobile hamburger navigation ---
+        (function () {
+            const header = document.querySelector('.site-header');
+            const navToggle = document.querySelector('.nav-toggle');
+            const topNav = document.getElementById('top-nav');
+            if (!header || !navToggle || !topNav) return;
+
+            function setOpen(open) {
+                header.classList.toggle('nav-open', open);
+                navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                navToggle.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+            }
+
+            navToggle.addEventListener('click', function (event) {
+                event.stopPropagation();
+                setOpen(!header.classList.contains('nav-open'));
+            });
+            topNav.addEventListener('click', function (event) {
+                if (event.target.closest('a')) setOpen(false);
+            });
+            document.addEventListener('click', function (event) {
+                if (header.classList.contains('nav-open') && !header.contains(event.target)) setOpen(false);
+            });
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') setOpen(false);
+            });
+        })();
+
+        // --- Lead capture: store in Supabase + WhatsApp ping ---
+        (function () {
+            const form = document.getElementById('lead-form');
+            if (!form) return;
+
+            const WHATSAPP = '573172550953';
+            const statusEl = document.getElementById('lead-status');
+            const nameEl = document.getElementById('lead-name');
+            const emailEl = document.getElementById('lead-email');
+            const phoneEl = document.getElementById('lead-phone');
+            const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+            function setStatus(message, kind) {
+                statusEl.textContent = message || '';
+                statusEl.className = 'lead-status' + (kind ? ' ' + kind : '');
+            }
+
+            form.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                // Honeypot: real users leave this empty.
+                if (document.getElementById('lead-hp').value) return;
+
+                const data = {
+                    name: nameEl.value.trim(),
+                    role: document.getElementById('lead-role').value.trim(),
+                    institution: document.getElementById('lead-institution').value.trim(),
+                    email: emailEl.value.trim(),
+                    phone: phoneEl.value.trim(),
+                    message: document.getElementById('lead-message').value.trim()
+                };
+
+                [nameEl, emailEl].forEach((el) => el.classList.remove('invalid'));
+                if (!data.name) {
+                    nameEl.classList.add('invalid'); nameEl.focus();
+                    setStatus('Escribe tu nombre, por favor.', 'err'); return;
+                }
+                if (data.email && !isEmail(data.email)) {
+                    emailEl.classList.add('invalid'); emailEl.focus();
+                    setStatus('Revisa el formato del correo.', 'err'); return;
+                }
+                if (!data.email && !data.phone) {
+                    setStatus('Déjanos un correo o un teléfono para poder contactarte.', 'err'); return;
+                }
+
+                form.classList.add('sending');
+                setStatus('Enviando…', '');
+
+                // 1) Best-effort: store the lead in Supabase.
+                try {
+                    const client = window.MiracleSupabase ? await window.MiracleSupabase.whenReady() : null;
+                    if (client) {
+                        const { error } = await client.from('leads').insert([{ ...data, source: 'landing' }]);
+                        if (error) throw error;
+                    } else {
+                        console.warn('[Lead] Supabase no configurado; continúo con WhatsApp.');
+                    }
+                } catch (error) {
+                    console.warn('[Lead] No se pudo guardar en Supabase:', (error && error.message) || error);
+                }
+
+                // 2) Always open WhatsApp with the lead prefilled (instant ping).
+                const text = [
+                    'Hola, quiero un diagnóstico operativo de Miracle.',
+                    'Nombre: ' + data.name,
+                    data.role ? 'Cargo: ' + data.role : '',
+                    data.institution ? 'Institución: ' + data.institution : '',
+                    data.email ? 'Correo: ' + data.email : '',
+                    data.phone ? 'Teléfono: ' + data.phone : '',
+                    data.message ? 'Flujo a mejorar: ' + data.message : ''
+                ].filter(Boolean).join('\n');
+                window.open('https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
+
+                form.classList.remove('sending');
+                setStatus('¡Gracias! Te contactamos muy pronto. Abrimos WhatsApp para agilizar.', 'ok');
+                form.reset();
+            });
+        })();
     </script>
 </body>
 </html>

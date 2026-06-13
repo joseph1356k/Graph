@@ -1,4 +1,5 @@
-function buildSurfaceContext(body = {}) {
+function buildSurfaceContext(body = {}, access = null) {
+  const ownerId = `${access?.ownerId || ''}`.trim();
   return {
     appId: body?.appId || body?.context?.appId || '',
     sourceUrl: body?.sourceUrl || body?.context?.sourceUrl || '',
@@ -7,8 +8,8 @@ function buildSurfaceContext(body = {}) {
     sourceTitle: body?.sourceTitle || body?.context?.sourceTitle || '',
     workflowDescription: body?.workflowDescription || '',
     assistantProfile: body?.assistantProfile || null,
-    scope: body?.context?.scope || 'global',
-    ownerId: body?.context?.ownerId || '',
+    scope: ownerId ? 'private' : (body?.context?.scope || 'global'),
+    ownerId: ownerId || body?.context?.ownerId || '',
     browserLocale: body?.context?.browserLocale || '',
     languageCode: body?.context?.languageCode || ''
   };
@@ -26,44 +27,44 @@ function registerContextRoutes(app, deps = {}) {
 
   app.post('/api/pitch/generate', async (req, res) => {
     try {
-      const context = buildSurfaceContext(req.body || {});
-      const result = await generatePitchArtifacts.execute(context);
+      const context = buildSurfaceContext(req.body || {}, req.workflowAccess || null);
+      const result = await generatePitchArtifacts.execute(context, req.workflowAccess || null);
       res.status(201).json(result);
     } catch (err) {
       console.error(`[Pitch] Generate Error: ${err.message}`);
-      res.status(500).json({ error: err.message });
+      res.status(statusForError(err)).json({ error: publicErrorMessage(err) });
     }
   });
 
   app.post('/api/pitch/improvements', async (req, res) => {
     try {
-      const context = buildSurfaceContext(req.body || {});
-      const result = await generatePitchArtifacts.previewImprovements(context);
+      const context = buildSurfaceContext(req.body || {}, req.workflowAccess || null);
+      const result = await generatePitchArtifacts.previewImprovements(context, req.workflowAccess || null);
       res.json(result);
     } catch (err) {
       console.error(`[Pitch] Improvement Preview Error: ${err.message}`);
-      res.status(500).json({ error: err.message });
+      res.status(statusForError(err)).json({ error: publicErrorMessage(err) });
     }
   });
 
   app.post('/api/voice/complaints/process', async (req, res) => {
     try {
-      const context = buildSurfaceContext(req.body || {});
+      const context = buildSurfaceContext(req.body || {}, req.workflowAccess || null);
       const workflows = generatePitchArtifacts.filterWorkflowsForContext(
-        await catalogService.getCatalog(),
+        await catalogService.getCatalog(req.workflowAccess || null),
         context
       );
       const result = await conversationInsights.processComplaints(context, workflows);
       res.json(result);
     } catch (err) {
       console.error(`[Voice Complaints] Process Error: ${err.message}`);
-      res.status(500).json({ error: err.message });
+      res.status(statusForError(err)).json({ error: publicErrorMessage(err) });
     }
   });
 
   app.post('/api/surface-profile/ensure', async (req, res) => {
     try {
-      const context = buildSurfaceContext(req.body || {});
+      const context = buildSurfaceContext(req.body || {}, req.workflowAccess || null);
       const result = await surfaceProfileService.ensureGlobalProfile(
         {
           appId: context.appId,
@@ -81,9 +82,10 @@ function registerContextRoutes(app, deps = {}) {
       res.json(result);
     } catch (err) {
       console.error(`[Surface Profile] Ensure Error: ${err.message}`);
-      res.status(500).json({ error: err.message });
+      res.status(statusForError(err)).json({ error: publicErrorMessage(err) });
     }
   });
 }
 
 module.exports = registerContextRoutes;
+const { statusForError, publicErrorMessage } = require('./httpErrors');

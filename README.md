@@ -27,6 +27,23 @@ Graph closes this loop:
 5. An assistant chooses the right workflow for the current page context.
 6. Playwright replays the workflow and fills missing values.
 
+## Real-Time Sync & Accounts — "Doble conexión"
+
+> Status: experimental, on branch `feature/doble-conexion`.
+
+Lets a clinician sign in with Google and have the clinical note **sync live across every device on the same account**, stored per patient/encounter. The note fills on the PC (by typing or by voice) and mirrors to a second device in ~1 s, so the doctor can step away from the PC while the encounter keeps being recorded.
+
+How it works:
+
+- **Identity:** Supabase Auth (Google), browser-side, protected by Row Level Security.
+- **Durable note:** Postgres table `encounters` (`note jsonb` is a flat `{ fieldId: value }` map); each user only sees their own rows.
+- **Real-time:** a Supabase Broadcast channel per encounter (`encounter:<id>`) mirrors field deltas, plus a debounced upsert of the full note for durability.
+- **Integration:** everything hangs off [web/public/page-state.js](web/public/page-state.js), the single place page form-state flows through. Because voice fills already dispatch `input`/`change`, dictated notes mirror for free — the voice/phone-mic pipeline is untouched.
+
+New pieces: `web/public/supabase-client.js`, `auth-gate.js`, `note-sync.js` (wired into `emr-workspace.html`), plus `GET /api/public-config` in `web/server.js`. Requires the Express server (`node web/server.js`, port 3000) — not the static 4173 server.
+
+**Full setup, including the manual Google OAuth steps, is in [DOBLE_CONEXION.md](DOBLE_CONEXION.md).**
+
 ## Architecture
 
 The codebase is moving toward three layers:
@@ -197,6 +214,8 @@ Main environment variables used today:
 - `NEO4J_USER`
 - `NEO4J_PASSWORD`
 - `WEB_PORT`
+- `SUPABASE_URL` (doble conexión — real-time sync & accounts)
+- `SUPABASE_ANON_KEY` (doble conexión — real-time sync & accounts)
 
 ## Current State
 

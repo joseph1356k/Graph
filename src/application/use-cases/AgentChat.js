@@ -331,7 +331,8 @@ class AgentChat {
       throw new Error('Message is required');
     }
 
-    const workflows = this.filterWorkflowsForContext(await this.catalogService.getCatalog(), context);
+    const workflowAccess = options.workflowAccess || null;
+    const workflows = this.filterWorkflowsForContext(await this.catalogService.getCatalog(workflowAccess), context);
     let decision;
 
     if (this.isDemoAutopilotContext(context) && this.wantsImmediateDemoExecution(message, history)) {
@@ -398,7 +399,7 @@ class AgentChat {
     const variables = decision.variables || {};
 
     if (executionMode === 'server') {
-      await this.executor.executeById(decision.workflowId, variables);
+      await this.executor.executeById(decision.workflowId, variables, workflowAccess);
 
       return {
         reply: decision.reply || 'Voy a encargarme de esto ahora mismo.',
@@ -409,10 +410,15 @@ class AgentChat {
       };
     }
 
-    const executionPlan = await this.executor.getExecutionPlanById(decision.workflowId, variables, {
-      userMessage: message,
-      assistantReply: decision.reply || ''
-    });
+    const executionPlan = await this.executor.getExecutionPlanById(
+      decision.workflowId,
+      variables,
+      {
+        userMessage: message,
+        assistantReply: decision.reply || ''
+      },
+      workflowAccess
+    );
 
     return {
       reply: decision.reply || 'Voy a encargarme de esto ahora mismo.',

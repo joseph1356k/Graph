@@ -10,6 +10,7 @@ coverage/
 build/
 dist/
 out/
+public/
 generated/chrome-extension/
 generated/pitch-personalities/
 scratch/
@@ -42,3 +43,4 @@ yarn-error.log*
 /Servicio a domicilio o recoge en una de nuestras tiendas_files/
 /Demo de carros/
 /wallpaper home.png
+.vercel

@@ -44,6 +44,7 @@ class Step {
     this.selectedValue = typeof data.selectedValue === 'string' ? data.selectedValue : '';
     this.selectedLabel = normalizeText(data.selectedLabel);
     this.semanticTarget = normalizeText(data.semanticTarget);
+    this.surfaceSection = normalizeText(data.surfaceSection);
     this.surfaceHints = parseJsonObject(data.surfaceHints) || null;
     
     this.allowedOptions = parseAllowedOptions(data.allowedOptions)

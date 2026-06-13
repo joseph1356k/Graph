@@ -36,6 +36,9 @@
         chat: {
             open: false
         },
+        note: {
+            open: false
+        },
         face: {
             mode: 'idle',
             blinkFactor: 1,
@@ -107,6 +110,139 @@
         }
         const safeHtml = trustedHtmlPolicy ? trustedHtmlPolicy.createHTML(html) : html;
         element.innerHTML = safeHtml;
+    }
+
+    function escapeHtml(value) {
+        return `${value || ''}`
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function renderInlineMarkdown(text) {
+        let out = escapeHtml(text);
+        out = out.replace(/`([^`]+)`/g, (_, code) => `<code>${code}</code>`);
+        out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        out = out.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+        out = out.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+        out = out.replace(/(^|[^_])_([^_\n]+)_(?!_)/g, '$1<em>$2</em>');
+        out = out.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, label, href) => {
+            const safeHref = href.replace(/"/g, '%22');
+            return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+        });
+        return out;
+    }
+
+    function renderMarkdown(text) {
+        const source = `${text || ''}`.replace(/\r\n/g, '\n');
+        if (!source.trim()) {
+            return '';
+        }
+
+        const lines = source.split('\n');
+        const out = [];
+        let paragraph = [];
+        let listType = null;
+        let inCodeBlock = false;
+        let codeBuffer = [];
+
+        const flushParagraph = () => {
+            if (paragraph.length === 0) return;
+            out.push(`<p>${renderInlineMarkdown(paragraph.join(' '))}</p>`);
+            paragraph = [];
+        };
+        const closeList = () => {
+            if (listType) {
+                out.push(`</${listType}>`);
+                listType = null;
+            }
+        };
+        const openList = (type) => {
+            if (listType !== type) {
+                closeList();
+                out.push(`<${type}>`);
+                listType = type;
+            }
+        };
+
+        for (const raw of lines) {
+            if (inCodeBlock) {
+                if (/^```/.test(raw)) {
+                    out.push(`<pre><code>${escapeHtml(codeBuffer.join('\n'))}</code></pre>`);
+                    codeBuffer = [];
+                    inCodeBlock = false;
+                } else {
+                    codeBuffer.push(raw);
+                }
+                continue;
+            }
+
+            if (/^```/.test(raw)) {
+                flushParagraph();
+                closeList();
+                inCodeBlock = true;
+                continue;
+            }
+
+            const trimmed = raw.trim();
+
+            if (!trimmed) {
+                flushParagraph();
+                closeList();
+                continue;
+            }
+
+            if (/^(-{3,}|_{3,}|\*{3,})$/.test(trimmed)) {
+                flushParagraph();
+                closeList();
+                out.push('<hr>');
+                continue;
+            }
+
+            const heading = trimmed.match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
+            if (heading) {
+                flushParagraph();
+                closeList();
+                const level = heading[1].length;
+                out.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`);
+                continue;
+            }
+
+            const quote = trimmed.match(/^>\s?(.*)$/);
+            if (quote) {
+                flushParagraph();
+                closeList();
+                out.push(`<blockquote>${renderInlineMarkdown(quote[1])}</blockquote>`);
+                continue;
+            }
+
+            const ul = trimmed.match(/^[-*+]\s+(.+)$/);
+            if (ul) {
+                flushParagraph();
+                openList('ul');
+                out.push(`<li>${renderInlineMarkdown(ul[1])}</li>`);
+                continue;
+            }
+
+            const ol = trimmed.match(/^\d+\.\s+(.+)$/);
+            if (ol) {
+                flushParagraph();
+                openList('ol');
+                out.push(`<li>${renderInlineMarkdown(ol[1])}</li>`);
+                continue;
+            }
+
+            closeList();
+            paragraph.push(trimmed);
+        }
+
+        if (inCodeBlock && codeBuffer.length) {
+            out.push(`<pre><code>${escapeHtml(codeBuffer.join('\n'))}</code></pre>`);
+        }
+        flushParagraph();
+        closeList();
+        return out.join('');
     }
 
     function quadraticBezier(start, control, end) {
@@ -473,6 +609,253 @@
                 opacity: 0.55;
                 cursor: wait;
             }
+            .graph-assistant-note-toggle {
+                position: fixed;
+                width: 42px;
+                height: 42px;
+                border: none;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.98);
+                color: #102033;
+                box-shadow:
+                    0 18px 36px rgba(4, 10, 20, 0.32),
+                    0 0 0 1px rgba(255, 255, 255, 0.78);
+                z-index: calc(var(--graph-assistant-z, 2147483000) + 3);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                pointer-events: auto;
+                transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+            }
+            .graph-assistant-note-toggle:hover {
+                transform: translateY(-1px);
+                box-shadow:
+                    0 22px 42px rgba(4, 10, 20, 0.38),
+                    0 0 0 1px rgba(255, 255, 255, 0.88);
+            }
+            .graph-assistant-note-toggle[data-active="true"] {
+                background: #0f5f8c;
+                color: #ffffff;
+            }
+            .graph-assistant-note-toggle svg {
+                width: 18px;
+                height: 18px;
+            }
+            .graph-assistant-note-panel {
+                position: fixed;
+                left: 16px;
+                top: 16px;
+                z-index: calc(var(--graph-assistant-z, 2147483000) + 5);
+                width: min(380px, calc(100vw - 32px));
+                min-height: 320px;
+                max-height: min(72vh, 680px);
+                display: none;
+                box-sizing: border-box;
+                border-radius: 20px;
+                background: rgba(252, 254, 255, 0.98);
+                color: #163345;
+                border: 1px solid rgba(15, 95, 140, 0.14);
+                box-shadow: 0 24px 64px rgba(5, 10, 20, 0.24);
+                overflow: hidden;
+            }
+            .graph-assistant-note-panel[data-visible="true"] {
+                display: flex;
+                flex-direction: column;
+            }
+            .graph-assistant-note-toolbar {
+                position: absolute;
+                top: 10px;
+                right: 12px;
+                z-index: 2;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                pointer-events: auto;
+            }
+            .graph-assistant-note-mic {
+                border: none;
+                border-radius: 999px;
+                padding: 7px 14px;
+                background: #0f5f8c;
+                color: #ffffff;
+                font: 700 12px/1 "Inter", "Segoe UI", sans-serif;
+                cursor: pointer;
+                box-shadow: 0 6px 16px rgba(15, 95, 140, 0.24);
+            }
+            .graph-assistant-note-mic[data-active="true"] {
+                background: #b53b2c;
+                box-shadow: 0 6px 16px rgba(181, 59, 44, 0.32);
+            }
+            .graph-assistant-note-mic:disabled {
+                opacity: 0.7;
+                cursor: wait;
+            }
+            .graph-assistant-note-close {
+                width: 28px;
+                height: 28px;
+                border: none;
+                border-radius: 999px;
+                background: rgba(15, 95, 140, 0.1);
+                color: #0f4f72;
+                cursor: pointer;
+                font-size: 18px;
+                line-height: 1;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .graph-assistant-note-editor {
+                flex: 1 1 auto;
+                width: 100%;
+                min-height: 0;
+                box-sizing: border-box;
+                padding: 48px 18px 18px;
+                background: #ffffff;
+                color: #163345;
+                font: 400 14px/1.55 "Inter", "Segoe UI", -apple-system, sans-serif;
+                outline: none;
+                overflow-y: auto;
+                overflow-x: hidden;
+                word-wrap: break-word;
+            }
+            .graph-assistant-note-editor:empty::before {
+                content: attr(data-placeholder);
+                color: rgba(22, 51, 69, 0.42);
+                font-style: italic;
+                pointer-events: none;
+            }
+            .graph-assistant-note-editor:focus {
+                box-shadow: inset 0 0 0 2px rgba(15, 95, 140, 0.18);
+            }
+            .graph-assistant-note-editor h1,
+            .graph-assistant-note-editor h2,
+            .graph-assistant-note-editor h3,
+            .graph-assistant-note-editor h4,
+            .graph-assistant-note-editor h5,
+            .graph-assistant-note-editor h6 {
+                margin: 16px 0 8px;
+                line-height: 1.25;
+                font-weight: 700;
+                color: #0f3a55;
+            }
+            .graph-assistant-note-editor h1 { font-size: 20px; border-bottom: 1px solid rgba(15, 95, 140, 0.14); padding-bottom: 4px; }
+            .graph-assistant-note-editor h2 { font-size: 17px; }
+            .graph-assistant-note-editor h3 { font-size: 15px; }
+            .graph-assistant-note-editor h4,
+            .graph-assistant-note-editor h5,
+            .graph-assistant-note-editor h6 { font-size: 14px; }
+            .graph-assistant-note-editor > *:first-child { margin-top: 0; }
+            .graph-assistant-note-editor p { margin: 8px 0; }
+            .graph-assistant-note-editor ul,
+            .graph-assistant-note-editor ol { margin: 8px 0; padding-left: 22px; }
+            .graph-assistant-note-editor li { margin: 3px 0; }
+            .graph-assistant-note-editor li > p { margin: 2px 0; }
+            .graph-assistant-note-editor strong { font-weight: 700; color: #0f3a55; }
+            .graph-assistant-note-editor em { font-style: italic; }
+            .graph-assistant-note-editor code {
+                font: 500 12.5px/1.4 "SFMono-Regular", Consolas, Menlo, monospace;
+                background: rgba(15, 95, 140, 0.08);
+                color: #0f4f72;
+                padding: 1px 5px;
+                border-radius: 4px;
+            }
+            .graph-assistant-note-editor pre {
+                background: rgba(15, 95, 140, 0.06);
+                padding: 10px 12px;
+                border-radius: 8px;
+                overflow-x: auto;
+                margin: 10px 0;
+            }
+            .graph-assistant-note-editor pre code {
+                background: transparent;
+                padding: 0;
+            }
+            .graph-assistant-note-editor blockquote {
+                margin: 10px 0;
+                padding: 4px 0 4px 12px;
+                border-left: 3px solid rgba(15, 95, 140, 0.32);
+                color: rgba(22, 51, 69, 0.78);
+            }
+            .graph-assistant-note-editor a {
+                color: #0f5f8c;
+                text-decoration: underline;
+            }
+            .graph-assistant-note-editor hr {
+                border: 0;
+                border-top: 1px solid rgba(15, 95, 140, 0.14);
+                margin: 14px 0;
+            }
+            .graph-assistant-note-diagnosis {
+                flex: 0 0 auto;
+                display: grid;
+                gap: 10px;
+                max-height: min(44%, 300px);
+                padding: 12px 16px 14px;
+                overflow-y: auto;
+                border-top: 1px solid rgba(15, 95, 140, 0.12);
+                background: #f7fbfd;
+            }
+            .graph-assistant-note-diagnosis-button {
+                justify-self: start;
+                border: 1px solid rgba(15, 95, 140, 0.22);
+                border-radius: 999px;
+                padding: 8px 14px;
+                background: #ffffff;
+                color: #0f5f8c;
+                font: 700 12px/1 "Inter", "Segoe UI", sans-serif;
+                cursor: pointer;
+            }
+            .graph-assistant-note-diagnosis-button:hover:not(:disabled) {
+                border-color: rgba(15, 95, 140, 0.42);
+                background: #eef8fc;
+            }
+            .graph-assistant-note-diagnosis-button:disabled {
+                opacity: 0.55;
+                cursor: not-allowed;
+            }
+            .graph-assistant-note-diagnosis-status {
+                display: none;
+                color: #526b79;
+                font: 600 12px/1.45 "Inter", "Segoe UI", sans-serif;
+            }
+            .graph-assistant-note-diagnosis-status:not(:empty) {
+                display: block;
+            }
+            .graph-assistant-note-diagnosis-status[data-error="true"] {
+                color: #a2352b;
+            }
+            .graph-assistant-note-diagnosis-notice {
+                padding: 9px 10px;
+                border-radius: 10px;
+                background: #fff8e8;
+                color: #745519;
+                font: 650 11.5px/1.45 "Inter", "Segoe UI", sans-serif;
+            }
+            .graph-assistant-note-diagnosis-list {
+                display: grid;
+                gap: 8px;
+            }
+            .graph-assistant-note-diagnosis-card {
+                padding: 10px 11px;
+                border: 1px solid rgba(15, 95, 140, 0.12);
+                border-radius: 12px;
+                background: #ffffff;
+            }
+            .graph-assistant-note-diagnosis-card strong {
+                display: block;
+                color: #123f58;
+                font: 750 13px/1.3 "Inter", "Segoe UI", sans-serif;
+            }
+            .graph-assistant-note-diagnosis-card p {
+                margin: 5px 0 0;
+                color: #365768;
+                font: 400 12px/1.45 "Inter", "Segoe UI", sans-serif;
+            }
+            .graph-assistant-note-diagnosis-evidence {
+                color: #617987 !important;
+                font-style: italic !important;
+            }
             .graph-assistant-avatar {
                 width: var(--graph-assistant-glass-size);
                 height: var(--graph-assistant-glass-size);
@@ -668,6 +1051,40 @@
             document.body.appendChild(chatComposer);
         }
 
+        let noteButton = document.getElementById('graph-assistant-note-toggle');
+        if (!noteButton) {
+            noteButton = document.createElement('button');
+            noteButton.id = 'graph-assistant-note-toggle';
+            noteButton.className = 'graph-assistant-note-toggle';
+            noteButton.type = 'button';
+            noteButton.dataset.active = 'false';
+            noteButton.setAttribute('aria-label', 'Abrir hoja de notas');
+            setElementHtml(noteButton, '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm6 1.5V9h4.5M9 13h6M9 16h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+            document.body.appendChild(noteButton);
+        }
+
+        let notePanel = document.getElementById('graph-assistant-note-panel');
+        if (!notePanel) {
+            notePanel = document.createElement('div');
+            notePanel.id = 'graph-assistant-note-panel';
+            notePanel.className = 'graph-assistant-note-panel';
+            notePanel.dataset.visible = 'false';
+            setElementHtml(notePanel, `
+                <div class="graph-assistant-note-toolbar">
+                    <button id="graph-assistant-note-mic" class="graph-assistant-note-mic" type="button" data-active="false">Grabar</button>
+                    <button id="graph-assistant-note-close" class="graph-assistant-note-close" type="button" aria-label="Cerrar hoja">×</button>
+                </div>
+                <div id="graph-assistant-note-editor" class="graph-assistant-note-editor" contenteditable="true" spellcheck="false" data-placeholder="Dicta con Miracle o escribe aqui directamente." role="textbox" aria-multiline="true"></div>
+                <section class="graph-assistant-note-diagnosis" aria-label="Sugerencias diagnósticas">
+                    <button id="graph-assistant-note-diagnosis-button" class="graph-assistant-note-diagnosis-button" type="button" disabled>Sugerir diagnósticos</button>
+                    <div id="graph-assistant-note-diagnosis-status" class="graph-assistant-note-diagnosis-status" role="status" aria-live="polite"></div>
+                    <div id="graph-assistant-note-diagnosis-notice" class="graph-assistant-note-diagnosis-notice" hidden></div>
+                    <div id="graph-assistant-note-diagnosis-list" class="graph-assistant-note-diagnosis-list"></div>
+                </section>
+            `);
+            document.body.appendChild(notePanel);
+        }
+
         let spotlight = document.getElementById('graph-assistant-spotlight');
         if (!spotlight) {
             spotlight = document.createElement('div');
@@ -684,9 +1101,18 @@
             userBubble,
             micButton,
             chatButton,
+            noteButton,
             chatComposer,
             chatInput: document.getElementById('graph-assistant-chat-input'),
             chatSendButton: document.getElementById('graph-assistant-chat-send'),
+            notePanel,
+            notePanelClose: document.getElementById('graph-assistant-note-close'),
+            notePanelMic: document.getElementById('graph-assistant-note-mic'),
+            notePanelEditor: document.getElementById('graph-assistant-note-editor'),
+            noteDiagnosisButton: document.getElementById('graph-assistant-note-diagnosis-button'),
+            noteDiagnosisStatus: document.getElementById('graph-assistant-note-diagnosis-status'),
+            noteDiagnosisNotice: document.getElementById('graph-assistant-note-diagnosis-notice'),
+            noteDiagnosisList: document.getElementById('graph-assistant-note-diagnosis-list'),
             label: document.getElementById('graph-assistant-label'),
             spotlight
         };
@@ -756,7 +1182,9 @@
             element?.closest?.('#graph-assistant-shell')
             || element?.closest?.('#graph-assistant-bubble')
             || element?.closest?.('#graph-assistant-chat-toggle')
+            || element?.closest?.('#graph-assistant-note-toggle')
             || element?.closest?.('#graph-assistant-chat-composer')
+            || element?.closest?.('#graph-assistant-note-panel')
             || element?.closest?.('#graph-assistant-bubble-mic')
             || element?.closest?.('#graph-assistant-spotlight')
         );
@@ -1089,7 +1517,9 @@
         const userBubble = document.getElementById('graph-assistant-user-bubble');
         const micButton = document.getElementById('graph-assistant-bubble-mic');
         const chatButton = document.getElementById('graph-assistant-chat-toggle');
+        const noteButton = document.getElementById('graph-assistant-note-toggle');
         const chatComposer = document.getElementById('graph-assistant-chat-composer');
+        const notePanel = document.getElementById('graph-assistant-note-panel');
         if (!shell || !bubble) {
             return;
         }
@@ -1108,7 +1538,7 @@
 
         const buttonSize = 42;
         const buttonGap = 10;
-        const controlsWidth = (buttonSize * 2) + buttonGap;
+        const controlsWidth = (buttonSize * 3) + (buttonGap * 2);
         const controlsLeft = clamp(
             rawLeft + (bubbleRect.width / 2) - (controlsWidth / 2),
             padding,
@@ -1161,6 +1591,19 @@
             micButton.style.left = `${controlsLeft + buttonSize + buttonGap}px`;
             micButton.style.top = `${controlsTop}px`;
         }
+        if (noteButton) {
+            noteButton.style.left = `${controlsLeft + (buttonSize + buttonGap) * 2}px`;
+            noteButton.style.top = `${controlsTop}px`;
+        }
+        if (notePanel && notePanel.dataset.visible === 'true') {
+            const noteRect = notePanel.getBoundingClientRect();
+            const noteWidth = Math.max(noteRect.width, 240);
+            const noteHeight = Math.max(noteRect.height, 280);
+            const noteLeft = clamp(rawLeft, padding, Math.max(padding, window.innerWidth - noteWidth - padding));
+            const noteTop = clamp(currentBottom - noteHeight, padding, Math.max(padding, window.innerHeight - noteHeight - padding));
+            notePanel.style.left = `${noteLeft}px`;
+            notePanel.style.top = `${noteTop}px`;
+        }
     }
 
     function setMode(mode) {
@@ -1208,7 +1651,17 @@
         mount(config = {}) {
             state.options = { ...DEFAULTS, ...config };
             ensureStyles();
-            const { label, micButton, chatButton, chatInput, chatSendButton } = ensureElements();
+            const {
+                label,
+                micButton,
+                chatButton,
+                noteButton,
+                notePanelClose,
+                notePanelMic,
+                noteDiagnosisButton,
+                chatInput,
+                chatSendButton
+            } = ensureElements();
             bindDragHandlers();
             document.documentElement.style.setProperty('--graph-assistant-accent', state.options.accentColor);
             document.documentElement.style.setProperty('--graph-assistant-z', `${state.options.zIndex}`);
@@ -1244,6 +1697,28 @@
                     setChatComposerVisible(!state.chat.open, { focus: true });
                     emit('chat-toggle', { open: state.chat.open });
                 });
+            }
+            if (noteButton && noteButton.dataset.bound !== 'true') {
+                noteButton.dataset.bound = 'true';
+                noteButton.addEventListener('click', () => {
+                    api.setNotePanelState({ visible: !state.note.open });
+                    emit('note-toggle', { open: state.note.open });
+                });
+            }
+            if (notePanelClose && notePanelClose.dataset.bound !== 'true') {
+                notePanelClose.dataset.bound = 'true';
+                notePanelClose.addEventListener('click', () => {
+                    api.setNotePanelState({ visible: false });
+                    emit('note-toggle', { open: false });
+                });
+            }
+            if (notePanelMic && notePanelMic.dataset.bound !== 'true') {
+                notePanelMic.dataset.bound = 'true';
+                notePanelMic.addEventListener('click', () => emit('note-mic-button', {}));
+            }
+            if (noteDiagnosisButton && noteDiagnosisButton.dataset.bound !== 'true') {
+                noteDiagnosisButton.dataset.bound = 'true';
+                noteDiagnosisButton.addEventListener('click', () => emit('note-diagnosis-button', {}));
             }
             if (chatSendButton && chatSendButton.dataset.bound !== 'true') {
                 chatSendButton.dataset.bound = 'true';
@@ -1322,6 +1797,82 @@
             const { micButton } = ensureElements();
             if (!micButton) return;
             micButton.dataset.active = active ? 'true' : 'false';
+        },
+        setNotePanelState(nextState = {}) {
+            const {
+                noteButton,
+                notePanel,
+                notePanelMic,
+                notePanelEditor,
+                noteDiagnosisButton,
+                noteDiagnosisStatus,
+                noteDiagnosisNotice,
+                noteDiagnosisList
+            } = ensureElements();
+
+            if (nextState.visible !== undefined) {
+                state.note.open = Boolean(nextState.visible);
+            }
+            if (noteButton) {
+                noteButton.dataset.active = state.note.open ? 'true' : 'false';
+            }
+            if (notePanel) {
+                notePanel.dataset.visible = state.note.open ? 'true' : 'false';
+            }
+            if (notePanelEditor && nextState.content !== undefined) {
+                const isUserEditing = document.activeElement === notePanelEditor;
+                if (!isUserEditing) {
+                    const content = `${nextState.content || ''}`;
+                    setElementHtml(notePanelEditor, content.trim() ? renderMarkdown(content) : '');
+                    notePanelEditor.scrollTop = notePanelEditor.scrollHeight;
+                }
+            }
+            if (notePanelMic) {
+                const recording = Boolean(nextState.recording);
+                const busy = Boolean(nextState.busy);
+                notePanelMic.dataset.active = recording ? 'true' : 'false';
+                notePanelMic.disabled = busy;
+                notePanelMic.textContent = recording ? 'Detener' : (busy ? '...' : 'Grabar');
+            }
+            if (noteDiagnosisButton) {
+                const diagnosisBusy = Boolean(nextState.diagnosisBusy);
+                noteDiagnosisButton.disabled = Boolean(nextState.diagnosisDisabled) || diagnosisBusy;
+                noteDiagnosisButton.textContent = diagnosisBusy ? 'Generando...' : 'Sugerir diagnósticos';
+                noteDiagnosisButton.setAttribute('aria-busy', diagnosisBusy ? 'true' : 'false');
+            }
+            if (noteDiagnosisStatus) {
+                const diagnosisError = `${nextState.diagnosisError || ''}`.trim();
+                const diagnosisStatus = `${nextState.diagnosisStatus || ''}`.trim();
+                noteDiagnosisStatus.textContent = diagnosisError || diagnosisStatus;
+                noteDiagnosisStatus.dataset.error = diagnosisError ? 'true' : 'false';
+            }
+            if (noteDiagnosisNotice) {
+                const notice = `${nextState.diagnosisReviewNotice || ''}`.trim();
+                noteDiagnosisNotice.textContent = notice;
+                noteDiagnosisNotice.hidden = !notice;
+            }
+            if (noteDiagnosisList && nextState.diagnosisSuggestions !== undefined) {
+                noteDiagnosisList.replaceChildren();
+                const suggestions = Array.isArray(nextState.diagnosisSuggestions)
+                    ? nextState.diagnosisSuggestions
+                    : [];
+                suggestions.forEach((suggestion) => {
+                    const card = document.createElement('article');
+                    card.className = 'graph-assistant-note-diagnosis-card';
+
+                    const title = document.createElement('strong');
+                    title.textContent = `${suggestion?.title || ''}`;
+                    const rationale = document.createElement('p');
+                    rationale.textContent = `${suggestion?.rationale || ''}`;
+                    const evidence = document.createElement('p');
+                    evidence.className = 'graph-assistant-note-diagnosis-evidence';
+                    evidence.textContent = `Evidencia en la nota: "${suggestion?.supportingEvidence || ''}"`;
+
+                    card.append(title, rationale, evidence);
+                    noteDiagnosisList.appendChild(card);
+                });
+            }
+            positionBubbleNearShell();
         },
         stopAudibleSpeech() {
             stopAudibleSpeech();

@@ -3,8 +3,8 @@ class GetGraphVisualization {
     this.repository = repository;
   }
 
-  async execute() {
-    const { rawNodes, rawEdges } = await this.repository.getGraphVisualization();
+  async execute(access = null) {
+    const { rawNodes, rawEdges } = await this.repository.getGraphVisualization(access);
     
     const toInt = (v) => v && typeof v.toNumber === 'function' ? v.toNumber() : v;
     const nodes = rawNodes.map((n) => ({ type: n.type, props: n.props, id: toInt(n.id) }));
