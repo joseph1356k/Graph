@@ -197,10 +197,38 @@
         } catch (error) { /* ignore */ }
     }
 
-    function getRealtimeSocketUrl() {
+    function getVoiceGatewayBaseUrl() {
         const publicVoiceGatewayUrl = window.MiracleSupabase?.getConfig?.()?.voiceGatewayUrl || '';
-        const baseUrl = options.voiceGatewayUrl
+        return options.voiceGatewayUrl
             || publicVoiceGatewayUrl
+            || '';
+    }
+
+    function getVoicePageContext() {
+        const context = getPageContext();
+        const voiceGatewayUrl = getVoiceGatewayBaseUrl();
+        if (!voiceGatewayUrl) {
+            return context;
+        }
+
+        try {
+            const gatewayOrigin = new URL(voiceGatewayUrl, window.location.href).origin;
+            if (!gatewayOrigin || gatewayOrigin === window.location.origin) {
+                return context;
+            }
+            const sourcePathname = context.sourcePathname || window.location.pathname || '/';
+            return {
+                ...context,
+                sourceOrigin: gatewayOrigin,
+                sourceUrl: new URL(sourcePathname, gatewayOrigin).toString()
+            };
+        } catch (error) {
+            return context;
+        }
+    }
+
+    function getRealtimeSocketUrl() {
+        const baseUrl = getVoiceGatewayBaseUrl()
             || pluginHost()?.apiBaseUrl
             || options.apiBaseUrl
             || '';
@@ -479,9 +507,7 @@
     function apiClient() {
         return window.GraphPluginApi?.createClient?.({
             baseUrl: pluginHost()?.apiBaseUrl || options.apiBaseUrl || '',
-            voiceGatewayUrl: options.voiceGatewayUrl
-                || window.MiracleSupabase?.getConfig?.()?.voiceGatewayUrl
-                || '',
+            voiceGatewayUrl: getVoiceGatewayBaseUrl(),
             miracleBaseUrl: options.miracleBaseUrl || DEFAULTS.miracleBaseUrl,
             fetchImpl: pluginHost()?.fetchImpl || null
         }) || null;
@@ -2721,7 +2747,7 @@
             voiceLog('realtime_socket_open', { phoneSessionId: effectivePhoneSessionId });
             socket.send(JSON.stringify({
                 type: 'start',
-                context: getPageContext(),
+                context: getVoicePageContext(),
                 history: agentHistory.slice(-10),
                 phoneSessionId: effectivePhoneSessionId
             }));
@@ -2982,7 +3008,7 @@
         const requestedId = getStoredPhoneSessionId() || `phone_${Date.now()}_${Math.random().toString(16).slice(2, 10)}`;
 
         const payload = await requireApiClient().createPhoneSession({
-            context: getPageContext(),
+            context: getVoicePageContext(),
             requestedId
         });
 
@@ -3467,7 +3493,7 @@
                     voiceLog('realtime_socket_open', { phoneSessionId: effectivePhoneSessionId });
                     socket.send(JSON.stringify({
                         type: 'start',
-                        context: getPageContext(),
+                        context: getVoicePageContext(),
                         history: agentHistory.slice(-10),
                         phoneSessionId: effectivePhoneSessionId
                     }));
