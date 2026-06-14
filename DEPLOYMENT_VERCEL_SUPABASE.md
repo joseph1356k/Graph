@@ -23,6 +23,7 @@ Variables necesarias:
 NODE_ENV=production
 PUBLIC_BASE_URL=https://miracle-zeta.vercel.app
 ALLOWED_ORIGINS=https://miracle-zeta.vercel.app
+VOICE_GATEWAY_URL=https://graph-1-hap6.onrender.com
 SUPABASE_URL=https://<project-ref>.supabase.co
 SUPABASE_ANON_KEY=<publishable-or-anon-key>
 NEO4J_URI=<neo4j-aura-uri>

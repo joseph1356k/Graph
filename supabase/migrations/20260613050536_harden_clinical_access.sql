@@ -165,31 +165,41 @@ create policy "Permanent users append own encounter events"
     )
   );
 
-drop policy if exists "Encounter owners receive broadcasts" on realtime.messages;
-drop policy if exists "Encounter owners send broadcasts" on realtime.messages;
+do $$
+begin
+  if to_regclass('realtime.messages') is not null then
+    execute 'drop policy if exists "Encounter owners receive broadcasts" on realtime.messages';
+    execute 'drop policy if exists "Encounter owners send broadcasts" on realtime.messages';
 
-create policy "Encounter owners receive broadcasts"
-  on realtime.messages for select to authenticated
-  using (
-    realtime.messages.extension = 'broadcast'
-    and coalesce((select (auth.jwt() ->> 'is_anonymous')::boolean), false) = false
-    and exists (
-      select 1
-      from public.encounters encounter
-      where encounter.owner_id = (select auth.uid())
-        and (select realtime.topic()) = 'encounter:' || encounter.id::text
-    )
-  );
+    execute $policy$
+      create policy "Encounter owners receive broadcasts"
+        on realtime.messages for select to authenticated
+        using (
+          realtime.messages.extension = 'broadcast'
+          and coalesce((select (auth.jwt() ->> 'is_anonymous')::boolean), false) = false
+          and exists (
+            select 1
+            from public.encounters encounter
+            where encounter.owner_id = (select auth.uid())
+              and (select realtime.topic()) = 'encounter:' || encounter.id::text
+          )
+        )
+    $policy$;
 
-create policy "Encounter owners send broadcasts"
-  on realtime.messages for insert to authenticated
-  with check (
-    realtime.messages.extension = 'broadcast'
-    and coalesce((select (auth.jwt() ->> 'is_anonymous')::boolean), false) = false
-    and exists (
-      select 1
-      from public.encounters encounter
-      where encounter.owner_id = (select auth.uid())
-        and (select realtime.topic()) = 'encounter:' || encounter.id::text
-    )
-  );
+    execute $policy$
+      create policy "Encounter owners send broadcasts"
+        on realtime.messages for insert to authenticated
+        with check (
+          realtime.messages.extension = 'broadcast'
+          and coalesce((select (auth.jwt() ->> 'is_anonymous')::boolean), false) = false
+          and exists (
+            select 1
+            from public.encounters encounter
+            where encounter.owner_id = (select auth.uid())
+              and (select realtime.topic()) = 'encounter:' || encounter.id::text
+          )
+        )
+    $policy$;
+  end if;
+end
+$$;

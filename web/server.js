@@ -39,7 +39,11 @@ const { statusForError, publicErrorMessage } = require('./api/httpErrors');
 
 const GetGraphVisualization = require('../src/application/use-cases/GetGraphVisualization');
 
-require('dotenv').config();
+require('dotenv').config({
+  path: path.resolve(__dirname, '..', '.env.local'),
+  quiet: true
+});
+require('dotenv').config({ quiet: true });
 
 const app = express();
 
@@ -184,7 +188,8 @@ app.get('/api/public-config', (req, res) => {
     supabaseUrl: process.env.SUPABASE_URL || '',
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
     localAnonymousAccess: isLocalAnonymousAccessEnabled(),
-    phoneMicrophoneAvailable: !process.env.VERCEL
+    phoneMicrophoneAvailable: !process.env.VERCEL || Boolean(process.env.VOICE_GATEWAY_URL),
+    voiceGatewayUrl: process.env.VOICE_GATEWAY_URL || ''
   });
 });
 

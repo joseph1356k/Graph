@@ -51,6 +51,7 @@
     function createClient(config) {
         const baseUrl = normalizeBaseUrl(config?.baseUrl || '');
         const miracleBaseUrl = normalizeBaseUrl(config?.miracleBaseUrl || '');
+        const voiceGatewayUrl = normalizeBaseUrl(config?.voiceGatewayUrl || '');
         const fetchImpl = typeof config?.fetchImpl === 'function'
             ? config.fetchImpl
             : fetch;
@@ -180,7 +181,7 @@
                 }, fetchImpl);
             },
             createPhoneSession(payload) {
-                return createJsonRequest(baseUrl, '/api/voice/phone-session', {
+                return createJsonRequest(voiceGatewayUrl || baseUrl, '/api/voice/phone-session', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload || {})

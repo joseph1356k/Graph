@@ -5,6 +5,7 @@
         aiPlaceholder: 'Ask AI to execute a saved flow',
         autoSyncStatus: true,
         apiBaseUrl: '',
+        voiceGatewayUrl: '',
         miracleBaseUrl: 'https://miracle-ai-t0dn.onrender.com',
         adapter: null,
         assistantProfile: null,
@@ -197,7 +198,12 @@
     }
 
     function getRealtimeSocketUrl() {
-        const baseUrl = pluginHost()?.apiBaseUrl || options.apiBaseUrl || '';
+        const publicVoiceGatewayUrl = window.MiracleSupabase?.getConfig?.()?.voiceGatewayUrl || '';
+        const baseUrl = options.voiceGatewayUrl
+            || publicVoiceGatewayUrl
+            || pluginHost()?.apiBaseUrl
+            || options.apiBaseUrl
+            || '';
         let socketUrl = '';
         if (baseUrl) {
             try {
@@ -473,6 +479,9 @@
     function apiClient() {
         return window.GraphPluginApi?.createClient?.({
             baseUrl: pluginHost()?.apiBaseUrl || options.apiBaseUrl || '',
+            voiceGatewayUrl: options.voiceGatewayUrl
+                || window.MiracleSupabase?.getConfig?.()?.voiceGatewayUrl
+                || '',
             miracleBaseUrl: options.miracleBaseUrl || DEFAULTS.miracleBaseUrl,
             fetchImpl: pluginHost()?.fetchImpl || null
         }) || null;
