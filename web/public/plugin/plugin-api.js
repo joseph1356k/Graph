@@ -187,6 +187,12 @@
                     body: JSON.stringify(payload || {})
                 }, fetchImpl);
             },
+            getPhoneSessionEvents(sessionId, afterId) {
+                const query = Number(afterId) > 0 ? `?after=${encodeURIComponent(Number(afterId))}` : '';
+                return createJsonRequest(baseUrl, `/api/voice/phone-session/${encodeURIComponent(sessionId || '')}/events${query}`, {
+                    method: 'GET'
+                }, fetchImpl);
+            },
             createMiracleStreamSession() {
                 if (!miracleBaseUrl) {
                     return Promise.reject(new Error('El motor medico Miracle no esta configurado en Vercel. Render no se usa como fallback.'));

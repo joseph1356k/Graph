@@ -46,6 +46,10 @@
         phoneSession: null,
         phonePairingRequested: false,
         phoneConnectionActive: false,
+        phonePollTimer: null,
+        phonePollActive: false,
+        phoneLastEventId: 0,
+        phonePollErrors: 0,
         processedFunctionCalls: new Set(),
         assistantTranscript: new Map(),
         lastUserTranscript: '',
@@ -304,6 +308,7 @@
             || voiceState.socket
             || voiceState.peerConnection
             || voiceState.stream
+            || voiceState.phonePollActive
         );
     }
 
@@ -2980,16 +2985,7 @@
     }
 
     async function openPhoneMicPairing() {
-        openChatPanel();
-        setPhoneConnectionActive(false);
-        setPhonePairingVisible(false);
-        voiceState.phoneSession = null;
-        setStoredPhoneSessionId('');
-        const message = 'El microfono por telefono ya no usa Render. Por ahora usa el microfono de este computador en Vercel.';
-        voiceLog('phone_microphone_disabled_on_vercel');
-        updateVoiceStatus(message);
-        appendAgentMessage('assistant', message, null, false);
-        throw new Error(message);
+        return requireVoiceClient().openPhoneMicPairing();
     }
 
     async function playAssistantGreeting() {
@@ -3424,6 +3420,97 @@
         }
     }
 
+    function clearPhoneVoicePolling(options = {}) {
+        if (voiceState.phonePollTimer) {
+            window.clearTimeout(voiceState.phonePollTimer);
+        }
+        voiceState.phonePollTimer = null;
+        voiceState.phonePollActive = false;
+        voiceState.phonePollErrors = 0;
+        if (options.resetLastEvent !== false) {
+            voiceState.phoneLastEventId = 0;
+        }
+    }
+
+    function schedulePhoneVoicePoll(sessionId, delayMs = 750) {
+        if (!voiceState.phonePollActive || !sessionId) {
+            return;
+        }
+        if (voiceState.phonePollTimer) {
+            window.clearTimeout(voiceState.phonePollTimer);
+        }
+        voiceState.phonePollTimer = window.setTimeout(() => {
+            voiceState.phonePollTimer = null;
+            pollPhoneVoiceEvents(sessionId);
+        }, Math.max(250, delayMs));
+    }
+
+    async function pollPhoneVoiceEvents(sessionId) {
+        const effectiveSessionId = `${sessionId || ''}`.trim();
+        if (!voiceState.phonePollActive || !effectiveSessionId || voiceState.phoneSession?.id !== effectiveSessionId) {
+            return;
+        }
+
+        try {
+            const payload = await requireApiClient().getPhoneSessionEvents(effectiveSessionId, voiceState.phoneLastEventId || 0);
+            const events = Array.isArray(payload?.events) ? payload.events : [];
+            for (const event of events) {
+                const eventId = Number(event?.id) || 0;
+                if (eventId > voiceState.phoneLastEventId) {
+                    voiceState.phoneLastEventId = eventId;
+                }
+                const eventPayload = event?.payload && typeof event.payload === 'object'
+                    ? event.payload
+                    : {};
+                const normalizedPayload = {
+                    type: eventPayload.type || event?.type || '',
+                    ...eventPayload
+                };
+                if (normalizedPayload.type) {
+                    await handleRemoteVoiceSocketMessage(normalizedPayload, effectiveSessionId);
+                }
+            }
+            voiceState.phonePollErrors = 0;
+        } catch (error) {
+            voiceState.phonePollErrors = (voiceState.phonePollErrors || 0) + 1;
+            voiceLog('phone_voice_poll_error', error.message || 'poll failed');
+            if (voiceState.phonePollErrors === 1 || voiceState.phonePollErrors % 6 === 0) {
+                updateVoiceStatus(error.message || 'No pude sincronizar el microfono del telefono.');
+            }
+        } finally {
+            if (voiceState.phonePollActive && voiceState.phoneSession?.id === effectiveSessionId) {
+                schedulePhoneVoicePoll(effectiveSessionId, voiceState.phonePollErrors > 0 ? 1400 : 700);
+            }
+        }
+    }
+
+    async function startPhoneVoicePolling(sessionId) {
+        const effectiveSessionId = `${sessionId || ''}`.trim();
+        if (!effectiveSessionId) {
+            throw new Error('Falta la sesion del microfono del telefono.');
+        }
+
+        clearPhoneVoicePolling({ resetLastEvent: true });
+        voiceState.phoneSession = {
+            ...(voiceState.phoneSession || {}),
+            id: effectiveSessionId
+        };
+        voiceState.phonePollActive = true;
+        voiceState.phonePollErrors = 0;
+        voiceState.phoneLastEventId = 0;
+        voiceState.mode = 'phone';
+        voiceState.active = true;
+        setStoredPhoneSessionId(effectiveSessionId);
+        persistVoiceResumeState();
+        openChatPanel();
+        setPhoneConnectionActive(false);
+        setPhonePairingVisible(true);
+        setVoiceButton(true);
+        updateVoiceStatus('Esperando que el telefono se conecte por QR...');
+        await handleRemoteVoiceSocketMessage({ type: 'phone_waiting' }, effectiveSessionId);
+        schedulePhoneVoicePoll(effectiveSessionId, 250);
+    }
+
     async function startWebRtcVoiceConversation(config = {}) {
         if (voiceState.active) {
             voiceLog('start_ignored_already_active');
@@ -3433,14 +3520,9 @@
         resetRealtimeTranscriptState();
         const effectivePhoneSessionId = config.phoneSessionId || null;
         if (effectivePhoneSessionId) {
-            const message = 'El microfono por telefono ya no usa Render. Por ahora usa el microfono de este computador en Vercel.';
-            voiceLog('phone_microphone_disabled_on_vercel', { phoneSessionId: effectivePhoneSessionId });
-            openChatPanel();
-            setPhoneConnectionActive(false);
-            setPhonePairingVisible(false);
-            updateVoiceStatus(message);
-            appendAgentMessage('assistant', message, null, false);
-            throw new Error(message);
+            voiceLog('phone_microphone_polling_start', { phoneSessionId: effectivePhoneSessionId });
+            await startPhoneVoicePolling(effectivePhoneSessionId);
+            return;
         }
         openChatPanel();
         updateVoiceStatus('Conectando voz en tiempo real...');
@@ -3620,6 +3702,7 @@
         } else {
             clearStoredVoiceResumeState();
         }
+        clearPhoneVoicePolling({ resetLastEvent: true });
         clearVoicePlayback();
         const shouldAnnounce = options.announce !== false && voiceState.active;
 
@@ -3684,7 +3767,11 @@
         voiceState.silenceGain = null;
         voiceState.remoteAudio = null;
         voiceState.mode = null;
+        voiceState.phoneSession = null;
+        setStoredPhoneSessionId('');
         resetRealtimeTranscriptState();
+        setPhoneConnectionActive(false);
+        setPhonePairingVisible(false);
         setVoiceButton(false);
         if (options.clearStatus !== false) {
             updateVoiceStatus('');

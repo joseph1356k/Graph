@@ -60,9 +60,10 @@ function registerVoiceRoutes(app, deps = {}) {
   const express = deps.express;
   const agentChat = deps.agentChat;
   const catalogService = deps.catalogService;
+  const phoneVoiceStore = deps.phoneVoiceStore;
 
-  if (!app || !express || !agentChat || !catalogService) {
-    throw new Error('registerVoiceRoutes requires app, express, agentChat, and catalogService');
+  if (!app || !express || !agentChat || !catalogService || !phoneVoiceStore) {
+    throw new Error('registerVoiceRoutes requires app, express, agentChat, catalogService, and phoneVoiceStore');
   }
 
   app.post('/api/voice/openai/session', express.text({ type: ['application/sdp', 'text/plain'], limit: '1mb' }), async (req, res) => {
@@ -79,8 +80,8 @@ function registerVoiceRoutes(app, deps = {}) {
         return res.status(400).json({ error: 'Missing SDP offer.' });
       }
 
-      const context = decodeBase64JsonHeader(req.get('x-graph-voice-context'), {});
-      const history = decodeBase64JsonHeader(req.get('x-graph-voice-history'), []);
+      const context = req.phoneVoiceSession?.context || decodeBase64JsonHeader(req.get('x-graph-voice-context'), {});
+      const history = req.phoneVoiceSession?.history || decodeBase64JsonHeader(req.get('x-graph-voice-history'), []);
       const workflows = agentChat.filterWorkflowsForContext(await catalogService.getCatalog(req.workflowAccess || null), context);
 
       const sessionConfig = {
@@ -144,25 +145,60 @@ function registerVoiceRoutes(app, deps = {}) {
 
   app.post('/api/voice/phone-session', async (req, res) => {
     try {
-      if (process.env.VERCEL) {
-        return res.status(503).json({
-          error: 'El microfono por telefono requiere el gateway WebSocket persistente y no esta disponible en Vercel.'
-        });
-      }
       const requestedId = `${req.body?.requestedId || ''}`.trim();
-      const id = /^[a-zA-Z0-9_-]{12,120}$/.test(requestedId)
-        ? requestedId
-        : `phone_${Date.now()}_${Math.random().toString(16).slice(2, 10)}`;
-      const phoneUrl = `${getPublicBaseUrl(req, req.app.get('port'))}/phone-mic/${encodeURIComponent(id)}`;
+      const session = await phoneVoiceStore.createPhoneVoiceSession({
+        requestedId,
+        ownerId: req.workflowAccess?.ownerId || req.user?.id || '',
+        ownerEmail: req.user?.email || '',
+        context: req.body?.context || {},
+        history: req.body?.history || []
+      });
+      const phoneUrl = `${getPublicBaseUrl(req, req.app.get('port'))}/phone-mic/${encodeURIComponent(session.id)}?token=${encodeURIComponent(session.token)}`;
       const qrDataUrl = await QRCode.toDataURL(phoneUrl, {
         margin: 1,
         width: 260
       });
 
-      res.json({ id, phoneUrl, qrDataUrl });
+      res.json({ id: session.id, phoneUrl, qrDataUrl, expiresAt: session.expiresAt });
     } catch (err) {
       console.error(`[Voice Phone] Session Error: ${err.message}`);
-      res.status(500).json({ error: err.message });
+      res.status(err.statusCode || 500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/voice/phone-session/:id/events', async (req, res) => {
+    try {
+      await phoneVoiceStore.getPhoneVoiceSessionForOwner(req.params.id, req.workflowAccess?.ownerId || '');
+      const events = await phoneVoiceStore.listPhoneVoiceEvents(req.params.id, req.query?.after || 0);
+      res.json({ events });
+    } catch (err) {
+      console.error(`[Voice Phone] Poll Error: ${err.message}`);
+      res.status(err.statusCode || 500).json({ error: err.message });
+    }
+  });
+
+  app.post('/api/voice/phone-session/:id/events', async (req, res) => {
+    try {
+      if (!req.phoneVoiceSession || req.phoneVoiceSession.id !== req.params.id) {
+        return res.status(401).json({ error: 'No autorizado.' });
+      }
+      const payload = req.body?.payload && typeof req.body.payload === 'object'
+        ? req.body.payload
+        : req.body || {};
+      const type = `${req.body?.type || payload.type || ''}`.trim();
+      const event = await phoneVoiceStore.appendPhoneVoiceEvent({
+        sessionId: req.params.id,
+        source: 'phone',
+        type,
+        payload: {
+          ...payload,
+          type: payload.type || type
+        }
+      });
+      res.json({ event });
+    } catch (err) {
+      console.error(`[Voice Phone] Event Error: ${err.message}`);
+      res.status(err.statusCode || 500).json({ error: err.message });
     }
   });
 

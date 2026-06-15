@@ -35,6 +35,7 @@ const {
   createLocalAnonymousSession,
   isLocalAnonymousAccessEnabled
 } = require('./api/requireAuth');
+const phoneVoiceStore = require('./api/phoneVoiceStore');
 const { statusForError, publicErrorMessage } = require('./api/httpErrors');
 
 const GetGraphVisualization = require('../src/application/use-cases/GetGraphVisualization');
@@ -96,7 +97,7 @@ app.use((req, res, next) => {
     res.setHeader('Vary', 'Origin');
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Graph-Voice-Context, X-Graph-Voice-History');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Graph-Voice-Context, X-Graph-Voice-History, X-Graph-Phone-Session-Id, X-Graph-Phone-Token');
   if (req.method === 'OPTIONS') {
     return res.sendStatus(204);
   }
@@ -162,11 +163,70 @@ app.get('/api/auth/status', async (req, res) => {
 app.use('/api/voice/openai', costlyLimiter);
 app.use('/api/workflows/:id/note-field-matches', costlyLimiter);
 app.use('/api/clinical/diagnosis-suggestions', costlyLimiter);
+app.use('/api/voice/openai/session', async (req, res, next) => {
+  const phoneSessionId = `${req.get('x-graph-phone-session-id') || ''}`.trim();
+  const phoneToken = `${req.get('x-graph-phone-token') || ''}`.trim();
+  if (!phoneSessionId && !phoneToken) {
+    return next();
+  }
+  try {
+    const session = await phoneVoiceStore.verifyPhoneVoiceToken(phoneSessionId, phoneToken);
+    req.phoneVoiceSession = session;
+    req.user = {
+      id: session.ownerId,
+      email: session.ownerEmail,
+      role: 'phone-pairing',
+      token: '',
+      isAnonymous: false
+    };
+    req.workflowAccess = {
+      ownerId: session.ownerId,
+      includeGlobal: true,
+      canManageGlobalWorkflows: false
+    };
+    return next();
+  } catch (error) {
+    return res.status(error.statusCode || 401).json({ error: error.message || 'No autorizado.' });
+  }
+});
+app.use('/api/voice/phone-session/:id/events', async (req, res, next) => {
+  if (req.method !== 'POST') {
+    return next();
+  }
+  const phoneToken = `${req.get('x-graph-phone-token') || ''}`.trim();
+  if (!phoneToken) {
+    return res.status(401).json({ error: 'Missing phone microphone token.' });
+  }
+  try {
+    const session = await phoneVoiceStore.verifyPhoneVoiceToken(req.params.id, phoneToken);
+    req.phoneVoiceSession = session;
+    req.user = {
+      id: session.ownerId,
+      email: session.ownerEmail,
+      role: 'phone-pairing',
+      token: '',
+      isAnonymous: false
+    };
+    req.workflowAccess = {
+      ownerId: session.ownerId,
+      includeGlobal: true,
+      canManageGlobalWorkflows: false
+    };
+    return next();
+  } catch (error) {
+    return res.status(error.statusCode || 401).json({ error: error.message || 'No autorizado.' });
+  }
+});
 [
   '/api/voice',
   '/api/clinical'
 ].forEach((routePrefix) => {
-  app.use(routePrefix, requireAuth, attachWorkflowAccess);
+  app.use(routePrefix, (req, res, next) => {
+    if (req.phoneVoiceSession) {
+      return next();
+    }
+    return requireAuth(req, res, () => attachWorkflowAccess(req, res, next));
+  });
 });
 [
   '/api/status',
@@ -188,7 +248,10 @@ app.get('/api/public-config', (req, res) => {
     supabaseUrl: process.env.SUPABASE_URL || '',
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
     localAnonymousAccess: isLocalAnonymousAccessEnabled(),
-    phoneMicrophoneAvailable: false
+    phoneMicrophoneAvailable: Boolean(
+      (process.env.SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL)
+      && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY)
+    )
   });
 });
 
@@ -261,7 +324,8 @@ registerExecutionIntelligenceRoutes(app, { catalogService, executionIntelligence
 registerVoiceRoutes(app, {
   express,
   agentChat,
-  catalogService
+  catalogService,
+  phoneVoiceStore
 });
 registerClinicalRoutes(app, { diagnosisSuggestionService });
 

@@ -10,8 +10,10 @@ function buildPhoneMicPage(sessionId) {
     main { width: min(420px, calc(100vw - 32px)); display: grid; gap: 18px; text-align: center; }
     button { border: 0; border-radius: 999px; padding: 18px 22px; font: inherit; font-weight: 800; background: #22c55e; color: #092013; }
     button[data-active="true"] { background: #ef4444; color: white; }
-    .status { min-height: 48px; color: #cbd5e1; line-height: 1.45; }
+    button:disabled { opacity: .65; cursor: not-allowed; }
+    .status { min-height: 56px; color: #cbd5e1; line-height: 1.45; }
     .badge { width: fit-content; margin: 0 auto; padding: 7px 11px; border-radius: 999px; background: rgba(255,255,255,.1); color: #dbeafe; font-size: 12px; }
+    .hint { color: #93a4b8; font-size: 13px; line-height: 1.45; }
   </style>
 </head>
 <body>
@@ -19,144 +21,307 @@ function buildPhoneMicPage(sessionId) {
     <div class="badge">Graph phone mic</div>
     <h1>Usar este telefono como microfono</h1>
     <button id="toggle" type="button" data-active="false">Activar microfono</button>
-    <div class="status" id="status">Abre la conversacion de voz en el computador y toca activar.</div>
+    <div class="status" id="status">Abre el QR desde el computador y toca activar.</div>
+    <div class="hint">El audio sale desde este telefono por WebRTC. El computador recibe la transcripcion por Miracle.</div>
   </main>
   <script>
     const sessionId = ${JSON.stringify(sessionId || '')};
+    const token = new URLSearchParams(location.search).get('token') || '';
     const statusEl = document.getElementById('status');
     const button = document.getElementById('toggle');
-    const state = { active: false, socket: null, stream: null, audioContext: null, processor: null, source: null, silenceGain: null, heartbeatTimer: null };
+    const state = {
+      active: false,
+      stream: null,
+      peerConnection: null,
+      dataChannel: null,
+      remoteAudio: null,
+      heartbeatTimer: null
+    };
 
-    function setStatus(text) { statusEl.textContent = text || ''; }
-    function downsampleForRealtime(floatSamples, inputSampleRate) {
-      const targetSampleRate = 24000;
-      if (inputSampleRate === targetSampleRate) return floatSamples;
-      const ratio = inputSampleRate / targetSampleRate;
-      const outputLength = Math.floor(floatSamples.length / ratio);
-      const output = new Float32Array(outputLength);
-      let inputIndex = 0;
-      for (let outputIndex = 0; outputIndex < outputLength; outputIndex += 1) {
-        const nextInputIndex = Math.floor((outputIndex + 1) * ratio);
-        let sum = 0;
-        let count = 0;
-        for (let i = inputIndex; i < nextInputIndex && i < floatSamples.length; i += 1) {
-          sum += floatSamples[i];
-          count += 1;
+    function setStatus(text) {
+      statusEl.textContent = text || '';
+    }
+
+    function eventEndpoint() {
+      return '/api/voice/phone-session/' + encodeURIComponent(sessionId) + '/events';
+    }
+
+    async function publishEvent(type, payload, options) {
+      if (!sessionId || !token || !type) {
+        return null;
+      }
+      const body = JSON.stringify({
+        type,
+        payload: {
+          type,
+          ...(payload || {})
         }
-        output[outputIndex] = count ? sum / count : 0;
-        inputIndex = nextInputIndex;
-      }
-      return output;
-    }
-    function floatTo16BitPcm(floatSamples) {
-      const buffer = new ArrayBuffer(floatSamples.length * 2);
-      const view = new DataView(buffer);
-      for (let i = 0; i < floatSamples.length; i += 1) {
-        const sample = Math.max(-1, Math.min(1, floatSamples[i]));
-        view.setInt16(i * 2, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
-      }
-      return buffer;
-    }
-    function sendPresence(status) {
-      if (!state.socket || state.socket.readyState !== WebSocket.OPEN) return;
-      state.socket.send(JSON.stringify({
-        type: 'phone_presence',
-        visibilityState: document.visibilityState || 'visible',
-        micActive: state.active
-      }));
-      if (status) {
-        state.socket.send(JSON.stringify({
-          type: 'phone_status',
-          status,
-          visibilityState: document.visibilityState || 'visible',
-          micActive: state.active
-        }));
+      });
+      try {
+        const response = await fetch(eventEndpoint(), {
+          method: 'POST',
+          keepalive: Boolean(options && options.keepalive),
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Graph-Phone-Token': token
+          },
+          body
+        });
+        return response.ok ? response.json().catch(() => null) : null;
+      } catch (error) {
+        return null;
       }
     }
+
     function startHeartbeat() {
       if (state.heartbeatTimer) return;
       state.heartbeatTimer = window.setInterval(() => {
-        sendPresence();
-      }, 3000);
+        publishEvent('phone_status', {
+          status: state.active ? 'Telefono transmitiendo audio.' : 'Telefono conectado.',
+          visibilityState: document.visibilityState || 'visible',
+          micActive: state.active
+        });
+      }, 4000);
     }
+
     function stopHeartbeat() {
       if (!state.heartbeatTimer) return;
       window.clearInterval(state.heartbeatTimer);
       state.heartbeatTimer = null;
     }
+
+    function waitForIceGatheringComplete(peerConnection) {
+      if (peerConnection.iceGatheringState === 'complete') {
+        return Promise.resolve();
+      }
+      return new Promise((resolve) => {
+        const timeout = window.setTimeout(done, 1200);
+        function done() {
+          window.clearTimeout(timeout);
+          peerConnection.removeEventListener('icegatheringstatechange', onStateChange);
+          resolve();
+        }
+        function onStateChange() {
+          if (peerConnection.iceGatheringState === 'complete') {
+            done();
+          }
+        }
+        peerConnection.addEventListener('icegatheringstatechange', onStateChange);
+      });
+    }
+
+    async function createRealtimeSession(localSdp) {
+      const response = await fetch('/api/voice/openai/session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/sdp',
+          'X-Graph-Phone-Session-Id': sessionId,
+          'X-Graph-Phone-Token': token
+        },
+        body: localSdp
+      });
+      const answerSdp = await response.text();
+      if (!response.ok || !answerSdp) {
+        let message = answerSdp || 'No pude iniciar la sesion de voz.';
+        try {
+          const payload = JSON.parse(answerSdp || '{}');
+          message = payload.error || message;
+        } catch (error) {}
+        throw new Error(message);
+      }
+      return answerSdp;
+    }
+
+    async function handleRealtimeEvent(event) {
+      let payload;
+      try {
+        payload = JSON.parse(event.data);
+      } catch (error) {
+        return;
+      }
+
+      if (payload.type === 'input_audio_buffer.speech_started') {
+        setStatus('Te estoy escuchando...');
+        await publishEvent('user_started_speaking', {});
+        return;
+      }
+
+      if (payload.type === 'input_audio_buffer.speech_stopped') {
+        setStatus('Procesando lo que dijiste...');
+        await publishEvent('thinking', {});
+        return;
+      }
+
+      if (payload.type === 'conversation.item.input_audio_transcription.completed') {
+        const transcript = String(payload.transcript || '').trim();
+        if (!transcript) return;
+        setStatus('Enviado al computador.');
+        await publishEvent('user_turn', { text: transcript });
+        return;
+      }
+
+      if (payload.type === 'response.output_audio_transcript.done') {
+        const transcript = String(payload.transcript || '').trim();
+        if (transcript) {
+          await publishEvent('assistant_turn', { text: transcript });
+        }
+        return;
+      }
+
+      if (payload.type === 'error') {
+        const message = payload.error?.message || payload.error || 'Error en la voz del telefono.';
+        setStatus(message);
+        await publishEvent('error', { error: message });
+      }
+    }
+
     async function start() {
       if (state.active) return;
-      if (!navigator.mediaDevices?.getUserMedia) {
-        setStatus('Este navegador no permite microfono en esta pagina. Si estas en HTTP, abre con HTTPS o un tunel seguro.');
+      if (!sessionId || !token) {
+        setStatus('Este enlace de microfono no tiene token. Abre el QR generado desde el computador.');
         return;
       }
-      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const socket = new WebSocket(protocol + '//' + location.host + '/api/voice/phone-mic/' + encodeURIComponent(sessionId));
-      socket.binaryType = 'arraybuffer';
-      state.socket = socket;
-      socket.addEventListener('open', async () => {
-        setStatus('Conectado. Pidiendo permiso de microfono...');
-        sendPresence('Telefono listo para usarse como microfono.');
-        startHeartbeat();
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true, latency: 0 } });
-          const audioContext = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
-          await audioContext.resume();
-          const source = audioContext.createMediaStreamSource(stream);
-          const processor = audioContext.createScriptProcessor(1024, 1, 1);
-          const silenceGain = audioContext.createGain();
-          silenceGain.gain.value = 0;
-          processor.onaudioprocess = (event) => {
-            if (!state.active || socket.readyState !== WebSocket.OPEN) return;
-            const input = event.inputBuffer.getChannelData(0);
-            socket.send(floatTo16BitPcm(downsampleForRealtime(input, audioContext.sampleRate)));
-          };
-          source.connect(processor);
-          processor.connect(silenceGain);
-          silenceGain.connect(audioContext.destination);
-          Object.assign(state, { active: true, stream, audioContext, source, processor, silenceGain });
-          button.dataset.active = 'true';
-          button.textContent = 'Detener microfono';
-          setStatus('Transmitiendo microfono al computador.');
-          sendPresence('Transmitiendo microfono desde el telefono.');
-        } catch (error) {
-          setStatus(error.message || 'No se pudo activar el microfono.');
-          stop(false);
-        }
+      if (!navigator.mediaDevices?.getUserMedia || !window.RTCPeerConnection) {
+        setStatus('Este navegador no permite microfono WebRTC en esta pagina. Usa Chrome, Safari o Edge actualizado con HTTPS.');
+        return;
+      }
+
+      button.disabled = true;
+      setStatus('Conectando con el computador...');
+      await publishEvent('phone_connected', {
+        status: 'Telefono conectado. Pidiendo permiso de microfono.'
       });
-      socket.addEventListener('message', (event) => {
-        try {
-          const payload = JSON.parse(event.data);
-          if (payload.type === 'desktop_connected') {
-            setStatus('Computador sincronizado. Toca activar y habla.');
-            sendPresence(state.active ? 'Transmitiendo microfono desde el telefono.' : 'Telefono listo para usarse como microfono.');
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
           }
-        } catch (error) {}
-      });
-      socket.addEventListener('close', () => stop(false));
+        });
+        const peerConnection = new RTCPeerConnection();
+        const remoteAudio = document.createElement('audio');
+        remoteAudio.autoplay = true;
+        remoteAudio.playsInline = true;
+        remoteAudio.style.display = 'none';
+        document.body.appendChild(remoteAudio);
+
+        peerConnection.ontrack = (event) => {
+          remoteAudio.srcObject = event.streams[0];
+        };
+        peerConnection.addEventListener('connectionstatechange', () => {
+          const stateName = peerConnection.connectionState;
+          if (stateName === 'connected') {
+            setStatus('Transmitiendo microfono al computador.');
+            publishEvent('phone_status', { status: 'Transmitiendo microfono desde el telefono.' });
+          }
+          if (stateName === 'failed' || stateName === 'disconnected' || stateName === 'closed') {
+            stop(false);
+          }
+        });
+
+        stream.getTracks().forEach((track) => {
+          peerConnection.addTrack(track, stream);
+        });
+
+        const dataChannel = peerConnection.createDataChannel('oai-events');
+        dataChannel.addEventListener('open', () => {
+          publishEvent('phone_audio_started', {
+            status: 'Audio del telefono conectado con OpenAI Realtime.'
+          });
+          publishEvent('phone_status', {
+            status: 'Transmitiendo microfono desde el telefono.'
+          });
+        });
+        dataChannel.addEventListener('message', handleRealtimeEvent);
+        dataChannel.addEventListener('error', () => {
+          publishEvent('error', { error: 'Fallo el canal de eventos WebRTC del telefono.' });
+        });
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        await waitForIceGatheringComplete(peerConnection);
+        const localSdp = String(peerConnection.localDescription?.sdp || offer.sdp || '').trim();
+        if (!localSdp || !localSdp.includes('m=audio')) {
+          throw new Error('No pude preparar audio WebRTC desde este telefono.');
+        }
+
+        const answerSdp = await createRealtimeSession(localSdp);
+        await peerConnection.setRemoteDescription({ type: 'answer', sdp: answerSdp });
+
+        Object.assign(state, {
+          active: true,
+          stream,
+          peerConnection,
+          dataChannel,
+          remoteAudio
+        });
+        button.dataset.active = 'true';
+        button.textContent = 'Detener microfono';
+        button.disabled = false;
+        startHeartbeat();
+        setStatus('Transmitiendo microfono al computador.');
+      } catch (error) {
+        await publishEvent('error', { error: error.message || 'No se pudo activar el microfono del telefono.' });
+        setStatus(error.message || 'No se pudo activar el microfono del telefono.');
+        stop(false);
+      } finally {
+        button.disabled = false;
+      }
     }
-    function stop(sendClose = true) {
+
+    function stop(announce) {
+      const shouldAnnounce = announce !== false && state.active;
       stopHeartbeat();
-      if (state.processor) state.processor.disconnect();
-      if (state.source) state.source.disconnect();
-      if (state.silenceGain) state.silenceGain.disconnect();
-      if (state.stream) state.stream.getTracks().forEach((track) => track.stop());
-      if (state.audioContext) state.audioContext.close();
-      if (sendClose && state.socket && state.socket.readyState === WebSocket.OPEN) state.socket.close();
-      Object.assign(state, { active: false, socket: null, stream: null, audioContext: null, processor: null, source: null, silenceGain: null, heartbeatTimer: null });
+      if (state.dataChannel) {
+        try { state.dataChannel.close(); } catch (error) {}
+      }
+      if (state.peerConnection) {
+        try { state.peerConnection.close(); } catch (error) {}
+      }
+      if (state.stream) {
+        state.stream.getTracks().forEach((track) => track.stop());
+      }
+      if (state.remoteAudio) {
+        try {
+          state.remoteAudio.pause();
+          state.remoteAudio.srcObject = null;
+          state.remoteAudio.remove();
+        } catch (error) {}
+      }
+      Object.assign(state, {
+        active: false,
+        stream: null,
+        peerConnection: null,
+        dataChannel: null,
+        remoteAudio: null
+      });
       button.dataset.active = 'false';
       button.textContent = 'Activar microfono';
-    }
-    button.addEventListener('click', () => state.active ? stop() : start());
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') {
-        stop();
-        setStatus('La pagina del microfono quedo en segundo plano. Vuelve a abrirla para continuar.');
-        return;
+      if (shouldAnnounce) {
+        publishEvent('phone_disconnected', {
+          status: 'Telefono desconectado.'
+        }, { keepalive: true });
+        setStatus('Microfono detenido.');
       }
-      sendPresence(state.active ? 'Transmitiendo microfono desde el telefono.' : 'Telefono listo para usarse como microfono.');
+    }
+
+    button.addEventListener('click', () => state.active ? stop(true) : start());
+    document.addEventListener('visibilitychange', () => {
+      publishEvent('phone_status', {
+        status: state.active ? 'Telefono transmitiendo audio.' : 'Telefono conectado.',
+        visibilityState: document.visibilityState || 'visible',
+        micActive: state.active
+      }, { keepalive: true });
     });
-    window.addEventListener('pagehide', () => stop(false));
+    window.addEventListener('pagehide', () => {
+      if (state.active) {
+        publishEvent('phone_disconnected', { status: 'Telefono desconectado.' }, { keepalive: true });
+      }
+      stop(false);
+    });
   </script>
 </body>
 </html>`;

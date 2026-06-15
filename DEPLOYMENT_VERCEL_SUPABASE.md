@@ -4,7 +4,7 @@
 
 - Vercel sirve los archivos de `web/public` desde su CDN y ejecuta la API HTTP Express.
 - El micrófono local usa WebRTC con OpenAI Realtime y es compatible con Vercel.
-- El emparejamiento de micrófono por teléfono no usa Render como fallback. En Vercel queda desactivado hasta rediseñarlo sin WebSocket persistente.
+- El emparejamiento de micrófono por teléfono no usa Render ni WebSocket persistente. El teléfono abre WebRTC directo contra OpenAI Realtime usando `/api/voice/openai/session`, y el escritorio recibe eventos/transcripciones por HTTP con sesiones cortas guardadas en Supabase.
 - Neo4j sigue siendo el almacén de workflows. Si no está configurado, la aplicación arranca, pero las rutas de workflows responden como almacenamiento no disponible.
 - Supabase gestiona identidad, pacientes, encuentros, notas, eventos y leads. Las migraciones versionadas están en `supabase/migrations`.
 
@@ -25,6 +25,7 @@ PUBLIC_BASE_URL=https://miracle-zeta.vercel.app
 ALLOWED_ORIGINS=https://miracle-zeta.vercel.app
 SUPABASE_URL=https://<project-ref>.supabase.co
 SUPABASE_ANON_KEY=<publishable-or-anon-key>
+SUPABASE_SERVICE_ROLE_KEY=<server-only-service-role-key>
 NEO4J_URI=<neo4j-aura-uri>
 NEO4J_USER=<neo4j-user>
 NEO4J_PASSWORD=<neo4j-password>
@@ -43,7 +44,7 @@ OPENAI_REALTIME_VOICE=marin
 MIRACLE_MEDICAL_ENGINE_URL=<optional-http-medical-engine-url>
 ```
 
-Nunca se debe agregar `SUPABASE_SERVICE_ROLE_KEY`, el secreto OAuth de Google ni claves de IA al frontend o al repositorio.
+Nunca se debe agregar `SUPABASE_SERVICE_ROLE_KEY`, el secreto OAuth de Google ni claves de IA al frontend o al repositorio. `SUPABASE_SERVICE_ROLE_KEY` solo puede existir como variable server-only en Vercel/local backend.
 
 ## Supabase
 
@@ -58,7 +59,7 @@ npx supabase db push
 
 3. En Realtime Settings, desactivar `Allow public access`.
 4. Ejecutar Security Advisor y validar que usuarios anónimos no puedan leer tablas clínicas.
-5. Copiar la URL y la clave publishable/anon a Vercel para Production, Preview y Development.
+5. Copiar la URL, la clave publishable/anon y la service role key server-only a Vercel para Production, Preview y Development.
 
 ## Google OAuth
 

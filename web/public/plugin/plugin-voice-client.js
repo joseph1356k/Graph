@@ -35,14 +35,51 @@
         async function openPhoneMicPairing() {
             openChatPanel();
             setPhoneConnectionActive(false);
-            setPhonePairingVisible(false);
             voiceState.phoneSession = null;
             setStoredPhoneSessionId('');
-            const message = 'El microfono por telefono ya no usa Render. Por ahora usa el microfono de este computador en Vercel.';
-            voiceLog('phone_microphone_disabled_on_vercel');
-            updateVoiceStatus(message);
-            appendAgentMessage('assistant', message, null, false);
-            throw new Error(message);
+
+            if (!requireApiClient) {
+                throw new Error('No hay cliente API configurado para preparar el microfono del telefono.');
+            }
+
+            if (voiceState.active) {
+                stopVoiceConversation({ announce: false, clearStatus: false });
+            }
+
+            setPhonePairingVisible(false);
+            updateVoiceStatus('Preparando QR seguro para usar el telefono como microfono...');
+            voiceLog('phone_microphone_pairing_requested');
+
+            try {
+                const session = await requireApiClient().createPhoneSession({
+                    context: getPageContext(),
+                    history: agentHistory().slice(-10)
+                });
+                if (!session?.id || !session?.phoneUrl || !session?.qrDataUrl) {
+                    throw new Error('El servidor no devolvio un QR valido para el microfono del telefono.');
+                }
+
+                voiceState.phoneSession = {
+                    id: session.id,
+                    phoneUrl: session.phoneUrl,
+                    qrDataUrl: session.qrDataUrl,
+                    expiresAt: session.expiresAt || ''
+                };
+                setStoredPhoneSessionId(session.id);
+                setPhonePairingVisible(true);
+                updateVoiceStatus('Escanea el QR con tu telefono y toca activar microfono.');
+                appendAgentMessage('assistant', 'Escanea el QR con tu telefono. El celular usara WebRTC y el computador recibira la transcripcion aqui.', null, false);
+                await startVoiceConversation({ phoneSessionId: session.id });
+                return session;
+            } catch (error) {
+                voiceState.phoneSession = null;
+                setStoredPhoneSessionId('');
+                setPhonePairingVisible(false);
+                const message = error.message || 'No pude preparar el microfono del telefono.';
+                updateVoiceStatus(message);
+                voiceLog('phone_microphone_pairing_error', message);
+                throw error;
+            }
         }
 
         async function processVoiceComplaints(workflowDescription = '') {

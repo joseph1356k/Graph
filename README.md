@@ -38,7 +38,7 @@ How it works:
 - **Identity:** Supabase Auth (Google), browser-side, protected by Row Level Security.
 - **Durable note:** Postgres table `encounters` (`note jsonb` is a flat `{ fieldId: value }` map); each user only sees their own rows.
 - **Real-time:** a Supabase Broadcast channel per encounter (`encounter:<id>`) mirrors field deltas, plus a debounced upsert of the full note for durability.
-- **Integration:** everything hangs off [web/public/page-state.js](web/public/page-state.js), the single place page form-state flows through. Local voice uses the Vercel-compatible WebRTC path; phone QR pairing is disabled until it is rebuilt without a persistent WebSocket gateway.
+- **Integration:** everything hangs off [web/public/page-state.js](web/public/page-state.js), the single place page form-state flows through. Local voice uses the Vercel-compatible WebRTC path; phone QR pairing also avoids persistent WebSockets by using phone WebRTC plus HTTP/Supabase event relay.
 
 New pieces: `web/public/supabase-client.js`, `auth-gate.js`, `note-sync.js` (wired into `emr-workspace.html`), plus `GET /api/public-config` in `web/server.js`. Requires the Express server (`node web/server.js`, port 3000) — not the static 4173 server.
 

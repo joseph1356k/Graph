@@ -2,7 +2,7 @@
 // HTML is network-first (so code updates are picked up); same-origin static assets
 // are stale-while-revalidate (instant + offline, refreshed in the background).
 // API calls and cross-origin requests (Supabase, OpenAI, CDN) are never cached.
-const CACHE = 'miracle-shell-v9';
+const CACHE = 'miracle-shell-v10';
 const SHELL = [
     '/emr-workspace.html',
     '/manifest.webmanifest',
