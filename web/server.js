@@ -47,6 +47,7 @@ require('dotenv').config({
 require('dotenv').config({ quiet: true });
 
 const app = express();
+app.set('trust proxy', process.env.VERCEL ? 1 : false);
 
 const db = new Neo4jDriver();
 const llmProvider = new LLMProvider();
