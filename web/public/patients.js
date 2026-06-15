@@ -26,6 +26,17 @@
         window.location.href = url.toString();
     }
 
+    function formatPatientError(error, action) {
+        const rawMessage = `${error?.message || error || ''}`.trim();
+        if (/row-level security|violates row-level security/i.test(rawMessage)) {
+            return `${action}: Supabase bloqueo la operacion por permisos RLS. Recarga la pagina para renovar la sesion anonima o entra con Google.`;
+        }
+        if (/JWT|token|auth|No API key|not authenticated|401|403/i.test(rawMessage)) {
+            return `${action}: la sesion no esta autenticada o expiro. Recarga la pagina o vuelve a iniciar sesion.`;
+        }
+        return `${action}: ${rawMessage || 'error desconocido'}`;
+    }
+
     async function loadPatients() {
         const { data, error } = await state.client
             .from('patients')
@@ -49,7 +60,7 @@
             .insert({ name, mrn: mrn || null })
             .select('id')
             .single();
-        if (error) { alert('No se pudo crear el paciente: ' + error.message); return null; }
+        if (error) { alert(formatPatientError(error, 'No se pudo crear el paciente')); return null; }
         return data.id;
     }
 
@@ -60,7 +71,7 @@
             .insert({ label, patient_id: patientId })
             .select('id')
             .single();
-        if (error) { alert('No se pudo crear el encuentro: ' + error.message); return null; }
+        if (error) { alert(formatPatientError(error, 'No se pudo crear el encuentro')); return null; }
         return data.id;
     }
 

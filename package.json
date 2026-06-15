@@ -9,6 +9,7 @@
     "build:chrome-extension": "node scripts/build-chrome-extension.js",
     "audit:readiness": "node scripts/audit-system-readiness.js",
     "test:clinical-assistant": "node scripts/verify-clinical-assistant-features.js",
+    "test:supabase-rls": "node scripts/verify-supabase-clinical-rls.js",
     "test:voice-prompt": "node scripts/verify-voice-prompt-budget.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
