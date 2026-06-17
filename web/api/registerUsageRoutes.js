@@ -33,8 +33,8 @@ function registerUsageRoutes(app, deps = {}) {
       const event = usageDashboardService.recordEvent(req.body || {});
       res.status(201).json({ ok: true, event });
     } catch (error) {
-      console.error(`[Usage] Client ingest error: ${error.message}`);
-      res.status(500).json({ error: error.message });
+      console.warn(`[Usage] Client ingest skipped: ${error.message}`);
+      res.status(202).json({ ok: false, skipped: true });
     }
   });
 
