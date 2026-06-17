@@ -27,64 +27,10 @@ function readSettings() {
   });
 }
 
-function injectExternalScript(path) {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = chrome.runtime.getURL(path);
-    script.async = false;
-    script.onload = () => {
-      script.remove();
-      resolve();
-    };
-    script.onerror = () => {
-      script.remove();
-      reject(new Error(`Failed to load ${path}`));
-    };
-    (document.head || document.documentElement).appendChild(script);
-  });
-}
-
-function injectInlineScript(code) {
-  const script = document.createElement('script');
-  script.textContent = code;
-  (document.head || document.documentElement).appendChild(script);
-  script.remove();
-}
-
 function requestPageImprovementData() {
-  return new Promise((resolve) => {
-    const requestId = `graph-improvements-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    const handleMessage = (event) => {
-      if (event.source !== window) {
-        return;
-      }
-      const payload = event.data;
-      if (!payload || payload.source !== 'graph-trainer-extension' || payload.type !== 'improvements-data' || payload.requestId !== requestId) {
-        return;
-      }
-      window.removeEventListener('message', handleMessage);
-      resolve(payload.payload || null);
-    };
-
-    window.addEventListener('message', handleMessage);
-    injectInlineScript(`
-      (() => {
-        const payload = window.TrainerPlugin?.getImprovementPanelData?.() || null;
-        window.TrainerPlugin?.showFeedbackOverlay?.();
-        window.postMessage({
-          source: 'graph-trainer-extension',
-          type: 'improvements-data',
-          requestId: ${JSON.stringify(requestId)},
-          payload
-        }, '*');
-      })();
-    `);
-
-    window.setTimeout(() => {
-      window.removeEventListener('message', handleMessage);
-      resolve(null);
-    }, 1500);
-  });
+  const payload = window.TrainerPlugin?.getImprovementPanelData?.() || null;
+  window.TrainerPlugin?.showFeedbackOverlay?.();
+  return Promise.resolve(payload);
 }
 
 function buildElementSelector(element) {
@@ -236,14 +182,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message?.type === 'graph:toggle-improvements-overlay') {
-    injectInlineScript(`
-      window.postMessage({
-        source: 'graph-trainer-extension',
-        type: 'improvements-overlay-toggled',
-        value: window.TrainerPlugin?.toggleFeedbackOverlay?.()
-      }, '*');
-    `);
-    sendResponse({ ok: true });
+    const value = window.TrainerPlugin?.toggleFeedbackOverlay?.();
+    sendResponse({ ok: true, value });
     return false;
   }
 
@@ -325,35 +265,15 @@ async function bootstrap() {
     return;
   }
 
-  if (document.documentElement.dataset.graphTrainerExtensionMounted === 'true') {
+  if (globalThis.__graphTrainerExtensionMounted === true) {
     return;
   }
+  globalThis.__graphTrainerExtensionMounted = true;
   document.documentElement.dataset.graphTrainerExtensionMounted = 'true';
-
-  const runtimeScripts = [
-    'assets/page-state.js',
-    'assets/recorder.js',
-    'assets/assistant-runtime.js',
-    'assets/plugin/plugin-events.js',
-    'assets/plugin/plugin-host.js',
-    'assets/plugin/plugin-adapters.js',
-    'assets/plugin/plugin-context.js',
-    'assets/plugin/plugin-api.js',
-    'assets/plugin/plugin-learning-bridge.js',
-    'assets/plugin/plugin-learning-client.js',
-    'assets/plugin/plugin-voice-client.js',
-    'assets/plugin/plugin-trainer-shell.js',
-    'assets/plugin/plugin-surface-profile-client.js',
-    'assets/plugin/plugin-execution-client.js',
-    'assets/plugin/plugin-workflow-overlay-bridge.js',
-    'assets/trainer-plugin.js',
-    'bootstrap.js'
-  ];
-
-  document.documentElement.dataset.graphTrainerBackendUrl = `${settings.backendUrl || DEFAULT_BACKEND_URL}`.trim() || DEFAULT_BACKEND_URL;
-  document.documentElement.dataset.graphTrainerAppId = `chrome-extension-${normalizeHostname(window.location.hostname)}`;
-  document.documentElement.dataset.graphTrainerStorageKey = `graph-extension-state-${normalizeHostname(window.location.hostname)}`;
-  document.documentElement.dataset.graphTrainerWorkflowDescription = `Workflow on ${window.location.hostname || 'current-page'}`;
+  const backendUrl = `${settings.backendUrl || DEFAULT_BACKEND_URL}`.trim() || DEFAULT_BACKEND_URL;
+  const appId = `chrome-extension-${normalizeHostname(window.location.hostname)}`;
+  const storageKey = `graph-extension-state-${normalizeHostname(window.location.hostname)}`;
+  const workflowDescription = `Workflow on ${window.location.hostname || 'current-page'}`;
 
   document.addEventListener('graph-trainer-extension-log', (event) => {
     const detail = event?.detail || {};
@@ -371,9 +291,27 @@ async function bootstrap() {
     log(detail.level || 'info', detail.scope || 'page', detail.message || 'Page message received.', detail.details || null);
   });
 
-  for (const path of runtimeScripts) {
-    await injectExternalScript(path);
+  if (!window.PageState || !window.TrainerPlugin || !window.GraphPluginHost) {
+    throw new Error('Graph Trainer runtime scripts did not load in the extension context.');
   }
+
+  window.PageState.init({ storageKey });
+  window.TrainerPlugin.mount({
+    title: 'Graph Trainer',
+    workflowDescription,
+    appId,
+    apiBaseUrl: backendUrl,
+    assistantRuntime: {
+      name: 'Graph',
+      accentColor: '#0f5f8c',
+      idleMessage: 'Puedo aprender y ejecutar tareas en esta pagina cuando quieras.'
+    }
+  });
+
+  await log('info', 'content', 'Graph Trainer mounted in the isolated extension context.', {
+    backendUrl,
+    appId
+  });
 }
 
 bootstrap().catch((error) => {

@@ -18,6 +18,23 @@ function getLocalStorage() {
   return chrome.storage?.local || chrome.storage?.sync;
 }
 
+function sendRuntimeMessage(message) {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(message, (result) => {
+      const runtimeError = chrome.runtime.lastError;
+      if (runtimeError) {
+        reject(new Error(runtimeError.message || 'No fue posible contactar la extension.'));
+        return;
+      }
+      if (!result?.ok) {
+        reject(new Error(result?.error || 'La extension no pudo completar la operacion.'));
+        return;
+      }
+      resolve(result.payload || null);
+    });
+  });
+}
+
 async function loadSettings() {
   const storage = getStorage();
   return new Promise((resolve) => {
@@ -486,6 +503,26 @@ async function init() {
   const voiceLogOutputEl = document.getElementById('voiceLogOutput');
   const refreshImprovementsButton = document.getElementById('popupImprovementsRefresh');
   const overlayToggleButton = document.getElementById('popupOverlayToggle');
+  const authStatusEl = document.getElementById('authStatus');
+  const authLoginButton = document.getElementById('authLogin');
+  const authLogoutButton = document.getElementById('authLogout');
+
+  const renderAuthStatus = (session) => {
+    const authenticated = Boolean(session?.authenticated);
+    authStatusEl.textContent = authenticated
+      ? `Sesion activa: ${session.user?.email || 'cuenta de Google'}`
+      : 'Inicia sesion con Google para usar workflows y el asistente en otras paginas.';
+    authLoginButton.style.display = authenticated ? 'none' : '';
+    authLogoutButton.style.display = authenticated ? '' : 'none';
+  };
+
+  const refreshAuthStatus = async () => {
+    try {
+      renderAuthStatus(await sendRuntimeMessage({ type: 'graph:auth-status' }));
+    } catch (error) {
+      authStatusEl.textContent = error.message || 'No fue posible comprobar la sesion.';
+    }
+  };
 
   const settings = await loadSettings();
   const showLogs = await loadLogPanelState();
@@ -496,6 +533,32 @@ async function init() {
   await setTraceLogPanelOpen(tracePanelEl, toggleTraceButton, traceOutputEl, showTraceLogs);
   await setLogPanelOpen(logPanelEl, toggleLogsButton, logOutputEl, showLogs);
   await setVoiceLogPanelOpen(voiceLogPanelEl, toggleVoiceLogsButton, voiceLogOutputEl, showVoiceLogs);
+  await refreshAuthStatus();
+
+  authLoginButton.addEventListener('click', async () => {
+    authLoginButton.disabled = true;
+    authStatusEl.textContent = 'Abriendo Google...';
+    try {
+      renderAuthStatus(await sendRuntimeMessage({ type: 'graph:auth-login' }));
+      statusEl.textContent = 'Sesion conectada. Recarga la pagina objetivo.';
+    } catch (error) {
+      authStatusEl.textContent = error.message || 'No fue posible iniciar sesion con Google.';
+    } finally {
+      authLoginButton.disabled = false;
+    }
+  });
+
+  authLogoutButton.addEventListener('click', async () => {
+    authLogoutButton.disabled = true;
+    try {
+      renderAuthStatus(await sendRuntimeMessage({ type: 'graph:auth-logout' }));
+      statusEl.textContent = 'Sesion cerrada.';
+    } catch (error) {
+      authStatusEl.textContent = error.message || 'No fue posible cerrar la sesion.';
+    } finally {
+      authLogoutButton.disabled = false;
+    }
+  });
 
   saveButton.addEventListener('click', async () => {
     const nextSettings = {

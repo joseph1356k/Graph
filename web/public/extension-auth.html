@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conectando Graph Trainer</title>
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      box-sizing: border-box;
+      font: 16px/1.5 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      color: #102033;
+      background: #f7fbff;
+    }
+    main {
+      width: min(460px, 100%);
+      padding: 28px;
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 24px 70px rgba(15, 23, 42, 0.14);
+    }
+    h1 { margin: 0 0 10px; font-size: 22px; }
+    p { margin: 0; color: #4c5c6c; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Conectando Graph Trainer</h1>
+    <p id="status">Terminando el inicio de sesion...</p>
+  </main>
+  <script>
+    (() => {
+      const status = document.getElementById('status');
+      try {
+        const current = new URL(window.location.href);
+        const redirectValue = current.searchParams.get('redirect_uri') || '';
+        const redirect = new URL(redirectValue);
+        if (redirect.protocol !== 'https:' || !redirect.hostname.endsWith('.chromiumapp.org')) {
+          throw new Error('La URL de retorno de la extension no es valida.');
+        }
+
+        ['error', 'error_code', 'error_description'].forEach((name) => {
+          const value = current.searchParams.get(name);
+          if (value) redirect.searchParams.set(name, value);
+        });
+        redirect.hash = current.hash;
+        window.location.replace(redirect.toString());
+      } catch (error) {
+        status.textContent = error.message || 'No fue posible devolver la sesion a Graph Trainer.';
+      }
+    })();
+  </script>
+</body>
+</html>

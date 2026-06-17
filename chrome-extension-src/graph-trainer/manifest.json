@@ -2,8 +2,9 @@
   "manifest_version": 3,
   "name": "Graph Trainer",
   "description": "Teach Graph how to use any webpage and run learned workflows.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "permissions": [
+    "identity",
     "storage",
     "tabs"
   ],
@@ -14,27 +15,34 @@
     "default_title": "Graph Trainer",
     "default_popup": "popup.html"
   },
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": [
         "<all_urls>"
       ],
       "js": [
+        "assets/page-state.js",
+        "assets/recorder.js",
+        "assets/assistant-runtime.js",
+        "assets/plugin/plugin-events.js",
+        "assets/plugin/plugin-host.js",
+        "assets/plugin/plugin-adapters.js",
+        "assets/plugin/plugin-context.js",
+        "assets/plugin/plugin-api.js",
+        "assets/plugin/plugin-learning-bridge.js",
+        "assets/plugin/plugin-learning-client.js",
+        "assets/plugin/plugin-voice-client.js",
+        "assets/plugin/plugin-trainer-shell.js",
+        "assets/plugin/plugin-surface-profile-client.js",
+        "assets/plugin/plugin-execution-client.js",
+        "assets/plugin/plugin-workflow-overlay-bridge.js",
+        "assets/trainer-plugin.js",
         "content.js"
       ],
       "run_at": "document_idle"
-    }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "bootstrap.js",
-        "assets/*.js",
-        "assets/plugin/*.js"
-      ],
-      "matches": [
-        "<all_urls>"
-      ]
     }
   ]
 }
