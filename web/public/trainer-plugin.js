@@ -3605,6 +3605,54 @@
         schedulePhoneVoicePoll(effectiveSessionId, 250);
     }
 
+    function prepareRealtimeSdpOffer(peerConnection, offer, message) {
+        const sdp = `${peerConnection?.localDescription?.sdp || offer?.sdp || ''}`;
+        const trimmed = sdp.trim();
+        if (!trimmed || !/^v=0(?:\r?\n)/.test(trimmed) || !/(?:^|\r?\n)m=audio(?:\s|$)/.test(trimmed)) {
+            throw new Error(message || 'No pude generar una oferta de audio valida para iniciar la voz en tiempo real.');
+        }
+        return sdp.endsWith('\n') ? sdp : `${sdp}\r\n`;
+    }
+
+    function parseRealtimeSessionError(answerSdp) {
+        const text = `${answerSdp || ''}`.trim();
+        if (!text) {
+            return 'No pude iniciar la sesion de voz con OpenAI.';
+        }
+        try {
+            const payload = JSON.parse(text);
+            if (payload?.error?.message) {
+                return payload.error.message;
+            }
+            if (typeof payload?.error === 'string') {
+                return parseRealtimeSessionError(payload.error);
+            }
+        } catch (error) {
+            // Keep the provider text when it is not JSON.
+        }
+        return text;
+    }
+
+    function waitForRealtimeIceGatheringComplete(peerConnection) {
+        if (peerConnection.iceGatheringState === 'complete') {
+            return Promise.resolve();
+        }
+        return new Promise((resolve) => {
+            const timeout = window.setTimeout(done, 1200);
+            function done() {
+                window.clearTimeout(timeout);
+                peerConnection.removeEventListener('icegatheringstatechange', onStateChange);
+                resolve();
+            }
+            function onStateChange() {
+                if (peerConnection.iceGatheringState === 'complete') {
+                    done();
+                }
+            }
+            peerConnection.addEventListener('icegatheringstatechange', onStateChange);
+        });
+    }
+
     async function startWebRtcVoiceConversation(config = {}) {
         if (voiceState.active) {
             voiceLog('start_ignored_already_active');
@@ -3717,10 +3765,12 @@
 
             const offer = await peerConnection.createOffer();
             await peerConnection.setLocalDescription(offer);
-            const localSdp = `${peerConnection.localDescription?.sdp || offer.sdp || ''}`.trim();
-            if (!localSdp || !localSdp.includes('m=audio')) {
-                throw new Error('No pude generar una oferta de audio valida para iniciar la voz en tiempo real.');
-            }
+            await waitForRealtimeIceGatheringComplete(peerConnection);
+            const localSdp = prepareRealtimeSdpOffer(
+                peerConnection,
+                offer,
+                'No pude generar una oferta de audio valida para iniciar la voz en tiempo real.'
+            );
 
             const response = await requireApiClient().createOpenAiRealtimeSession(localSdp, {
                 'X-Graph-Voice-Context': encodeVoiceHeaderPayload(getPageContext()),
@@ -3729,14 +3779,7 @@
 
             const answerSdp = await response.text();
             if (!response.ok || !answerSdp) {
-                let errorMessage = answerSdp || 'No pude iniciar la sesion de voz con OpenAI.';
-                try {
-                    const payload = JSON.parse(answerSdp || '{}');
-                    errorMessage = payload.error || errorMessage;
-                } catch (error) {
-                    // Keep raw text when the response is not JSON.
-                }
-                throw new Error(errorMessage);
+                throw new Error(parseRealtimeSessionError(answerSdp));
             }
 
             await peerConnection.setRemoteDescription({

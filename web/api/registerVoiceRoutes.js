@@ -56,6 +56,51 @@ function buildOpenAiRealtimeTools() {
   }));
 }
 
+function readSdpOffer(body) {
+  if (typeof body === 'string') {
+    return body;
+  }
+  if (body && typeof body.sdp === 'string') {
+    return body.sdp;
+  }
+  return '';
+}
+
+function prepareSdpOfferForOpenAi(body) {
+  const sdp = readSdpOffer(body);
+  const trimmed = sdp.trim();
+  if (!trimmed) {
+    const error = new Error('Missing SDP offer.');
+    error.statusCode = 400;
+    throw error;
+  }
+  if (!/^v=0(?:\r?\n)/.test(trimmed) || !/(?:^|\r?\n)m=audio(?:\s|$)/.test(trimmed)) {
+    const error = new Error('Invalid SDP offer.');
+    error.statusCode = 400;
+    throw error;
+  }
+  return sdp.endsWith('\n') ? sdp : `${sdp}\r\n`;
+}
+
+function parseOpenAiRealtimeError(body) {
+  const text = `${body || ''}`.trim();
+  if (!text) {
+    return 'Failed to create OpenAI Realtime session.';
+  }
+  try {
+    const payload = JSON.parse(text);
+    if (payload?.error?.message) {
+      return payload.error.message;
+    }
+    if (typeof payload?.error === 'string') {
+      return parseOpenAiRealtimeError(payload.error);
+    }
+  } catch (error) {
+    // The Realtime API can also return plain text for SDP/session failures.
+  }
+  return text;
+}
+
 function registerVoiceRoutes(app, deps = {}) {
   const express = deps.express;
   const agentChat = deps.agentChat;
@@ -73,12 +118,7 @@ function registerVoiceRoutes(app, deps = {}) {
         return res.status(500).json({ error: 'OPENAI_API_KEY is not configured on the server.' });
       }
 
-      const sdp = typeof req.body === 'string'
-        ? req.body.trim()
-        : `${req.body?.sdp || ''}`.trim();
-      if (!sdp) {
-        return res.status(400).json({ error: 'Missing SDP offer.' });
-      }
+      const sdp = prepareSdpOfferForOpenAi(req.body);
 
       const context = req.phoneVoiceSession?.context || decodeBase64JsonHeader(req.get('x-graph-voice-context'), {});
       const history = req.phoneVoiceSession?.history || decodeBase64JsonHeader(req.get('x-graph-voice-history'), []);
@@ -128,7 +168,7 @@ function registerVoiceRoutes(app, deps = {}) {
       const answerSdp = await response.text();
       if (!response.ok) {
         return res.status(response.status).json({
-          error: answerSdp || 'Failed to create OpenAI Realtime session.'
+          error: parseOpenAiRealtimeError(answerSdp)
         });
       }
 

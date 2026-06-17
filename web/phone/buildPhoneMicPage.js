@@ -110,6 +110,32 @@ function buildPhoneMicPage(sessionId) {
       });
     }
 
+    function prepareRealtimeSdpOffer(peerConnection, offer) {
+      const sdp = String(peerConnection.localDescription?.sdp || offer.sdp || '');
+      const trimmed = sdp.trim();
+      if (!trimmed || !/^v=0(?:\\r?\\n)/.test(trimmed) || !/(?:^|\\r?\\n)m=audio(?:\\s|$)/.test(trimmed)) {
+        throw new Error('No pude preparar audio WebRTC desde este telefono.');
+      }
+      return sdp.endsWith('\\n') ? sdp : sdp + '\\r\\n';
+    }
+
+    function parseRealtimeSessionError(answerSdp) {
+      const text = String(answerSdp || '').trim();
+      if (!text) {
+        return 'No pude iniciar la sesion de voz.';
+      }
+      try {
+        const payload = JSON.parse(text);
+        if (payload?.error?.message) {
+          return payload.error.message;
+        }
+        if (typeof payload?.error === 'string') {
+          return parseRealtimeSessionError(payload.error);
+        }
+      } catch (error) {}
+      return text;
+    }
+
     async function createRealtimeSession(localSdp) {
       const response = await fetch('/api/voice/openai/session', {
         method: 'POST',
@@ -122,12 +148,7 @@ function buildPhoneMicPage(sessionId) {
       });
       const answerSdp = await response.text();
       if (!response.ok || !answerSdp) {
-        let message = answerSdp || 'No pude iniciar la sesion de voz.';
-        try {
-          const payload = JSON.parse(answerSdp || '{}');
-          message = payload.error || message;
-        } catch (error) {}
-        throw new Error(message);
+        throw new Error(parseRealtimeSessionError(answerSdp));
       }
       return answerSdp;
     }
@@ -243,10 +264,7 @@ function buildPhoneMicPage(sessionId) {
         const offer = await peerConnection.createOffer();
         await peerConnection.setLocalDescription(offer);
         await waitForIceGatheringComplete(peerConnection);
-        const localSdp = String(peerConnection.localDescription?.sdp || offer.sdp || '').trim();
-        if (!localSdp || !localSdp.includes('m=audio')) {
-          throw new Error('No pude preparar audio WebRTC desde este telefono.');
-        }
+        const localSdp = prepareRealtimeSdpOffer(peerConnection, offer);
 
         const answerSdp = await createRealtimeSession(localSdp);
         await peerConnection.setRemoteDescription({ type: 'answer', sdp: answerSdp });
