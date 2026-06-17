@@ -278,7 +278,7 @@ app.get('/api/public-config', (req, res) => {
 });
 
 async function probeMiracleSidecar(timeoutMs = 1500) {
-  const baseUrl = `${process.env.MIRACLE_MEDICAL_ENGINE_URL || process.env.MIRACLE_BASE_URL || ''}`.replace(/\/+$/, '');
+  const baseUrl = resolveMiracleMedicalEngineUrl();
   if (!baseUrl) {
     return { status: 'not_configured' };
   }
