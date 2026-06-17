@@ -52,12 +52,19 @@ require('dotenv').config({ quiet: true });
 const app = express();
 app.set('trust proxy', process.env.VERCEL ? 1 : false);
 
+function resolveGeneratedRoot(...segments) {
+  const baseRoot = process.env.VERCEL
+    ? path.join('/tmp', 'graph-generated')
+    : path.join(process.cwd(), 'generated');
+  return path.join(baseRoot, ...segments);
+}
+
 const db = new Neo4jDriver();
 const llmProvider = new LLMProvider();
 const playwrightRunner = new PlaywrightRunner();
 const repository = new Neo4jWorkflowRepository(db);
 const catalogWriter = new MarkdownCatalogWriter();
-const usageLedgerStore = new UsageLedgerStore(path.join(process.cwd(), 'generated', 'usage', 'ai-usage-events.jsonl'));
+const usageLedgerStore = new UsageLedgerStore(resolveGeneratedRoot('usage', 'ai-usage-events.jsonl'));
 const usageDashboardService = new UsageDashboardService(usageLedgerStore);
 
 const catalogService = new WorkflowCatalog(repository, catalogWriter);
@@ -67,11 +74,11 @@ const agentChat = new AgentChat(llmProvider, catalogService, workflowExecutor);
 const generatePitchArtifacts = new GeneratePitchArtifacts(
   catalogService,
   llmProvider,
-  path.join(process.cwd(), 'generated', 'pitch-personalities')
+  resolveGeneratedRoot('pitch-personalities')
 );
 const conversationInsights = new ConversationInsights(
   llmProvider,
-  path.join(process.cwd(), 'generated', 'conversation-insights')
+  resolveGeneratedRoot('conversation-insights')
 );
 const surfaceProfileService = new SurfaceProfileService(repository, llmProvider);
 const learningSessionService = new LearningSessionService(workflowLearner);
