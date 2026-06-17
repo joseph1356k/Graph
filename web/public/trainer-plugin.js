@@ -206,7 +206,10 @@
     }
 
     function getVoiceGatewayBaseUrl() {
-        return '';
+        const publicVoiceGatewayUrl = window.MiracleSupabase?.getConfig?.()?.voiceGatewayUrl || '';
+        return options.voiceGatewayUrl
+            || publicVoiceGatewayUrl
+            || '';
     }
 
     function getVoicePageContext() {
@@ -492,10 +495,11 @@
     }
 
     function apiClient() {
+        const publicMiracleBaseUrl = window.MiracleSupabase?.getConfig?.()?.miracleBaseUrl || '';
         return window.GraphPluginApi?.createClient?.({
             baseUrl: pluginHost()?.apiBaseUrl || options.apiBaseUrl || '',
-            voiceGatewayUrl: '',
-            miracleBaseUrl: options.miracleBaseUrl || DEFAULTS.miracleBaseUrl,
+            voiceGatewayUrl: getVoiceGatewayBaseUrl(),
+            miracleBaseUrl: options.miracleBaseUrl || publicMiracleBaseUrl || DEFAULTS.miracleBaseUrl,
             fetchImpl: pluginHost()?.fetchImpl || null
         }) || null;
     }
