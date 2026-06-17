@@ -251,14 +251,17 @@ app.use('/api/voice/phone-session/:id/events', async (req, res, next) => {
 });
 
 app.get('/api/public-config', (req, res) => {
+  const miracleBaseUrl = `${process.env.MIRACLE_MEDICAL_ENGINE_URL || process.env.MIRACLE_BASE_URL || ''}`.replace(/\/+$/, '');
   res.json({
     supabaseUrl: process.env.SUPABASE_URL || '',
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
     localAnonymousAccess: isLocalAnonymousAccessEnabled(),
+    miracleBaseUrl,
     phoneMicrophoneAvailable: Boolean(
       (process.env.SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL)
       && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY)
-    )
+    ),
+    voiceGatewayUrl: process.env.VOICE_GATEWAY_URL || ''
   });
 });
 
