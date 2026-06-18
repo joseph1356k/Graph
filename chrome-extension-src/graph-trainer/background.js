@@ -174,11 +174,13 @@ function publicSession(session) {
   return session ? {
     authenticated: true,
     user: session.user || null,
-    expiresAt: Number(session.expiresAt || 0)
+    expiresAt: Number(session.expiresAt || 0),
+    accessToken: session.accessToken || ''
   } : {
     authenticated: false,
     user: null,
-    expiresAt: 0
+    expiresAt: 0,
+    accessToken: ''
   };
 }
 

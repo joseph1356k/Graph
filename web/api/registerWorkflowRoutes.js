@@ -14,6 +14,17 @@ function registerWorkflowRoutes(app, deps = {}) {
   const workflowBranchLearning = deps.workflowBranchLearning
     || new WorkflowBranchLearning(catalogService.repository, catalogService);
 
+  function recordUsageBestEffort(payload, contextLabel) {
+    if (!usageDashboardService) {
+      return;
+    }
+    try {
+      usageDashboardService.recordEvent(payload);
+    } catch (error) {
+      console.warn(`[Usage] Skipping ${contextLabel}: ${error.message}`);
+    }
+  }
+
   function buildPermissions(req) {
     return {
       canManageGlobalWorkflows: Boolean(req.workflowAccess?.canManageGlobalWorkflows)
@@ -141,7 +152,7 @@ function registerWorkflowRoutes(app, deps = {}) {
         pageUrl: req.body?.pageUrl || ''
       });
       const durationMs = Date.now() - startedAt;
-      usageDashboardService?.recordEvent({
+      recordUsageBestEffort({
         sourceRepo: 'graph',
         eventType: 'dynamic_fill_note_field_match_request',
         provider: 'graph',
@@ -158,9 +169,9 @@ function registerWorkflowRoutes(app, deps = {}) {
           matchCount: Array.isArray(result?.matches) ? result.matches.length : 0,
           readyToSubmit: Boolean(result?.readyToSubmit)
         }
-      });
+      }, 'dynamic fill match request');
       if (result?.usage) {
-        usageDashboardService?.recordEvent({
+        recordUsageBestEffort({
           sourceRepo: 'graph',
           eventType: 'dynamic_fill_note_field_match_usage',
           provider: result.usage.provider || 'openai',
@@ -181,7 +192,7 @@ function registerWorkflowRoutes(app, deps = {}) {
             readyToSubmit: Boolean(result?.readyToSubmit),
             totalTokens: Number(result.usage.totalTokens) || 0
           }
-        });
+        }, 'dynamic fill match usage');
       }
       res.json(result);
     } catch (err) {

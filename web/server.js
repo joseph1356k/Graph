@@ -52,12 +52,19 @@ require('dotenv').config({ quiet: true });
 const app = express();
 app.set('trust proxy', process.env.VERCEL ? 1 : false);
 
+function resolveGeneratedRoot(...segments) {
+  const baseRoot = process.env.VERCEL
+    ? path.join('/tmp', 'graph-generated')
+    : path.join(process.cwd(), 'generated');
+  return path.join(baseRoot, ...segments);
+}
+
 const db = new Neo4jDriver();
 const llmProvider = new LLMProvider();
 const playwrightRunner = new PlaywrightRunner();
 const repository = new Neo4jWorkflowRepository(db);
 const catalogWriter = new MarkdownCatalogWriter();
-const usageLedgerStore = new UsageLedgerStore(path.join(process.cwd(), 'generated', 'usage', 'ai-usage-events.jsonl'));
+const usageLedgerStore = new UsageLedgerStore(resolveGeneratedRoot('usage', 'ai-usage-events.jsonl'));
 const usageDashboardService = new UsageDashboardService(usageLedgerStore);
 
 const catalogService = new WorkflowCatalog(repository, catalogWriter);
@@ -67,11 +74,11 @@ const agentChat = new AgentChat(llmProvider, catalogService, workflowExecutor);
 const generatePitchArtifacts = new GeneratePitchArtifacts(
   catalogService,
   llmProvider,
-  path.join(process.cwd(), 'generated', 'pitch-personalities')
+  resolveGeneratedRoot('pitch-personalities')
 );
 const conversationInsights = new ConversationInsights(
   llmProvider,
-  path.join(process.cwd(), 'generated', 'conversation-insights')
+  resolveGeneratedRoot('conversation-insights')
 );
 const surfaceProfileService = new SurfaceProfileService(repository, llmProvider);
 const learningSessionService = new LearningSessionService(workflowLearner);
@@ -250,20 +257,35 @@ app.use('/api/voice/phone-session/:id/events', async (req, res, next) => {
   app.use(routePrefix, requireAccountAuth, attachWorkflowAccess);
 });
 
+const DEFAULT_MIRACLE_MEDICAL_ENGINE_URL = 'https://miracle-ai-t0dn.onrender.com';
+
+function resolveMiracleMedicalEngineUrl() {
+  return `${process.env.MIRACLE_MEDICAL_ENGINE_URL || process.env.MIRACLE_BASE_URL || DEFAULT_MIRACLE_MEDICAL_ENGINE_URL}`.replace(/\/+$/, '');
+}
+
+function resolvePublicAppBaseUrl(req) {
+  const forwardedProto = (req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
+  const protocol = forwardedProto || req.protocol || 'https';
+  return `${process.env.PUBLIC_BASE_URL || `${protocol}://${req.get('host') || ''}`}`.replace(/\/+$/, '');
+}
+
 app.get('/api/public-config', (req, res) => {
+  const miracleBaseUrl = resolvePublicAppBaseUrl(req);
   res.json({
     supabaseUrl: process.env.SUPABASE_URL || '',
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
     localAnonymousAccess: isLocalAnonymousAccessEnabled(),
+    miracleBaseUrl,
     phoneMicrophoneAvailable: Boolean(
       (process.env.SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL)
       && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY)
-    )
+    ),
+    voiceGatewayUrl: process.env.VOICE_GATEWAY_URL || ''
   });
 });
 
 async function probeMiracleSidecar(timeoutMs = 1500) {
-  const baseUrl = `${process.env.MIRACLE_MEDICAL_ENGINE_URL || ''}`.replace(/\/+$/, '');
+  const baseUrl = resolveMiracleMedicalEngineUrl();
   if (!baseUrl) {
     return { status: 'not_configured' };
   }
@@ -280,6 +302,51 @@ async function probeMiracleSidecar(timeoutMs = 1500) {
     return { status: 'unavailable' };
   }
 }
+
+async function proxyMiracleMedicalRequest(req, res, path, init = {}) {
+  const baseUrl = resolveMiracleMedicalEngineUrl();
+  try {
+    const upstreamResponse = await fetch(`${baseUrl}${path}`, {
+      method: init.method || req.method,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(init.headers || {})
+      },
+      body: init.body
+    });
+    const payloadText = await upstreamResponse.text();
+    let payload = {};
+    if (payloadText) {
+      try {
+        payload = JSON.parse(payloadText);
+      } catch (error) {
+        payload = { message: payloadText };
+      }
+    }
+    if (!upstreamResponse.ok) {
+      return res.status(upstreamResponse.status).json({
+        error: payload?.error || payload?.message || 'Miracle medical engine request failed'
+      });
+    }
+    return res.status(upstreamResponse.status).json(payload);
+  } catch (error) {
+    console.error(`[Miracle Proxy] ${path} failed: ${error.message}`);
+    return res.status(502).json({ error: 'Miracle medical engine unavailable' });
+  }
+}
+
+app.post('/api/voice/stream-session', async (req, res) => {
+  await proxyMiracleMedicalRequest(req, res, '/api/voice/stream-session', {
+    method: 'POST'
+  });
+});
+
+app.post('/api/voice/orchestrator/events', async (req, res) => {
+  await proxyMiracleMedicalRequest(req, res, '/api/voice/orchestrator/events', {
+    method: 'POST',
+    body: JSON.stringify(req.body || {})
+  });
+});
 
 app.get('/api/health', async (req, res) => {
   const [neo4j, miracle, supabase] = await Promise.all([

@@ -5,6 +5,7 @@ const EXECUTION_LOG_SCOPES = new Set(['execution']);
 const VOICE_LOG_SCOPES = new Set(['voice']);
 const LEARNING_LOG_SCOPES = new Set(['learning']);
 const SELECTED_ELEMENT_STORAGE_KEY = 'graphTrainerSelectedElement';
+const AUTH_WIDGET_ID = 'graph-trainer-auth-widget';
 
 let inspectModeActive = false;
 let inspectAbortController = null;
@@ -247,12 +248,316 @@ function log(level, scope, message, details = null) {
   return writeLog({ level, scope, message, details }).catch(() => {});
 }
 
+function sendRuntimeMessage(message) {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(message, (result) => {
+      const runtimeError = chrome.runtime.lastError;
+      if (runtimeError) {
+        reject(new Error(runtimeError.message || 'No fue posible contactar la extension.'));
+        return;
+      }
+      if (!result?.ok) {
+        reject(new Error(result?.error || 'La extension no pudo completar la operacion.'));
+        return;
+      }
+      resolve(result.payload || null);
+    });
+  });
+}
+
+function createExtensionAuthBridge() {
+  let resolveReady;
+  const ready = new Promise((resolve) => {
+    resolveReady = resolve;
+  });
+  const state = {
+    initialized: false,
+    session: null,
+    widget: null,
+    busy: false
+  };
+
+  function normalizeSession(session) {
+    if (!session?.authenticated) {
+      return null;
+    }
+    return {
+      authenticated: true,
+      user: session.user || null,
+      expiresAt: Number(session.expiresAt || 0),
+      accessToken: `${session.accessToken || ''}`.trim()
+    };
+  }
+
+  function getUser() {
+    if (!state.session?.user) {
+      return null;
+    }
+    return {
+      ...state.session.user,
+      is_anonymous: Boolean(state.session.user.isAnonymous)
+    };
+  }
+
+  function getMode() {
+    if (!state.session?.authenticated) {
+      return '';
+    }
+    return state.session.user?.isAnonymous ? 'supabase-anonymous' : 'supabase';
+  }
+
+  function dispatchAuthChanged() {
+    window.dispatchEvent(new CustomEvent('miracle-auth-changed', {
+      detail: {
+        user: getUser(),
+        authenticated: Boolean(state.session?.authenticated),
+        mode: getMode()
+      }
+    }));
+  }
+
+  function ensureWidget() {
+    if (state.widget?.isConnected) {
+      return state.widget;
+    }
+
+    const widget = document.createElement('div');
+    widget.id = AUTH_WIDGET_ID;
+    widget.style.cssText = [
+      'position:fixed',
+      'left:16px',
+      'bottom:16px',
+      'z-index:2147483200',
+      'display:grid',
+      'gap:8px',
+      'width:min(320px,calc(100vw - 32px))',
+      'padding:12px',
+      'border-radius:16px',
+      'background:rgba(15,23,42,0.94)',
+      'color:#f8fafc',
+      'box-shadow:0 18px 40px rgba(15,23,42,0.28)',
+      'font:13px/1.4 Inter,system-ui,-apple-system,\"Segoe UI\",sans-serif'
+    ].join(';');
+
+    const status = document.createElement('div');
+    status.id = `${AUTH_WIDGET_ID}-status`;
+    status.style.cssText = 'display:flex;align-items:center;gap:8px;min-width:0;';
+
+    const dot = document.createElement('span');
+    dot.id = `${AUTH_WIDGET_ID}-dot`;
+    dot.style.cssText = 'width:10px;height:10px;border-radius:999px;flex:none;background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,0.18);';
+
+    const copy = document.createElement('div');
+    copy.style.cssText = 'display:grid;gap:2px;min-width:0;';
+
+    const title = document.createElement('strong');
+    title.id = `${AUTH_WIDGET_ID}-title`;
+    title.style.cssText = 'font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+
+    const subtitle = document.createElement('div');
+    subtitle.id = `${AUTH_WIDGET_ID}-subtitle`;
+    subtitle.style.cssText = 'color:rgba(226,232,240,0.82);font-size:12px;';
+
+    copy.append(title, subtitle);
+    status.append(dot, copy);
+
+    const actions = document.createElement('div');
+    actions.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
+
+    const loginButton = document.createElement('button');
+    loginButton.type = 'button';
+    loginButton.id = `${AUTH_WIDGET_ID}-login`;
+    loginButton.textContent = 'Iniciar sesion con Google';
+    loginButton.style.cssText = [
+      'border:0',
+      'border-radius:999px',
+      'padding:10px 14px',
+      'font:inherit',
+      'font-weight:700',
+      'background:#2f8cff',
+      'color:#fff',
+      'cursor:pointer'
+    ].join(';');
+
+    const logoutButton = document.createElement('button');
+    logoutButton.type = 'button';
+    logoutButton.id = `${AUTH_WIDGET_ID}-logout`;
+    logoutButton.textContent = 'Cerrar sesion';
+    logoutButton.style.cssText = [
+      'border:1px solid rgba(148,163,184,0.35)',
+      'border-radius:999px',
+      'padding:10px 14px',
+      'font:inherit',
+      'font-weight:700',
+      'background:transparent',
+      'color:#e2e8f0',
+      'cursor:pointer'
+    ].join(';');
+
+    actions.append(loginButton, logoutButton);
+    widget.append(status, actions);
+
+    loginButton.addEventListener('click', async () => {
+      setBusy(true, 'Abriendo Google...');
+      try {
+        await updateSession(await sendRuntimeMessage({ type: 'graph:auth-login' }));
+        await log('info', 'content', 'Extension auth session connected from floating widget.');
+      } catch (error) {
+        await log('warn', 'content', 'Extension auth login failed.', {
+          message: error.message || 'No fue posible iniciar sesion.'
+        });
+        render(error.message || 'No fue posible iniciar sesion con Google.');
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    logoutButton.addEventListener('click', async () => {
+      setBusy(true, 'Cerrando sesion...');
+      try {
+        await updateSession(await sendRuntimeMessage({ type: 'graph:auth-logout' }));
+      } catch (error) {
+        await log('warn', 'content', 'Extension auth logout failed.', {
+          message: error.message || 'No fue posible cerrar sesion.'
+        });
+        render(error.message || 'No fue posible cerrar sesion.');
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    state.widget = widget;
+    (document.body || document.documentElement).appendChild(widget);
+    return widget;
+  }
+
+  function render(transientMessage = '') {
+    const widget = ensureWidget();
+    const dot = widget.querySelector(`#${AUTH_WIDGET_ID}-dot`);
+    const title = widget.querySelector(`#${AUTH_WIDGET_ID}-title`);
+    const subtitle = widget.querySelector(`#${AUTH_WIDGET_ID}-subtitle`);
+    const loginButton = widget.querySelector(`#${AUTH_WIDGET_ID}-login`);
+    const logoutButton = widget.querySelector(`#${AUTH_WIDGET_ID}-logout`);
+    const authenticated = Boolean(state.session?.authenticated);
+
+    if (dot) {
+      dot.style.background = authenticated ? '#22c55e' : '#f59e0b';
+      dot.style.boxShadow = authenticated
+        ? '0 0 0 3px rgba(34,197,94,0.18)'
+        : '0 0 0 3px rgba(245,158,11,0.18)';
+    }
+    if (title) {
+      title.textContent = authenticated ? 'Graph conectado' : 'Graph sin conexion';
+    }
+    if (subtitle) {
+      subtitle.textContent = transientMessage
+        || (authenticated
+          ? (state.session.user?.email || 'Sesion de Google lista para workflows.')
+          : 'Inicia sesion con Google para usar workflows y Neo4j desde cualquier pagina.');
+    }
+    if (loginButton) {
+      loginButton.style.display = authenticated ? 'none' : '';
+      loginButton.disabled = state.busy;
+    }
+    if (logoutButton) {
+      logoutButton.style.display = authenticated ? '' : 'none';
+      logoutButton.disabled = state.busy;
+    }
+  }
+
+  function setBusy(busy, message = '') {
+    state.busy = busy;
+    render(message);
+  }
+
+  async function updateSession(nextSession) {
+    state.session = normalizeSession(nextSession);
+    render();
+    if (!state.initialized) {
+      state.initialized = true;
+      resolveReady(getUser());
+    }
+    dispatchAuthChanged();
+    return state.session;
+  }
+
+  async function refreshSession() {
+    try {
+      await updateSession(await sendRuntimeMessage({ type: 'graph:auth-status' }));
+    } catch (error) {
+      render(error.message || 'No fue posible comprobar la sesion.');
+      if (!state.initialized) {
+        state.initialized = true;
+        resolveReady(null);
+      }
+    }
+  }
+
+  window.addEventListener('focus', () => {
+    refreshSession().catch(() => {});
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      refreshSession().catch(() => {});
+    }
+  });
+
+  window.MiracleAuth = {
+    whenAuthenticated() {
+      return ready;
+    },
+    getUser() {
+      return getUser();
+    },
+    getAccessToken() {
+      return state.session?.accessToken || '';
+    },
+    getMode() {
+      return getMode();
+    },
+    async signIn() {
+      setBusy(true, 'Abriendo Google...');
+      try {
+        await updateSession(await sendRuntimeMessage({ type: 'graph:auth-login' }));
+        return getUser();
+      } finally {
+        setBusy(false);
+      }
+    },
+    async signOut() {
+      setBusy(true, 'Cerrando sesion...');
+      try {
+        await updateSession(await sendRuntimeMessage({ type: 'graph:auth-logout' }));
+      } finally {
+        setBusy(false);
+      }
+    }
+  };
+
+  render('Comprobando sesion...');
+  refreshSession().catch(() => {});
+}
+
 function normalizeHostname(value) {
   return `${value || 'page'}`
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9.-]+/g, '-')
     .replace(/^-+|-+$/g, '') || 'page';
+}
+
+async function fetchPublicConfig(backendUrl) {
+  try {
+    const response = await fetch(`${backendUrl.replace(/\/+$/, '')}/api/public-config`, {
+      cache: 'no-store'
+    });
+    if (!response.ok) {
+      return null;
+    }
+    return await response.json().catch(() => null);
+  } catch (error) {
+    return null;
+  }
 }
 
 async function bootstrap() {
@@ -274,6 +579,9 @@ async function bootstrap() {
   const appId = `chrome-extension-${normalizeHostname(window.location.hostname)}`;
   const storageKey = `graph-extension-state-${normalizeHostname(window.location.hostname)}`;
   const workflowDescription = `Workflow on ${window.location.hostname || 'current-page'}`;
+  const publicConfig = await fetchPublicConfig(backendUrl);
+  const miracleBaseUrl = `${publicConfig?.miracleBaseUrl || backendUrl}`.trim() || backendUrl;
+  const voiceGatewayUrl = `${publicConfig?.voiceGatewayUrl || ''}`.trim();
 
   document.addEventListener('graph-trainer-extension-log', (event) => {
     const detail = event?.detail || {};
@@ -295,12 +603,15 @@ async function bootstrap() {
     throw new Error('Miracle runtime scripts did not load in the extension context.');
   }
 
+  createExtensionAuthBridge();
   window.PageState.init({ storageKey });
   window.TrainerPlugin.mount({
     title: 'Miracle',
     workflowDescription,
     appId,
     apiBaseUrl: backendUrl,
+    miracleBaseUrl,
+    voiceGatewayUrl,
     assistantRuntime: {
       name: 'Miracle',
       accentColor: '#0f5f8c',
@@ -310,7 +621,9 @@ async function bootstrap() {
 
   await log('info', 'content', 'Miracle mounted in the isolated extension context.', {
     backendUrl,
-    appId
+    appId,
+    miracleBaseUrl,
+    voiceGatewayUrl
   });
 }
 
