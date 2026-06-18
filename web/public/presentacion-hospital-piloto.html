@@ -298,6 +298,52 @@ button { border: 0; font: inherit; }
   line-height: 1.52;
 }
 
+.quiet-slide {
+  background:
+    radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.74), transparent 46%),
+    linear-gradient(115deg, rgba(237, 247, 255, 0.76), rgba(248, 250, 252, 0.96) 48%, rgba(238, 248, 243, 0.78));
+}
+
+.quiet-inner {
+  width: min(1320px, 100%);
+  min-height: min(680px, 72vh);
+  display: grid;
+  place-items: center;
+}
+
+.history-word {
+  margin: 0;
+  max-width: 1180px;
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: clamp(4.8rem, 11vw, 10.8rem);
+  font-weight: 600;
+  letter-spacing: -0.06em;
+  line-height: 0.9;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.image-only {
+  width: min(1120px, 84vw);
+  height: min(640px, 70vh);
+  display: grid;
+  place-items: center;
+}
+
+.image-only img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 36px 80px rgba(15, 23, 42, 0.12));
+}
+
+.recorder-only {
+  width: min(980px, 78vw);
+  height: min(650px, 72vh);
+}
+
 .panel {
   border: 1px solid var(--line);
   background: var(--paper);
@@ -627,6 +673,10 @@ button { border: 0; font: inherit; }
     var(--glass);
 }
 
+.data-card p {
+  margin: 0;
+}
+
 .data-card.wide {
   grid-column: 1 / -1;
   min-height: 218px;
@@ -689,7 +739,7 @@ button { border: 0; font: inherit; }
 
 .data-slide .title {
   max-width: 1120px;
-  font-size: clamp(2.1rem, 4.45vw, 4.45rem);
+  font-size: clamp(2.05rem, 3.65vw, 3.9rem);
 }
 
 .data-slide .data-grid {
@@ -708,6 +758,65 @@ button { border: 0; font: inherit; }
 
 .data-slide .data-value {
   font-size: clamp(3.4rem, 6.2vw, 6rem);
+}
+
+.stats-focus {
+  margin-top: clamp(22px, 3.4vh, 34px);
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: clamp(18px, 2.6vw, 30px);
+  align-items: stretch;
+}
+
+.stat-hero-card {
+  min-height: 372px;
+  padding: clamp(24px, 3.4vw, 42px);
+  display: grid;
+  align-content: center;
+  gap: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(183, 240, 216, 0.36), transparent 48%),
+    var(--glass-strong);
+}
+
+.stat-hero-card strong {
+  display: block;
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: clamp(7.2rem, 14vw, 12.8rem);
+  font-weight: 600;
+  letter-spacing: -0.08em;
+  line-height: 0.78;
+}
+
+.stat-hero-card span {
+  display: block;
+  max-width: 520px;
+  color: var(--ink);
+  font-size: clamp(1.28rem, 1.8vw, 1.92rem);
+  font-weight: 750;
+  line-height: 1.08;
+}
+
+.stat-hero-card small {
+  color: var(--muted);
+  font-size: clamp(0.86rem, 1vw, 0.98rem);
+  line-height: 1.4;
+}
+
+.stat-support {
+  display: grid;
+  gap: 14px;
+}
+
+.stat-support .data-card {
+  min-height: 0;
+  padding: clamp(18px, 2.2vw, 28px);
+  gap: 10px;
+}
+
+.stat-support .data-value {
+  font-size: clamp(3.4rem, 5.5vw, 5.4rem);
 }
 
 .formula-wrap {
@@ -1618,6 +1727,7 @@ body.presenter .notes { display: grid; }
   .slide:not(.is-active) { display: none; }
 
   .hero,
+  .stats-focus,
   .two-col,
   .institution-grid,
   .stat-grid,
@@ -1642,6 +1752,10 @@ body.presenter .notes { display: grid; }
 
   .data-card.wide {
     grid-template-columns: 1fr;
+  }
+
+  .stat-hero-card {
+    min-height: 320px;
   }
 
   .chain-step:not(:last-child)::after {
@@ -1673,6 +1787,16 @@ body.presenter .notes { display: grid; }
     font-size: clamp(2.08rem, 12vw, 3.62rem);
   }
 
+  .history-word {
+    font-size: clamp(4.2rem, 20vw, 7.4rem);
+  }
+
+  .image-only,
+  .recorder-only {
+    width: 96vw;
+    height: 62vh;
+  }
+
   .product-flow,
   .fact-grid,
   .data-grid,
@@ -1686,6 +1810,10 @@ body.presenter .notes { display: grid; }
 
   .data-value {
     font-size: clamp(3.4rem, 16vw, 5rem);
+  }
+
+  .stat-hero-card strong {
+    font-size: clamp(6.8rem, 30vw, 10rem);
   }
 
   .metric-row,
@@ -1732,25 +1860,56 @@ body.presenter .notes { display: grid; }
 </header>
 
 <main class="deck" id="deck">
-  <section class="slide is-active" data-time="0:30" aria-label="Portada">
-    <div class="slide-inner hero">
-      <div>
-        <span class="kicker reveal">Eficiencia clínica con control médico</span>
-        <h1 class="title reveal" style="--delay:80ms">Menos pantalla. <span class="hospital">Más consulta.</span></h1>
-        <p class="lead reveal" style="--delay:180ms">IA clínica para reducir carga documental y devolver tiempo al médico.</p>
-        <div class="co-brand reveal" style="--delay:280ms"><b>Propuesta de piloto para el Hospital San Juan de Dios de Rionegro</b><i></i><span>Humanización</span><i></i><span>Medición</span><i></i><span>Bajo riesgo</span></div>
-      </div>
-      <div class="hero-signal reveal" style="--delay:220ms" aria-hidden="true">
-        <div class="hero-ring"></div>
-        <div class="hero-ring"></div>
-        <div class="orbit-label a">Humanización</div>
-        <div class="orbit-label b">Eficiencia</div>
-        <div class="orbit-label c">Seguridad clínica</div>
-        <div class="orbit-label d">Datos propios</div>
-        <div class="hero-core"><div><strong>Documentación asistida</strong><span>El médico revisa y aprueba.</span></div></div>
+  <section class="slide quiet-slide is-active" data-time="0:20" aria-label="Historia del sistema médico">
+    <div class="quiet-inner">
+      <h1 class="history-word reveal">historia del sistema médico</h1>
+    </div>
+    <aside class="speaker-notes">Abrir en silencio y con pausa. Esta slide introduce que el problema no nació con Miracle: viene de la evolución del sistema.</aside>
+  </section>
+
+  <section class="slide quiet-slide" data-time="0:20" aria-label="Computación entrando a los hospitales">
+    <div class="quiet-inner">
+      <figure class="image-only reveal" aria-label="Computador dentro de un consultorio médico">
+        <img src="presentation-assets/computer-consultorio.svg" alt="Computador dentro de un consultorio médico minimalista" />
+      </figure>
+    </div>
+    <aside class="speaker-notes">Contar la entrada del computador al consultorio: trajo orden, trazabilidad y datos, pero también una nueva fricción clínica.</aside>
+  </section>
+
+  <section class="slide quiet-slide" data-time="0:20" aria-label="Micrófono ovalado">
+    <div class="quiet-inner">
+      <figure class="image-only recorder-only reveal" aria-label="Dispositivo ovalado de captura de voz clínica">
+        <img src="presentation-assets/oval-recorder.svg" alt="Dispositivo ovalado tipo micrófono para captura de voz clínica" />
+      </figure>
+    </div>
+    <aside class="speaker-notes">Mostrar el cambio de paradigma: de escribir todo frente al computador a capturar conversación clínica para que el médico valide.</aside>
+  </section>
+
+  <section class="slide data-slide" data-time="0:45" aria-label="Datos importantes">
+    <div class="slide-inner">
+      <span class="kicker reveal">Datos importantes que identificamos</span>
+      <h2 class="title medium reveal" style="--delay:80ms">Dato importante: el sistema se está comiendo la consulta.</h2>
+      <div class="stats-focus reveal" style="--delay:180ms">
+        <article class="panel stat-hero-card">
+          <strong>85%</strong>
+          <span>del tiempo del médico puede terminar absorbido por el computador.</span>
+          <small>Dato de trabajo para validar localmente durante el piloto con médicos del hospital.</small>
+        </article>
+        <div class="stat-support">
+          <article class="panel data-card">
+            <span class="data-value">49.2% <span class="vs">vs</span> <span class="accent">27%</span></span>
+            <p class="data-copy">más tiempo en EHR/escritorio que en atención clínica directa durante la jornada.</p>
+            <p class="data-source">Sinsky et al., <a href="https://pubmed.ncbi.nlm.nih.gov/27595430/" target="_blank" rel="noreferrer">Annals of Internal Medicine, 2016</a>.</p>
+          </article>
+          <article class="panel data-card">
+            <span class="data-value">86<span class="accent"> min</span></span>
+            <p class="data-copy">de trabajo EHR adicional diario fuera de la consulta en estudios de atención primaria.</p>
+            <p class="data-source">Arndt et al., <a href="https://www.annfammed.org/content/15/5/419" target="_blank" rel="noreferrer">Annals of Family Medicine, 2017</a>.</p>
+          </article>
+        </div>
       </div>
     </div>
-    <aside class="speaker-notes">Abrir como conversación estratégica: menos carga documental para recuperar presencia clínica. No pedir el piloto todavía.</aside>
+    <aside class="speaker-notes">Recuperar la slide de datos. El 85% se presenta como hipótesis/dato de trabajo a validar en el piloto; los otros dos datos son evidencia externa para justificar la medición.</aside>
   </section>
 
   <section class="slide" data-time="0:45" aria-label="Problema humano">
@@ -1929,7 +2088,7 @@ body.presenter .notes { display: grid; }
 </aside>
 
 <footer class="chrome" aria-label="Controles de presentación">
-  <div class="counter"><span id="current">01</span> / <span id="total">08</span></div>
+  <div class="counter"><span id="current">01</span> / <span id="total">11</span></div>
   <div class="progress" aria-hidden="true"><span id="progress"></span></div>
   <div class="controls">
     <button class="icon-btn" id="prev" type="button" aria-label="Anterior">←</button>
@@ -2146,7 +2305,7 @@ body.presenter .notes { display: grid; }
       document.getElementById("full").click();
     } else if (event.key.toLowerCase() === "r" && current === demoIndex) {
       startDemo();
-    } else if (/^[1-8]$/.test(event.key)) {
+    } else if (/^[1-9]$/.test(event.key)) {
       event.preventDefault();
       goTo(Number(event.key) - 1);
     }

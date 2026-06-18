@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Micrófono ovalado de captura clínica</title>
+  <desc id="desc">Ilustración minimalista de un dispositivo ovalado tipo micrófono sobre una superficie clara.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="72%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset=".58" stop-color="#f3f9ff"/>
+      <stop offset="1" stop-color="#edf7f2"/>
+    </radialGradient>
+    <linearGradient id="device" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#26364f"/>
+      <stop offset=".52" stop-color="#101827"/>
+      <stop offset="1" stop-color="#050914"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#dceffd"/>
+      <stop offset=".48" stop-color="#7fb6e6"/>
+      <stop offset="1" stop-color="#2f8cff"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-20%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="36" stdDeviation="34" flood-color="#0f172a" flood-opacity=".22"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <ellipse cx="800" cy="706" rx="348" ry="52" fill="#0f172a" opacity=".10"/>
+  <g filter="url(#shadow)">
+    <rect x="555" y="184" width="490" height="542" rx="245" fill="url(#edge)"/>
+    <rect x="581" y="210" width="438" height="490" rx="219" fill="url(#device)"/>
+    <ellipse cx="800" cy="298" rx="122" ry="92" fill="#ffffff" opacity=".07"/>
+    <rect x="724" y="340" width="152" height="220" rx="76" fill="#e5eef9" opacity=".10"/>
+    <path d="M748 380v140M789 354v190M830 374v150" stroke="#dceffd" stroke-width="18" stroke-linecap="round" opacity=".74"/>
+    <circle cx="800" cy="610" r="34" fill="#b7f0d8"/>
+    <circle cx="800" cy="610" r="17" fill="#13795b"/>
+  </g>
+  <path d="M518 305c-82 48-132 126-132 211 0 92 57 174 148 221" fill="none" stroke="#b7f0d8" stroke-width="9" stroke-linecap="round" opacity=".55"/>
+  <path d="M1082 305c82 48 132 126 132 211 0 92-57 174-148 221" fill="none" stroke="#2f8cff" stroke-width="9" stroke-linecap="round" opacity=".38"/>
+</svg>
