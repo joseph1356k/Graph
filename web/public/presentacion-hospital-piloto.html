@@ -1,0 +1,2172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Miracle x Hospital San Juan de Dios E.S.E Rionegro</title>
+<meta name="description" content="Propuesta de piloto de documentación clínica asistida para consulta externa del Hospital San Juan de Dios E.S.E Rionegro." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+<style>
+:root {
+  /* Color */
+  --ink: #0f172a;
+  --ink-2: #142033;
+  --bg: #f8fafc;
+  --ice: #dceffd;
+  --mint: #b7f0d8;
+  --silver: #cbd5e1;
+  --accent: #2f8cff;
+  --accent-deep: #1d4f86;
+  --muted: #64748b;
+  --muted-strong: #334155;
+  --success: #13795b;
+
+  /* Legacy aliases kept for the existing slide markup. */
+  --blue: var(--accent);
+  --blue-deep: var(--accent-deep);
+  --hospital: var(--success);
+  --hospital-soft: #e9faf1;
+
+  /* Glass */
+  --glass: rgba(255, 255, 255, 0.66);
+  --glass-strong: rgba(255, 255, 255, 0.82);
+  --paper: var(--glass);
+  --paper-strong: rgba(255, 255, 255, 0.92);
+  --line: rgba(15, 23, 42, 0.10);
+
+  /* Depth */
+  --shadow-md: 0 14px 32px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 22px 56px rgba(15, 23, 42, 0.12);
+  --shadow-xl: 0 32px 90px rgba(15, 23, 42, 0.14);
+  --shadow: var(--shadow-md);
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+
+  /* Type + motion */
+  --display: "Söhne", "Sohne", "Inter", "SF Pro Display", system-ui, sans-serif;
+  --text: "Inter", "Söhne", "SF Pro Text", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+  --ease: cubic-bezier(.2, .7, .3, 1);
+}
+
+* { box-sizing: border-box; }
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  color: var(--ink);
+  font-family: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bg-base {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, #edf7ff 0%, var(--bg) 46%, var(--bg) 68%, #eef8f3 100%);
+  background-size: 150% 150%;
+  animation: backgroundFlow 28s var(--ease) infinite alternate;
+}
+
+.bg-aurora {
+  position: absolute;
+  inset: -12%;
+  background:
+    radial-gradient(40% 36% at 18% 22%, rgba(47, 140, 255, 0.30), transparent 70%),
+    radial-gradient(38% 32% at 82% 26%, rgba(183, 240, 216, 0.32), transparent 70%),
+    conic-gradient(from 200deg at 62% 30%, transparent 0deg, rgba(220, 239, 253, 0.40) 80deg, rgba(183, 240, 216, 0.20) 180deg, transparent 320deg);
+  filter: blur(46px) saturate(1.08);
+  opacity: 0.72;
+  animation: auroraDrift 34s ease-in-out infinite alternate;
+}
+
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.34) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.30) 1px, transparent 1px);
+  background-size: 80px 80px;
+  opacity: 0.18;
+  mask-image: linear-gradient(180deg, black 0%, transparent 76%);
+  animation: gridDrift 22s linear infinite;
+}
+
+.bg-grain {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(rgba(15, 23, 42, 0.55) 0.55px, transparent 0.55px),
+    radial-gradient(rgba(15, 23, 42, 0.45) 0.45px, transparent 0.45px);
+  background-size: 3px 3px, 5px 5px;
+  background-position: 0 0, 1px 2px;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  animation: grainShift 1.8s steps(3, end) infinite;
+}
+
+@keyframes backgroundFlow {
+  0% { background-position: 0% 40%; }
+  50% { background-position: 72% 58%; }
+  100% { background-position: 100% 42%; }
+}
+
+@keyframes auroraDrift {
+  0% { transform: translate3d(-2%, -1%, 0) rotate(0deg) scale(1); }
+  50% { transform: translate3d(3%, 2%, 0) rotate(5deg) scale(1.04); }
+  100% { transform: translate3d(-1%, 1%, 0) rotate(-3deg) scale(1.02); }
+}
+
+@keyframes gridDrift { to { background-position: 80px 48px; } }
+
+@keyframes grainShift {
+  0% { transform: translate3d(0, 0, 0); }
+  33% { transform: translate3d(-1px, 1px, 0); }
+  66% { transform: translate3d(1px, -1px, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+a { color: inherit; }
+button { border: 0; font: inherit; }
+
+.topbar {
+  position: fixed;
+  top: 24px;
+  left: clamp(26px, 4vw, 58px);
+  right: clamp(26px, 4vw, 58px);
+  z-index: 8;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  color: var(--ink);
+}
+
+.brand,
+.hospital-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  gap: 11px;
+  font-weight: 800;
+}
+
+.brand-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.96), transparent 18%),
+    radial-gradient(circle at 38% 36%, var(--ice) 0 22%, #7fb6e6 48%, #0f5f9f 100%);
+  box-shadow: inset -6px -8px 14px rgba(15, 23, 42, 0.22), 0 8px 20px rgba(47, 140, 255, 0.20);
+}
+
+.hospital-tag {
+  padding: 0 14px;
+  color: var(--hospital);
+  border: 1px solid rgba(11, 127, 104, 0.18);
+  background: var(--glass-strong);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(14px);
+  border-radius: 999px;
+  font-size: 0.82rem;
+}
+
+.deck {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: clamp(76px, 8vw, 104px) clamp(34px, 6vw, 96px) clamp(112px, 14vh, 146px);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(28px, 0, 0);
+  filter: blur(7px);
+  transition: opacity 520ms var(--ease), transform 680ms var(--ease), filter 520ms ease, visibility 0s linear 680ms;
+}
+
+.slide.is-active {
+  z-index: 3;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  filter: none;
+  transition: opacity 620ms var(--ease), transform 760ms var(--ease), filter 620ms ease;
+}
+
+.slide.is-exiting {
+  z-index: 2;
+  visibility: visible;
+  opacity: 0;
+  filter: blur(7px);
+  transform: translate3d(-28px, 0, 0);
+}
+
+.slide-inner { width: min(1240px, 100%); }
+
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.slide.is-active .reveal,
+.slide.play .reveal {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--blue-deep);
+  font-size: clamp(0.75rem, 1vw, 0.88rem);
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.kicker::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 99px;
+  background: linear-gradient(135deg, var(--accent), var(--mint));
+  box-shadow: 0 0 0 5px rgba(220, 239, 253, 0.85);
+}
+
+.title {
+  margin: 18px 0 0;
+  max-width: 1060px;
+  font-size: clamp(2.65rem, 6vw, 6.15rem);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  font-family: var(--display);
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.title.medium {
+  max-width: 1120px;
+  font-size: clamp(2.12rem, 3.85vw, 4.05rem);
+}
+
+.title .blue { color: var(--blue); }
+.title .hospital,
+.grad {
+  background: linear-gradient(135deg, #0f172a 0%, #1d4f86 50%, #2f8cff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lead {
+  max-width: 780px;
+  margin: 22px 0 0;
+  color: var(--muted-strong);
+  font-size: clamp(1.05rem, 1.45vw, 1.34rem);
+  line-height: 1.52;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(18px);
+  border-radius: var(--radius-lg);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(28px, 5vw, 70px);
+  align-items: center;
+}
+
+.hero-signal {
+  position: relative;
+  min-height: 520px;
+  display: grid;
+  place-items: center;
+}
+
+.hero-ring {
+  position: absolute;
+  width: min(470px, 64vw);
+  aspect-ratio: 1;
+  border: 1px solid rgba(11, 127, 104, 0.18);
+  border-radius: 50%;
+}
+
+.hero-ring:nth-child(2) {
+  width: min(330px, 46vw);
+  border-color: rgba(47, 128, 237, 0.16);
+}
+
+.hero-core {
+  width: min(300px, 50vw);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  padding: 36px;
+  text-align: center;
+  color: #fff;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.96), transparent 18%),
+    radial-gradient(circle at 38% 36%, var(--ice) 0 22%, #7fb6e6 48%, #0f5f9f 100%);
+  border-radius: 50%;
+  box-shadow: inset -18px -22px 34px rgba(15, 23, 42, 0.22), 0 32px 90px rgba(47, 140, 255, 0.20);
+}
+
+.hero-core strong {
+  display: block;
+  font-size: clamp(1.45rem, 2.4vw, 2.1rem);
+  line-height: 1.08;
+  text-shadow: 0 2px 14px rgba(15, 23, 42, 0.22);
+}
+
+.hero-core span {
+  display: block;
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.35;
+  text-shadow: 0 2px 10px rgba(15, 23, 42, 0.20);
+}
+
+.orbit-label {
+  position: absolute;
+  padding: 10px 13px;
+  color: var(--ink-2);
+  background: var(--paper-strong);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(14px);
+  font-size: 0.86rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.orbit-label.a { top: 13%; left: 8%; }
+.orbit-label.b { top: 18%; right: 3%; }
+.orbit-label.c { bottom: 14%; left: 10%; }
+.orbit-label.d { bottom: 18%; right: 4%; }
+
+.co-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+  color: var(--muted);
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.co-brand b { color: var(--ink); }
+.co-brand i {
+  width: 7px;
+  height: 7px;
+  border-radius: 99px;
+  background: linear-gradient(135deg, var(--accent), var(--mint));
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(18px, 2.4vw, 34px);
+  align-items: stretch;
+  margin-top: clamp(32px, 4vh, 54px);
+}
+
+.need-panel {
+  min-height: 270px;
+  padding: clamp(28px, 3.3vw, 44px);
+}
+
+.need-panel.patient {
+  background: linear-gradient(135deg, rgba(220, 239, 253, 0.54), rgba(255, 255, 255, 0.70));
+}
+
+.need-panel.doctor {
+  background: linear-gradient(135deg, rgba(183, 240, 216, 0.42), rgba(255, 255, 255, 0.70));
+}
+
+.role {
+  display: block;
+  color: var(--blue-deep);
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.doctor .role { color: var(--hospital); }
+
+.panel h3 {
+  margin: 22px 0 22px;
+  font-size: clamp(1.42rem, 2.25vw, 2.3rem);
+  line-height: 1.1;
+}
+
+.bullets {
+  display: grid;
+  gap: 13px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-2);
+  font-size: clamp(1rem, 1.3vw, 1.17rem);
+}
+
+.bullets li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.bullets li::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  margin-top: 0.47em;
+  border-radius: 99px;
+  background: var(--blue);
+}
+
+.doctor .bullets li::before { background: linear-gradient(135deg, var(--accent), var(--mint)); }
+
+.closing-line {
+  margin-top: 26px;
+  color: var(--ink-2);
+  font-size: clamp(1.04rem, 1.55vw, 1.36rem);
+  line-height: 1.4;
+}
+
+.institution-grid {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: 1fr 1.18fr;
+  gap: clamp(22px, 3vw, 42px);
+  align-items: stretch;
+}
+
+.institution-main {
+  min-height: 442px;
+  padding: clamp(28px, 3.4vw, 46px);
+  display: grid;
+  align-content: center;
+  background: radial-gradient(circle at top right, rgba(183, 240, 216, 0.38), transparent 48%), var(--glass);
+}
+
+.institution-main strong {
+  display: block;
+  background: linear-gradient(135deg, #0f172a 0%, #1d4f86 50%, #2f8cff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: clamp(4rem, 10vw, 8rem);
+  line-height: 0.82;
+}
+
+.institution-main span {
+  display: block;
+  margin-top: 20px;
+  max-width: 480px;
+  color: var(--ink-2);
+  font-size: clamp(1.08rem, 1.55vw, 1.38rem);
+  line-height: 1.44;
+}
+
+.fact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.fact {
+  min-height: 156px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  background: var(--glass);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(14px);
+  border-radius: var(--radius-md);
+}
+
+.fact b {
+  display: block;
+  color: var(--blue-deep);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.fact strong {
+  display: block;
+  margin-top: 16px;
+  font-size: clamp(1.12rem, 1.6vw, 1.46rem);
+  line-height: 1.15;
+}
+
+.source {
+  margin-top: 15px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.source a {
+  color: var(--blue-deep);
+  text-underline-offset: 3px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(20px, 3vw, 42px);
+  align-items: center;
+  margin-top: 44px;
+}
+
+.big-stat {
+  padding: clamp(28px, 3.4vw, 48px);
+  min-height: 360px;
+  display: grid;
+  align-content: center;
+}
+
+.stat-number {
+  display: block;
+  color: var(--blue);
+  font-size: clamp(4rem, 10vw, 9rem);
+  line-height: 0.82;
+  font-weight: 800;
+}
+
+.stat-label {
+  display: block;
+  max-width: 470px;
+  margin-top: 20px;
+  color: var(--ink-2);
+  font-size: clamp(1.05rem, 1.5vw, 1.36rem);
+  line-height: 1.38;
+}
+
+.stat-side {
+  display: grid;
+  gap: 16px;
+}
+
+.metric-row {
+  display: grid;
+  grid-template-columns: 82px 1fr;
+  gap: 18px;
+  align-items: center;
+  min-height: 112px;
+  padding: 22px;
+}
+
+.metric-row strong {
+  color: var(--hospital);
+  font-size: clamp(1.65rem, 3vw, 2.7rem);
+  line-height: 1;
+}
+
+.metric-row span {
+  color: var(--ink-2);
+  font-size: clamp(0.98rem, 1.25vw, 1.15rem);
+  line-height: 1.42;
+}
+
+.data-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(18px, 2vw, 26px);
+  margin-top: clamp(30px, 4vh, 46px);
+}
+
+.data-card {
+  min-height: 250px;
+  padding: clamp(26px, 3.2vw, 42px);
+  display: grid;
+  align-content: center;
+  gap: 22px;
+  background:
+    radial-gradient(circle at top right, rgba(220, 239, 253, 0.40), transparent 48%),
+    var(--glass);
+}
+
+.data-card.wide {
+  grid-column: 1 / -1;
+  min-height: 218px;
+  grid-template-columns: 0.28fr 1fr;
+  align-items: center;
+  align-content: initial;
+  border-left: 5px solid var(--accent);
+}
+
+.data-value {
+  display: block;
+  font-family: var(--display);
+  font-size: clamp(4rem, 7.4vw, 7rem);
+  font-weight: 600;
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+  color: var(--ink);
+}
+
+.data-value .accent {
+  color: var(--accent);
+}
+
+.data-value .vs {
+  display: inline-block;
+  margin: 0 12px;
+  color: var(--muted);
+  font-size: clamp(1.3rem, 2vw, 2rem);
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+
+.data-copy {
+  max-width: 720px;
+  color: var(--ink-2);
+  font-size: clamp(1rem, 1.34vw, 1.24rem);
+  line-height: 1.42;
+}
+
+.data-source {
+  color: var(--muted);
+  font-size: clamp(0.82rem, 1vw, 0.96rem);
+  line-height: 1.4;
+}
+
+.data-source a {
+  color: var(--accent-deep);
+  text-underline-offset: 3px;
+}
+
+.data-note {
+  color: var(--muted-strong);
+  font-size: clamp(1rem, 1.25vw, 1.16rem);
+  line-height: 1.45;
+}
+
+.data-note strong {
+  color: var(--ink);
+}
+
+.data-slide .title {
+  max-width: 1120px;
+  font-size: clamp(2.1rem, 4.45vw, 4.45rem);
+}
+
+.data-slide .data-grid {
+  margin-top: clamp(22px, 3vh, 30px);
+}
+
+.data-slide .data-card {
+  min-height: 210px;
+  padding: clamp(22px, 2.6vw, 34px);
+  gap: 16px;
+}
+
+.data-slide .data-card.wide {
+  min-height: 156px;
+}
+
+.data-slide .data-value {
+  font-size: clamp(3.4rem, 6.2vw, 6rem);
+}
+
+.formula-wrap {
+  margin-top: clamp(26px, 4vh, 42px);
+  display: grid;
+  gap: 18px;
+}
+
+.formula-card {
+  min-height: 142px;
+  padding: clamp(22px, 2.6vw, 34px);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  background:
+    radial-gradient(circle at top right, rgba(220, 239, 253, 0.46), transparent 48%),
+    var(--glass);
+}
+
+.formula {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 1.5vw, 22px);
+  flex-wrap: wrap;
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: clamp(1.42rem, 2.85vw, 2.85rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+}
+
+.formula .op {
+  color: var(--accent);
+  font-size: 0.84em;
+}
+
+.formula span {
+  color: var(--accent);
+  font-size: 0.86em;
+}
+
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.impact-card {
+  min-height: 112px;
+  padding: 18px;
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--glass-strong);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(14px);
+}
+
+.impact-card b,
+.pillar b,
+.metric-pill b {
+  color: var(--accent-deep);
+  font-size: 0.76rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.impact-card strong,
+.pillar strong {
+  display: block;
+  color: var(--ink);
+  font-size: clamp(1.05rem, 1.45vw, 1.32rem);
+  line-height: 1.18;
+}
+
+.impact-card span {
+  color: var(--ink-2);
+  line-height: 1.35;
+}
+
+.pillar-grid {
+  margin-top: clamp(28px, 4vh, 42px);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.pillar {
+  min-height: 205px;
+  padding: 24px;
+  display: grid;
+  align-content: end;
+  gap: 14px;
+  background:
+    radial-gradient(circle at top left, rgba(183, 240, 216, 0.34), transparent 42%),
+    var(--glass);
+}
+
+.pillar .orb {
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.96), transparent 18%),
+    radial-gradient(circle at 38% 36%, var(--ice) 0 22%, #7fb6e6 48%, #0f5f9f 100%);
+  box-shadow: inset -8px -10px 16px rgba(15, 23, 42, 0.18), 0 10px 24px rgba(47, 140, 255, 0.18);
+}
+
+.solution-chain {
+  margin-top: clamp(28px, 4vh, 42px);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.chain-step {
+  position: relative;
+  min-height: 152px;
+  padding: 20px 18px;
+  display: grid;
+  align-content: center;
+  gap: 12px;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--glass-strong);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(14px);
+}
+
+.chain-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -10px;
+  width: 18px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--mint));
+}
+
+.chain-step b {
+  color: var(--accent-deep);
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.chain-step strong {
+  color: var(--ink);
+  font-size: clamp(1.05rem, 1.35vw, 1.28rem);
+  line-height: 1.12;
+}
+
+.guardrail {
+  margin-top: 20px;
+  padding: 14px 18px;
+  color: #fff;
+  background: radial-gradient(circle at top right, rgba(220, 239, 253, 0.16), transparent 40%),
+              linear-gradient(180deg, #0f172a 0%, #142033 100%);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-weight: 700;
+  line-height: 1.34;
+}
+
+.compare-grid {
+  margin-top: clamp(28px, 4vh, 42px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.compare-panel {
+  min-height: 330px;
+  padding: clamp(28px, 3.2vw, 42px);
+  display: grid;
+  align-content: start;
+  gap: 22px;
+}
+
+.compare-panel.with {
+  background:
+    radial-gradient(circle at top right, rgba(183, 240, 216, 0.34), transparent 45%),
+    var(--glass);
+}
+
+.compare-panel h3 {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.3vw, 2.35rem);
+  line-height: 1.05;
+}
+
+.compare-panel > span {
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: clamp(1.55rem, 2.5vw, 2.45rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.compare-list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-2);
+  font-size: clamp(1rem, 1.35vw, 1.18rem);
+}
+
+.compare-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.compare-list li::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  margin-top: 0.45em;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.with .compare-list li::before {
+  background: linear-gradient(135deg, var(--accent), var(--mint));
+}
+
+.pilot-brief {
+  margin-top: clamp(28px, 4vh, 40px);
+  display: grid;
+  grid-template-columns: 0.82fr 1.18fr;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.pilot-core {
+  min-height: 332px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: clamp(28px, 3vw, 42px);
+}
+
+.pilot-core strong {
+  display: block;
+  color: var(--success);
+  font-size: clamp(6rem, 13vw, 12rem);
+  font-family: var(--display);
+  line-height: 0.82;
+  letter-spacing: -0.045em;
+  font-weight: 600;
+}
+
+.pilot-core span {
+  display: block;
+  margin-top: 18px;
+  color: var(--ink);
+  font-size: clamp(1.25rem, 2vw, 2rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.pilot-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pilot-detail {
+  min-height: 118px;
+  padding: 18px;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--glass-strong);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(14px);
+}
+
+.pilot-detail b {
+  color: var(--success);
+  font-size: 0.76rem;
+  letter-spacing: 0.15em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.pilot-detail span {
+  color: var(--ink);
+  font-size: clamp(1.08rem, 1.45vw, 1.32rem);
+  font-weight: 700;
+  line-height: 1.22;
+}
+
+.metric-strip {
+  margin-top: 18px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.metric-pill {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: var(--glass-strong);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(14px);
+}
+
+.economy-grid {
+  margin-top: clamp(24px, 3.2vh, 34px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.economy-formula {
+  min-height: 250px;
+  padding: clamp(26px, 3vw, 42px);
+  display: grid;
+  align-content: center;
+  gap: 22px;
+}
+
+.economy-formula > span {
+  color: var(--accent-deep);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.economy-formula strong {
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: clamp(1.35rem, 2.65vw, 2.65rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.06;
+}
+
+.economy-formula p {
+  max-width: 600px;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+
+.economy-list {
+  display: grid;
+  gap: 11px;
+}
+
+.economy-item {
+  min-height: 70px;
+  padding: 16px 18px;
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--glass-strong);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(14px);
+}
+
+.economy-item b {
+  color: var(--success);
+  font-size: 1.45rem;
+}
+
+.economy-item span {
+  color: var(--ink-2);
+  line-height: 1.32;
+}
+
+.decision-strip {
+  margin-top: 22px;
+}
+
+.product-flow {
+  margin-top: 46px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.flow-step {
+  position: relative;
+  min-height: 220px;
+  padding: 22px;
+  overflow: hidden;
+  background: var(--glass);
+}
+
+.flow-step::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5px;
+  background: linear-gradient(90deg, var(--accent), var(--mint));
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.slide.is-active .flow-step::after {
+  animation: fillStep 850ms var(--ease) var(--delay, 0ms) both;
+}
+
+@keyframes fillStep {
+  to { transform: scaleX(1); }
+}
+
+.flow-step b {
+  display: block;
+  color: var(--blue-deep);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.flow-step strong {
+  display: block;
+  margin-top: 44px;
+  font-size: clamp(1.18rem, 1.9vw, 1.62rem);
+  line-height: 1.12;
+}
+
+.flow-step span {
+  display: block;
+  margin-top: 12px;
+  color: var(--muted);
+  line-height: 1.38;
+}
+
+.demo-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+}
+
+.demo-grid {
+  margin-top: 26px;
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.demo-box {
+  min-height: 478px;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.box-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.live-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--hospital);
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: 0.86rem;
+}
+
+.live-dot::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+  background: currentColor;
+  box-shadow: 0 0 0 6px rgba(11, 127, 104, 0.1);
+}
+
+.conversation {
+  display: grid;
+  gap: 13px;
+  padding-top: 20px;
+}
+
+.bubble {
+  max-width: 92%;
+  padding: 13px 15px;
+  border-radius: var(--radius-md);
+  background: var(--glass-strong);
+  color: var(--ink-2);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(14px);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 420ms var(--ease), transform 420ms var(--ease);
+}
+
+.bubble.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.bubble.patient { justify-self: start; }
+.bubble.doctor {
+  justify-self: end;
+  background: rgba(220, 239, 253, 0.70);
+}
+
+.bubble b {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--blue-deep);
+  font-size: 0.78rem;
+}
+
+.note-layout {
+  display: grid;
+  grid-template-columns: 1fr 188px;
+  gap: 14px;
+  padding-top: 16px;
+}
+
+.note-fields {
+  display: grid;
+  gap: 10px;
+}
+
+.field {
+  display: grid;
+  grid-template-columns: 144px 1fr;
+  gap: 12px;
+  align-items: start;
+  min-height: 66px;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  background: var(--glass);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(12px);
+  transition: border-color 280ms ease, background 280ms ease, transform 280ms ease;
+}
+
+.field.filling {
+  border-color: rgba(47, 128, 237, 0.46);
+  background: rgba(220, 239, 253, 0.72);
+  transform: translateX(2px);
+}
+
+.field.done {
+  border-color: rgba(11, 127, 104, 0.28);
+}
+
+.field b {
+  color: var(--ink);
+  font-size: 0.86rem;
+}
+
+.field p {
+  margin: 0;
+  color: var(--ink-2);
+  line-height: 1.34;
+}
+
+.ph { color: #9aa7ba; }
+
+.impact-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.impact {
+  min-height: 102px;
+  padding: 15px;
+  border: 1px solid var(--line);
+  background: var(--glass);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+}
+
+.impact strong {
+  display: block;
+  color: var(--hospital);
+  font-size: 1.85rem;
+  line-height: 1;
+}
+
+.impact span {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.3;
+}
+
+.pending {
+  border-color: rgba(191, 122, 13, 0.28);
+  background: rgba(255, 248, 232, 0.66);
+}
+
+.pending strong { color: #a16207; }
+
+.demo-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.status {
+  color: var(--muted);
+  font-size: 0.9rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.status.ready {
+  color: var(--hospital);
+  font-weight: 800;
+}
+
+.primary-action,
+.ghost-action {
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 800;
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.primary-action {
+  color: #fff;
+  background: var(--ink);
+  box-shadow: var(--shadow-md);
+}
+
+.primary-action.live { background: var(--hospital); }
+.primary-action.signed { background: var(--blue-deep); }
+
+.ghost-action {
+  color: var(--blue-deep);
+  border: 1px solid rgba(31, 95, 168, 0.18);
+  background: var(--glass-strong);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(14px);
+}
+
+.primary-action:hover,
+.ghost-action:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.moat-grid {
+  margin-top: 46px;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: clamp(24px, 3.6vw, 54px);
+  align-items: center;
+}
+
+.stack {
+  display: grid;
+  gap: 12px;
+}
+
+.stack-row {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 16px;
+  align-items: center;
+  min-height: 94px;
+  padding: 17px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.stack-row b {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--mint));
+  border-radius: 50%;
+}
+
+.stack-row strong {
+  display: block;
+  font-size: clamp(1.05rem, 1.42vw, 1.28rem);
+}
+
+.stack-row span {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  line-height: 1.38;
+}
+
+.not-transcription {
+  min-height: 420px;
+  display: grid;
+  align-content: center;
+  padding: clamp(28px, 3.4vw, 46px);
+  text-align: left;
+  background: radial-gradient(circle at top right, rgba(220, 239, 253, 0.56), transparent 48%), var(--glass);
+}
+
+.not-transcription strong {
+  display: block;
+  font-size: clamp(2rem, 4.5vw, 4.6rem);
+  line-height: 0.98;
+}
+
+.not-transcription span {
+  display: block;
+  margin-top: 22px;
+  color: var(--ink-2);
+  font-size: clamp(1.02rem, 1.46vw, 1.28rem);
+  line-height: 1.42;
+}
+
+.pilot {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(24px, 4vw, 62px);
+  align-items: center;
+}
+
+.pilot-days {
+  display: grid;
+  place-items: center;
+  min-height: 530px;
+  text-align: center;
+  background: radial-gradient(circle at top right, rgba(183, 240, 216, 0.44), transparent 52%), var(--glass);
+}
+
+.pilot-days strong {
+  color: var(--hospital);
+  font-size: clamp(7rem, 18vw, 15rem);
+  line-height: 0.82;
+  font-weight: 800;
+}
+
+.pilot-days span {
+  display: block;
+  margin-top: 20px;
+  color: var(--ink-2);
+  font-size: clamp(1.28rem, 2.3vw, 2.25rem);
+  font-weight: 800;
+}
+
+.pilot-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.pilot-item {
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.pilot-item b {
+  color: var(--hospital);
+  font-size: 1.9rem;
+  line-height: 1;
+}
+
+.pilot-item strong {
+  display: block;
+  font-size: clamp(1.02rem, 1.42vw, 1.24rem);
+}
+
+.pilot-item span {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  line-height: 1.38;
+}
+
+.next-step {
+  margin-top: 26px;
+  padding: 17px 19px;
+  color: #fff;
+  background: var(--ink);
+  border-radius: var(--radius-md);
+  font-weight: 800;
+  line-height: 1.35;
+  box-shadow: var(--shadow-lg);
+}
+
+.chrome {
+  position: fixed;
+  left: clamp(26px, 4vw, 58px);
+  right: clamp(26px, 4vw, 58px);
+  bottom: 26px;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 18px;
+  align-items: center;
+  color: var(--muted);
+}
+
+.counter {
+  font-weight: 800;
+  color: var(--ink-2);
+}
+
+.progress {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(31, 95, 168, 0.12);
+}
+
+.progress span {
+  display: block;
+  width: 12.5%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--blue), var(--hospital));
+  transition: width 380ms var(--ease);
+}
+
+.controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  color: var(--ink-2);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  color: var(--ink);
+  background: #fff;
+}
+
+.notes {
+  position: fixed;
+  left: clamp(26px, 4vw, 58px);
+  right: clamp(26px, 4vw, 58px);
+  bottom: 86px;
+  z-index: 9;
+  display: none;
+  grid-template-columns: 100px 1fr;
+  gap: 18px;
+  padding: 18px 20px;
+  color: var(--ink-2);
+}
+
+body.presenter .notes { display: grid; }
+.notes b { color: var(--blue-deep); }
+.notes p { margin: 0; line-height: 1.45; }
+.speaker-notes { display: none; }
+
+@media (max-width: 1000px) {
+  html,
+  body { overflow: auto; }
+
+  .deck,
+  .slide { position: relative; }
+
+  .slide {
+    min-height: 100svh;
+    padding: 92px 22px 118px;
+  }
+
+  .slide:not(.is-active) { display: none; }
+
+  .hero,
+  .two-col,
+  .institution-grid,
+  .stat-grid,
+  .demo-grid,
+  .moat-grid,
+  .pilot,
+  .impact-grid,
+  .pillar-grid,
+  .compare-grid,
+  .pilot-brief,
+  .pilot-detail-grid,
+  .economy-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-flow,
+  .fact-grid,
+  .data-grid,
+  .solution-chain {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .data-card.wide {
+    grid-template-columns: 1fr;
+  }
+
+  .chain-step:not(:last-child)::after {
+    display: none;
+  }
+
+  .note-layout { grid-template-columns: 1fr; }
+
+  .chrome {
+    left: 16px;
+    right: 16px;
+    grid-template-columns: auto 1fr;
+  }
+
+  .controls {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .title,
+  .title.medium {
+    font-size: clamp(2.08rem, 12vw, 3.62rem);
+  }
+
+  .product-flow,
+  .fact-grid,
+  .data-grid,
+  .solution-chain {
+    grid-template-columns: 1fr;
+  }
+
+  .chain-step:not(:last-child)::after {
+    display: none;
+  }
+
+  .data-value {
+    font-size: clamp(3.4rem, 16vw, 5rem);
+  }
+
+  .metric-row,
+  .metric-strip,
+  .pilot-item,
+  .economy-item,
+  .field,
+  .stack-row {
+    grid-template-columns: 1fr;
+  }
+
+  .demo-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+</style>
+</head>
+<body>
+<div class="backdrop" aria-hidden="true">
+  <div class="bg-base"></div>
+  <div class="bg-aurora"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-grain"></div>
+</div>
+<header class="topbar" aria-label="Identidad de la presentación">
+  <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>Miracle</span></div>
+  <div class="hospital-tag">Hospital San Juan de Dios E.S.E Rionegro</div>
+</header>
+
+<main class="deck" id="deck">
+  <section class="slide is-active" data-time="0:30" aria-label="Portada">
+    <div class="slide-inner hero">
+      <div>
+        <span class="kicker reveal">Eficiencia clínica con control médico</span>
+        <h1 class="title reveal" style="--delay:80ms">Menos pantalla. <span class="hospital">Más consulta.</span></h1>
+        <p class="lead reveal" style="--delay:180ms">IA clínica para reducir carga documental y devolver tiempo al médico.</p>
+        <div class="co-brand reveal" style="--delay:280ms"><b>Propuesta de piloto para el Hospital San Juan de Dios de Rionegro</b><i></i><span>Humanización</span><i></i><span>Medición</span><i></i><span>Bajo riesgo</span></div>
+      </div>
+      <div class="hero-signal reveal" style="--delay:220ms" aria-hidden="true">
+        <div class="hero-ring"></div>
+        <div class="hero-ring"></div>
+        <div class="orbit-label a">Humanización</div>
+        <div class="orbit-label b">Eficiencia</div>
+        <div class="orbit-label c">Seguridad clínica</div>
+        <div class="orbit-label d">Datos propios</div>
+        <div class="hero-core"><div><strong>Documentación asistida</strong><span>El médico revisa y aprueba.</span></div></div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Abrir como conversación estratégica: menos carga documental para recuperar presencia clínica. No pedir el piloto todavía.</aside>
+  </section>
+
+  <section class="slide" data-time="0:45" aria-label="Problema humano">
+    <div class="slide-inner">
+      <span class="kicker reveal">Problema humano</span>
+      <h2 class="title medium reveal" style="--delay:80ms">El médico no debería elegir entre mirar al paciente o completar el registro.</h2>
+      <div class="two-col reveal" style="--delay:190ms">
+        <article class="panel need-panel patient">
+          <span class="role">El paciente busca</span>
+          <h3>Sentirse atendido.</h3>
+          <ul class="bullets">
+            <li>Que lo miren.</li>
+            <li>Que le expliquen.</li>
+            <li>Que lo escuchen.</li>
+          </ul>
+        </article>
+        <article class="panel need-panel doctor">
+          <span class="role">El médico busca</span>
+          <h3>Trabajar con claridad.</h3>
+          <ul class="bullets">
+            <li>Pensar con calma.</li>
+            <li>Tener contexto clínico.</li>
+            <li>Documentar sin fricción.</li>
+          </ul>
+        </article>
+      </div>
+      <p class="closing-line reveal" style="--delay:310ms">La documentación es necesaria; el problema es cuando interrumpe la atención.</p>
+    </div>
+    <aside class="speaker-notes">Esta es la slide emocional: no vender IA, nombrar la tensión que vive el médico en la consulta.</aside>
+  </section>
+
+  <section class="slide" data-time="0:45" aria-label="Problema operativo">
+    <div class="slide-inner">
+      <span class="kicker reveal">Problema operativo</span>
+      <h2 class="title medium reveal" style="--delay:80ms">El costo no está en una consulta: está en miles de minutos acumulados.</h2>
+      <div class="formula-wrap reveal" style="--delay:180ms">
+        <article class="panel formula-card">
+          <div class="formula">Minutos de documentación <span>×</span> número de atenciones <span>×</span> número de médicos <span>=</span> horas clínicas recuperables</div>
+          <p>En un hospital, una fricción pequeña repetida muchas veces se convierte en carga médica, tiempo perdido y presión operativa.</p>
+        </article>
+        <div class="impact-grid">
+          <div class="impact-card"><strong>Menos tiempo</strong><span>disponible para el paciente.</span></div>
+          <div class="impact-card"><strong>Más carga</strong><span>mental y administrativa para el médico.</span></div>
+          <div class="impact-card"><strong>Más presión</strong><span>operativa para el hospital.</span></div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">Mover el dolor de lo humano a lo gerencial: minutos repetidos se convierten en horas recuperables.</aside>
+  </section>
+
+  <section class="slide" data-time="0:45" aria-label="Contexto del hospital">
+    <div class="slide-inner">
+      <span class="kicker reveal">Hospital San Juan de Dios</span>
+      <h2 class="title medium reveal" style="--delay:80ms">San Juan de Dios necesita eficiencia sin perder humanización.</h2>
+      <p class="lead reveal" style="--delay:170ms">En instituciones con múltiples servicios, alta demanda asistencial y equipos clínicos diversos, cada minuto administrativo que se reduce puede convertirse en más tiempo clínico, mejor experiencia médica y una atención más humana.</p>
+      <div class="pillar-grid reveal" style="--delay:260ms">
+        <article class="panel pillar"><span class="orb"></span><strong>Humanización</strong><p>Más presencia en la consulta.</p></article>
+        <article class="panel pillar"><span class="orb"></span><strong>Eficiencia</strong><p>Menos carga repetitiva.</p></article>
+        <article class="panel pillar"><span class="orb"></span><strong>Seguridad clínica</strong><p>Validación médica antes del registro.</p></article>
+        <article class="panel pillar"><span class="orb"></span><strong>Tecnología útil</strong><p>Valor medible sin transformación pesada.</p></article>
+      </div>
+    </div>
+    <aside class="speaker-notes">Conectar con prioridades institucionales sin inventar datos internos. Hablar de eficiencia responsable y humanización.</aside>
+  </section>
+
+  <section class="slide" data-time="0:45" aria-label="Solucion">
+    <div class="slide-inner">
+      <span class="kicker reveal">Solución</span>
+      <h2 class="title medium reveal" style="--delay:80ms">Miracle convierte la conversación clínica en documentación asistida.</h2>
+      <p class="lead reveal" style="--delay:170ms">Captura información relevante de la consulta y la transforma en documentación útil para el médico, reduciendo fricción sin reemplazar criterio clínico.</p>
+      <div class="solution-chain reveal" style="--delay:250ms" aria-label="Flujo de Miracle">
+        <div class="chain-step"><b>01</b><strong>Consulta médica</strong></div>
+        <div class="chain-step"><b>02</b><strong>Escucha clínica</strong></div>
+        <div class="chain-step"><b>03</b><strong>Nota sugerida</strong></div>
+        <div class="chain-step"><b>04</b><strong>Revisión del médico</strong></div>
+        <div class="chain-step"><b>05</b><strong>Registro final</strong></div>
+      </div>
+      <div class="guardrail reveal" style="--delay:360ms">Miracle asiste. El médico decide, corrige y aprueba.</div>
+    </div>
+    <aside class="speaker-notes">Explicar el flujo en una frase. Evitar términos técnicos; la confianza está en la validación médica.</aside>
+  </section>
+
+  <section class="slide" data-time="0:50" aria-label="Diferencial operativo">
+    <div class="slide-inner">
+      <span class="kicker reveal">Bajo riesgo operativo</span>
+      <h2 class="title medium reveal" style="--delay:80ms">No cambiamos el sistema del hospital: reducimos la fricción sobre él.</h2>
+      <div class="compare-grid reveal" style="--delay:190ms">
+        <article class="panel compare-panel">
+          <span>Sin Miracle</span>
+          <ul class="compare-list">
+            <li>Médico escribe más.</li>
+            <li>Menos contacto visual.</li>
+            <li>Registro más pesado.</li>
+            <li>Carga acumulada.</li>
+          </ul>
+        </article>
+        <article class="panel compare-panel with">
+          <span>Con Miracle</span>
+          <ul class="compare-list">
+            <li>Médico valida más.</li>
+            <li>Más presencia clínica.</li>
+            <li>Registro asistido.</li>
+            <li>Flujo más liviano.</li>
+          </ul>
+        </article>
+      </div>
+      <div class="guardrail reveal" style="--delay:330ms">El objetivo no es reemplazar el flujo hospitalario, sino aliviar la carga documental dentro de un piloto controlado.</div>
+    </div>
+    <aside class="speaker-notes">Reforzar que no estamos pidiendo una transformación grande ni prometiendo reemplazar el sistema actual.</aside>
+  </section>
+
+  <section class="slide" data-time="0:55" aria-label="Piloto propuesto">
+    <div class="slide-inner">
+      <span class="kicker reveal">Piloto propuesto</span>
+      <h2 class="title medium reveal" style="--delay:80ms">Piloto controlado con mínimo 2 médicos.</h2>
+      <div class="pilot-brief reveal" style="--delay:180ms">
+        <article class="panel pilot-core">
+          <strong>2+</strong>
+          <span>médicos reales, agenda real, medición real.</span>
+        </article>
+        <div class="pilot-detail-grid">
+          <div class="pilot-detail"><b>Servicio inicial</b><span>Uno, definido con el hospital.</span></div>
+          <div class="pilot-detail"><b>Duración sugerida</b><span>2 a 4 semanas.</span></div>
+          <div class="pilot-detail"><b>Control clínico</b><span>El médico valida todo.</span></div>
+          <div class="pilot-detail"><b>Cierre</b><span>Informe final para gerencia.</span></div>
+        </div>
+      </div>
+      <div class="metric-strip reveal" style="--delay:310ms">
+        <span class="metric-pill">Tiempo de documentación</span>
+        <span class="metric-pill">Trabajo posterior</span>
+        <span class="metric-pill">Satisfacción médica</span>
+        <span class="metric-pill">Calidad de nota</span>
+        <span class="metric-pill">Correcciones</span>
+        <span class="metric-pill">Intención de uso</span>
+        <span class="metric-pill">Presencia en consulta</span>
+      </div>
+      <div class="guardrail reveal" style="--delay:410ms">No pedimos adopción masiva. Pedimos medir valor real con médicos reales, en un entorno controlado.</div>
+    </div>
+    <aside class="speaker-notes">Aquí aparece la petición concreta. Presentarlo como decisión de bajo riesgo y alto aprendizaje.</aside>
+  </section>
+
+  <section class="slide" data-time="0:55" aria-label="Economia y decision">
+    <div class="slide-inner">
+      <span class="kicker reveal">Economía y decisión</span>
+      <h2 class="title medium reveal" style="--delay:80ms">Escalar solo si los datos justifican el valor.</h2>
+      <div class="economy-grid reveal" style="--delay:190ms">
+        <article class="panel economy-formula">
+          <span>Valor potencial</span>
+          <strong>Horas recuperadas × costo hora médica × número de médicos</strong>
+          <p>Los números económicos se agregan cuando tengamos el costo del piloto y la medición local.</p>
+        </article>
+        <div class="economy-list">
+          <div class="economy-item"><b>1</b><span>Costo del piloto.</span></div>
+          <div class="economy-item"><b>2</b><span>Qué incluye.</span></div>
+          <div class="economy-item"><b>3</b><span>Horas médicas recuperadas.</span></div>
+          <div class="economy-item"><b>4</b><span>Condición para escalar.</span></div>
+          <div class="economy-item"><b>5</b><span>Próximo paso.</span></div>
+        </div>
+      </div>
+      <div class="metric-strip decision-strip reveal" style="--delay:310ms">
+        <span class="metric-pill">Aprobar piloto</span>
+        <span class="metric-pill">Seleccionar 2 médicos</span>
+        <span class="metric-pill">Elegir servicio</span>
+        <span class="metric-pill">Definir responsables</span>
+        <span class="metric-pill">Agendar inicio</span>
+      </div>
+      <div class="guardrail reveal" style="--delay:410ms">Si el piloto no demuestra valor, no se escala. Si demuestra valor, el hospital decide con datos propios.</div>
+    </div>
+    <aside class="speaker-notes">Cerrar con una decisión gerencial clara: no fe en IA, sino medición local y escalamiento condicionado.</aside>
+  </section>
+</main>
+
+<aside class="panel notes" id="notes" aria-live="polite">
+  <b id="note-time">0:35</b>
+  <p id="note-text"></p>
+</aside>
+
+<footer class="chrome" aria-label="Controles de presentación">
+  <div class="counter"><span id="current">01</span> / <span id="total">08</span></div>
+  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  <div class="controls">
+    <button class="icon-btn" id="prev" type="button" aria-label="Anterior">←</button>
+    <button class="icon-btn" id="next" type="button" aria-label="Siguiente">→</button>
+    <button class="icon-btn" id="toggle-notes" type="button" aria-label="Notas">N</button>
+    <button class="icon-btn" id="full" type="button" aria-label="Pantalla completa">⛶</button>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const slides = Array.from(document.querySelectorAll(".slide"));
+  const currentEl = document.getElementById("current");
+  const totalEl = document.getElementById("total");
+  const progressEl = document.getElementById("progress");
+  const noteTimeEl = document.getElementById("note-time");
+  const noteTextEl = document.getElementById("note-text");
+  const demoIndex = slides.findIndex((slide) => slide.id === "slide-demo");
+  const demoTimers = [];
+  let current = 0;
+
+  const demoValues = [
+    "Cefalea y fiebre de tres días de evolución.",
+    "Dolor de cabeza persistente. Fiebre hasta 38.5 °C. Niega otros datos en esta simulación.",
+    "Hipertensión arterial. Medicación habitual: losartán en la mañana.",
+    "Valorar signos de alarma. Hidratación. Manejo sintomático si procede. Control en 48 horas."
+  ];
+
+  totalEl.textContent = String(slides.length).padStart(2, "0");
+
+  function later(fn, ms) {
+    demoTimers.push(window.setTimeout(fn, ms));
+  }
+
+  function clearDemoTimers() {
+    while (demoTimers.length) {
+      window.clearTimeout(demoTimers.pop());
+    }
+  }
+
+  function setImpact(fieldsDone, pending, minutes) {
+    document.getElementById("fields-count").textContent = `${fieldsDone}/4`;
+    document.getElementById("pending-count").textContent = String(pending);
+    document.getElementById("time-saved").textContent = String(minutes);
+  }
+
+  function resetDemo() {
+    clearDemoTimers();
+    const slide = slides[demoIndex];
+    if (!slide) return;
+
+    slide.querySelectorAll(".bubble").forEach((bubble) => bubble.classList.remove("show"));
+    slide.querySelectorAll(".field").forEach((field) => {
+      field.classList.remove("filling", "done");
+      const value = field.querySelector(".fval");
+      if (value) value.innerHTML = '<span class="ph">-</span>';
+    });
+
+    const first = slide.querySelector('.field[data-field="0"] .fval');
+    if (first) first.innerHTML = '<span class="ph">A la espera de la conversación...</span>';
+
+    const status = document.getElementById("note-status");
+    const smallStatus = document.getElementById("demo-small-status");
+    const button = document.getElementById("validate-demo");
+    status.textContent = "Estructurando...";
+    status.classList.remove("ready");
+    smallStatus.textContent = "Borrador clínico, no firmado";
+    button.textContent = "Revisar y validar";
+    button.classList.remove("live", "signed");
+    setImpact(0, 0, 0);
+  }
+
+  function startDemo() {
+    const slide = slides[demoIndex];
+    if (!slide) return;
+    resetDemo();
+
+    const bubbles = Array.from(slide.querySelectorAll(".bubble"));
+    const fields = Array.from(slide.querySelectorAll(".field"));
+    const status = document.getElementById("note-status");
+    const smallStatus = document.getElementById("demo-small-status");
+    const button = document.getElementById("validate-demo");
+
+    if (reduceMotion) {
+      bubbles.forEach((bubble) => bubble.classList.add("show"));
+      fields.forEach((field, index) => {
+        field.classList.add("done");
+        field.querySelector(".fval").textContent = demoValues[index];
+      });
+      setImpact(4, 2, 4);
+      status.textContent = "Listo para validar";
+      status.classList.add("ready");
+      smallStatus.textContent = "Requiere revisión médica";
+      button.classList.add("live");
+      return;
+    }
+
+    bubbles.forEach((bubble, index) => {
+      later(() => bubble.classList.add("show"), 360 + index * 720);
+    });
+
+    const fieldStart = 360 + bubbles.length * 720 + 380;
+    fields.forEach((field, index) => {
+      later(() => {
+        fields.forEach((item) => item.classList.remove("filling"));
+        field.classList.add("filling");
+        field.querySelector(".fval").textContent = demoValues[index];
+        setImpact(index + 1, index < 2 ? 0 : 2, index + 1);
+      }, fieldStart + index * 680);
+
+      later(() => {
+        field.classList.add("done");
+      }, fieldStart + index * 680 + 360);
+    });
+
+    later(() => {
+      fields.forEach((item) => item.classList.remove("filling"));
+      setImpact(4, 2, 4);
+      status.textContent = "Listo para validar";
+      status.classList.add("ready");
+      smallStatus.textContent = "Requiere revisión médica: alergias y examen físico";
+      button.classList.add("live");
+    }, fieldStart + fields.length * 680 + 240);
+  }
+
+  function render() {
+    currentEl.textContent = String(current + 1).padStart(2, "0");
+    progressEl.style.width = `${((current + 1) / slides.length) * 100}%`;
+    const active = slides[current];
+    noteTimeEl.textContent = active.dataset.time || "";
+    const note = active.querySelector(".speaker-notes");
+    noteTextEl.textContent = note ? note.textContent.trim() : "";
+  }
+
+  function activate(index, direction = 1) {
+    const previous = slides[current];
+    current = Math.max(0, Math.min(slides.length - 1, index));
+    const active = slides[current];
+
+    slides.forEach((slide) => {
+      slide.classList.remove("is-active", "is-exiting", "play");
+    });
+
+    if (previous && previous !== active) {
+      previous.classList.add("is-exiting");
+      window.setTimeout(() => previous.classList.remove("is-exiting"), 640);
+    }
+
+    active.style.transform = direction < 0 ? "translate3d(-28px,0,0)" : "translate3d(28px,0,0)";
+    active.classList.add("is-active");
+
+    requestAnimationFrame(() => {
+      active.style.transform = "";
+      requestAnimationFrame(() => active.classList.add("play"));
+    });
+
+    if (current === demoIndex) startDemo();
+    else resetDemo();
+
+    render();
+  }
+
+  function goTo(index) {
+    if (index === current) return;
+    activate(index, index > current ? 1 : -1);
+  }
+
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  document.getElementById("next").addEventListener("click", next);
+  document.getElementById("prev").addEventListener("click", prev);
+  document.getElementById("toggle-notes").addEventListener("click", () => {
+    document.body.classList.toggle("presenter");
+  });
+  document.getElementById("full").addEventListener("click", () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      document.documentElement.requestFullscreen?.();
+    }
+  });
+  const replayDemo = document.getElementById("replay-demo");
+  if (replayDemo) replayDemo.addEventListener("click", startDemo);
+
+  const validateDemo = document.getElementById("validate-demo");
+  if (validateDemo) validateDemo.addEventListener("click", (event) => {
+    const button = event.currentTarget;
+    if (!button.classList.contains("live")) return;
+    button.classList.add("signed");
+    button.textContent = "Validado por el médico";
+    document.getElementById("note-status").textContent = "Validado";
+    document.getElementById("demo-small-status").textContent = "Listo para guardar en la historia";
+    document.getElementById("pending-count").textContent = "0";
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowRight" || event.key === " " || event.key === "PageDown") {
+      event.preventDefault();
+      next();
+    } else if (event.key === "ArrowLeft" || event.key === "PageUp") {
+      event.preventDefault();
+      prev();
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      goTo(0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      goTo(slides.length - 1);
+    } else if (event.key.toLowerCase() === "n") {
+      document.body.classList.toggle("presenter");
+    } else if (event.key.toLowerCase() === "f") {
+      document.getElementById("full").click();
+    } else if (event.key.toLowerCase() === "r" && current === demoIndex) {
+      startDemo();
+    } else if (/^[1-8]$/.test(event.key)) {
+      event.preventDefault();
+      goTo(Number(event.key) - 1);
+    }
+  });
+
+  let touchStart = null;
+  document.addEventListener("touchstart", (event) => {
+    touchStart = event.changedTouches[0].clientX;
+  }, { passive: true });
+  document.addEventListener("touchend", (event) => {
+    if (touchStart === null) return;
+    const delta = event.changedTouches[0].clientX - touchStart;
+    if (Math.abs(delta) > 54) {
+      delta < 0 ? next() : prev();
+    }
+    touchStart = null;
+  }, { passive: true });
+
+  activate(0);
+})();
+</script>
+</body>
+</html>
