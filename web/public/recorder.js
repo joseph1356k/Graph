@@ -80,10 +80,12 @@ window.WorkflowRecorder = (() => {
     if (!toggle) return;
     toggle.dataset.recording = recording ? 'true' : 'false';
     toggle.setAttribute('aria-pressed', recording ? 'true' : 'false');
-    toggle.title = recording ? 'Stop recording' : 'Start recording';
+    toggle.title = recording ? 'Detener grabacion' : 'Grabar workflow';
+    toggle.setAttribute('aria-label', toggle.title);
     toggle.innerHTML = recording
       ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5-4-4L4 16v4zm12-13 2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
       : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5-4-4L4 16v4zm12-13 2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    window.GraphAssistantRuntime?.setActivityIndicators?.({ recording });
   }
 
   function escapeAttributeSelectorValue(value) {

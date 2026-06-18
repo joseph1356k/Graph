@@ -292,23 +292,23 @@ async function bootstrap() {
   });
 
   if (!window.PageState || !window.TrainerPlugin || !window.GraphPluginHost) {
-    throw new Error('Graph Trainer runtime scripts did not load in the extension context.');
+    throw new Error('Miracle runtime scripts did not load in the extension context.');
   }
 
   window.PageState.init({ storageKey });
   window.TrainerPlugin.mount({
-    title: 'Graph Trainer',
+    title: 'Miracle',
     workflowDescription,
     appId,
     apiBaseUrl: backendUrl,
     assistantRuntime: {
-      name: 'Graph',
+      name: 'Miracle',
       accentColor: '#0f5f8c',
       idleMessage: 'Puedo aprender y ejecutar tareas en esta pagina cuando quieras.'
     }
   });
 
-  await log('info', 'content', 'Graph Trainer mounted in the isolated extension context.', {
+  await log('info', 'content', 'Miracle mounted in the isolated extension context.', {
     backendUrl,
     appId
   });

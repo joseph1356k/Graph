@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Graph Trainer",
-  "description": "Teach Graph how to use any webpage and run learned workflows.",
+  "name": "Miracle",
+  "description": "Asistente flotante de Miracle para dictado, voz y workflows sobre tus paginas.",
   "version": "0.2.0",
   "permissions": [
     "identity",
@@ -12,7 +12,7 @@
     "<all_urls>"
   ],
   "action": {
-    "default_title": "Graph Trainer",
+    "default_title": "Miracle",
     "default_popup": "popup.html"
   },
   "background": {

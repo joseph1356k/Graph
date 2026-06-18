@@ -88,10 +88,10 @@
             mountDefaults: {
                 title: adapterConfig.title || preset.title || 'Trainer',
                 workflowDescription: adapterConfig.workflowDescription || preset.workflowDescription || '',
-                aiPlaceholder: adapterConfig.aiPlaceholder || 'Ask AI to execute a saved flow',
+                aiPlaceholder: adapterConfig.aiPlaceholder || 'Pide a Miracle ejecutar un flujo guardado',
                 assistantProfile,
                 assistantRuntime: adapterConfig.assistantRuntime || {
-                    name: 'Graph',
+                    name: 'Miracle',
                     accentColor: adapterConfig.appId === 'medical-demo' ? '#22577a' : '#0f5f8c',
                     idleMessage: adapterConfig.appId === 'medical-demo'
                         ? 'Puedo ayudarte a completar este flujo clinico cuando quieras.'

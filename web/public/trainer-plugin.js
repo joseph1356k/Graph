@@ -2,7 +2,7 @@
     const DEFAULTS = {
         workflowDescription: '',
         title: 'Trainer',
-        aiPlaceholder: 'Ask AI to execute a saved flow',
+        aiPlaceholder: 'Pide a Miracle ejecutar un flujo guardado',
         autoSyncStatus: true,
         apiBaseUrl: '',
         voiceGatewayUrl: '',
@@ -10,7 +10,7 @@
         adapter: null,
         assistantProfile: null,
         assistantRuntime: {
-            name: 'Graph',
+            name: 'Miracle',
             accentColor: '#0f5f8c',
             idleMessage: 'Puedo ayudarte con esta pagina cuando quieras.'
         }
@@ -560,9 +560,14 @@
                 gap: 10px;
                 justify-items: center;
                 border-radius: 999px;
-                transition: width 180ms ease, border-radius 180ms ease, padding 180ms ease;
+                transition: width 180ms ease, border-radius 180ms ease, padding 180ms ease, opacity 180ms ease, transform 180ms ease;
                 border: 1px solid rgba(24, 39, 53, 0.12);
                 box-shadow: 0 20px 48px rgba(16, 31, 44, 0.12);
+            }
+            body[data-assistant-expanded="false"] .console {
+                opacity: 0;
+                pointer-events: none;
+                transform: translateX(-50%) translateY(12px) scale(0.94);
             }
             .console.compact-open {
                 border-radius: 24px;
@@ -1172,7 +1177,7 @@
                 </div>
             </div>
             <div class="console-toolbar">
-                <button class="icon-btn" id="btn-record-toggle" type="button" title="Start recording" aria-label="Toggle recording" aria-pressed="false" data-recording="false"></button>
+                <button class="icon-btn" id="btn-record-toggle" type="button" title="Grabar workflow" aria-label="Grabar workflow" aria-pressed="false" data-recording="false"></button>
                 <button class="icon-btn execution-stop-btn" id="btn-stop-execution" type="button" title="Detener automatizacion" aria-label="Detener automatizacion" hidden>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10H7z" fill="currentColor"/></svg>
                 </button>
@@ -2043,6 +2048,7 @@
         if (floatingPanel) {
             floatingPanel.classList.toggle('open', visible);
         }
+        runtime()?.setActivityIndicators?.({ phone: visible });
         if (visible) {
             positionAssistantPhonePairing();
             scheduleAssistantPhonePairingPosition();
@@ -3955,6 +3961,7 @@
     window.TrainerPlugin = {
         mount(config = {}) {
             options = buildMountOptions(config);
+            document.body.dataset.assistantExpanded = 'false';
             ensureStyles();
             ensureConsole();
             requireVoiceClient().restoreStoredPhoneSession();
@@ -3983,11 +3990,7 @@
                     playAssistantGreeting(greeting).catch(() => {});
                 });
                 runtime()?.subscribe?.('voice-button', async () => {
-                    if (isVoiceSessionActive()) {
-                        stopVoiceConversation();
-                        return;
-                    }
-                    await startVoiceConversation();
+                    await toggleMiracleNoteDictation();
                 });
                 runtime()?.subscribe?.('voice-button-long-press', async () => {
                     try {

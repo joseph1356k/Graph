@@ -17,6 +17,14 @@ function createJsonProvider(handler) {
     async chatExpectingJson(messages) {
       return JSON.stringify(handler(messages));
     },
+    async chatExpectingJsonWithUsage(messages) {
+      return {
+        content: JSON.stringify(handler(messages)),
+        usage: null,
+        provider: 'test',
+        model: 'test'
+      };
+    },
     parseJsonObject(content) {
       return JSON.parse(content);
     }
@@ -351,6 +359,13 @@ async function verifyMetadata(browser, baseUrl) {
 async function verifyDiagnosisUi(browser, baseUrl, serverState) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   await page.goto(`${baseUrl}/emr-workspace.html`, { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#graph-assistant-shell');
+  assert.strictEqual(
+    await page.evaluate(() => document.body.dataset.assistantExpanded),
+    'false'
+  );
+  await page.click('.graph-assistant-avatar');
+  await page.waitForFunction(() => document.body.dataset.assistantExpanded === 'true');
   await page.waitForSelector('#graph-assistant-note-toggle');
   await page.click('#graph-assistant-note-toggle');
 

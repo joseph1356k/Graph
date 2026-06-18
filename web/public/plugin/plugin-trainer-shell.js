@@ -53,6 +53,7 @@
             closeWorkflowPanel();
             closeImprovementPanel();
             updateConsoleExpandedState();
+            runtime()?.setExpanded?.(true, { source: 'console-chat' });
             runtime()?.openChatComposer?.({ focus: true });
             runtime()?.speak?.('Estoy listo para ayudarte con esta pagina cuando quieras.', { mode: 'listening' });
         }
@@ -61,6 +62,7 @@
             const panel = document.getElementById('workflow-panel');
             const improvementPanel = document.getElementById('improvement-panel');
             if (!panel || !improvementPanel) return;
+            runtime()?.setExpanded?.(true, { source: 'workflow-panel' });
             runtime()?.closeChatComposer?.();
             improvementPanel.classList.remove('open');
             panel.classList.add('open');
@@ -71,6 +73,7 @@
             const panel = document.getElementById('improvement-panel');
             const workflowPanel = document.getElementById('workflow-panel');
             if (!panel || !workflowPanel) return;
+            runtime()?.setExpanded?.(true, { source: 'improvement-panel' });
             runtime()?.closeChatComposer?.();
             workflowPanel.classList.remove('open');
             panel.classList.add('open');
@@ -122,19 +125,23 @@
 
         function setVoiceButton(active) {
             const button = document.getElementById('voice-toggle');
-            if (!button) return;
-            button.dataset.active = active ? 'true' : 'false';
-            button.setAttribute('aria-pressed', active ? 'true' : 'false');
-            button.title = active ? 'Detener conversacion de voz' : 'Conversacion de voz';
+            if (button) {
+                button.dataset.active = active ? 'true' : 'false';
+                button.setAttribute('aria-pressed', active ? 'true' : 'false');
+                button.title = active ? 'Detener conversacion de voz' : 'Conversacion de voz';
+            }
             runtime()?.setVoiceButtonActive?.(active);
+            runtime()?.setActivityIndicators?.({ voice: active });
         }
 
         function setExecutionStopButtonVisible(active) {
             const button = document.getElementById('btn-stop-execution');
-            if (!button) return;
-            button.hidden = !active;
-            button.disabled = !active;
-            button.setAttribute('aria-hidden', active ? 'false' : 'true');
+            if (button) {
+                button.hidden = !active;
+                button.disabled = !active;
+                button.setAttribute('aria-hidden', active ? 'false' : 'true');
+            }
+            runtime()?.setActivityIndicators?.({ executing: active });
         }
 
         function clearLongPressTimer() {

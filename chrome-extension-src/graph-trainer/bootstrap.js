@@ -25,7 +25,7 @@
     appId
   };
 
-  emitExtensionLog('info', 'Starting Graph Trainer bootstrap.', {
+  emitExtensionLog('info', 'Starting Miracle bootstrap.', {
     backendUrl,
     appId,
     storageKey,
@@ -37,23 +37,23 @@
     emitExtensionLog('info', 'PageState initialized.', { storageKey });
 
     window.TrainerPlugin.mount({
-      title: 'Graph Trainer',
+      title: 'Miracle',
       workflowDescription,
       appId,
       apiBaseUrl: backendUrl,
       assistantRuntime: {
-        name: 'Graph',
+        name: 'Miracle',
         accentColor: '#0f5f8c',
         idleMessage: 'Puedo aprender y ejecutar tareas en esta pagina cuando quieras.'
       }
     });
 
-    emitExtensionLog('info', 'Trainer plugin mounted.', {
+    emitExtensionLog('info', 'Miracle plugin mounted.', {
       appId,
       backendUrl
     });
   } catch (error) {
-    emitExtensionLog('error', 'Trainer bootstrap failed.', {
+    emitExtensionLog('error', 'Miracle bootstrap failed.', {
       message: error?.message || 'Unknown bootstrap error'
     });
     throw error;

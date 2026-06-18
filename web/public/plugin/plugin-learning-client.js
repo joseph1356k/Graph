@@ -21,11 +21,11 @@
             const status = document.getElementById('recording-status');
             if (button) {
                 button.disabled = !available;
-                button.title = available ? 'Start recording' : (message || 'Workflows require an account');
+                button.title = available ? 'Grabar workflow' : (message || 'Los workflows requieren una cuenta');
                 button.setAttribute('aria-label', button.title);
             }
             if (!available && status) {
-                status.innerText = message || 'Workflows require an account';
+                status.innerText = message || 'Los workflows requieren una cuenta';
             }
         }
 

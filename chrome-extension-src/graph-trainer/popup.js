@@ -567,7 +567,7 @@ async function init() {
     };
 
     await saveSettings(nextSettings);
-    statusEl.textContent = 'Saved. Reload the target tab.';
+    statusEl.textContent = 'Guardado. Recarga la pestana objetivo.';
     window.setTimeout(() => {
       statusEl.textContent = '';
     }, 1800);
@@ -641,7 +641,7 @@ async function init() {
     await renderTraceLogs(traceOutputEl);
     await renderLogs(logOutputEl);
     await renderVoiceLogs(voiceLogOutputEl);
-    statusEl.textContent = 'Logs cleared.';
+    statusEl.textContent = 'Diagnosticos limpiados.';
     window.setTimeout(() => {
       statusEl.textContent = '';
     }, 1600);
@@ -652,6 +652,6 @@ async function init() {
 init().catch((error) => {
   const statusEl = document.getElementById('status');
   if (statusEl) {
-    statusEl.textContent = error.message || 'Could not load extension settings.';
+    statusEl.textContent = error.message || 'No pude cargar la configuracion de la extension.';
   }
 });
