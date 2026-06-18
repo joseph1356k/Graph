@@ -23,6 +23,7 @@
     let mounted = false;
     let workflowPanelLoaded = false;
     let improvementPanelLoaded = false;
+    let authLifecycleBound = false;
     let runtimeTouchBound = false;
     let assistantPhonePairingBound = false;
     let feedbackOverlayVisible = false;
@@ -4191,6 +4192,13 @@
             updateConsoleExpandedState();
 
             requireLearningClient().syncRecorderStatus();
+
+            if (!authLifecycleBound) {
+                window.addEventListener('miracle-auth-changed', () => {
+                    requireLearningClient().syncRecorderStatus();
+                });
+                authLifecycleBound = true;
+            }
 
             window.setTimeout(() => {
                 resumeVoiceAfterNavigation().catch((error) => {

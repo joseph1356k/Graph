@@ -1,4 +1,18 @@
 (function () {
+  async function fetchPublicConfig(backendUrl) {
+    try {
+      const response = await fetch(`${backendUrl.replace(/\/+$/, '')}/api/public-config`, {
+        cache: 'no-store'
+      });
+      if (!response.ok) {
+        return null;
+      }
+      return await response.json().catch(() => null);
+    } catch (error) {
+      return null;
+    }
+  }
+
   function emitExtensionLog(level, message, details) {
     const detail = {
       level,
@@ -32,7 +46,12 @@
     workflowDescription
   });
 
+  (async () => {
   try {
+    const publicConfig = await fetchPublicConfig(backendUrl);
+    const miracleBaseUrl = `${publicConfig?.miracleBaseUrl || backendUrl}`.trim() || backendUrl;
+    const voiceGatewayUrl = `${publicConfig?.voiceGatewayUrl || ''}`.trim();
+
     window.PageState.init({ storageKey });
     emitExtensionLog('info', 'PageState initialized.', { storageKey });
 
@@ -41,6 +60,8 @@
       workflowDescription,
       appId,
       apiBaseUrl: backendUrl,
+      miracleBaseUrl,
+      voiceGatewayUrl,
       assistantRuntime: {
         name: 'Miracle',
         accentColor: '#0f5f8c',
@@ -50,7 +71,9 @@
 
     emitExtensionLog('info', 'Miracle plugin mounted.', {
       appId,
-      backendUrl
+      backendUrl,
+      miracleBaseUrl,
+      voiceGatewayUrl
     });
   } catch (error) {
     emitExtensionLog('error', 'Miracle bootstrap failed.', {
@@ -58,4 +81,5 @@
     });
     throw error;
   }
+  })();
 })();
