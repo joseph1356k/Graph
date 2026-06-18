@@ -1235,8 +1235,8 @@
             micButton.className = 'graph-assistant-bubble-mic';
             micButton.type = 'button';
             micButton.dataset.active = 'false';
-            micButton.setAttribute('aria-label', 'Dictar nota con Miracle');
-            micButton.title = 'Dictar nota con Miracle';
+            micButton.setAttribute('aria-label', 'Hablar con Miracle');
+            micButton.title = 'Hablar con Miracle';
             setElementHtml(micButton, '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3Zm5-3a1 1 0 1 1 2 0 7 7 0 0 1-6 6.92V21h2a1 1 0 1 1 0 2H9a1 1 0 1 1 0-2h2v-2.08A7 7 0 0 1 5 12a1 1 0 1 1 2 0 5 5 0 1 0 10 0Z" fill="currentColor"/></svg>');
             document.body.appendChild(micButton);
         }
@@ -2175,7 +2175,6 @@
         },
         setNotePanelState(nextState = {}) {
             const {
-                micButton,
                 noteButton,
                 notePanel,
                 notePanelMic,
@@ -2241,11 +2240,6 @@
                 notePanelMic.setAttribute('aria-label', recording ? 'Detener dictado' : 'Grabar nota');
                 if (notePanelMicLabel) {
                     notePanelMicLabel.textContent = recording ? 'Detener' : (busy ? '...' : 'Grabar');
-                }
-                if (micButton) {
-                    micButton.dataset.active = recording ? 'true' : 'false';
-                    micButton.setAttribute('aria-label', recording ? 'Detener dictado con Miracle' : 'Dictar nota con Miracle');
-                    micButton.title = recording ? 'Detener dictado con Miracle' : 'Dictar nota con Miracle';
                 }
                 setActivityIndicators({ note: recording });
             }

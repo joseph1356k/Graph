@@ -4055,7 +4055,15 @@
                     playAssistantGreeting(greeting).catch(() => {});
                 });
                 runtime()?.subscribe?.('voice-button', async () => {
-                    await toggleMiracleNoteDictation();
+                    if (miracleNoteState.active || miracleNoteState.busy) {
+                        await toggleMiracleNoteDictation();
+                        return;
+                    }
+                    if (isVoiceSessionActive()) {
+                        stopVoiceConversation();
+                        return;
+                    }
+                    await startVoiceConversation();
                 });
                 runtime()?.subscribe?.('voice-button-long-press', async () => {
                     try {

@@ -400,6 +400,27 @@ async function verifyDiagnosisUi(browser, baseUrl, serverState) {
   await page.waitForFunction(() => (
     document.getElementById('graph-assistant-bubble-text')?.textContent === 'Dicta la consulta y yo preparo la nota.'
   ));
+  await page.evaluate(() => {
+    window.__voiceButtonStartCount = 0;
+    window.__voiceButtonStopCount = 0;
+    window.GraphPluginVoiceClient = {
+      ...(window.GraphPluginVoiceClient || {}),
+      create: () => ({
+        startVoiceConversation: async () => {
+          window.__voiceButtonStartCount += 1;
+        },
+        stopVoiceConversation: () => {
+          window.__voiceButtonStopCount += 1;
+        },
+        openPhoneMicPairing: async () => ({}),
+        restoreStoredPhoneSession() {},
+        processVoiceComplaints: async () => ({ suggestions: [] })
+      })
+    };
+  });
+  await page.click('#graph-assistant-bubble-mic');
+  await page.waitForFunction(() => window.__voiceButtonStartCount === 1);
+  assert.strictEqual(await page.locator('#graph-assistant-note-panel').isVisible(), false);
   await page.waitForSelector('#graph-assistant-note-toggle');
   await page.click('#graph-assistant-note-toggle');
 
