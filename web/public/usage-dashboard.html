@@ -62,6 +62,39 @@
       margin-top: 18px;
       overflow: hidden;
     }
+    .panel h2 {
+      margin: 0 0 14px;
+    }
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .model-card {
+      padding: 18px;
+      background: linear-gradient(180deg, rgba(255, 250, 242, 0.98), rgba(255, 253, 248, 0.92));
+      border: 1px solid var(--line);
+      border-radius: 18px;
+    }
+    .model-card h3 {
+      margin: 0 0 6px;
+      font-size: 1.05rem;
+    }
+    .model-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .model-stat {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 8px;
+      margin-top: 8px;
+      border-top: 1px solid rgba(221, 211, 193, 0.8);
+      font-size: 0.92rem;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -128,6 +161,11 @@
   </div>
 
   <section class="grid" id="summaryCards"></section>
+
+  <section class="panel">
+    <h2>Modelos usados</h2>
+    <div class="model-grid" id="modelHighlights"></div>
+  </section>
 
   <section class="panel">
     <h2>Por modelo / evento</h2>
@@ -222,6 +260,62 @@
     }).join('');
   }
 
+  function aggregateModelHighlights(summary) {
+    const buckets = new Map();
+    (summary.byModel || []).forEach(function (row) {
+      const key = [
+        row.sourceRepo || '',
+        row.provider || '',
+        row.apiFamily || '',
+        row.model || 'sin-modelo'
+      ].join('|');
+      const bucket = buckets.get(key) || {
+        sourceRepo: row.sourceRepo || '',
+        provider: row.provider || '',
+        apiFamily: row.apiFamily || '',
+        model: row.model || '',
+        inputTokens: 0,
+        outputTokens: 0,
+        deepgramMinutes: 0,
+        estimatedCostUsd: 0,
+        eventCount: 0
+      };
+      bucket.inputTokens += Number(row.inputTokens || 0);
+      bucket.outputTokens += Number(row.outputTokens || 0);
+      bucket.deepgramMinutes += Number(row.deepgramMinutes || 0);
+      bucket.estimatedCostUsd += Number(row.estimatedCostUsd || 0);
+      bucket.eventCount += Number(row.eventCount || 0);
+      buckets.set(key, bucket);
+    });
+    return Array.from(buckets.values()).sort(function (left, right) {
+      const leftVolume = Number(left.inputTokens || 0) + Number(left.outputTokens || 0) + Math.round(Number(left.deepgramMinutes || 0) * 1000);
+      const rightVolume = Number(right.inputTokens || 0) + Number(right.outputTokens || 0) + Math.round(Number(right.deepgramMinutes || 0) * 1000);
+      return rightVolume - leftVolume;
+    });
+  }
+
+  function renderModelHighlights(summary) {
+    const rows = aggregateModelHighlights(summary);
+    document.getElementById('modelHighlights').innerHTML = rows.length
+      ? rows.map(function (row) {
+          return `
+            <article class="model-card">
+              <div class="label">${row.sourceRepo || 'sin fuente'}</div>
+              <h3>${row.model || 'Sin modelo reportado'}</h3>
+              <div class="model-meta">
+                <span class="pill">${row.provider || '-'}</span>
+                <span class="pill">${row.apiFamily || '-'}</span>
+              </div>
+              <div class="model-stat"><span>Input</span><strong>${formatNumber(row.inputTokens)}</strong></div>
+              <div class="model-stat"><span>Output</span><strong>${formatNumber(row.outputTokens)}</strong></div>
+              <div class="model-stat"><span>Minutos audio</span><strong>${formatNumber(row.deepgramMinutes, 2)}</strong></div>
+              <div class="model-stat"><span>Costo conocido</span><strong>${formatCurrency(row.estimatedCostUsd)}</strong></div>
+            </article>
+          `;
+        }).join('')
+      : '<p>No hay modelos registrados en este rango todavia.</p>';
+  }
+
   function renderByModel(summary) {
     document.getElementById('byModelBody').innerHTML = summary.byModel.map(function (row) {
       return `
@@ -262,6 +356,7 @@
     const response = await authenticatedFetch(`/api/usage/summary${query ? `?${query}` : ''}`);
     const summary = await response.json();
     renderSummary(summary);
+    renderModelHighlights(summary);
     renderByModel(summary);
     renderRecent(summary);
   }

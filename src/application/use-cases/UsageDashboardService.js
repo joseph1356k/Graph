@@ -43,6 +43,36 @@ const PRICING_CATALOG = [
     outputPer1MUsd: 24,
     sourceUrl: PRICING_SOURCE_URL,
     sourceCapturedAt: PRICING_CAPTURED_AT
+  },
+  {
+    provider: 'openai',
+    apiFamily: 'responses',
+    model: 'gpt-4.1-mini',
+    inputPer1MUsd: 0.4,
+    cachedInputPer1MUsd: 0.1,
+    outputPer1MUsd: 1.6,
+    sourceUrl: PRICING_SOURCE_URL,
+    sourceCapturedAt: PRICING_CAPTURED_AT
+  },
+  {
+    provider: 'openai',
+    apiFamily: 'responses',
+    model: 'gpt-4o',
+    inputPer1MUsd: 2.5,
+    cachedInputPer1MUsd: 1.25,
+    outputPer1MUsd: 10,
+    sourceUrl: PRICING_SOURCE_URL,
+    sourceCapturedAt: PRICING_CAPTURED_AT
+  },
+  {
+    provider: 'openai',
+    apiFamily: 'responses',
+    model: 'gpt-4o-mini',
+    inputPer1MUsd: 0.15,
+    cachedInputPer1MUsd: 0.075,
+    outputPer1MUsd: 0.6,
+    sourceUrl: PRICING_SOURCE_URL,
+    sourceCapturedAt: PRICING_CAPTURED_AT
   }
 ];
 
