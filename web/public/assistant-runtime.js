@@ -45,7 +45,9 @@
             note: false,
             phone: false,
             recording: false,
-            executing: false
+            executing: false,
+            filling: false,
+            review: false
         },
         chat: {
             open: false
@@ -66,7 +68,16 @@
         note: 'dictado activo',
         phone: 'telefono conectado',
         recording: 'grabacion activa',
-        executing: 'ejecucion activa'
+        executing: 'ejecucion activa',
+        filling: 'llenando campos',
+        review: 'revision pendiente'
+    };
+    const MODE_LABELS = {
+        listening: 'Escuchando',
+        organizing: 'Organizando',
+        filling: 'Llenando campos',
+        review: 'Necesita revision',
+        executing: 'Ejecutando'
     };
     const trustedHtmlPolicy = (() => {
         if (!window.trustedTypes?.createPolicy) {
@@ -336,9 +347,9 @@
             return;
         }
 
-        const preset = mode === 'tour'
+        const preset = mode === 'tour' || mode === 'listening'
             ? FACE_PRESETS.mild_attention
-            : mode === 'executing'
+            : mode === 'executing' || mode === 'organizing' || mode === 'filling'
                 ? FACE_PRESETS.thinking
                 : FACE_PRESETS.smile;
 
@@ -435,6 +446,10 @@
             .graph-assistant-shell[data-dragging="true"] {
                 transition: none;
             }
+            .graph-assistant-shell[data-state="listening"] .graph-assistant-avatar,
+            .graph-assistant-shell[data-state="organizing"] .graph-assistant-avatar,
+            .graph-assistant-shell[data-state="filling"] .graph-assistant-avatar,
+            .graph-assistant-shell[data-state="review"] .graph-assistant-avatar,
             .graph-assistant-shell[data-state="tour"] .graph-assistant-avatar,
             .graph-assistant-shell[data-state="executing"] .graph-assistant-avatar {
                 transform: translateY(-2px) scale(1.02);
@@ -466,6 +481,14 @@
             .graph-assistant-shell[data-activity~="recording"] .graph-assistant-avatar::after {
                 background: #ef4444;
                 box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.18), 0 6px 18px rgba(0, 0, 0, 0.28);
+            }
+            .graph-assistant-shell[data-activity~="filling"] .graph-assistant-avatar::after {
+                background: #0ea5e9;
+                box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.18), 0 6px 18px rgba(0, 0, 0, 0.28);
+            }
+            .graph-assistant-shell[data-activity~="review"] .graph-assistant-avatar::after {
+                background: #f59e0b;
+                box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.22), 0 6px 18px rgba(0, 0, 0, 0.28);
             }
             body[data-assistant-expanded="false"] .graph-assistant-bubble,
             body[data-assistant-expanded="false"] .graph-assistant-user-bubble,
@@ -911,6 +934,42 @@
                 border-top: 1px solid rgba(15, 95, 140, 0.12);
                 background: #f7fbfd;
             }
+            .graph-assistant-note-fill-summary {
+                display: none;
+                gap: 8px;
+                align-items: start;
+                justify-content: space-between;
+                padding: 10px 16px;
+                border-top: 1px solid rgba(15, 95, 140, 0.12);
+                background: #eef8fc;
+            }
+            .graph-assistant-note-fill-summary[data-visible="true"] {
+                display: flex;
+            }
+            .graph-assistant-note-fill-summary-text {
+                min-width: 0;
+                color: #123f58;
+                font: 650 12px/1.4 "Inter", "Segoe UI", sans-serif;
+            }
+            .graph-assistant-note-undo {
+                flex: 0 0 auto;
+                border: 1px solid rgba(15, 95, 140, 0.24);
+                border-radius: 999px;
+                padding: 7px 11px;
+                background: #ffffff;
+                color: #0f5f8c;
+                font: 750 11.5px/1 "Inter", "Segoe UI", sans-serif;
+                cursor: pointer;
+                white-space: nowrap;
+            }
+            .graph-assistant-note-undo:hover:not(:disabled) {
+                background: #f6fcff;
+                border-color: rgba(15, 95, 140, 0.42);
+            }
+            .graph-assistant-note-undo:disabled {
+                opacity: 0.45;
+                cursor: not-allowed;
+            }
             .graph-assistant-note-diagnosis-button {
                 justify-self: start;
                 border: 1px solid rgba(15, 95, 140, 0.22);
@@ -1005,6 +1064,28 @@
             }
             .graph-assistant-label {
                 display: none;
+            }
+            .graph-assistant-state-label {
+                position: absolute;
+                left: 50%;
+                bottom: -10px;
+                transform: translateX(-50%) translateY(4px);
+                min-width: 86px;
+                max-width: 138px;
+                padding: 5px 9px;
+                border-radius: 999px;
+                background: rgba(13, 22, 30, 0.88);
+                color: #ffffff;
+                box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+                font: 750 10.5px/1.1 "Inter", "Segoe UI", sans-serif;
+                text-align: center;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 160ms ease, transform 160ms ease;
+            }
+            .graph-assistant-state-label[data-visible="true"] {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
             }
             .graph-assistant-face-frame {
                 position: absolute;
@@ -1123,6 +1204,7 @@
                     </div>
                     <div class="graph-assistant-label" id="graph-assistant-label">Miracle</div>
                 </div>
+                <div class="graph-assistant-state-label" id="graph-assistant-state-label" data-visible="false"></div>
             `);
             document.body.appendChild(shell);
         }
@@ -1224,6 +1306,10 @@
                     </div>
                 </div>
                 <div id="graph-assistant-note-editor" class="graph-assistant-note-editor" contenteditable="true" spellcheck="false" data-placeholder="Dicta con Miracle o escribe aqui directamente." role="textbox" aria-multiline="true"></div>
+                <div id="graph-assistant-note-fill-summary" class="graph-assistant-note-fill-summary" data-visible="false" role="status" aria-live="polite">
+                    <div id="graph-assistant-note-fill-summary-text" class="graph-assistant-note-fill-summary-text"></div>
+                    <button id="graph-assistant-note-undo" class="graph-assistant-note-undo" type="button" disabled>Deshacer llenado</button>
+                </div>
                 <section class="graph-assistant-note-diagnosis" aria-label="Sugerencias diagnosticas">
                     <button id="graph-assistant-note-diagnosis-button" class="graph-assistant-note-diagnosis-button" type="button" disabled>Sugerir diagnosticos</button>
                     <div id="graph-assistant-note-diagnosis-status" class="graph-assistant-note-diagnosis-status" role="status" aria-live="polite"></div>
@@ -1261,11 +1347,15 @@
             notePanelTitle: document.getElementById('graph-assistant-note-title'),
             notePanelStatus: document.getElementById('graph-assistant-note-status'),
             notePanelEditor: document.getElementById('graph-assistant-note-editor'),
+            noteFillSummary: document.getElementById('graph-assistant-note-fill-summary'),
+            noteFillSummaryText: document.getElementById('graph-assistant-note-fill-summary-text'),
+            noteUndoButton: document.getElementById('graph-assistant-note-undo'),
             noteDiagnosisButton: document.getElementById('graph-assistant-note-diagnosis-button'),
             noteDiagnosisStatus: document.getElementById('graph-assistant-note-diagnosis-status'),
             noteDiagnosisNotice: document.getElementById('graph-assistant-note-diagnosis-notice'),
             noteDiagnosisList: document.getElementById('graph-assistant-note-diagnosis-list'),
             label: document.getElementById('graph-assistant-label'),
+            stateLabel: document.getElementById('graph-assistant-state-label'),
             spotlight
         };
     }
@@ -1286,7 +1376,7 @@
     }
 
     function syncExpandedAttributes() {
-        const { shell, avatar } = ensureElements();
+        const { shell, avatar, stateLabel } = ensureElements();
         const expanded = state.ui.expanded;
         const activeKeys = getActiveActivityKeys();
         const activityLabel = getActivityLabel();
@@ -1300,6 +1390,11 @@
                 ? 'Ocultar Miracle'
                 : (activityLabel ? `Abrir Miracle. ${activityLabel}` : 'Abrir Miracle'));
             avatar.title = expanded ? 'Ocultar Miracle' : 'Abrir Miracle';
+        }
+        if (stateLabel) {
+            const modeLabel = MODE_LABELS[state.face.mode] || '';
+            stateLabel.textContent = modeLabel;
+            stateLabel.dataset.visible = modeLabel ? 'true' : 'false';
         }
         const notePanel = document.getElementById('graph-assistant-note-panel');
         if (notePanel) {
@@ -1845,6 +1940,7 @@
         shell.dataset.state = mode || 'idle';
         state.face.mode = mode || 'idle';
         renderAssistantFace();
+        syncExpandedAttributes();
     }
 
     function updateSpotlightForElement(element) {
@@ -1893,6 +1989,7 @@
                 noteButton,
                 notePanelClose,
                 notePanelMic,
+                noteUndoButton,
                 noteDiagnosisButton,
                 chatInput,
                 chatSendButton
@@ -1961,6 +2058,10 @@
             if (notePanelMic && notePanelMic.dataset.bound !== 'true') {
                 notePanelMic.dataset.bound = 'true';
                 notePanelMic.addEventListener('click', () => emit('note-mic-button', {}));
+            }
+            if (noteUndoButton && noteUndoButton.dataset.bound !== 'true') {
+                noteUndoButton.dataset.bound = 'true';
+                noteUndoButton.addEventListener('click', () => emit('note-undo-fill', {}));
             }
             if (noteDiagnosisButton && noteDiagnosisButton.dataset.bound !== 'true') {
                 noteDiagnosisButton.dataset.bound = 'true';
@@ -2082,6 +2183,9 @@
                 notePanelTitle,
                 notePanelStatus,
                 notePanelEditor,
+                noteFillSummary,
+                noteFillSummaryText,
+                noteUndoButton,
                 noteDiagnosisButton,
                 noteDiagnosisStatus,
                 noteDiagnosisNotice,
@@ -2114,6 +2218,16 @@
                     setElementHtml(notePanelEditor, content.trim() ? renderMarkdown(content) : '');
                     notePanelEditor.scrollTop = notePanelEditor.scrollHeight;
                 }
+            }
+            if (noteFillSummary && noteFillSummaryText && nextState.fillSummary !== undefined) {
+                const summary = `${nextState.fillSummary || ''}`.trim();
+                noteFillSummaryText.textContent = summary;
+                noteFillSummary.dataset.visible = summary ? 'true' : 'false';
+            }
+            if (noteUndoButton && nextState.undoAvailable !== undefined) {
+                const undoAvailable = Boolean(nextState.undoAvailable);
+                noteUndoButton.disabled = !undoAvailable;
+                noteUndoButton.setAttribute('aria-disabled', undoAvailable ? 'false' : 'true');
             }
             if (notePanelMic && (nextState.recording !== undefined || nextState.busy !== undefined)) {
                 const recording = nextState.recording !== undefined

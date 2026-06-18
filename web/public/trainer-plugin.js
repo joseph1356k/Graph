@@ -91,11 +91,14 @@
         diagnosisBusy: false,
         diagnosisSourceContent: '',
         diagnosisRequestId: 0,
-        dictationStartedAt: 0
+        dictationStartedAt: 0,
+        fillSummary: '',
+        undoAvailable: false
     };
     const EXECUTION_STORAGE_PREFIX = 'graph-browser-workflow-execution-v1';
     const PHONE_MIC_SESSION_STORAGE_KEY = 'graph-phone-mic-session-id';
     const VOICE_RESUME_STORAGE_KEY = 'graph-voice-resume-state';
+    const MIRACLE_FIRST_OPEN_STORAGE_KEY = 'miracle-floating-assistant-first-open-v1';
     const EXECUTION_WAIT_TIMEOUT_MS = 15000;
     const EXECUTION_STEP_DELAY_MS = 180;
     const trustedHtmlPolicy = (() => {
@@ -1481,6 +1484,8 @@
             diagnosisStatus: miracleNoteState.diagnosisStatus,
             diagnosisError: miracleNoteState.diagnosisError,
             diagnosisBusy: miracleNoteState.diagnosisBusy,
+            fillSummary: miracleNoteState.fillSummary,
+            undoAvailable: miracleNoteState.undoAvailable,
             diagnosisDisabled: !miracleNoteState.noteContent.trim()
                 || miracleNoteState.active
                 || miracleNoteState.busy
@@ -1504,6 +1509,22 @@
             clearMiracleDiagnosisSuggestions();
         }
         miracleNoteState.noteContent = nextContent;
+    }
+
+    function formatMiracleFillSummary(detail = {}) {
+        const completedCount = Math.max(0, Number(detail.completedCount) || 0);
+        const confirmationCount = Math.max(0, Number(detail.confirmationCount) || 0);
+        const completedLabel = completedCount === 1 ? '1 campo completado' : `${completedCount} campos completados`;
+        const confirmationLabel = confirmationCount === 1
+            ? '1 campo requiere confirmacion'
+            : `${confirmationCount} campos requieren confirmacion`;
+        return `Nota lista para revisar. ${completedLabel}. ${confirmationLabel}.`;
+    }
+
+    function updateMiracleFillSummary(detail = {}) {
+        miracleNoteState.fillSummary = formatMiracleFillSummary(detail);
+        miracleNoteState.undoAvailable = Boolean(detail.undoAvailable ?? miracleDynamicFillSession?.canUndoLastFill?.());
+        syncMiracleNotePanel('Nota lista para revisar.');
     }
 
     async function requestMiracleDiagnosisSuggestions() {
@@ -1685,6 +1706,7 @@
         miracleNoteState.eventSequence += 1;
         miracleNoteState.finalSegmentCount += 1;
         syncMiracleNotePanel('Miracle esta organizando la nota...');
+        runtime()?.speak('Organizando la nota.', { mode: 'organizing' });
 
         const segmentId = `graph_seg_${miracleNoteState.finalSegmentCount}`;
         recordUsageEvent({
@@ -1766,6 +1788,7 @@
 
         miracleNoteState.pendingDraft = transcript;
         syncMiracleNotePanel('Transcribiendo con Miracle...');
+        runtime()?.speak('Escuchando.', { mode: 'listening' });
     }
 
     async function openMiracleSocket() {
@@ -1817,6 +1840,7 @@
     async function startMiracleNoteDictation() {
         miracleNoteState.busy = true;
         syncMiracleNotePanel('Preparando dictado con Miracle...');
+        runtime()?.speak('Preparando dictado.', { mode: 'organizing' });
         try {
             if (!miracleNoteState.voiceSessionId) {
                 miracleNoteState.voiceSessionId = crypto.randomUUID();
@@ -1824,6 +1848,8 @@
             miracleNoteState.committedTranscript = '';
             miracleNoteState.pendingDraft = '';
             miracleNoteState.finalSegmentCount = 0;
+            miracleNoteState.fillSummary = '';
+            miracleNoteState.undoAvailable = false;
             miracleNoteState.dictationStartedAt = Date.now();
             recordUsageEvent({
                 sourceRepo: 'graph',
@@ -1838,6 +1864,7 @@
             await startMiracleMediaRecorder();
             miracleNoteState.active = true;
             syncMiracleNotePanel('Dictando hacia Miracle...');
+            runtime()?.speak('Escuchando.', { mode: 'listening' });
         } finally {
             miracleNoteState.busy = false;
             syncMiracleNotePanel(miracleNoteState.active ? 'Dictando hacia Miracle...' : 'Lista para dictado con Miracle.');
@@ -1890,8 +1917,10 @@
             }
             miracleNoteState.dictationStartedAt = 0;
             releaseMiracleMicrophone();
-            stopMiracleDynamicFillSession();
             syncMiracleNotePanel(miracleNoteState.noteContent ? 'Dictado detenido.' : 'Lista para dictado con Miracle.');
+            runtime()?.speak(miracleNoteState.noteContent ? 'Nota lista para revisar.' : 'Lista para dictado.', {
+                mode: miracleNoteState.noteContent ? 'review' : 'idle'
+            });
         }
     }
 
@@ -1967,6 +1996,17 @@
                 onFieldFilled: (detail) => {
                     emitPluginEvent('note.field.filled', detail);
                 },
+                onFillSummary: (detail) => {
+                    updateMiracleFillSummary({
+                        ...detail,
+                        undoAvailable: session.canUndoLastFill?.()
+                    });
+                    emitPluginEvent('note.session.summary', detail);
+                },
+                onUndoStateChanged: (detail) => {
+                    miracleNoteState.undoAvailable = Boolean(detail?.canUndo);
+                    syncMiracleNotePanel();
+                },
                 onReadyToSubmit: (detail) => {
                     emitPluginEvent('note.session.ready_submit', detail);
                 }
@@ -1987,8 +2027,20 @@
         if (miracleDynamicFillSession) {
             miracleDynamicFillSession.stop();
             miracleDynamicFillSession = null;
+            miracleNoteState.undoAvailable = false;
             emitExtensionLog('info', 'Dynamic note fill session stopped.', {});
         }
+    }
+
+    function undoLastMiracleFill() {
+        const result = miracleDynamicFillSession?.undoLastFill?.() || { undoneCount: 0 };
+        const undoneCount = Math.max(0, Number(result?.undoneCount) || 0);
+        miracleNoteState.undoAvailable = miracleDynamicFillSession?.canUndoLastFill?.() || false;
+        miracleNoteState.fillSummary = undoneCount
+            ? `${undoneCount === 1 ? '1 campo restaurado' : `${undoneCount} campos restaurados`}. Puedes seguir dictando o revisar la nota.`
+            : 'No hay un llenado reciente para deshacer.';
+        syncMiracleNotePanel(undoneCount ? 'Ultimo llenado deshecho.' : 'Nada para deshacer.');
+        emitPluginEvent('note.session.undo_fill', { undoneCount });
     }
 
     function dispatchMiracleNoteToDynamicFill(content) {
@@ -3980,12 +4032,25 @@
                 diagnosisStatus: '',
                 diagnosisError: '',
                 diagnosisBusy: false,
+                fillSummary: miracleNoteState.fillSummary,
+                undoAvailable: miracleNoteState.undoAvailable,
                 diagnosisDisabled: !miracleNoteState.noteContent.trim()
             });
             bindMiracleNoteEditorTyping();
             if (!runtimeTouchBound) {
                 runtime()?.subscribe?.('touched', () => {
-                    const greeting = `${options.assistantRuntime?.idleMessage || 'Puedo ayudarte en esta pagina. Solo dime que necesitas y yo me encargo.'}`.trim();
+                    let firstOpen = false;
+                    try {
+                        firstOpen = window.localStorage?.getItem(MIRACLE_FIRST_OPEN_STORAGE_KEY) !== 'seen';
+                        if (firstOpen) {
+                            window.localStorage?.setItem(MIRACLE_FIRST_OPEN_STORAGE_KEY, 'seen');
+                        }
+                    } catch (error) {
+                        firstOpen = false;
+                    }
+                    const greeting = firstOpen
+                        ? 'Dicta la consulta y yo preparo la nota.'
+                        : `${options.assistantRuntime?.idleMessage || 'Puedo ayudarte en esta pagina. Solo dime que necesitas y yo me encargo.'}`.trim();
                     runtime()?.speak(greeting, { mode: 'listening' });
                     playAssistantGreeting(greeting).catch(() => {});
                 });
@@ -4018,9 +4083,13 @@
                     if (miracleNoteState.active) {
                         await stopMiracleNoteDictation().catch(() => {});
                     }
+                    stopMiracleDynamicFillSession();
                 });
                 runtime()?.subscribe?.('note-mic-button', async () => {
                     await toggleMiracleNoteDictation();
+                });
+                runtime()?.subscribe?.('note-undo-fill', () => {
+                    undoLastMiracleFill();
                 });
                 runtime()?.subscribe?.('note-diagnosis-button', async () => {
                     await requestMiracleDiagnosisSuggestions();
