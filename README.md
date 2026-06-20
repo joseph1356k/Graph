@@ -206,6 +206,9 @@ Notes:
 
 Main environment variables used today:
 
+- `AZURE_FOUNDRY_BASE_URL` (optional, takes precedence for workflow-note matching)
+- `AZURE_FOUNDRY_API_KEY` (optional, takes precedence for workflow-note matching)
+- `AZURE_FOUNDRY_MODEL` (optional, deployment/model id such as `DeepSeek-V4-Flash`)
 - `OPENROUTER_API_KEY`
 - `OPENROUTER_MODEL` (optional)
 - `OPENAI_API_KEY` (optional fallback path)

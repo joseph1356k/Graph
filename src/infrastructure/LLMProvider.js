@@ -2,8 +2,18 @@ const axios = require('axios');
 
 class LLMProvider {
   constructor() {
+    this.azureFoundryApiKey = (process.env.AZURE_FOUNDRY_API_KEY || '').trim();
+    this.azureFoundryBaseUrl = (process.env.AZURE_FOUNDRY_BASE_URL || '').trim().replace(/\/+$/, '');
+    this.azureFoundryModel = (process.env.AZURE_FOUNDRY_MODEL || process.env.AZURE_FOUNDRY_DEPLOYMENT || '').trim();
     this.openRouterApiKey = (process.env.OPENROUTER_API_KEY || '').trim();
     this.openAiApiKey = (process.env.OPENAI_API_KEY || '').trim();
+    if (this.azureFoundryApiKey && this.azureFoundryBaseUrl && this.azureFoundryModel) {
+      this.provider = 'azure-foundry';
+      this.apiKey = this.azureFoundryApiKey;
+      this.baseUrl = this.azureFoundryBaseUrl;
+      this.model = this.azureFoundryModel;
+      return;
+    }
     this.provider = this.openRouterApiKey ? 'openrouter' : (this.openAiApiKey ? 'openai' : null);
     this.apiKey = this.provider === 'openrouter' ? this.openRouterApiKey : this.openAiApiKey;
     this.baseUrl = this.provider === 'openrouter'
@@ -24,9 +34,15 @@ class LLMProvider {
     }
 
     const headers = {
-      Authorization: `Bearer ${this.apiKey}`,
       'Content-Type': 'application/json'
     };
+
+    if (this.provider === 'azure-foundry') {
+      headers['api-key'] = this.apiKey;
+      return headers;
+    }
+
+    headers.Authorization = `Bearer ${this.apiKey}`;
 
     if (this.provider === 'openrouter') {
       headers['HTTP-Referer'] = process.env.OPENROUTER_SITE_URL || 'http://localhost:3000';

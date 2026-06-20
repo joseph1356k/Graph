@@ -95,6 +95,9 @@ Hoy el sistema ya soporta dos ideas importantes:
 
 ## 9. Variables de entorno
 
+- `AZURE_FOUNDRY_BASE_URL`: opcional; si se configura junto con key y modelo, tiene prioridad para matching y dynamic fill
+- `AZURE_FOUNDRY_API_KEY`: opcional; activa Azure Foundry como backend LLM de Graph
+- `AZURE_FOUNDRY_MODEL`: opcional; deployment/model id, por ejemplo `DeepSeek-V4-Flash`
 - `OPENROUTER_API_KEY`: recomendado para resumen, matching y selects asistidos por LLM
 - `OPENROUTER_MODEL`: opcional
 - `OPENAI_API_KEY`: opcional como ruta alternativa
