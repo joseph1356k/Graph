@@ -70,11 +70,11 @@
                 chrome.runtime.sendMessage({ type: 'graph:api-fetch', request }, (result) => {
                     const runtimeError = chrome.runtime.lastError;
                     if (runtimeError) {
-                        reject(new TypeError(runtimeError.message || 'Graph Trainer no pudo contactar su service worker.'));
+                        reject(new TypeError(runtimeError.message || 'Miracle no pudo contactar su service worker.'));
                         return;
                     }
                     if (!result?.ok || !result.payload?.transportOk) {
-                        reject(new TypeError(result?.error || 'Graph Trainer no pudo completar la solicitud.'));
+                        reject(new TypeError(result?.error || 'Miracle no pudo completar la solicitud.'));
                         return;
                     }
                     resolve(new Response(result.payload.body || '', {

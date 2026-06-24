@@ -184,6 +184,8 @@ app.get('/api/auth/status', async (req, res) => {
 // Require a real account for workflow-bearing APIs. Anonymous demo sessions can
 // still load static pages, but they cannot read or mutate workflow data.
 app.use('/api/voice/openai', costlyLimiter);
+app.use('/api/voice/stream-session', costlyLimiter);
+app.use('/api/voice/orchestrator/events', costlyLimiter);
 app.use('/api/workflows/:id/note-field-matches', costlyLimiter);
 app.use('/api/clinical/diagnosis-suggestions', costlyLimiter);
 app.use('/api/voice/openai/session', async (req, res, next) => {
@@ -240,6 +242,13 @@ app.use('/api/voice/phone-session/:id/events', async (req, res, next) => {
     return res.status(error.statusCode || 401).json({ error: error.message || 'No autorizado.' });
   }
 });
+function isMiracleMedicalProxyRequest(req) {
+  const method = `${req.method || ''}`.toUpperCase();
+  const path = `${req.originalUrl || req.path || req.url || ''}`.split('?')[0];
+  return method === 'POST'
+    && (path === '/api/voice/stream-session' || path === '/api/voice/orchestrator/events');
+}
+
 [
   '/api/voice',
   '/api/clinical',
@@ -247,6 +256,21 @@ app.use('/api/voice/phone-session/:id/events', async (req, res, next) => {
 ].forEach((routePrefix) => {
   app.use(routePrefix, (req, res, next) => {
     if (req.phoneVoiceSession) {
+      return next();
+    }
+    if (isMiracleMedicalProxyRequest(req)) {
+      req.user = {
+        id: 'miracle-medical-demo',
+        email: '',
+        role: 'medical-demo',
+        token: '',
+        isAnonymous: true
+      };
+      req.workflowAccess = {
+        ownerId: req.user.id,
+        includeGlobal: true,
+        canManageGlobalWorkflows: false
+      };
       return next();
     }
     return requireAuth(req, res, () => attachWorkflowAccess(req, res, next));

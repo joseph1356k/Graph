@@ -26,7 +26,7 @@ async function getPublicConfig(backendUrl) {
   const response = await fetch(`${backendUrl}/api/public-config`, { cache: 'no-store' });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok || !payload.supabaseUrl || !payload.supabaseAnonKey) {
-    throw new Error(payload.error || 'Supabase no esta configurado en el backend de Graph Trainer.');
+    throw new Error(payload.error || 'Supabase no esta configurado en el backend de Miracle.');
   }
   return payload;
 }
@@ -174,11 +174,13 @@ function publicSession(session) {
   return session ? {
     authenticated: true,
     user: session.user || null,
-    expiresAt: Number(session.expiresAt || 0)
+    expiresAt: Number(session.expiresAt || 0),
+    accessToken: session.accessToken || ''
   } : {
     authenticated: false,
     user: null,
-    expiresAt: 0
+    expiresAt: 0,
+    accessToken: ''
   };
 }
 
@@ -205,14 +207,14 @@ async function proxyApiFetch(request = {}) {
 
   const allowed = new URL(backendUrl);
   if (target.origin !== allowed.origin || !target.pathname.startsWith('/api/')) {
-    return responsePayload(403, JSON.stringify({ error: 'Graph Trainer bloqueo una solicitud fuera de su backend configurado.' }), {
+    return responsePayload(403, JSON.stringify({ error: 'Miracle bloqueo una solicitud fuera de su backend configurado.' }), {
       'content-type': 'application/json'
     });
   }
 
   const session = await getValidSession();
   if (!session?.accessToken) {
-    return responsePayload(401, JSON.stringify({ error: 'Inicia sesion con Google desde el popup de Graph Trainer.' }), {
+    return responsePayload(401, JSON.stringify({ error: 'Inicia sesion con Google desde el popup de Miracle.' }), {
       'content-type': 'application/json'
     });
   }
@@ -233,7 +235,7 @@ async function proxyApiFetch(request = {}) {
     return responsePayload(response.status, await response.text(), responseHeaders);
   } catch (error) {
     return responsePayload(502, JSON.stringify({
-      error: 'No fue posible contactar el backend de Graph Trainer. Revisa la URL y tu conexion.'
+      error: 'No fue posible contactar el backend de Miracle. Revisa la URL y tu conexion.'
     }), {
       'content-type': 'application/json'
     });

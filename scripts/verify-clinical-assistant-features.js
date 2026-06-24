@@ -17,6 +17,14 @@ function createJsonProvider(handler) {
     async chatExpectingJson(messages) {
       return JSON.stringify(handler(messages));
     },
+    async chatExpectingJsonWithUsage(messages) {
+      return {
+        content: JSON.stringify(handler(messages)),
+        usage: null,
+        provider: 'test',
+        model: 'test'
+      };
+    },
     parseJsonObject(content) {
       return JSON.parse(content);
     }
@@ -250,13 +258,24 @@ async function verifyDynamicFillDom(browser, matchResult) {
   `);
   await page.addScriptTag({ path: path.join(publicRoot, 'plugin', 'plugin-execution-client.js') });
   await page.evaluate((matches) => {
+    window.__dynamicFillSummary = null;
+    window.__dynamicFillUndoState = null;
+    window.__dynamicFillRuntime = {
+      speech: [],
+      indicators: []
+    };
     const client = window.GraphPluginExecutionClient.create({
       getOptions: () => ({ appId: 'test' }),
       getPluginHost: () => null,
       runtime: () => ({
         handleAutomationEvent() {},
-        speak() {},
-        clearSpotlight() {}
+        speak(text, options) {
+          window.__dynamicFillRuntime.speech.push({ text, mode: options?.mode || '' });
+        },
+        clearSpotlight() {},
+        setActivityIndicators(indicators) {
+          window.__dynamicFillRuntime.indicators.push(indicators);
+        }
       }),
       waitTimeoutMs: 1000,
       stepDelayMs: 0
@@ -290,8 +309,15 @@ async function verifyDynamicFillDom(browser, matchResult) {
       }),
       debounceMs: 0,
       interMatchDelayMs: 0,
-      visualHoldMs: 0
+      visualHoldMs: 0,
+      onFillSummary: (detail) => {
+        window.__dynamicFillSummary = detail;
+      },
+      onUndoStateChanged: (detail) => {
+        window.__dynamicFillUndoState = detail;
+      }
     });
+    window.__dynamicFillSession = session;
     session.ingestNoteContent('Paciente identificado con cedula 1023456789.');
   }, matchResult.matches);
   await page.waitForFunction(() => (
@@ -300,6 +326,19 @@ async function verifyDynamicFillDom(browser, matchResult) {
   ));
   assert.strictEqual(await page.locator('#intake-document-number').inputValue(), '1023456789');
   assert.strictEqual(await page.locator('#intake-document-type').inputValue(), 'cc');
+  await page.waitForFunction(() => Boolean(window.__dynamicFillSummary));
+  const summary = await page.evaluate(() => window.__dynamicFillSummary);
+  assert.strictEqual(summary.completedCount, 2);
+  assert.strictEqual(await page.evaluate(() => window.__dynamicFillSession.canUndoLastFill()), true);
+  const speechModes = await page.evaluate(() => window.__dynamicFillRuntime.speech.map((entry) => entry.mode));
+  assert(speechModes.includes('organizing'));
+  assert(speechModes.includes('filling'));
+  assert(speechModes.includes('review'));
+  const undoResult = await page.evaluate(() => window.__dynamicFillSession.undoLastFill());
+  assert.strictEqual(undoResult.undoneCount, 2);
+  assert.strictEqual(await page.locator('#intake-document-number').inputValue(), '');
+  assert.strictEqual(await page.locator('#intake-document-type').inputValue(), '');
+  assert.strictEqual(await page.evaluate(() => window.__dynamicFillSession.canUndoLastFill()), false);
   await page.close();
 }
 
@@ -351,6 +390,37 @@ async function verifyMetadata(browser, baseUrl) {
 async function verifyDiagnosisUi(browser, baseUrl, serverState) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   await page.goto(`${baseUrl}/emr-workspace.html`, { waitUntil: 'domcontentloaded' });
+  await page.waitForSelector('#graph-assistant-shell');
+  assert.strictEqual(
+    await page.evaluate(() => document.body.dataset.assistantExpanded),
+    'false'
+  );
+  await page.click('.graph-assistant-avatar');
+  await page.waitForFunction(() => document.body.dataset.assistantExpanded === 'true');
+  await page.waitForFunction(() => (
+    document.getElementById('graph-assistant-bubble-text')?.textContent === 'Dicta la consulta y yo preparo la nota.'
+  ));
+  await page.evaluate(() => {
+    window.__voiceButtonStartCount = 0;
+    window.__voiceButtonStopCount = 0;
+    window.GraphPluginVoiceClient = {
+      ...(window.GraphPluginVoiceClient || {}),
+      create: () => ({
+        startVoiceConversation: async () => {
+          window.__voiceButtonStartCount += 1;
+        },
+        stopVoiceConversation: () => {
+          window.__voiceButtonStopCount += 1;
+        },
+        openPhoneMicPairing: async () => ({}),
+        restoreStoredPhoneSession() {},
+        processVoiceComplaints: async () => ({ suggestions: [] })
+      })
+    };
+  });
+  await page.click('#graph-assistant-bubble-mic');
+  await page.waitForFunction(() => window.__voiceButtonStartCount === 1);
+  assert.strictEqual(await page.locator('#graph-assistant-note-panel').isVisible(), false);
   await page.waitForSelector('#graph-assistant-note-toggle');
   await page.click('#graph-assistant-note-toggle');
 

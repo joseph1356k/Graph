@@ -1,6 +1,6 @@
 (function () {
     const DEFAULTS = {
-        name: 'Graph',
+        name: 'Miracle',
         accentColor: '#0f5f8c',
         idleMessage: 'Listo para ayudarte aqui.',
         zIndex: 2147483000
@@ -16,6 +16,9 @@
         dragging: {
             active: false,
             pointerId: null,
+            startX: 0,
+            startY: 0,
+            moved: false,
             offsetX: 0,
             offsetY: 0
         },
@@ -33,6 +36,19 @@
             longPressTimer: null,
             longPressTriggered: false
         },
+        ui: {
+            expanded: false,
+            escapeBound: false
+        },
+        activity: {
+            voice: false,
+            note: false,
+            phone: false,
+            recording: false,
+            executing: false,
+            filling: false,
+            review: false
+        },
         chat: {
             open: false
         },
@@ -46,6 +62,22 @@
             blinkTimer: null,
             blinkRestoreTimer: null
         }
+    };
+    const ACTIVITY_LABELS = {
+        voice: 'voz activa',
+        note: 'dictado activo',
+        phone: 'telefono conectado',
+        recording: 'grabacion activa',
+        executing: 'ejecucion activa',
+        filling: 'llenando campos',
+        review: 'revision pendiente'
+    };
+    const MODE_LABELS = {
+        listening: 'Escuchando',
+        organizing: 'Organizando',
+        filling: 'Llenando campos',
+        review: 'Necesita revision',
+        executing: 'Ejecutando'
     };
     const trustedHtmlPolicy = (() => {
         if (!window.trustedTypes?.createPolicy) {
@@ -315,9 +347,9 @@
             return;
         }
 
-        const preset = mode === 'tour'
+        const preset = mode === 'tour' || mode === 'listening'
             ? FACE_PRESETS.mild_attention
-            : mode === 'executing'
+            : mode === 'executing' || mode === 'organizing' || mode === 'filling'
                 ? FACE_PRESETS.thinking
                 : FACE_PRESETS.smile;
 
@@ -414,9 +446,72 @@
             .graph-assistant-shell[data-dragging="true"] {
                 transition: none;
             }
+            .graph-assistant-shell[data-state="listening"] .graph-assistant-avatar,
+            .graph-assistant-shell[data-state="organizing"] .graph-assistant-avatar,
+            .graph-assistant-shell[data-state="filling"] .graph-assistant-avatar,
+            .graph-assistant-shell[data-state="review"] .graph-assistant-avatar,
             .graph-assistant-shell[data-state="tour"] .graph-assistant-avatar,
             .graph-assistant-shell[data-state="executing"] .graph-assistant-avatar {
                 transform: translateY(-2px) scale(1.02);
+            }
+            .graph-assistant-shell[data-has-activity="true"] .graph-assistant-avatar::before {
+                content: "";
+                position: absolute;
+                inset: 8px;
+                border-radius: inherit;
+                border: 1px solid rgba(15, 95, 140, 0.34);
+                opacity: 0.78;
+                animation: graphAssistantActivePulse 1.8s ease-in-out infinite;
+                pointer-events: none;
+            }
+            .graph-assistant-shell[data-has-activity="true"] .graph-assistant-avatar::after {
+                content: "";
+                position: absolute;
+                right: 17px;
+                bottom: 18px;
+                width: 13px;
+                height: 13px;
+                border-radius: 999px;
+                background: #10b981;
+                box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18), 0 6px 18px rgba(0, 0, 0, 0.28);
+                pointer-events: none;
+            }
+            .graph-assistant-shell[data-activity~="voice"] .graph-assistant-avatar::after,
+            .graph-assistant-shell[data-activity~="note"] .graph-assistant-avatar::after,
+            .graph-assistant-shell[data-activity~="recording"] .graph-assistant-avatar::after {
+                background: #ef4444;
+                box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.18), 0 6px 18px rgba(0, 0, 0, 0.28);
+            }
+            .graph-assistant-shell[data-activity~="filling"] .graph-assistant-avatar::after {
+                background: #0ea5e9;
+                box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.18), 0 6px 18px rgba(0, 0, 0, 0.28);
+            }
+            .graph-assistant-shell[data-activity~="review"] .graph-assistant-avatar::after {
+                background: #f59e0b;
+                box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.22), 0 6px 18px rgba(0, 0, 0, 0.28);
+            }
+            body[data-assistant-expanded="false"] .graph-assistant-bubble,
+            body[data-assistant-expanded="false"] .graph-assistant-user-bubble,
+            body[data-assistant-expanded="false"] .graph-assistant-bubble-mic,
+            body[data-assistant-expanded="false"] .graph-assistant-chat-toggle,
+            body[data-assistant-expanded="false"] .graph-assistant-note-toggle,
+            body[data-assistant-expanded="false"] .graph-assistant-chat-composer,
+            body[data-assistant-expanded="false"] .assistant-phone-mic-pairing,
+            body[data-assistant-expanded="false"] .phone-mic-pairing {
+                opacity: 0 !important;
+                pointer-events: none !important;
+                transform: translateY(10px) scale(0.94) !important;
+            }
+            body[data-assistant-expanded="false"] .graph-assistant-note-panel {
+                display: none !important;
+            }
+            body[data-assistant-expanded="false"] #teaching-console {
+                opacity: 0 !important;
+                pointer-events: none !important;
+                transform: translateX(-50%) translateY(12px) scale(0.94) !important;
+            }
+            body[data-assistant-expanded="true"] #teaching-console {
+                opacity: 1;
             }
             .graph-assistant-bubble {
                 position: fixed;
@@ -647,41 +742,84 @@
                 left: 16px;
                 top: 16px;
                 z-index: calc(var(--graph-assistant-z, 2147483000) + 5);
-                width: min(380px, calc(100vw - 32px));
-                min-height: 320px;
-                max-height: min(72vh, 680px);
+                width: min(360px, calc(100vw - 32px));
+                min-height: 280px;
+                max-height: min(68vh, 620px);
                 display: none;
                 box-sizing: border-box;
-                border-radius: 20px;
-                background: rgba(252, 254, 255, 0.98);
+                border-radius: 18px;
+                background: rgba(249, 252, 254, 0.98);
                 color: #163345;
                 border: 1px solid rgba(15, 95, 140, 0.14);
-                box-shadow: 0 24px 64px rgba(5, 10, 20, 0.24);
+                box-shadow: 0 22px 52px rgba(5, 10, 20, 0.22);
                 overflow: hidden;
             }
             .graph-assistant-note-panel[data-visible="true"] {
                 display: flex;
                 flex-direction: column;
             }
+            .graph-assistant-note-header {
+                flex: 0 0 auto;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 14px;
+                padding: 13px 14px 12px;
+                border-bottom: 1px solid rgba(15, 95, 140, 0.1);
+                background: rgba(255, 255, 255, 0.86);
+            }
+            .graph-assistant-note-heading {
+                min-width: 0;
+                display: grid;
+                gap: 2px;
+            }
+            .graph-assistant-note-kicker {
+                color: #0f5f8c;
+                font: 750 10px/1.1 "Inter", "Segoe UI", sans-serif;
+                letter-spacing: 0;
+                text-transform: uppercase;
+            }
+            .graph-assistant-note-title {
+                color: #102f43;
+                font: 760 14px/1.2 "Inter", "Segoe UI", sans-serif;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .graph-assistant-note-status {
+                min-height: 16px;
+                color: #5b7180;
+                font: 600 11.5px/1.35 "Inter", "Segoe UI", sans-serif;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
             .graph-assistant-note-toolbar {
-                position: absolute;
-                top: 10px;
-                right: 12px;
-                z-index: 2;
+                flex: 0 0 auto;
                 display: inline-flex;
                 align-items: center;
-                gap: 8px;
-                pointer-events: auto;
+                gap: 7px;
             }
             .graph-assistant-note-mic {
                 border: none;
                 border-radius: 999px;
-                padding: 7px 14px;
+                min-width: 38px;
+                height: 34px;
+                padding: 0 12px;
                 background: #0f5f8c;
                 color: #ffffff;
-                font: 700 12px/1 "Inter", "Segoe UI", sans-serif;
+                font: 750 12px/1 "Inter", "Segoe UI", sans-serif;
                 cursor: pointer;
                 box-shadow: 0 6px 16px rgba(15, 95, 140, 0.24);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 7px;
+                white-space: nowrap;
+            }
+            .graph-assistant-note-mic svg {
+                width: 15px;
+                height: 15px;
             }
             .graph-assistant-note-mic[data-active="true"] {
                 background: #b53b2c;
@@ -692,8 +830,8 @@
                 cursor: wait;
             }
             .graph-assistant-note-close {
-                width: 28px;
-                height: 28px;
+                width: 34px;
+                height: 34px;
                 border: none;
                 border-radius: 999px;
                 background: rgba(15, 95, 140, 0.1);
@@ -710,8 +848,8 @@
                 width: 100%;
                 min-height: 0;
                 box-sizing: border-box;
-                padding: 48px 18px 18px;
-                background: #ffffff;
+                padding: 15px 16px 16px;
+                background: linear-gradient(180deg, #ffffff 0%, #fbfdfe 100%);
                 color: #163345;
                 font: 400 14px/1.55 "Inter", "Segoe UI", -apple-system, sans-serif;
                 outline: none;
@@ -796,6 +934,42 @@
                 border-top: 1px solid rgba(15, 95, 140, 0.12);
                 background: #f7fbfd;
             }
+            .graph-assistant-note-fill-summary {
+                display: none;
+                gap: 8px;
+                align-items: start;
+                justify-content: space-between;
+                padding: 10px 16px;
+                border-top: 1px solid rgba(15, 95, 140, 0.12);
+                background: #eef8fc;
+            }
+            .graph-assistant-note-fill-summary[data-visible="true"] {
+                display: flex;
+            }
+            .graph-assistant-note-fill-summary-text {
+                min-width: 0;
+                color: #123f58;
+                font: 650 12px/1.4 "Inter", "Segoe UI", sans-serif;
+            }
+            .graph-assistant-note-undo {
+                flex: 0 0 auto;
+                border: 1px solid rgba(15, 95, 140, 0.24);
+                border-radius: 999px;
+                padding: 7px 11px;
+                background: #ffffff;
+                color: #0f5f8c;
+                font: 750 11.5px/1 "Inter", "Segoe UI", sans-serif;
+                cursor: pointer;
+                white-space: nowrap;
+            }
+            .graph-assistant-note-undo:hover:not(:disabled) {
+                background: #f6fcff;
+                border-color: rgba(15, 95, 140, 0.42);
+            }
+            .graph-assistant-note-undo:disabled {
+                opacity: 0.45;
+                cursor: not-allowed;
+            }
             .graph-assistant-note-diagnosis-button {
                 justify-self: start;
                 border: 1px solid rgba(15, 95, 140, 0.22);
@@ -878,12 +1052,40 @@
                 touch-action: none;
                 user-select: none;
                 -webkit-user-select: none;
+                outline: none;
+            }
+            .graph-assistant-avatar:focus-visible {
+                box-shadow:
+                    0 15px 50px var(--graph-assistant-glass-shadow),
+                    0 0 0 4px rgba(15, 95, 140, 0.22);
             }
             .graph-assistant-shell[data-dragging="true"] .graph-assistant-avatar {
                 cursor: grabbing;
             }
             .graph-assistant-label {
                 display: none;
+            }
+            .graph-assistant-state-label {
+                position: absolute;
+                left: 50%;
+                bottom: -10px;
+                transform: translateX(-50%) translateY(4px);
+                min-width: 86px;
+                max-width: 138px;
+                padding: 5px 9px;
+                border-radius: 999px;
+                background: rgba(13, 22, 30, 0.88);
+                color: #ffffff;
+                box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+                font: 750 10.5px/1.1 "Inter", "Segoe UI", sans-serif;
+                text-align: center;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 160ms ease, transform 160ms ease;
+            }
+            .graph-assistant-state-label[data-visible="true"] {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
             }
             .graph-assistant-face-frame {
                 position: absolute;
@@ -957,6 +1159,21 @@
                     transform: translateY(-2px);
                 }
             }
+            @keyframes graphAssistantActivePulse {
+                0%, 100% {
+                    transform: scale(0.98);
+                    opacity: 0.28;
+                }
+                50% {
+                    transform: scale(1.08);
+                    opacity: 0.78;
+                }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .graph-assistant-shell[data-has-activity="true"] .graph-assistant-avatar::before {
+                    animation: none;
+                }
+            }
         `;
         document.head.appendChild(style);
     }
@@ -969,7 +1186,7 @@
             shell.className = 'graph-assistant-shell';
             shell.dataset.state = 'idle';
             setElementHtml(shell, `
-                <div class="graph-assistant-avatar" aria-hidden="true">
+                <div class="graph-assistant-avatar" role="button" tabindex="0" aria-label="Abrir Miracle" aria-expanded="false" aria-controls="graph-assistant-bubble graph-assistant-chat-composer graph-assistant-note-panel">
                     <div class="graph-assistant-face-frame">
                         <div class="graph-assistant-face-slot" data-face-slot="true">
                             <div class="graph-assistant-face-core">
@@ -985,8 +1202,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="graph-assistant-label" id="graph-assistant-label">Graph</div>
+                    <div class="graph-assistant-label" id="graph-assistant-label">Miracle</div>
                 </div>
+                <div class="graph-assistant-state-label" id="graph-assistant-state-label" data-visible="false"></div>
             `);
             document.body.appendChild(shell);
         }
@@ -1017,7 +1235,8 @@
             micButton.className = 'graph-assistant-bubble-mic';
             micButton.type = 'button';
             micButton.dataset.active = 'false';
-            micButton.setAttribute('aria-label', 'Hablar con el asistente');
+            micButton.setAttribute('aria-label', 'Hablar con Miracle');
+            micButton.title = 'Hablar con Miracle';
             setElementHtml(micButton, '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3Zm5-3a1 1 0 1 1 2 0 7 7 0 0 1-6 6.92V21h2a1 1 0 1 1 0 2H9a1 1 0 1 1 0-2h2v-2.08A7 7 0 0 1 5 12a1 1 0 1 1 2 0 5 5 0 1 0 10 0Z" fill="currentColor"/></svg>');
             document.body.appendChild(micButton);
         }
@@ -1030,6 +1249,7 @@
             chatButton.type = 'button';
             chatButton.dataset.active = 'false';
             chatButton.setAttribute('aria-label', 'Abrir chat del asistente');
+            chatButton.title = 'Abrir chat';
             setElementHtml(chatButton, '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v10H8.5L4 19V5Z" fill="currentColor"/></svg>');
             document.body.appendChild(chatButton);
         }
@@ -1059,6 +1279,7 @@
             noteButton.type = 'button';
             noteButton.dataset.active = 'false';
             noteButton.setAttribute('aria-label', 'Abrir hoja de notas');
+            noteButton.title = 'Abrir hoja de notas';
             setElementHtml(noteButton, '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm6 1.5V9h4.5M9 13h6M9 16h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>');
             document.body.appendChild(noteButton);
         }
@@ -1070,13 +1291,27 @@
             notePanel.className = 'graph-assistant-note-panel';
             notePanel.dataset.visible = 'false';
             setElementHtml(notePanel, `
-                <div class="graph-assistant-note-toolbar">
-                    <button id="graph-assistant-note-mic" class="graph-assistant-note-mic" type="button" data-active="false">Grabar</button>
-                    <button id="graph-assistant-note-close" class="graph-assistant-note-close" type="button" aria-label="Cerrar hoja">×</button>
+                <div class="graph-assistant-note-header">
+                    <div class="graph-assistant-note-heading">
+                        <span class="graph-assistant-note-kicker">Miracle</span>
+                        <strong id="graph-assistant-note-title" class="graph-assistant-note-title">Nota clinica</strong>
+                        <span id="graph-assistant-note-status" class="graph-assistant-note-status">Lista para dictado.</span>
+                    </div>
+                    <div class="graph-assistant-note-toolbar">
+                        <button id="graph-assistant-note-mic" class="graph-assistant-note-mic" type="button" data-active="false" aria-label="Grabar nota">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3Zm5-3a1 1 0 1 1 2 0 7 7 0 0 1-6 6.92V21h2a1 1 0 1 1 0 2H9a1 1 0 1 1 0-2h2v-2.08A7 7 0 0 1 5 12a1 1 0 1 1 2 0 5 5 0 1 0 10 0Z" fill="currentColor"/></svg>
+                            <span id="graph-assistant-note-mic-label">Grabar</span>
+                        </button>
+                        <button id="graph-assistant-note-close" class="graph-assistant-note-close" type="button" aria-label="Cerrar hoja">x</button>
+                    </div>
                 </div>
                 <div id="graph-assistant-note-editor" class="graph-assistant-note-editor" contenteditable="true" spellcheck="false" data-placeholder="Dicta con Miracle o escribe aqui directamente." role="textbox" aria-multiline="true"></div>
-                <section class="graph-assistant-note-diagnosis" aria-label="Sugerencias diagnósticas">
-                    <button id="graph-assistant-note-diagnosis-button" class="graph-assistant-note-diagnosis-button" type="button" disabled>Sugerir diagnósticos</button>
+                <div id="graph-assistant-note-fill-summary" class="graph-assistant-note-fill-summary" data-visible="false" role="status" aria-live="polite">
+                    <div id="graph-assistant-note-fill-summary-text" class="graph-assistant-note-fill-summary-text"></div>
+                    <button id="graph-assistant-note-undo" class="graph-assistant-note-undo" type="button" disabled>Deshacer llenado</button>
+                </div>
+                <section class="graph-assistant-note-diagnosis" aria-label="Sugerencias diagnosticas">
+                    <button id="graph-assistant-note-diagnosis-button" class="graph-assistant-note-diagnosis-button" type="button" disabled>Sugerir diagnosticos</button>
                     <div id="graph-assistant-note-diagnosis-status" class="graph-assistant-note-diagnosis-status" role="status" aria-live="polite"></div>
                     <div id="graph-assistant-note-diagnosis-notice" class="graph-assistant-note-diagnosis-notice" hidden></div>
                     <div id="graph-assistant-note-diagnosis-list" class="graph-assistant-note-diagnosis-list"></div>
@@ -1108,18 +1343,88 @@
             notePanel,
             notePanelClose: document.getElementById('graph-assistant-note-close'),
             notePanelMic: document.getElementById('graph-assistant-note-mic'),
+            notePanelMicLabel: document.getElementById('graph-assistant-note-mic-label'),
+            notePanelTitle: document.getElementById('graph-assistant-note-title'),
+            notePanelStatus: document.getElementById('graph-assistant-note-status'),
             notePanelEditor: document.getElementById('graph-assistant-note-editor'),
+            noteFillSummary: document.getElementById('graph-assistant-note-fill-summary'),
+            noteFillSummaryText: document.getElementById('graph-assistant-note-fill-summary-text'),
+            noteUndoButton: document.getElementById('graph-assistant-note-undo'),
             noteDiagnosisButton: document.getElementById('graph-assistant-note-diagnosis-button'),
             noteDiagnosisStatus: document.getElementById('graph-assistant-note-diagnosis-status'),
             noteDiagnosisNotice: document.getElementById('graph-assistant-note-diagnosis-notice'),
             noteDiagnosisList: document.getElementById('graph-assistant-note-diagnosis-list'),
             label: document.getElementById('graph-assistant-label'),
+            stateLabel: document.getElementById('graph-assistant-state-label'),
             spotlight
         };
     }
 
     function clamp(value, min, max) {
         return Math.max(min, Math.min(max, value));
+    }
+
+    function getActiveActivityKeys() {
+        return Object.keys(state.activity).filter((key) => Boolean(state.activity[key]));
+    }
+
+    function getActivityLabel() {
+        const labels = getActiveActivityKeys()
+            .map((key) => ACTIVITY_LABELS[key])
+            .filter(Boolean);
+        return labels.length ? `Miracle activo: ${labels.join(', ')}` : '';
+    }
+
+    function syncExpandedAttributes() {
+        const { shell, avatar, stateLabel } = ensureElements();
+        const expanded = state.ui.expanded;
+        const activeKeys = getActiveActivityKeys();
+        const activityLabel = getActivityLabel();
+        document.body.dataset.assistantExpanded = expanded ? 'true' : 'false';
+        shell.dataset.expanded = expanded ? 'true' : 'false';
+        shell.dataset.hasActivity = activeKeys.length ? 'true' : 'false';
+        shell.dataset.activity = activeKeys.join(' ');
+        if (avatar) {
+            avatar.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            avatar.setAttribute('aria-label', expanded
+                ? 'Ocultar Miracle'
+                : (activityLabel ? `Abrir Miracle. ${activityLabel}` : 'Abrir Miracle'));
+            avatar.title = expanded ? 'Ocultar Miracle' : 'Abrir Miracle';
+        }
+        if (stateLabel) {
+            const modeLabel = MODE_LABELS[state.face.mode] || '';
+            stateLabel.textContent = modeLabel;
+            stateLabel.dataset.visible = modeLabel ? 'true' : 'false';
+        }
+        const notePanel = document.getElementById('graph-assistant-note-panel');
+        if (notePanel) {
+            notePanel.setAttribute('aria-hidden', state.note.open && expanded ? 'false' : 'true');
+        }
+    }
+
+    function setAssistantExpanded(expanded, options = {}) {
+        const nextExpanded = Boolean(expanded);
+        const changed = state.ui.expanded !== nextExpanded;
+        state.ui.expanded = nextExpanded;
+        syncExpandedAttributes();
+        if (nextExpanded) {
+            window.requestAnimationFrame(positionBubbleNearShell);
+        }
+        if (changed && options.emit !== false) {
+            emit('expanded-change', {
+                expanded: nextExpanded,
+                source: options.source || 'api'
+            });
+        }
+    }
+
+    function setActivityIndicators(indicators = {}) {
+        Object.keys(state.activity).forEach((key) => {
+            if (indicators[key] !== undefined) {
+                state.activity[key] = Boolean(indicators[key]);
+            }
+        });
+        syncExpandedAttributes();
     }
 
     function setShellPosition(x, y) {
@@ -1315,6 +1620,9 @@
             state.interaction.lastTouchAt = Date.now();
             emit('touched', { type: 'pointerdown' });
             state.dragging.pointerId = event.pointerId;
+            state.dragging.startX = event.clientX;
+            state.dragging.startY = event.clientY;
+            state.dragging.moved = false;
             state.dragging.offsetX = event.clientX - rect.left;
             state.dragging.offsetY = event.clientY - rect.top;
             setDragging(true);
@@ -1330,6 +1638,10 @@
             }
 
             api.clearSpotlight();
+            const moveDistance = Math.hypot(event.clientX - state.dragging.startX, event.clientY - state.dragging.startY);
+            if (moveDistance > 5) {
+                state.dragging.moved = true;
+            }
             const { shell } = ensureElements();
             const rect = shell.getBoundingClientRect();
             const nextLeft = event.clientX - state.dragging.offsetX;
@@ -1358,6 +1670,23 @@
 
         avatar.addEventListener('pointerup', releaseDrag);
         avatar.addEventListener('pointercancel', releaseDrag);
+        avatar.addEventListener('click', (event) => {
+            if (state.dragging.moved) {
+                event.preventDefault();
+                state.dragging.moved = false;
+                return;
+            }
+            api.toggleExpanded({ source: 'avatar' });
+        });
+        avatar.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') {
+                return;
+            }
+            event.preventDefault();
+            state.interaction.lastTouchAt = Date.now();
+            emit('touched', { type: 'keyboard' });
+            api.toggleExpanded({ source: 'keyboard' });
+        });
     }
 
     function pinShellBottomRight() {
@@ -1611,6 +1940,7 @@
         shell.dataset.state = mode || 'idle';
         state.face.mode = mode || 'idle';
         renderAssistantFace();
+        syncExpandedAttributes();
     }
 
     function updateSpotlightForElement(element) {
@@ -1649,6 +1979,7 @@
 
     const api = {
         mount(config = {}) {
+            const firstMount = !state.mounted;
             state.options = { ...DEFAULTS, ...config };
             ensureStyles();
             const {
@@ -1658,6 +1989,7 @@
                 noteButton,
                 notePanelClose,
                 notePanelMic,
+                noteUndoButton,
                 noteDiagnosisButton,
                 chatInput,
                 chatSendButton
@@ -1666,7 +1998,15 @@
             document.documentElement.style.setProperty('--graph-assistant-accent', state.options.accentColor);
             document.documentElement.style.setProperty('--graph-assistant-z', `${state.options.zIndex}`);
             if (label) {
-                label.textContent = state.options.name || 'Graph';
+                label.textContent = state.options.name || 'Miracle';
+            }
+            if (!state.ui.escapeBound) {
+                state.ui.escapeBound = true;
+                window.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' && state.ui.expanded) {
+                        setAssistantExpanded(false, { source: 'escape' });
+                    }
+                });
             }
             if (micButton && micButton.dataset.bound !== 'true') {
                 micButton.dataset.bound = 'true';
@@ -1694,6 +2034,7 @@
             if (chatButton && chatButton.dataset.bound !== 'true') {
                 chatButton.dataset.bound = 'true';
                 chatButton.addEventListener('click', () => {
+                    setAssistantExpanded(true, { source: 'chat-toggle' });
                     setChatComposerVisible(!state.chat.open, { focus: true });
                     emit('chat-toggle', { open: state.chat.open });
                 });
@@ -1701,6 +2042,7 @@
             if (noteButton && noteButton.dataset.bound !== 'true') {
                 noteButton.dataset.bound = 'true';
                 noteButton.addEventListener('click', () => {
+                    setAssistantExpanded(true, { source: 'note-toggle' });
                     api.setNotePanelState({ visible: !state.note.open });
                     emit('note-toggle', { open: state.note.open });
                 });
@@ -1710,11 +2052,16 @@
                 notePanelClose.addEventListener('click', () => {
                     api.setNotePanelState({ visible: false });
                     emit('note-toggle', { open: false });
+                    setAssistantExpanded(false, { source: 'note-close' });
                 });
             }
             if (notePanelMic && notePanelMic.dataset.bound !== 'true') {
                 notePanelMic.dataset.bound = 'true';
                 notePanelMic.addEventListener('click', () => emit('note-mic-button', {}));
+            }
+            if (noteUndoButton && noteUndoButton.dataset.bound !== 'true') {
+                noteUndoButton.dataset.bound = 'true';
+                noteUndoButton.addEventListener('click', () => emit('note-undo-fill', {}));
             }
             if (noteDiagnosisButton && noteDiagnosisButton.dataset.bound !== 'true') {
                 noteDiagnosisButton.dataset.bound = 'true';
@@ -1737,9 +2084,35 @@
             showBubble(state.options.idleMessage || DEFAULTS.idleMessage);
             setShellPosition(window.innerWidth - 96, window.innerHeight - 164);
             state.mounted = true;
+            if (firstMount) {
+                setAssistantExpanded(Boolean(config.expanded), { emit: false, source: 'mount' });
+            } else {
+                syncExpandedAttributes();
+            }
             setMode('idle');
             ensureFaceAnimation();
             emit('mounted', { options: state.options });
+        },
+        setExpanded(expanded, options = {}) {
+            if (!state.mounted) {
+                api.mount();
+            }
+            setAssistantExpanded(expanded, options);
+        },
+        toggleExpanded(options = {}) {
+            if (!state.mounted) {
+                api.mount();
+            }
+            setAssistantExpanded(!state.ui.expanded, options);
+        },
+        isExpanded() {
+            return Boolean(state.ui.expanded);
+        },
+        setActivityIndicators(indicators = {}) {
+            if (!state.mounted) {
+                api.mount();
+            }
+            setActivityIndicators(indicators);
         },
         speak(text, options = {}) {
             if (!state.mounted) {
@@ -1767,6 +2140,7 @@
             if (!state.mounted) {
                 api.mount();
             }
+            setAssistantExpanded(true, { source: config.source || 'chat' });
             setChatComposerVisible(true, config);
         },
         closeChatComposer() {
@@ -1797,13 +2171,20 @@
             const { micButton } = ensureElements();
             if (!micButton) return;
             micButton.dataset.active = active ? 'true' : 'false';
+            setActivityIndicators({ voice: active });
         },
         setNotePanelState(nextState = {}) {
             const {
                 noteButton,
                 notePanel,
                 notePanelMic,
+                notePanelMicLabel,
+                notePanelTitle,
+                notePanelStatus,
                 notePanelEditor,
+                noteFillSummary,
+                noteFillSummaryText,
+                noteUndoButton,
                 noteDiagnosisButton,
                 noteDiagnosisStatus,
                 noteDiagnosisNotice,
@@ -1812,12 +2193,22 @@
 
             if (nextState.visible !== undefined) {
                 state.note.open = Boolean(nextState.visible);
+                if (state.note.open) {
+                    setAssistantExpanded(true, { source: 'note-panel' });
+                }
             }
             if (noteButton) {
                 noteButton.dataset.active = state.note.open ? 'true' : 'false';
             }
             if (notePanel) {
                 notePanel.dataset.visible = state.note.open ? 'true' : 'false';
+                notePanel.setAttribute('aria-hidden', state.note.open && state.ui.expanded ? 'false' : 'true');
+            }
+            if (notePanelTitle && nextState.title !== undefined) {
+                notePanelTitle.textContent = `${nextState.title || 'Nota clinica'}`.trim() || 'Nota clinica';
+            }
+            if (notePanelStatus && nextState.status !== undefined) {
+                notePanelStatus.textContent = `${nextState.status || ''}`.trim();
             }
             if (notePanelEditor && nextState.content !== undefined) {
                 const isUserEditing = document.activeElement === notePanelEditor;
@@ -1827,17 +2218,35 @@
                     notePanelEditor.scrollTop = notePanelEditor.scrollHeight;
                 }
             }
-            if (notePanelMic) {
-                const recording = Boolean(nextState.recording);
-                const busy = Boolean(nextState.busy);
+            if (noteFillSummary && noteFillSummaryText && nextState.fillSummary !== undefined) {
+                const summary = `${nextState.fillSummary || ''}`.trim();
+                noteFillSummaryText.textContent = summary;
+                noteFillSummary.dataset.visible = summary ? 'true' : 'false';
+            }
+            if (noteUndoButton && nextState.undoAvailable !== undefined) {
+                const undoAvailable = Boolean(nextState.undoAvailable);
+                noteUndoButton.disabled = !undoAvailable;
+                noteUndoButton.setAttribute('aria-disabled', undoAvailable ? 'false' : 'true');
+            }
+            if (notePanelMic && (nextState.recording !== undefined || nextState.busy !== undefined)) {
+                const recording = nextState.recording !== undefined
+                    ? Boolean(nextState.recording)
+                    : notePanelMic.dataset.active === 'true';
+                const busy = nextState.busy !== undefined
+                    ? Boolean(nextState.busy)
+                    : Boolean(notePanelMic.disabled);
                 notePanelMic.dataset.active = recording ? 'true' : 'false';
                 notePanelMic.disabled = busy;
-                notePanelMic.textContent = recording ? 'Detener' : (busy ? '...' : 'Grabar');
+                notePanelMic.setAttribute('aria-label', recording ? 'Detener dictado' : 'Grabar nota');
+                if (notePanelMicLabel) {
+                    notePanelMicLabel.textContent = recording ? 'Detener' : (busy ? '...' : 'Grabar');
+                }
+                setActivityIndicators({ note: recording });
             }
             if (noteDiagnosisButton) {
                 const diagnosisBusy = Boolean(nextState.diagnosisBusy);
                 noteDiagnosisButton.disabled = Boolean(nextState.diagnosisDisabled) || diagnosisBusy;
-                noteDiagnosisButton.textContent = diagnosisBusy ? 'Generando...' : 'Sugerir diagnósticos';
+                noteDiagnosisButton.textContent = diagnosisBusy ? 'Generando...' : 'Sugerir diagnosticos';
                 noteDiagnosisButton.setAttribute('aria-busy', diagnosisBusy ? 'true' : 'false');
             }
             if (noteDiagnosisStatus) {
@@ -2023,4 +2432,5 @@
     });
 
     window.GraphAssistantRuntime = api;
+    window.MiracleAssistantRuntime = api;
 })();

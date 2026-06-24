@@ -1,4 +1,18 @@
 (function () {
+  async function fetchPublicConfig(backendUrl) {
+    try {
+      const response = await fetch(`${backendUrl.replace(/\/+$/, '')}/api/public-config`, {
+        cache: 'no-store'
+      });
+      if (!response.ok) {
+        return null;
+      }
+      return await response.json().catch(() => null);
+    } catch (error) {
+      return null;
+    }
+  }
+
   function emitExtensionLog(level, message, details) {
     const detail = {
       level,
@@ -25,37 +39,47 @@
     appId
   };
 
-  emitExtensionLog('info', 'Starting Graph Trainer bootstrap.', {
+  emitExtensionLog('info', 'Starting Miracle bootstrap.', {
     backendUrl,
     appId,
     storageKey,
     workflowDescription
   });
 
+  (async () => {
   try {
+    const publicConfig = await fetchPublicConfig(backendUrl);
+    const miracleBaseUrl = `${publicConfig?.miracleBaseUrl || backendUrl}`.trim() || backendUrl;
+    const voiceGatewayUrl = `${publicConfig?.voiceGatewayUrl || ''}`.trim();
+
     window.PageState.init({ storageKey });
     emitExtensionLog('info', 'PageState initialized.', { storageKey });
 
     window.TrainerPlugin.mount({
-      title: 'Graph Trainer',
+      title: 'Miracle',
       workflowDescription,
       appId,
       apiBaseUrl: backendUrl,
+      miracleBaseUrl,
+      voiceGatewayUrl,
       assistantRuntime: {
-        name: 'Graph',
+        name: 'Miracle',
         accentColor: '#0f5f8c',
         idleMessage: 'Puedo aprender y ejecutar tareas en esta pagina cuando quieras.'
       }
     });
 
-    emitExtensionLog('info', 'Trainer plugin mounted.', {
+    emitExtensionLog('info', 'Miracle plugin mounted.', {
       appId,
-      backendUrl
+      backendUrl,
+      miracleBaseUrl,
+      voiceGatewayUrl
     });
   } catch (error) {
-    emitExtensionLog('error', 'Trainer bootstrap failed.', {
+    emitExtensionLog('error', 'Miracle bootstrap failed.', {
       message: error?.message || 'Unknown bootstrap error'
     });
     throw error;
   }
+  })();
 })();

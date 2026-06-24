@@ -47,13 +47,13 @@ function build() {
   copyDirectoryContents(path.join(runtimeRoot, 'plugin'), path.join(outputRoot, 'assets', 'plugin'));
 
   const readme = [
-    '# Graph Trainer Chrome Extension',
+    '# Miracle Chrome Extension',
     '',
     '1. Open `chrome://extensions`.',
     '2. Enable Developer mode.',
     '3. Click "Load unpacked".',
     `4. Select this folder: ${outputRoot}`,
-    '5. Open the extension popup and confirm the backend URL.',
+    '5. Open the Miracle popup and confirm the backend URL.',
     '6. Reload the target webpage.'
   ].join('\n');
 

@@ -150,6 +150,71 @@ async function verifyExtensionHost() {
   assert.match(await response.text(), /Workflow storage is unavailable/);
 }
 
+async function verifyMiracleMedicalProxyDemoAccess() {
+  const previousEnv = {
+    VERCEL: process.env.VERCEL,
+    NODE_ENV: process.env.NODE_ENV,
+    SUPABASE_URL: process.env.SUPABASE_URL,
+    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+    MIRACLE_MEDICAL_ENGINE_URL: process.env.MIRACLE_MEDICAL_ENGINE_URL
+  };
+  const previousFetch = global.fetch;
+
+  process.env.VERCEL = '1';
+  process.env.NODE_ENV = 'production';
+  process.env.SUPABASE_URL = 'https://example.supabase.co';
+  process.env.SUPABASE_ANON_KEY = 'anon';
+  process.env.MIRACLE_MEDICAL_ENGINE_URL = 'https://miracle-engine.test';
+
+  global.fetch = async (url, init = {}) => {
+    const target = `${url || ''}`;
+    if (target === 'https://miracle-engine.test/api/voice/stream-session') {
+      assert.strictEqual(init.method, 'POST');
+      return new Response(JSON.stringify({
+        websocket_url: 'wss://miracle-engine.test/voice',
+        access_token: 'stream-token',
+        auth_scheme: 'bearer'
+      }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      });
+    }
+    throw new Error(`unexpected fetch: ${target}`);
+  };
+
+  const app = require('../web/server');
+  const server = app.listen(0, '127.0.0.1');
+  await new Promise((resolve) => server.once('listening', resolve));
+  const baseUrl = `http://127.0.0.1:${server.address().port}`;
+
+  try {
+    const streamResponse = await previousFetch(`${baseUrl}/api/voice/stream-session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    assert.strictEqual(streamResponse.status, 200);
+    const streamPayload = await streamResponse.json();
+    assert.strictEqual(streamPayload.access_token, 'stream-token');
+
+    const protectedResponse = await previousFetch(`${baseUrl}/api/agent/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: 'hola' })
+    });
+    assert.strictEqual(protectedResponse.status, 401);
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+    global.fetch = previousFetch;
+    Object.entries(previousEnv).forEach(([key, value]) => {
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    });
+  }
+}
+
 async function main() {
   const manifest = JSON.parse(fs.readFileSync(path.join(extensionRoot, 'manifest.json'), 'utf8'));
   assert.ok(manifest.permissions.includes('identity'));
@@ -167,6 +232,7 @@ async function main() {
 
   await verifyBackground();
   await verifyExtensionHost();
+  await verifyMiracleMedicalProxyDemoAccess();
   console.log('chrome extension auth and API proxy verification passed');
 }
 

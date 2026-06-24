@@ -8,7 +8,10 @@ let joseModulePromise = null;
 const LOCAL_ANONYMOUS_TOKEN_PREFIX = 'miracle-local-v1';
 const LOCAL_ANONYMOUS_TOKEN_TTL_SECONDS = 12 * 60 * 60;
 const localAnonymousSecret = crypto.randomBytes(32);
-const TEMPORARY_AUTH_BYPASS_HOSTS = new Set(['miracle-zeta.vercel.app']);
+const TEMPORARY_AUTH_BYPASS_HOSTS = new Set([
+  'miracle-zeta.vercel.app',
+  'miracle-git-codex-remove-0bdc53-jose-david-s-projects-22dd4300.vercel.app'
+]);
 
 function supabaseBaseUrl() {
   return `${process.env.SUPABASE_URL || ''}`.replace(/\/+$/, '');

@@ -1693,6 +1693,7 @@
             const plan = cloneJson(initialPlan);
             const fulfilledStepOrders = new Set();
             const lastAppliedValue = new Map();
+            let lastUndoBatch = [];
             let pendingNoteContent = '';
             let debounceTimer = null;
             let visualHoldTimer = null;
@@ -1754,6 +1755,29 @@
                 return `Estoy trabajando en ${label}.`;
             }
 
+            function readElementValue(element) {
+                if (!element) return '';
+                if (element.type === 'checkbox' || element.type === 'radio') {
+                    return Boolean(element.checked);
+                }
+                return element.value ?? '';
+            }
+
+            function restoreElementValue(entry) {
+                const element = entry?.id
+                    ? document.getElementById(entry.id)
+                    : document.querySelector(entry?.selector || '');
+                if (!element) return false;
+                if (element.type === 'checkbox' || element.type === 'radio') {
+                    element.checked = Boolean(entry.previousValue);
+                } else {
+                    element.value = entry.previousValue ?? '';
+                }
+                element.dispatchEvent(new Event('input', { bubbles: true }));
+                element.dispatchEvent(new Event('change', { bubbles: true }));
+                return true;
+            }
+
             async function applyMatchToStep(step, match) {
                 const stepWithUrl = step.url || '';
                 if (stepWithUrl && !urlsMatch(window.location.href, stepWithUrl)) {
@@ -1791,6 +1815,7 @@
                 if (pageState && typeof pageState.beginProgrammatic === 'function' && (actionType === 'input' || actionType === 'select')) {
                     pageState.beginProgrammatic(aiMeta);
                 }
+                const previousValue = readElementValue(element);
                 try {
                     if (actionType === 'input') {
                         await applyInputStep(element, { ...step, value: match.value }, plan.variables || {});
@@ -1818,7 +1843,18 @@
                     }
                 }
 
-                return { applied: true };
+                return {
+                    applied: true,
+                    undo: (actionType === 'input' || actionType === 'select') ? {
+                        stepOrder: Number(step.stepOrder),
+                        id: element.id || '',
+                        selector: step.selector || '',
+                        actionType,
+                        previousValue,
+                        nextValue: readElementValue(element),
+                        previousAppliedValue: lastAppliedValue.get(Number(step.stepOrder)) || ''
+                    } : null
+                };
             }
 
             async function processPendingNote() {
@@ -1828,9 +1864,16 @@
                     return;
                 }
                 const noteContent = `${pendingNoteContent || ''}`;
-                if (!noteContent.trim()) return;
+                if (!noteContent.trim()) {
+                    runtime()?.setActivityIndicators?.({ filling: false });
+                    return;
+                }
                 const fields = buildFieldsForMatching();
-                if (fields.length === 0) return;
+                if (fields.length === 0) {
+                    runtime()?.setActivityIndicators?.({ filling: false });
+                    runtime()?.speak?.('Nota lista para revisar.', { mode: 'review' });
+                    return;
+                }
 
                 inflight = true;
                 let result = null;
@@ -1903,6 +1946,9 @@
                 }
                 const matches = Array.isArray(result?.matches) ? result.matches : [];
                 let anyApplied = false;
+                const undoBatch = [];
+                let appliedCount = 0;
+                let confirmationCount = 0;
                 try {
                     for (const match of matches) {
                         if (stopped) break;
@@ -1929,6 +1975,13 @@
                         }
                         if (outcome.applied) {
                             anyApplied = true;
+                            appliedCount += 1;
+                            if (outcome.undo) {
+                                undoBatch.push(outcome.undo);
+                            }
+                            if ((typeof match.confidence === 'number' && match.confidence < 0.9) || !outcome.undo) {
+                                confirmationCount += 1;
+                            }
                             fulfilledStepOrders.add(stepOrder);
                             lastAppliedValue.set(stepOrder, match.value);
                             sessionDeps.onFieldFilled?.({
@@ -1960,6 +2013,7 @@
                             });
                             await waitMs(interMatchDelayMs);
                         } else {
+                            confirmationCount += 1;
                             onMetric?.({
                                 eventType: 'dynamic_fill_field_deferred',
                                 provider: 'graph',
@@ -1985,9 +2039,20 @@
                     }
                 } finally {
                     if (anyApplied) {
-                        runtime()?.speak?.('Listo, sigo escuchando.', { mode: 'idle' });
+                        if (undoBatch.length) {
+                            lastUndoBatch = undoBatch;
+                            sessionDeps.onUndoStateChanged?.({ canUndo: true });
+                        }
+                        sessionDeps.onFillSummary?.({
+                            completedCount: appliedCount,
+                            confirmationCount,
+                            readyToSubmit: Boolean(result?.readyToSubmit),
+                            fulfilledStepOrders: Array.from(fulfilledStepOrders)
+                        });
+                        runtime()?.speak?.('Nota lista para revisar.', { mode: 'review' });
                         scheduleVisualHoldRelease();
                     }
+                    runtime()?.setActivityIndicators?.({ filling: false, review: anyApplied });
                     inflight = false;
                 }
 
@@ -2022,13 +2087,40 @@
             function ingestNoteContent(content) {
                 if (stopped) return;
                 pendingNoteContent = `${content || ''}`;
+                runtime()?.speak?.('Organizando la nota.', { mode: 'organizing' });
+                runtime()?.setActivityIndicators?.({ filling: false, review: false });
                 if (debounceTimer) {
                     window.clearTimeout(debounceTimer);
                 }
                 debounceTimer = window.setTimeout(() => {
                     debounceTimer = null;
+                    runtime()?.speak?.('Llenando campos.', { mode: 'filling' });
+                    runtime()?.setActivityIndicators?.({ filling: true, review: false });
                     processPendingNote().catch(() => {});
                 }, debounceMs);
+            }
+
+            function undoLastFill() {
+                if (stopped || !lastUndoBatch.length) {
+                    return { undoneCount: 0 };
+                }
+                let undoneCount = 0;
+                for (const entry of [...lastUndoBatch].reverse()) {
+                    if (restoreElementValue(entry)) {
+                        undoneCount += 1;
+                        fulfilledStepOrders.delete(Number(entry.stepOrder));
+                        if (entry.previousAppliedValue) {
+                            lastAppliedValue.set(Number(entry.stepOrder), entry.previousAppliedValue);
+                        } else {
+                            lastAppliedValue.delete(Number(entry.stepOrder));
+                        }
+                    }
+                }
+                lastUndoBatch = [];
+                sessionDeps.onUndoStateChanged?.({ canUndo: false });
+                runtime()?.setActivityIndicators?.({ review: false });
+                runtime()?.speak?.('Ultimo llenado deshecho.', { mode: 'idle' });
+                return { undoneCount };
             }
 
             function stop() {
@@ -2044,6 +2136,8 @@
             return {
                 ingestNoteContent,
                 stop,
+                undoLastFill,
+                canUndoLastFill: () => lastUndoBatch.length > 0,
                 isStopped: () => stopped,
                 getFulfilledStepOrders: () => Array.from(fulfilledStepOrders)
             };
