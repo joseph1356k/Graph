@@ -10,6 +10,7 @@
     const ready = new Promise((resolve) => { resolveReady = resolve; });
     const LOCAL_SESSION_KEY = 'miracle-demo-local-anonymous-session';
     const state = { client: null, user: null, accessToken: '', authMode: '' };
+    const LOCAL_USER = { id: 'local-dev-user', email: '', role: 'local-dev' };
 
     function setSession(session) {
         state.accessToken = (session && session.access_token) || '';
@@ -41,7 +42,16 @@
     async function init() {
         const client = await window.MiracleSupabase.whenReady();
         state.client = client;
+        const authBypassEnabled = Boolean(window.MiracleSupabase.getConfig?.()?.authBypassEnabled);
         const localAnonymousAccess = Boolean(window.MiracleSupabase.getConfig?.()?.localAnonymousAccess);
+
+        if (authBypassEnabled) {
+            state.accessToken = '';
+            state.user = LOCAL_USER;
+            state.authMode = 'local-dev';
+            resolveReady(state.user);
+            return;
+        }
 
         if (localAnonymousAccess) {
             try {

@@ -8,6 +8,7 @@ let joseModulePromise = null;
 const LOCAL_ANONYMOUS_TOKEN_PREFIX = 'miracle-local-v1';
 const LOCAL_ANONYMOUS_TOKEN_TTL_SECONDS = 12 * 60 * 60;
 const localAnonymousSecret = crypto.randomBytes(32);
+const TEMPORARY_AUTH_BYPASS_HOSTS = new Set(['miracle-zeta.vercel.app']);
 
 function supabaseBaseUrl() {
   return `${process.env.SUPABASE_URL || ''}`.replace(/\/+$/, '');
@@ -42,6 +43,45 @@ function normalizeEmail(value = '') {
 
 function isTruthyEnv(name) {
   return ['1', 'true', 'yes', 'on'].includes(`${process.env[name] || ''}`.trim().toLowerCase());
+}
+
+function normalizeHost(value = '') {
+  return `${value || ''}`.trim().toLowerCase().replace(/:\d+$/, '');
+}
+
+function isTemporaryBypassHost(host = '') {
+  return TEMPORARY_AUTH_BYPASS_HOSTS.has(normalizeHost(host));
+}
+
+function runtimeCandidateHosts() {
+  return [
+    process.env.PUBLIC_BASE_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    process.env.VERCEL_URL
+  ].map((value) => {
+    if (!value) return '';
+    try {
+      const normalized = `${value}`.includes('://') ? `${value}` : `https://${value}`;
+      return new URL(normalized).host;
+    } catch (error) {
+      return `${value || ''}`;
+    }
+  });
+}
+
+function isAuthBypassEnabled(req = null) {
+  if (isTruthyEnv('TEMPORARY_DISABLE_AUTH')) {
+    return true;
+  }
+
+  if (req) {
+    const requestHost = req.get ? req.get('host') : req.headers?.host;
+    if (isTemporaryBypassHost(requestHost)) {
+      return true;
+    }
+  }
+
+  return runtimeCandidateHosts().some((host) => isTemporaryBypassHost(host));
 }
 
 function isLocalAnonymousAccessEnabled() {
@@ -194,6 +234,11 @@ async function verifyAccessToken(token) {
 }
 
 function requireSupabaseAuth(req, res, next, options = {}) {
+  if (isAuthBypassEnabled(req)) {
+    req.user = { id: 'local-dev-user', email: '', role: 'local-dev', token: '', isAnonymous: false };
+    return next();
+  }
+
   if (!isSupabaseAuthConfigured()) {
     if (isProductionRuntime()) {
       return res.status(503).json({ error: 'Autenticacion no configurada en el servidor.' });
@@ -236,7 +281,8 @@ function attachWorkflowAccess(req, res, next) {
   }
   const adminIds = new Set(parseEnvList('GLOBAL_WORKFLOW_ADMIN_IDS'));
   const adminEmails = new Set(parseEnvList('GLOBAL_WORKFLOW_ADMIN_EMAILS').map(normalizeEmail));
-  const isLocalDevUser = ownerId === 'local-dev-user' && !isSupabaseAuthConfigured();
+  const isLocalDevUser = ownerId === 'local-dev-user'
+    && (!isSupabaseAuthConfigured() || isAuthBypassEnabled(req));
   const canManageGlobalWorkflows = adminIds.has(ownerId)
     || adminEmails.has(normalizeEmail(req.user?.email || ''))
     || (isLocalDevUser && isTruthyEnv('ALLOW_LOCAL_GLOBAL_WORKFLOW_ADMIN'));
@@ -262,6 +308,7 @@ module.exports = {
   isProductionRuntime,
   isSupabasePayloadAnonymous,
   isLocalAnonymousAccessEnabled,
+  isAuthBypassEnabled,
   parseEnvList,
   isTruthyEnv
 };

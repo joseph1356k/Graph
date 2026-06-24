@@ -36,7 +36,8 @@ const {
   requireAccountAuth,
   attachWorkflowAccess,
   createLocalAnonymousSession,
-  isLocalAnonymousAccessEnabled
+  isLocalAnonymousAccessEnabled,
+  isAuthBypassEnabled
 } = require('./api/requireAuth');
 const phoneVoiceStore = require('./api/phoneVoiceStore');
 const { statusForError, publicErrorMessage } = require('./api/httpErrors');
@@ -164,10 +165,19 @@ async function probeSupabaseAuth(timeoutMs = 1500) {
 }
 
 app.get('/api/auth/status', async (req, res) => {
+  if (isAuthBypassEnabled(req)) {
+    return res.status(200).json({
+      supabase: { status: 'bypassed' },
+      localAnonymousAccess: false,
+      authBypassEnabled: true
+    });
+  }
+
   const supabase = await probeSupabaseAuth();
   res.status(supabase.status === 'ok' ? 200 : 503).json({
     supabase,
-    localAnonymousAccess: isLocalAnonymousAccessEnabled()
+    localAnonymousAccess: isLocalAnonymousAccessEnabled(),
+    authBypassEnabled: false
   });
 });
 
@@ -275,6 +285,7 @@ app.get('/api/public-config', (req, res) => {
     supabaseUrl: process.env.SUPABASE_URL || '',
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
     localAnonymousAccess: isLocalAnonymousAccessEnabled(),
+    authBypassEnabled: isAuthBypassEnabled(req),
     miracleBaseUrl,
     phoneMicrophoneAvailable: Boolean(
       (process.env.SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL)
@@ -354,9 +365,10 @@ app.get('/api/health', async (req, res) => {
     probeMiracleSidecar(),
     probeSupabaseAuth()
   ]);
+  const authBypassEnabled = isAuthBypassEnabled();
   const degraded = neo4j.status !== 'ok'
     || (miracle.status !== 'ok' && miracle.status !== 'not_configured')
-    || (supabase.status !== 'ok' && supabase.status !== 'not_configured');
+    || (!authBypassEnabled && supabase.status !== 'ok' && supabase.status !== 'not_configured');
   res.status(degraded ? 503 : 200).json({
     status: degraded ? 'degraded' : 'ok',
     services: {
@@ -368,7 +380,10 @@ app.get('/api/health', async (req, res) => {
         provider: llmProvider.provider || '',
         model: llmProvider.model || ''
       },
-      supabase
+      supabase,
+      auth: {
+        status: authBypassEnabled ? 'bypassed' : 'enabled'
+      }
     }
   });
 });

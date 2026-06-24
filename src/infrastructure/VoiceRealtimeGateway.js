@@ -3,7 +3,8 @@ const workflowAssistantPolicy = require('../application/use-cases/WorkflowAssist
 const {
   verifySupabaseToken,
   isSupabaseAuthConfigured,
-  isSupabasePayloadAnonymous
+  isSupabasePayloadAnonymous,
+  isAuthBypassEnabled
 } = require('../../web/api/requireAuth');
 
 class VoiceRealtimeGateway {
@@ -106,7 +107,7 @@ class VoiceRealtimeGateway {
         // This socket opens an OpenAI Realtime session with the server's API key,
         // so it must be authenticated. Browsers cannot set headers on a WS upgrade,
         // so the token travels as the access_token query param.
-        if (!isSupabaseAuthConfigured()) {
+        if (isAuthBypassEnabled(request) || !isSupabaseAuthConfigured()) {
           wss.handleUpgrade(request, socket, head, (client) => {
             client.user = { id: 'local-dev-user', email: '' };
             client.workflowAccess = { ownerId: 'local-dev-user', includeGlobal: true };
