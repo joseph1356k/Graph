@@ -10,7 +10,8 @@
         overlay: null,
         accessToken: '',
         authMode: '',
-        localAnonymousAccess: false
+        localAnonymousAccess: false,
+        authBypassEnabled: false
     };
     const LOCAL_USER = { id: 'local-dev-user', email: '', role: 'local-dev' };
 
@@ -101,6 +102,13 @@
         state.authMode = 'local-dev';
         setUser(LOCAL_USER);
         console.warn('[Miracle Auth] Supabase no esta configurado. EMR continua en modo local sin login ni sync.');
+    }
+
+    function enableBypassMode() {
+        state.accessToken = '';
+        state.authMode = 'local-dev';
+        setUser(LOCAL_USER);
+        console.warn('[Miracle Auth] Auth bypass enabled. EMR continua sin login mientras se corrige Supabase.');
     }
 
     function buildOAuthRedirectUrl() {
@@ -265,6 +273,11 @@
         const client = await window.MiracleSupabase.whenReady();
         state.client = client;
         state.localAnonymousAccess = Boolean(window.MiracleSupabase.getConfig?.()?.localAnonymousAccess);
+        state.authBypassEnabled = Boolean(window.MiracleSupabase.getConfig?.()?.authBypassEnabled);
+        if (state.authBypassEnabled) {
+            enableBypassMode();
+            return;
+        }
         const oauthError = consumeOAuthError();
         if (oauthError) {
             showOverlay(`Google no pudo iniciar sesion: ${oauthError}`);

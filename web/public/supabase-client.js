@@ -37,6 +37,13 @@
             const config = await response.json();
             state.config = config;
 
+            if (config && config.authBypassEnabled) {
+                state.error = 'Supabase auth bypass enabled.';
+                console.warn('[Miracle Supabase] ' + state.error);
+                resolveReady(null);
+                return;
+            }
+
             if (!config || !config.supabaseUrl || !config.supabaseAnonKey) {
                 state.error = 'Supabase no esta configurado (faltan SUPABASE_URL / SUPABASE_ANON_KEY en .env).';
                 console.warn('[Miracle Supabase] ' + state.error);
