@@ -21,7 +21,7 @@
             </div>
 
             <div class="studio-sidebar-group">
-                <span class="studio-sidebar-label">Console</span>
+                <span class="studio-sidebar-label">General</span>
                 <nav class="studio-sidebar-nav" aria-label="Primary">
                     <a class="studio-sidebar-link is-active" href="/provider-studio.html">Dashboard</a>
                     <a class="studio-sidebar-link" href="/miracle">Workspace Miracle</a>
@@ -58,31 +58,35 @@
         <main class="studio-main">
             <header class="studio-topbar">
                 <div class="studio-topbar-left">
-                    <div class="studio-crumb">Overview</div>
+                    <button class="studio-square-button" type="button" aria-label="Open dashboard">
+                        <span></span>
+                    </button>
                     <nav class="studio-tabs" aria-label="Sections">
-                        <a class="studio-tab is-active" href="/provider-studio.html">Providers</a>
-                        <a class="studio-tab" href="/miracle">Workspace</a>
-                        <a class="studio-tab" href="/emr-workspace.html">Clinical Surface</a>
+                        <a class="studio-tab is-active" href="/provider-studio.html">Overview</a>
+                        <a class="studio-tab" href="/miracle">Customers</a>
+                        <a class="studio-tab" href="/emr-workspace.html">Products</a>
+                        <a class="studio-tab" href="/visualize.html">Settings</a>
                     </nav>
                 </div>
 
                 <div class="studio-topbar-right">
                     <div class="studio-search-shell">
-                        <span class="studio-search-icon" aria-hidden="true">⌕</span>
-                        <span id="provider-studio-overall-detail">Estamos leyendo la configuración actual.</span>
+                        <span class="studio-search-icon" aria-hidden="true">Q</span>
+                        <span id="provider-studio-overall-detail">Estamos leyendo la configuracion actual.</span>
                     </div>
                     <a class="studio-action-button" href="/emr-workspace.html">Probar</a>
                 </div>
             </header>
 
             <section class="studio-hero">
-                <div>
-                    <span class="studio-eyebrow">Miracle Console</span>
+                <div class="studio-hero-copy">
                     <h1>Dashboard</h1>
-                    <p class="studio-lead">
-                        Ajusta la inteligencia que mueve Graph y Miracle desde una sola superficie,
-                        con control fino sobre runtime, structured outputs y matching de campos.
-                    </p>
+                    <nav class="studio-segmented" aria-label="Dashboard views">
+                        <a class="studio-segment is-active" href="/provider-studio.html">Overview</a>
+                        <span class="studio-segment">Analytics</span>
+                        <span class="studio-segment">Reports</span>
+                        <span class="studio-segment">Notifications</span>
+                    </nav>
                 </div>
                 <div class="studio-hero-state">
                     <span class="studio-hero-state-label">System Status</span>
@@ -97,7 +101,7 @@
                     <article class="studio-stat-card">
                         <div class="studio-stat-header">
                             <span>Graph Matching</span>
-                            <span class="studio-stat-chip">Graph</span>
+                            <span class="studio-stat-icon">$</span>
                         </div>
                         <strong id="graph-provider-metric">Cargando</strong>
                         <p id="graph-provider-current">Leyendo estado actual...</p>
@@ -106,7 +110,7 @@
                     <article class="studio-stat-card">
                         <div class="studio-stat-header">
                             <span>Runtime Upstream</span>
-                            <span class="studio-stat-chip">Miracle</span>
+                            <span class="studio-stat-icon">@</span>
                         </div>
                         <strong id="miracle-runtime-metric">Cargando</strong>
                         <p id="miracle-runtime-current">Leyendo estado actual...</p>
@@ -115,7 +119,7 @@
                     <article class="studio-stat-card">
                         <div class="studio-stat-header">
                             <span>Product LLM</span>
-                            <span class="studio-stat-chip">Miracle</span>
+                            <span class="studio-stat-icon">=</span>
                         </div>
                         <strong id="miracle-product-metric">Cargando</strong>
                         <p id="miracle-product-current">Leyendo estado actual...</p>
@@ -124,15 +128,15 @@
                     <article class="studio-stat-card">
                         <div class="studio-stat-header">
                             <span>Clinical Surface</span>
-                            <span class="studio-stat-chip">Launch</span>
+                            <span class="studio-stat-icon">~</span>
                         </div>
                         <strong>Expanded EMR</strong>
-                        <p>Abre el workspace clínico completo para probar dictado, matching y revisión de campos.</p>
+                        <p>Abre el workspace clinico completo para validar dictado y autofill.</p>
                     </article>
                 </div>
 
                 <div class="studio-panels">
-                    <section class="studio-panel studio-panel-wide">
+                    <section class="studio-panel studio-panel-graph">
                         <div class="studio-panel-top">
                             <div>
                                 <span class="studio-panel-kicker">Graph</span>
@@ -140,10 +144,7 @@
                             </div>
                             <span id="graph-provider-pill" class="status-pill">Cargando</span>
                         </div>
-                        <p class="studio-panel-copy">
-                            Elige el backend que Graph usa para interpretar la nota, resolver matching y decidir
-                            qué campos pueden completarse de forma confiable.
-                        </p>
+                        <p class="studio-panel-copy">Control central del matching y structured outputs de Graph.</p>
                         <form id="graph-provider-form" class="studio-form">
                             <div class="studio-form-grid">
                                 <label class="field">
@@ -179,9 +180,7 @@
                             </div>
                             <span id="miracle-runtime-pill" class="status-pill">Cargando</span>
                         </div>
-                        <p class="studio-panel-copy">
-                            Configura el provider base de OpenClaw que queda detrás del runtime principal.
-                        </p>
+                        <p class="studio-panel-copy">Provider base del runtime de voz y transcripcion.</p>
                         <form id="miracle-runtime-form" class="studio-form">
                             <label class="field">
                                 <span>Provider</span>
@@ -219,9 +218,7 @@
                             </div>
                             <span id="miracle-product-pill" class="status-pill">Cargando</span>
                         </div>
-                        <p class="studio-panel-copy">
-                            Controla la capa que organiza el dictado clínico y prepara la nota para autofill.
-                        </p>
+                        <p class="studio-panel-copy">Capa que organiza el dictado clinico para autofill.</p>
                         <form id="miracle-product-form" class="studio-form">
                             <label class="field">
                                 <span>Provider</span>
@@ -255,29 +252,26 @@
                             </div>
                             <span class="status-pill" data-tone="ready">Ready</span>
                         </div>
-                        <p class="studio-panel-copy">
-                            Usa estas salidas rápidas para validar los cambios de provider directamente en la
-                            superficie clínica y en el workspace de Miracle.
-                        </p>
+                        <p class="studio-panel-copy">Accesos rapidos para validar los cambios en superficies reales.</p>
                         <div class="studio-launch-list">
                             <a class="studio-launch-item" href="/emr-workspace.html">
                                 <div>
                                     <strong>Probar EMR Expandido</strong>
-                                    <span>Abre intake, anamnesis, órdenes y cierre en una sola superficie.</span>
+                                    <span>Workspace clinico completo.</span>
                                 </div>
                                 <em>Open</em>
                             </a>
                             <a class="studio-launch-item" href="/miracle">
                                 <div>
                                     <strong>Workspace Miracle</strong>
-                                    <span>Revisa el entorno de dictado y la hoja en blanco integrada dentro de Graph.</span>
+                                    <span>Hoja en blanco, grabacion y logs.</span>
                                 </div>
                                 <em>Open</em>
                             </a>
                             <a class="studio-launch-item" href="/visualize.html">
                                 <div>
                                     <strong>Workflow Graph</strong>
-                                    <span>Inspecciona rutas, planes y capacidades globales desde el grafo.</span>
+                                    <span>Inspeccion global del sistema.</span>
                                 </div>
                                 <em>Open</em>
                             </a>
