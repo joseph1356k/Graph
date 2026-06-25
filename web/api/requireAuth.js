@@ -9,8 +9,14 @@ const LOCAL_ANONYMOUS_TOKEN_PREFIX = 'miracle-local-v1';
 const LOCAL_ADMIN_TOKEN_PREFIX = 'miracle-local-admin-v1';
 const LOCAL_ANONYMOUS_TOKEN_TTL_SECONDS = 12 * 60 * 60;
 const LOCAL_ADMIN_TOKEN_TTL_SECONDS = 12 * 60 * 60;
-const localAnonymousSecret = crypto.randomBytes(32);
-const localAdminSecret = crypto.randomBytes(32);
+const localAnonymousSecret = crypto
+  .createHash('sha256')
+  .update('miracle-local-anonymous-session-v1')
+  .digest();
+const localAdminSecret = crypto
+  .createHash('sha256')
+  .update('miracle-local-admin-session-v1::Miracle.AI::FelipeMaldonado::Isaabelsofia::Jamesbondagent007-max::JoseDavid')
+  .digest();
 const LOCAL_ADMIN_USERS = [
   'Isaabelsofia',
   'Jamesbondagent007-max',
