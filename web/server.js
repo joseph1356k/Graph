@@ -23,6 +23,7 @@ const ExecutionIntelligenceService = require('../src/application/use-cases/Execu
 const NoteFieldMatcher = require('../src/application/use-cases/NoteFieldMatcher');
 const ClinicalDiagnosisSuggestionService = require('../src/application/use-cases/ClinicalDiagnosisSuggestionService');
 const UsageDashboardService = require('../src/application/use-cases/UsageDashboardService');
+const GraphProviderConfigService = require('../src/application/use-cases/GraphProviderConfigService');
 const registerLearningRoutes = require('./api/registerLearningRoutes');
 const registerWorkflowRoutes = require('./api/registerWorkflowRoutes');
 const registerContextRoutes = require('./api/registerContextRoutes');
@@ -88,6 +89,9 @@ const getGraphVisualization = new GetGraphVisualization(repository);
 const executionIntelligenceService = new ExecutionIntelligenceService(llmProvider);
 const noteFieldMatcher = new NoteFieldMatcher(llmProvider);
 const diagnosisSuggestionService = new ClinicalDiagnosisSuggestionService(llmProvider);
+const graphProviderConfigService = new GraphProviderConfigService(llmProvider, {
+  envPath: path.resolve(__dirname, '..', '.env')
+});
 
 app.use(bodyParser.json());
 
@@ -297,7 +301,8 @@ function isMiracleMedicalProxyRequest(req) {
   '/api/pitch',
   '/api/surface-profile',
   '/api/account',
-  '/api/visualize'
+  '/api/visualize',
+  '/api/providers'
 ].forEach((routePrefix) => {
   app.use(routePrefix, requireAccountAuth, attachWorkflowAccess);
 });
@@ -487,6 +492,26 @@ app.get('/api/account/me', (req, res) => {
       canManageGlobalWorkflows: Boolean(req.workflowAccess?.canManageGlobalWorkflows)
     }
   });
+});
+
+app.get('/api/providers/graph/status', (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar providers.' });
+  }
+  return res.json(graphProviderConfigService.status());
+});
+
+app.post('/api/providers/graph/configure', (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar providers.' });
+  }
+  try {
+    return res.json(graphProviderConfigService.configure(req.body || {}));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      error: error.message || 'No fue posible actualizar el provider de Graph.'
+    });
+  }
 });
 
 registerLearningRoutes(app, { learningSessionService });

@@ -233,6 +233,7 @@
             actionButton('Crear workflow', 'warning', () => {
                 startWorkflowRecording().catch((error) => window.alert(error.message || 'No se pudo iniciar la grabacion.'));
             }),
+            actionLink('Providers', '/provider-studio.html', 'secondary'),
             actionButton('Mis workflows', 'secondary', openWorkflowPanel),
             actionLink('Grafo y globales', '/visualize.html', ''),
             actionButton('Cerrar sesion', 'secondary', () => {

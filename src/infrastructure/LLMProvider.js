@@ -2,6 +2,56 @@ const axios = require('axios');
 
 class LLMProvider {
   constructor() {
+    this.reloadFromEnv();
+  }
+
+  reloadFromEnv() {
+    this.provider = null;
+    this.apiKey = '';
+    this.baseUrl = '';
+    this.model = '';
+    this.configSource = 'none';
+
+    const graphProvider = (process.env.GRAPH_LLM_PROVIDER || '').trim().toLowerCase();
+    const graphApiKey = (process.env.GRAPH_LLM_API_KEY || '').trim();
+    const graphBaseUrl = (process.env.GRAPH_LLM_BASE_URL || '').trim().replace(/\/+$/, '');
+    const graphModel = (process.env.GRAPH_LLM_MODEL || '').trim();
+
+    if (graphProvider === 'disabled') {
+      this.provider = 'disabled';
+      this.configSource = 'graph-env';
+      return;
+    }
+
+    if (graphProvider && graphApiKey) {
+      if (graphProvider === 'azure-foundry') {
+        this.provider = 'azure-foundry';
+        this.apiKey = graphApiKey;
+        this.baseUrl = graphBaseUrl;
+        this.model = graphModel;
+        this.configSource = 'graph-env';
+        return;
+      }
+
+      if (graphProvider === 'openrouter') {
+        this.provider = 'openrouter';
+        this.apiKey = graphApiKey;
+        this.baseUrl = graphBaseUrl || 'https://openrouter.ai/api/v1';
+        this.model = graphModel || 'openai/gpt-4o';
+        this.configSource = 'graph-env';
+        return;
+      }
+
+      if (graphProvider === 'openai') {
+        this.provider = 'openai';
+        this.apiKey = graphApiKey;
+        this.baseUrl = graphBaseUrl || 'https://api.openai.com/v1';
+        this.model = graphModel || 'gpt-4o';
+        this.configSource = 'graph-env';
+        return;
+      }
+    }
+
     this.azureFoundryApiKey = (process.env.AZURE_FOUNDRY_API_KEY || '').trim();
     this.azureFoundryBaseUrl = (process.env.AZURE_FOUNDRY_BASE_URL || '').trim().replace(/\/+$/, '');
     this.azureFoundryModel = (process.env.AZURE_FOUNDRY_MODEL || process.env.AZURE_FOUNDRY_DEPLOYMENT || '').trim();
@@ -12,6 +62,7 @@ class LLMProvider {
       this.apiKey = this.azureFoundryApiKey;
       this.baseUrl = this.azureFoundryBaseUrl;
       this.model = this.azureFoundryModel;
+      this.configSource = 'legacy-env';
       return;
     }
     this.provider = this.openRouterApiKey ? 'openrouter' : (this.openAiApiKey ? 'openai' : null);
@@ -22,6 +73,7 @@ class LLMProvider {
     this.model = this.provider === 'openrouter'
       ? (process.env.OPENROUTER_MODEL || 'openai/gpt-4o')
       : (process.env.OPENAI_MODEL || 'gpt-4o');
+    this.configSource = this.provider ? 'legacy-env' : 'none';
   }
 
   hasApiKey() {
