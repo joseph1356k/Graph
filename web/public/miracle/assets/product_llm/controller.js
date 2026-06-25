@@ -48,9 +48,7 @@ export function createProductLlmController({ state, dom, fetchJSON, setStatus, a
   function hideOverlay() {
     dom.productLlmOverlay.classList.add("is-hidden");
     dom.productLlmOverlay.setAttribute("aria-hidden", "true");
-    if (dom.setupOverlay.classList.contains("is-hidden")) {
-      document.body.classList.remove("setup-required");
-    }
+    document.body.classList.remove("setup-required");
   }
 
   async function loadStatus({ open = false } = {}) {

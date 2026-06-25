@@ -18,7 +18,6 @@
           <option value="">Sin notas guardadas</option>
         </select>
         <button id="refreshButton" type="button">Actualizar</button>
-        <button id="providerConfigButton" type="button">Provider</button>
         <button id="productLlmConfigButton" type="button">Product LLM</button>
         <button id="voiceLabButton" type="button">Voz</button>
       </div>
@@ -104,53 +103,6 @@
       </footer>
     </div>
 
-    <div id="setupOverlay" class="setup-overlay is-hidden" aria-hidden="true">
-      <section class="setup-card" aria-label="Configuración inicial de Miracle">
-        <div class="setup-header">
-          <h1 id="setupTitle">Configura Miracle</h1>
-          <button id="setupCloseButton" class="setup-close is-hidden" type="button">Cerrar</button>
-        </div>
-        <p id="setupIntro" class="setup-copy">
-          La primera vez configuramos el runtime upstream por detrás. La UX del editor no cambia.
-        </p>
-        <p id="setupCurrentConfig" class="setup-meta"></p>
-
-        <form id="setupForm" class="setup-form">
-          <label class="setup-field">
-            <span>Provider</span>
-            <select id="setupProvider"></select>
-          </label>
-
-          <label id="setupApiKeyField" class="setup-field">
-            <span>API key</span>
-            <input id="setupApiKey" type="password" autocomplete="off" />
-          </label>
-
-          <label id="setupBaseUrlField" class="setup-field is-hidden">
-            <span>Base URL</span>
-            <input id="setupBaseUrl" type="url" placeholder="https://llm.example.com/v1" />
-          </label>
-
-          <label id="setupOpenrouterModelField" class="setup-field is-hidden">
-            <span>Modelo</span>
-            <select id="setupOpenrouterModel"></select>
-          </label>
-
-          <label id="setupModelField" class="setup-field is-hidden">
-            <span>Model ID</span>
-            <input id="setupModel" type="text" placeholder="gpt-4.1-mini" />
-          </label>
-
-          <div class="setup-actions">
-            <button id="setupSubmitButton" type="submit">Guardar y configurar</button>
-            <button id="setupRefreshButton" type="button">Revisar estado</button>
-          </div>
-        </form>
-
-        <div id="setupStatus" class="setup-status"></div>
-      </section>
-    </div>
-
     <div id="productLlmOverlay" class="setup-overlay is-hidden" aria-hidden="true">
       <section class="setup-card" aria-label="Configuración del product LLM">
         <div class="setup-header">
@@ -158,7 +110,7 @@
           <button id="productLlmCloseButton" class="setup-close" type="button">Cerrar</button>
         </div>
         <p class="setup-copy">
-          Esta configuración es para la capa de LLM propia de Miracle. No cambia el provider upstream de OpenClaw.
+          Esta configuración es para la capa de LLM propia de Miracle, independiente de la configuración del backend.
         </p>
         <p id="productLlmCurrentConfig" class="setup-meta"></p>
 

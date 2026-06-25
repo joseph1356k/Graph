@@ -5,7 +5,6 @@ import { createEditorController } from "/miracle/assets/notes/editor.js";
 import { createPreviewRenderer } from "/miracle/assets/notes/preview.js";
 import { createProductLlmController } from "/miracle/assets/product_llm/controller.js";
 import { createWorkspaceController } from "/miracle/assets/notes/workspace.js";
-import { createSetupController } from "/miracle/assets/setup/controller.js";
 import { createVoiceStreamingController } from "/miracle/assets/voice/controller.js";
 
 const state = {
@@ -22,8 +21,6 @@ const state = {
   chatPinned: false,
   chatCloseTimer: null,
   workspaceBooted: false,
-  setup: null,
-  setupOverlayMode: "required",
   voiceOrchestrationQueue: Promise.resolve(),
   voiceOrchestrationSessionId: null,
   voiceOrchestrationSequence: 0,
@@ -53,7 +50,6 @@ const dom = {
   voiceDockDebugOutput: document.getElementById("voiceDockDebugOutput"),
   saveButton: document.getElementById("saveButton"),
   refreshButton: document.getElementById("refreshButton"),
-  providerConfigButton: document.getElementById("providerConfigButton"),
   productLlmConfigButton: document.getElementById("productLlmConfigButton"),
   voiceLabButton: document.getElementById("voiceLabButton"),
   newNoteButton: document.getElementById("newNoteButton"),
@@ -67,24 +63,6 @@ const dom = {
   chatInput: document.getElementById("chatInput"),
   newChatButton: document.getElementById("newChatButton"),
   pinChatButton: document.getElementById("pinChatButton"),
-  setupOverlay: document.getElementById("setupOverlay"),
-  setupTitle: document.getElementById("setupTitle"),
-  setupIntro: document.getElementById("setupIntro"),
-  setupCurrentConfig: document.getElementById("setupCurrentConfig"),
-  setupForm: document.getElementById("setupForm"),
-  setupProvider: document.getElementById("setupProvider"),
-  setupApiKeyField: document.getElementById("setupApiKeyField"),
-  setupApiKey: document.getElementById("setupApiKey"),
-  setupBaseUrlField: document.getElementById("setupBaseUrlField"),
-  setupBaseUrl: document.getElementById("setupBaseUrl"),
-  setupOpenrouterModelField: document.getElementById("setupOpenrouterModelField"),
-  setupOpenrouterModel: document.getElementById("setupOpenrouterModel"),
-  setupModelField: document.getElementById("setupModelField"),
-  setupModel: document.getElementById("setupModel"),
-  setupStatus: document.getElementById("setupStatus"),
-  setupRefreshButton: document.getElementById("setupRefreshButton"),
-  setupSubmitButton: document.getElementById("setupSubmitButton"),
-  setupCloseButton: document.getElementById("setupCloseButton"),
   productLlmOverlay: document.getElementById("productLlmOverlay"),
   productLlmCurrentConfig: document.getElementById("productLlmCurrentConfig"),
   productLlmForm: document.getElementById("productLlmForm"),
@@ -422,16 +400,6 @@ function resolveVoiceStatusMessage(payload) {
   return "Voz procesada";
 }
 
-const setupController = createSetupController({
-  state,
-  dom,
-  fetchJSON,
-  setStatus,
-  scheduleSessionPersist: workspaceController.scheduleSessionPersist,
-  bootWorkspace,
-  appendSystemMessage: (message) => chatController.appendSystemMessage(message),
-});
-
 productLlmController = createProductLlmController({
   state,
   dom,
@@ -440,7 +408,6 @@ productLlmController = createProductLlmController({
   appendSystemMessage: (message) => chatController.appendSystemMessage(message),
 });
 
-setupController.bindEvents();
 productLlmController.bindEvents();
 chatController.bindEvents();
 editorController.bindEvents();
@@ -509,8 +476,6 @@ window.addEventListener("beforeunload", () => {
   voiceController.dispose();
 });
 
-setupController.loadStatus().then((setup) => {
-  Promise.all([bootWorkspace(), loadVoiceOrchestrationStatus(), productLlmController.loadStatus()]).catch((error) =>
-    setStatus(error.message)
-  );
-});
+Promise.all([bootWorkspace(), loadVoiceOrchestrationStatus(), productLlmController.loadStatus()]).catch((error) =>
+  setStatus(error.message)
+);
