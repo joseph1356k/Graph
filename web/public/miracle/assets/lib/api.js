@@ -3,7 +3,7 @@ function resolveMiracleUrl(url) {
     return url;
   }
   if (url.startsWith("/api/")) {
-    return `/api/miracle${url}`;
+    return `/api/miracle${url.slice("/api".length)}`;
   }
   return url;
 }
