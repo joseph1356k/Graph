@@ -263,12 +263,16 @@
 
     async function refreshAll() {
         dom.overallStatus.textContent = 'Sincronizando';
-        dom.overallDetail.textContent = 'Estamos leyendo la configuración actual.';
+        if (dom.overallDetail) {
+            dom.overallDetail.textContent = '';
+        }
         const account = await loadAccount();
         if (!account?.permissions?.canManageGlobalWorkflows) {
             renderAccessState(false, 'Esta superficie está reservada para cuentas con permisos de administración global.');
             dom.overallStatus.textContent = 'Acceso restringido';
-            dom.overallDetail.textContent = 'Tu cuenta puede navegar el sistema, pero no reconfigurar providers.';
+            if (dom.overallDetail) {
+                dom.overallDetail.textContent = '';
+            }
             return;
         }
 
@@ -282,7 +286,9 @@
         renderMiracleRuntime(miracleRuntime);
         renderMiracleProduct(miracleProduct);
         dom.overallStatus.textContent = 'Todo en calma';
-        dom.overallDetail.textContent = 'Los tres motores ya se pueden revisar y reconfigurar desde esta misma pantalla.';
+        if (dom.overallDetail) {
+            dom.overallDetail.textContent = '';
+        }
     }
 
     async function submitGraph(event) {
@@ -394,7 +400,9 @@
     bindEvents();
     refreshAll().catch((error) => {
         dom.overallStatus.textContent = 'Algo requiere atención';
-        dom.overallDetail.textContent = error.message || 'No pudimos cargar el Provider Studio.';
+        if (dom.overallDetail) {
+            dom.overallDetail.textContent = '';
+        }
         renderAccessState(false, error.message || 'No pudimos cargar el Provider Studio.');
     });
 })();

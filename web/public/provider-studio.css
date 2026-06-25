@@ -19,7 +19,7 @@
     --radius-xl: 18px;
     --radius-lg: 14px;
     --radius-md: 12px;
-    --sidebar-width: 240px;
+    --sidebar-width: clamp(210px, 18vw, 236px);
 }
 
 * {
@@ -216,24 +216,26 @@ select {
 }
 
 .studio-main {
-    padding: 18px 22px 22px;
+    padding: clamp(14px, 1.6vw, 18px) clamp(16px, 1.9vw, 22px) 22px;
     display: grid;
     align-content: start;
-    gap: 18px;
+    gap: 16px;
 }
 
 .studio-topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .studio-topbar-left,
 .studio-topbar-right {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .studio-square-button {
@@ -268,6 +270,7 @@ select {
     display: flex;
     align-items: center;
     gap: 6px;
+    flex-wrap: wrap;
 }
 
 .studio-tab {
@@ -286,32 +289,6 @@ select {
     color: var(--ink);
 }
 
-.studio-search-shell {
-    min-width: 290px;
-    min-height: 38px;
-    padding: 0 12px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--muted);
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(148, 163, 184, 0.12);
-    font-size: 0.88rem;
-}
-
-.studio-search-shell span:last-child {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.studio-search-icon {
-    color: var(--muted-strong);
-    font-size: 0.82rem;
-    font-weight: 700;
-}
-
 .studio-action-button {
     min-height: 38px;
     padding: 0 16px;
@@ -328,7 +305,8 @@ select {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 18px;
+    gap: 14px;
+    flex-wrap: wrap;
 }
 
 .studio-hero-copy {
@@ -338,7 +316,7 @@ select {
 
 .studio-hero h1 {
     margin: 0;
-    font-size: 2.2rem;
+    font-size: clamp(1.75rem, 3vw, 2.15rem);
     letter-spacing: -0.05em;
     line-height: 1;
 }
@@ -404,12 +382,12 @@ select {
 
 .studio-dashboard {
     display: grid;
-    gap: 16px;
+    gap: 14px;
 }
 
 .studio-stats {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(180px, 1fr));
     gap: 12px;
 }
 
@@ -422,10 +400,10 @@ select {
 }
 
 .studio-stat-card {
-    min-height: 126px;
-    padding: 18px 20px;
+    min-height: 112px;
+    padding: 16px 16px 15px;
     display: grid;
-    gap: 8px;
+    gap: 7px;
 }
 
 .studio-stat-header {
@@ -444,7 +422,7 @@ select {
 }
 
 .studio-stat-card strong {
-    font-size: 1.15rem;
+    font-size: clamp(1rem, 1.3vw, 1.12rem);
     letter-spacing: -0.04em;
     line-height: 1.1;
 }
@@ -458,15 +436,15 @@ select {
 
 .studio-panels {
     display: grid;
-    grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
     gap: 12px;
 }
 
 .studio-panel {
-    padding: 18px;
+    padding: 16px;
     display: grid;
     align-content: start;
-    gap: 12px;
+    gap: 10px;
 }
 
 .studio-panel-graph {
@@ -490,7 +468,7 @@ select {
 
 .studio-panel h2 {
     margin: 6px 0 0;
-    font-size: 1.04rem;
+    font-size: clamp(0.96rem, 1.15vw, 1.02rem);
     line-height: 1.1;
     letter-spacing: -0.03em;
 }
@@ -540,7 +518,7 @@ select {
 .studio-form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    gap: 9px;
 }
 
 .field {
@@ -565,7 +543,7 @@ select {
 .field input,
 .field select {
     width: 100%;
-    min-height: 40px;
+    min-height: 38px;
     padding: 0 12px;
     border-radius: 10px;
     border: 1px solid var(--line-strong);
@@ -589,8 +567,8 @@ select {
 }
 
 .button {
-    min-height: 38px;
-    padding: 0 14px;
+    min-height: 36px;
+    padding: 0 13px;
     border-radius: 10px;
     border: 0;
     cursor: pointer;
@@ -645,7 +623,7 @@ select {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 12px 14px;
+    padding: 11px 12px;
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(148, 163, 184, 0.08);
@@ -680,6 +658,16 @@ select {
     display: none !important;
 }
 
+@media (max-width: 1400px) {
+    .studio-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .studio-panels {
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 0.86fr);
+    }
+}
+
 @media (max-width: 1320px) {
     .studio-stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -706,9 +694,29 @@ select {
     }
 }
 
+@media (max-width: 920px) {
+    .studio-main {
+        padding: 14px;
+    }
+
+    .studio-sidebar {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .studio-tabs {
+        gap: 4px;
+    }
+
+    .studio-tab,
+    .studio-segment {
+        font-size: 0.84rem;
+    }
+}
+
 @media (max-width: 860px) {
     .studio-main {
-        padding: 18px;
+        padding: 12px;
     }
 
     .studio-topbar,
@@ -725,11 +733,6 @@ select {
         flex-wrap: wrap;
     }
 
-    .studio-search-shell {
-        min-width: 0;
-        width: 100%;
-    }
-
     .studio-stats,
     .studio-form-grid {
         grid-template-columns: 1fr;
@@ -737,5 +740,37 @@ select {
 
     .field-span-2 {
         grid-column: auto;
+    }
+
+    .studio-hero-state {
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .studio-sidebar-footer {
+        padding: 9px 10px;
+    }
+
+    .studio-stat-card,
+    .studio-panel {
+        padding: 14px;
+    }
+
+    .studio-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .button,
+    .studio-action-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .studio-launch-item {
+        align-items: flex-start;
+        flex-direction: column;
     }
 }
