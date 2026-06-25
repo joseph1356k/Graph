@@ -16,6 +16,14 @@
     {
       "source": "/examples/medical-demo",
       "destination": "/index.html"
+    },
+    {
+      "source": "/miracle",
+      "destination": "/miracle/index.html"
+    },
+    {
+      "source": "/miracle/voice-lab",
+      "destination": "/miracle/voice.html"
     }
   ],
   "headers": [

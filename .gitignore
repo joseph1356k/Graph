@@ -41,3 +41,4 @@ yarn-error.log*
 /wallpaper home.png
 .vercel
 generated/usage/
+.env*

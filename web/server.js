@@ -52,6 +52,7 @@ require('dotenv').config({ quiet: true });
 
 const app = express();
 app.set('trust proxy', process.env.VERCEL ? 1 : false);
+const miracleWorkspaceStaticRoot = path.join(__dirname, 'public', 'miracle');
 
 function resolveGeneratedRoot(...segments) {
   const baseRoot = process.env.VERCEL
@@ -125,6 +126,16 @@ app.get('/', (req, res) => {
 app.get('/examples/medical-demo', (req, res) => {
   res.redirect('/index.html');
 });
+
+app.get('/miracle', (req, res) => {
+  res.sendFile(path.join(miracleWorkspaceStaticRoot, 'index.html'));
+});
+
+app.get('/miracle/voice-lab', (req, res) => {
+  res.sendFile(path.join(miracleWorkspaceStaticRoot, 'voice.html'));
+});
+
+app.use('/miracle', express.static(miracleWorkspaceStaticRoot));
 
 app.use(express.static('web/public'));
 
@@ -297,6 +308,10 @@ function resolveMiracleMedicalEngineUrl() {
   return `${process.env.MIRACLE_MEDICAL_ENGINE_URL || process.env.MIRACLE_BASE_URL || DEFAULT_MIRACLE_MEDICAL_ENGINE_URL}`.replace(/\/+$/, '');
 }
 
+function resolveMiracleWorkspaceUrl() {
+  return `${process.env.MIRACLE_WORKSPACE_URL || resolveMiracleMedicalEngineUrl()}`.replace(/\/+$/, '');
+}
+
 function resolvePublicAppBaseUrl(req) {
   const forwardedProto = (req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
   const protocol = forwardedProto || req.protocol || 'https';
@@ -370,6 +385,50 @@ async function proxyMiracleMedicalRequest(req, res, path, init = {}) {
   }
 }
 
+function buildMiracleProxyRequestBody(req) {
+  if (req.method === 'GET' || req.method === 'HEAD') {
+    return undefined;
+  }
+  if (typeof req.body === 'undefined' || req.body === null) {
+    return undefined;
+  }
+  if (Buffer.isBuffer(req.body) || typeof req.body === 'string') {
+    return req.body;
+  }
+  return JSON.stringify(req.body);
+}
+
+async function proxyMiracleWorkspaceRequest(req, res) {
+  const baseUrl = resolveMiracleWorkspaceUrl();
+  const upstreamPath = req.originalUrl.replace(/^\/api\/miracle/, '');
+  const headers = {};
+  const contentType = req.get('content-type');
+  const accept = req.get('accept');
+
+  if (contentType) {
+    headers['Content-Type'] = contentType;
+  }
+  if (accept) {
+    headers.Accept = accept;
+  }
+
+  try {
+    const upstreamResponse = await fetch(`${baseUrl}${upstreamPath}`, {
+      method: req.method,
+      headers,
+      body: buildMiracleProxyRequestBody(req)
+    });
+    const payloadText = await upstreamResponse.text();
+    const upstreamContentType = upstreamResponse.headers.get('content-type') || 'application/json; charset=utf-8';
+    res.status(upstreamResponse.status);
+    res.setHeader('Content-Type', upstreamContentType);
+    return res.send(payloadText);
+  } catch (error) {
+    console.error(`[Miracle Workspace Proxy] ${upstreamPath} failed: ${error.message}`);
+    return res.status(502).json({ error: 'Miracle workspace unavailable' });
+  }
+}
+
 app.post('/api/voice/stream-session', async (req, res) => {
   await proxyMiracleMedicalRequest(req, res, '/api/voice/stream-session', {
     method: 'POST'
@@ -381,6 +440,10 @@ app.post('/api/voice/orchestrator/events', async (req, res) => {
     method: 'POST',
     body: JSON.stringify(req.body || {})
   });
+});
+
+app.use('/api/miracle', async (req, res) => {
+  await proxyMiracleWorkspaceRequest(req, res);
 });
 
 app.get('/api/health', async (req, res) => {
