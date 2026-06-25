@@ -2,17 +2,16 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=/provider-studio.html">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Miracle</title>
+    <title>Miracle Access</title>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <style>
         :root {
-            --bg: #f4f1eb;
-            --surface: rgba(255, 255, 255, 0.82);
-            --line: rgba(32, 28, 24, 0.08);
-            --ink: #191614;
-            --muted: #70665d;
+            --bg: #06081a;
+            --surface: rgba(10, 16, 34, 0.82);
+            --line: rgba(177, 193, 232, 0.12);
+            --ink: #f4f7ff;
+            --muted: #8f9bbb;
         }
 
         * { box-sizing: border-box; }
@@ -23,47 +22,98 @@
             display: grid;
             place-items: center;
             padding: 24px;
-            font-family: "Instrument Sans", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-family: Inter, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
             color: var(--ink);
             background:
-                radial-gradient(circle at 14% 10%, rgba(255, 255, 255, 0.72), transparent 28%),
-                radial-gradient(circle at 88% 14%, rgba(207, 219, 228, 0.62), transparent 28%),
-                linear-gradient(160deg, #f8f4ee 0%, var(--bg) 46%, #ece7de 100%);
+                radial-gradient(circle at 18% 0%, rgba(58, 79, 129, 0.22), transparent 28%),
+                radial-gradient(circle at 88% 8%, rgba(28, 45, 92, 0.25), transparent 24%),
+                linear-gradient(180deg, #060818 0%, #050714 100%);
         }
 
-        .redirect-card {
-            width: min(540px, 100%);
-            padding: 32px;
-            border-radius: 28px;
+        .shell {
+            width: min(660px, 100%);
+            padding: 38px;
+            border-radius: 32px;
             border: 1px solid var(--line);
             background: var(--surface);
-            backdrop-filter: blur(18px);
-            text-align: center;
+            backdrop-filter: blur(24px);
+            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.4);
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            min-height: 28px;
+            padding: 0 10px;
+            border-radius: 999px;
+            background: rgba(177, 193, 232, 0.08);
+            color: #b7c3e4;
+            font-size: 0.74rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
 
         h1 {
-            margin: 0 0 10px;
-            font-size: clamp(2rem, 7vw, 3rem);
-            line-height: 1;
-            letter-spacing: -0.05em;
+            margin: 18px 0 12px;
+            font-size: clamp(2.4rem, 6vw, 4rem);
+            line-height: 0.95;
+            letter-spacing: -0.06em;
         }
 
         p {
             margin: 0;
+            max-width: 560px;
             color: var(--muted);
             line-height: 1.7;
         }
 
-        a {
-            color: inherit;
-            font-weight: 700;
+        .links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 26px;
+        }
+
+        .link {
+            display: inline-flex;
+            align-items: center;
+            min-height: 44px;
+            padding: 0 16px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            color: var(--ink);
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.04);
         }
     </style>
 </head>
 <body>
-    <main class="redirect-card">
-        <h1>Miracle</h1>
-        <p>Redirigiendo al Provider Studio. Si no ocurre automáticamente, abre <a href="/provider-studio.html">el dashboard principal</a>.</p>
+    <main class="shell">
+        <span class="eyebrow">Miracle Console</span>
+        <h1>Login required.</h1>
+        <p>
+            Esta entrada reemplaza la landing anterior. Inicia sesion para abrir el dashboard
+            de providers, el EMR expandido y la interfaz integrada de Miracle dentro de Graph.
+        </p>
+        <div class="links">
+            <a class="link" href="/provider-studio.html">Dashboard</a>
+            <a class="link" href="/emr-workspace.html">EMR expandido</a>
+            <a class="link" href="/miracle">Workspace Miracle</a>
+        </div>
     </main>
+
+    <script src="/auth-gate.js"></script>
+    <script>
+        (function () {
+            const nextUrl = new URL(window.location.href).searchParams.get('next') || '/provider-studio.html';
+            if (!window.MiracleAuth || typeof window.MiracleAuth.whenAuthenticated !== 'function') {
+                return;
+            }
+            window.MiracleAuth.whenAuthenticated().then(() => {
+                window.location.replace(nextUrl);
+            }).catch(() => {});
+        })();
+    </script>
 </body>
 </html>

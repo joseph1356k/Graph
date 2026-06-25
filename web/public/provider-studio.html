@@ -8,162 +8,282 @@
     <link rel="stylesheet" href="/provider-studio.css">
 </head>
 <body>
-    <div class="studio-shell">
-        <header class="studio-header">
-            <a class="studio-brand" href="/">
-                <span class="studio-brand-mark" aria-hidden="true"></span>
-                <span class="studio-brand-wordmark">Miracle</span>
-            </a>
-            <nav class="studio-nav" aria-label="Navegación">
-                <a href="/miracle">Workspace</a>
-                <a href="/emr-workspace.html">Probar</a>
-                <a href="/visualize.html">Workflows</a>
-            </nav>
-        </header>
+    <div class="studio-app">
+        <aside class="studio-sidebar">
+            <div class="studio-sidebar-top">
+                <a class="studio-mark" href="/provider-studio.html">
+                    <span class="studio-mark-icon" aria-hidden="true"></span>
+                    <span class="studio-mark-copy">
+                        <strong>Miracle Admin</strong>
+                        <span>Provider Studio</span>
+                    </span>
+                </a>
+            </div>
+
+            <div class="studio-sidebar-group">
+                <span class="studio-sidebar-label">Console</span>
+                <nav class="studio-sidebar-nav" aria-label="Primary">
+                    <a class="studio-sidebar-link is-active" href="/provider-studio.html">Dashboard</a>
+                    <a class="studio-sidebar-link" href="/miracle">Workspace Miracle</a>
+                    <a class="studio-sidebar-link" href="/emr-workspace.html">Probar EMR</a>
+                    <a class="studio-sidebar-link" href="/visualize.html">Workflow Graph</a>
+                </nav>
+            </div>
+
+            <div class="studio-sidebar-group">
+                <span class="studio-sidebar-label">Systems</span>
+                <div class="studio-sidebar-meta">
+                    <span>Graph field matching</span>
+                    <strong id="graph-provider-sidebar-status">Syncing</strong>
+                </div>
+                <div class="studio-sidebar-meta">
+                    <span>Miracle runtime</span>
+                    <strong id="miracle-runtime-sidebar-status">Syncing</strong>
+                </div>
+                <div class="studio-sidebar-meta">
+                    <span>Miracle product LLM</span>
+                    <strong id="miracle-product-sidebar-status">Syncing</strong>
+                </div>
+            </div>
+
+            <div class="studio-sidebar-footer">
+                <div class="studio-user-badge">MN</div>
+                <div class="studio-user-copy">
+                    <strong id="provider-studio-account-email">Cargando...</strong>
+                    <span id="provider-studio-account-role">Verificando permisos</span>
+                </div>
+            </div>
+        </aside>
 
         <main class="studio-main">
+            <header class="studio-topbar">
+                <div class="studio-topbar-left">
+                    <div class="studio-crumb">Overview</div>
+                    <nav class="studio-tabs" aria-label="Sections">
+                        <a class="studio-tab is-active" href="/provider-studio.html">Providers</a>
+                        <a class="studio-tab" href="/miracle">Workspace</a>
+                        <a class="studio-tab" href="/emr-workspace.html">Clinical Surface</a>
+                    </nav>
+                </div>
+
+                <div class="studio-topbar-right">
+                    <div class="studio-search-shell">
+                        <span class="studio-search-icon" aria-hidden="true">⌕</span>
+                        <span id="provider-studio-overall-detail">Estamos leyendo la configuración actual.</span>
+                    </div>
+                    <a class="studio-action-button" href="/emr-workspace.html">Probar</a>
+                </div>
+            </header>
+
             <section class="studio-hero">
-                <div class="studio-hero-copy">
-                    <span class="studio-kicker">Provider Studio</span>
-                    <h1>Una sola superficie para afinar la inteligencia detrás de Graph y Miracle.</h1>
-                    <p>
-                        Configura el runtime upstream, la capa clínica de Miracle y el motor de matching de Graph
-                        desde un panel sereno, preciso y deliberadamente mínimo.
+                <div>
+                    <span class="studio-eyebrow">Miracle Console</span>
+                    <h1>Dashboard</h1>
+                    <p class="studio-lead">
+                        Ajusta la inteligencia que mueve Graph y Miracle desde una sola superficie,
+                        con control fino sobre runtime, structured outputs y matching de campos.
                     </p>
                 </div>
-                <div class="studio-hero-meta">
-                    <div class="meta-card">
-                        <span class="meta-label">Cuenta</span>
-                        <strong id="provider-studio-account-email">Cargando...</strong>
-                        <p id="provider-studio-account-role">Verificando permisos</p>
-                    </div>
-                    <div class="meta-card">
-                        <span class="meta-label">Estado</span>
-                        <strong id="provider-studio-overall-status">Sincronizando</strong>
-                        <p id="provider-studio-overall-detail">Estamos leyendo la configuración actual.</p>
-                    </div>
+                <div class="studio-hero-state">
+                    <span class="studio-hero-state-label">System Status</span>
+                    <strong id="provider-studio-overall-status">Sincronizando</strong>
                 </div>
             </section>
 
             <section id="provider-studio-access" class="studio-access is-hidden" aria-live="polite"></section>
 
-            <section id="provider-studio-grid" class="studio-grid is-hidden">
-                <article class="studio-card">
-                    <div class="studio-card-top">
-                        <div>
-                            <span class="section-eyebrow">Graph</span>
-                            <h2>Field Matching</h2>
+            <section id="provider-studio-grid" class="studio-dashboard is-hidden">
+                <div class="studio-stats">
+                    <article class="studio-stat-card">
+                        <div class="studio-stat-header">
+                            <span>Graph Matching</span>
+                            <span class="studio-stat-chip">Graph</span>
                         </div>
-                        <span id="graph-provider-pill" class="status-pill">Cargando</span>
-                    </div>
-                    <p class="section-copy">
-                        Controla el provider que Graph usa para matching de nota, dynamic fill y decisiones de
-                        completado de campos.
-                    </p>
-                    <div class="current-line" id="graph-provider-current">Leyendo estado actual...</div>
-                    <form id="graph-provider-form" class="studio-form">
-                        <label class="field">
-                            <span>Provider</span>
-                            <select id="graph-provider-select"></select>
-                        </label>
-                        <label class="field" id="graph-provider-base-url-field">
-                            <span>Base URL</span>
-                            <input id="graph-provider-base-url" type="url" placeholder="https://.../openai/v1">
-                        </label>
-                        <label class="field" id="graph-provider-model-field">
-                            <span>Modelo</span>
-                            <input id="graph-provider-model" type="text" placeholder="grok-4.1">
-                        </label>
-                        <label class="field" id="graph-provider-api-key-field">
-                            <span>API key</span>
-                            <input id="graph-provider-api-key" type="password" autocomplete="off" placeholder="Pega la clave del provider">
-                        </label>
-                        <div class="studio-actions">
-                            <button type="button" class="button ghost" id="graph-provider-refresh">Releer</button>
-                            <button type="submit" class="button primary" id="graph-provider-submit">Guardar Graph</button>
-                        </div>
-                    </form>
-                    <p id="graph-provider-message" class="form-message"></p>
-                </article>
+                        <strong id="graph-provider-metric">Cargando</strong>
+                        <p id="graph-provider-current">Leyendo estado actual...</p>
+                    </article>
 
-                <article class="studio-card">
-                    <div class="studio-card-top">
-                        <div>
-                            <span class="section-eyebrow">Miracle</span>
-                            <h2>Runtime Upstream</h2>
+                    <article class="studio-stat-card">
+                        <div class="studio-stat-header">
+                            <span>Runtime Upstream</span>
+                            <span class="studio-stat-chip">Miracle</span>
                         </div>
-                        <span id="miracle-runtime-pill" class="status-pill">Cargando</span>
-                    </div>
-                    <p class="section-copy">
-                        Ajusta el provider upstream de OpenClaw que Miracle usa por detrás para su runtime principal.
-                    </p>
-                    <div class="current-line" id="miracle-runtime-current">Leyendo estado actual...</div>
-                    <form id="miracle-runtime-form" class="studio-form">
-                        <label class="field">
-                            <span>Provider</span>
-                            <select id="miracle-runtime-select"></select>
-                        </label>
-                        <label class="field is-hidden" id="miracle-runtime-base-url-field">
-                            <span>Base URL</span>
-                            <input id="miracle-runtime-base-url" type="url" placeholder="https://llm.example.com/v1">
-                        </label>
-                        <label class="field is-hidden" id="miracle-runtime-model-preset-field">
-                            <span>Modelo</span>
-                            <select id="miracle-runtime-model-preset"></select>
-                        </label>
-                        <label class="field is-hidden" id="miracle-runtime-model-field">
-                            <span>Modelo personalizado</span>
-                            <input id="miracle-runtime-model" type="text" placeholder="grok-4.1">
-                        </label>
-                        <label class="field is-hidden" id="miracle-runtime-api-key-field">
-                            <span>API key</span>
-                            <input id="miracle-runtime-api-key" type="password" autocomplete="off" placeholder="Clave del runtime upstream">
-                        </label>
-                        <div class="studio-actions">
-                            <button type="button" class="button ghost" id="miracle-runtime-refresh">Releer</button>
-                            <button type="submit" class="button primary" id="miracle-runtime-submit">Guardar Runtime</button>
-                        </div>
-                    </form>
-                    <p id="miracle-runtime-message" class="form-message"></p>
-                </article>
+                        <strong id="miracle-runtime-metric">Cargando</strong>
+                        <p id="miracle-runtime-current">Leyendo estado actual...</p>
+                    </article>
 
-                <article class="studio-card">
-                    <div class="studio-card-top">
-                        <div>
-                            <span class="section-eyebrow">Miracle</span>
-                            <h2>Product LLM</h2>
+                    <article class="studio-stat-card">
+                        <div class="studio-stat-header">
+                            <span>Product LLM</span>
+                            <span class="studio-stat-chip">Miracle</span>
                         </div>
-                        <span id="miracle-product-pill" class="status-pill">Cargando</span>
-                    </div>
-                    <p class="section-copy">
-                        Define la capa que organiza el dictado clínico, consolida la nota y prepara acciones desde
-                        el asistente flotante.
-                    </p>
-                    <div class="current-line" id="miracle-product-current">Leyendo estado actual...</div>
-                    <form id="miracle-product-form" class="studio-form">
-                        <label class="field">
-                            <span>Provider</span>
-                            <select id="miracle-product-select"></select>
-                        </label>
-                        <label class="field is-hidden" id="miracle-product-base-url-field">
-                            <span>Base URL</span>
-                            <input id="miracle-product-base-url" type="url" placeholder="https://.../openai/v1">
-                        </label>
-                        <label class="field is-hidden" id="miracle-product-model-field">
-                            <span>Modelo</span>
-                            <input id="miracle-product-model" type="text" placeholder="grok-4.1">
-                        </label>
-                        <label class="field is-hidden" id="miracle-product-api-key-field">
-                            <span>API key</span>
-                            <input id="miracle-product-api-key" type="password" autocomplete="off" placeholder="Clave del product LLM">
-                        </label>
-                        <div class="studio-actions">
-                            <button type="button" class="button ghost" id="miracle-product-refresh">Releer</button>
-                            <button type="submit" class="button primary" id="miracle-product-submit">Guardar Product LLM</button>
+                        <strong id="miracle-product-metric">Cargando</strong>
+                        <p id="miracle-product-current">Leyendo estado actual...</p>
+                    </article>
+
+                    <article class="studio-stat-card">
+                        <div class="studio-stat-header">
+                            <span>Clinical Surface</span>
+                            <span class="studio-stat-chip">Launch</span>
                         </div>
-                    </form>
-                    <p id="miracle-product-message" class="form-message"></p>
-                </article>
+                        <strong>Expanded EMR</strong>
+                        <p>Abre el workspace clínico completo para probar dictado, matching y revisión de campos.</p>
+                    </article>
+                </div>
+
+                <div class="studio-panels">
+                    <section class="studio-panel studio-panel-wide">
+                        <div class="studio-panel-top">
+                            <div>
+                                <span class="studio-panel-kicker">Graph</span>
+                                <h2>Field Matching Provider</h2>
+                            </div>
+                            <span id="graph-provider-pill" class="status-pill">Cargando</span>
+                        </div>
+                        <p class="studio-panel-copy">
+                            Elige el backend que Graph usa para interpretar la nota, resolver matching y decidir
+                            qué campos pueden completarse de forma confiable.
+                        </p>
+                        <form id="graph-provider-form" class="studio-form">
+                            <div class="studio-form-grid">
+                                <label class="field">
+                                    <span>Provider</span>
+                                    <select id="graph-provider-select"></select>
+                                </label>
+                                <label class="field" id="graph-provider-model-field">
+                                    <span>Modelo</span>
+                                    <input id="graph-provider-model" type="text" placeholder="grok-4.1">
+                                </label>
+                                <label class="field field-span-2" id="graph-provider-base-url-field">
+                                    <span>Base URL</span>
+                                    <input id="graph-provider-base-url" type="url" placeholder="https://.../openai/v1">
+                                </label>
+                                <label class="field field-span-2" id="graph-provider-api-key-field">
+                                    <span>API key</span>
+                                    <input id="graph-provider-api-key" type="password" autocomplete="off" placeholder="Pega la clave del provider">
+                                </label>
+                            </div>
+                            <div class="studio-actions">
+                                <button type="button" class="button ghost" id="graph-provider-refresh">Releer</button>
+                                <button type="submit" class="button primary" id="graph-provider-submit">Guardar Graph</button>
+                            </div>
+                        </form>
+                        <p id="graph-provider-message" class="form-message"></p>
+                    </section>
+
+                    <section class="studio-panel">
+                        <div class="studio-panel-top">
+                            <div>
+                                <span class="studio-panel-kicker">Miracle</span>
+                                <h2>Runtime Upstream</h2>
+                            </div>
+                            <span id="miracle-runtime-pill" class="status-pill">Cargando</span>
+                        </div>
+                        <p class="studio-panel-copy">
+                            Configura el provider base de OpenClaw que queda detrás del runtime principal.
+                        </p>
+                        <form id="miracle-runtime-form" class="studio-form">
+                            <label class="field">
+                                <span>Provider</span>
+                                <select id="miracle-runtime-select"></select>
+                            </label>
+                            <label class="field is-hidden" id="miracle-runtime-base-url-field">
+                                <span>Base URL</span>
+                                <input id="miracle-runtime-base-url" type="url" placeholder="https://llm.example.com/v1">
+                            </label>
+                            <label class="field is-hidden" id="miracle-runtime-model-preset-field">
+                                <span>Modelo</span>
+                                <select id="miracle-runtime-model-preset"></select>
+                            </label>
+                            <label class="field is-hidden" id="miracle-runtime-model-field">
+                                <span>Modelo personalizado</span>
+                                <input id="miracle-runtime-model" type="text" placeholder="grok-4.1">
+                            </label>
+                            <label class="field is-hidden" id="miracle-runtime-api-key-field">
+                                <span>API key</span>
+                                <input id="miracle-runtime-api-key" type="password" autocomplete="off" placeholder="Clave del runtime upstream">
+                            </label>
+                            <div class="studio-actions">
+                                <button type="button" class="button ghost" id="miracle-runtime-refresh">Releer</button>
+                                <button type="submit" class="button primary" id="miracle-runtime-submit">Guardar Runtime</button>
+                            </div>
+                        </form>
+                        <p id="miracle-runtime-message" class="form-message"></p>
+                    </section>
+
+                    <section class="studio-panel">
+                        <div class="studio-panel-top">
+                            <div>
+                                <span class="studio-panel-kicker">Miracle</span>
+                                <h2>Product LLM</h2>
+                            </div>
+                            <span id="miracle-product-pill" class="status-pill">Cargando</span>
+                        </div>
+                        <p class="studio-panel-copy">
+                            Controla la capa que organiza el dictado clínico y prepara la nota para autofill.
+                        </p>
+                        <form id="miracle-product-form" class="studio-form">
+                            <label class="field">
+                                <span>Provider</span>
+                                <select id="miracle-product-select"></select>
+                            </label>
+                            <label class="field is-hidden" id="miracle-product-base-url-field">
+                                <span>Base URL</span>
+                                <input id="miracle-product-base-url" type="url" placeholder="https://.../openai/v1">
+                            </label>
+                            <label class="field is-hidden" id="miracle-product-model-field">
+                                <span>Modelo</span>
+                                <input id="miracle-product-model" type="text" placeholder="grok-4.1">
+                            </label>
+                            <label class="field is-hidden" id="miracle-product-api-key-field">
+                                <span>API key</span>
+                                <input id="miracle-product-api-key" type="password" autocomplete="off" placeholder="Clave del product LLM">
+                            </label>
+                            <div class="studio-actions">
+                                <button type="button" class="button ghost" id="miracle-product-refresh">Releer</button>
+                                <button type="submit" class="button primary" id="miracle-product-submit">Guardar Product LLM</button>
+                            </div>
+                        </form>
+                        <p id="miracle-product-message" class="form-message"></p>
+                    </section>
+
+                    <section class="studio-panel">
+                        <div class="studio-panel-top">
+                            <div>
+                                <span class="studio-panel-kicker">Surfaces</span>
+                                <h2>Launch Paths</h2>
+                            </div>
+                            <span class="status-pill" data-tone="ready">Ready</span>
+                        </div>
+                        <p class="studio-panel-copy">
+                            Usa estas salidas rápidas para validar los cambios de provider directamente en la
+                            superficie clínica y en el workspace de Miracle.
+                        </p>
+                        <div class="studio-launch-list">
+                            <a class="studio-launch-item" href="/emr-workspace.html">
+                                <div>
+                                    <strong>Probar EMR Expandido</strong>
+                                    <span>Abre intake, anamnesis, órdenes y cierre en una sola superficie.</span>
+                                </div>
+                                <em>Open</em>
+                            </a>
+                            <a class="studio-launch-item" href="/miracle">
+                                <div>
+                                    <strong>Workspace Miracle</strong>
+                                    <span>Revisa el entorno de dictado y la hoja en blanco integrada dentro de Graph.</span>
+                                </div>
+                                <em>Open</em>
+                            </a>
+                            <a class="studio-launch-item" href="/visualize.html">
+                                <div>
+                                    <strong>Workflow Graph</strong>
+                                    <span>Inspecciona rutas, planes y capacidades globales desde el grafo.</span>
+                                </div>
+                                <em>Open</em>
+                            </a>
+                        </div>
+                    </section>
+                </div>
             </section>
         </main>
     </div>

@@ -6,12 +6,18 @@ const crypto = require('crypto');
 let jwks = null;
 let joseModulePromise = null;
 const LOCAL_ANONYMOUS_TOKEN_PREFIX = 'miracle-local-v1';
+const LOCAL_ADMIN_TOKEN_PREFIX = 'miracle-local-admin-v1';
 const LOCAL_ANONYMOUS_TOKEN_TTL_SECONDS = 12 * 60 * 60;
+const LOCAL_ADMIN_TOKEN_TTL_SECONDS = 12 * 60 * 60;
 const localAnonymousSecret = crypto.randomBytes(32);
-const TEMPORARY_AUTH_BYPASS_HOSTS = new Set([
-  'miracle-zeta.vercel.app',
-  'miracle-git-codex-remove-0bdc53-jose-david-s-projects-22dd4300.vercel.app'
-]);
+const localAdminSecret = crypto.randomBytes(32);
+const LOCAL_ADMIN_USERS = [
+  'Isaabelsofia',
+  'Jamesbondagent007-max',
+  'FelipeMaldonado',
+  'JoseDavid'
+];
+const LOCAL_ADMIN_PASSWORD = 'Miracle.AI';
 
 function supabaseBaseUrl() {
   return `${process.env.SUPABASE_URL || ''}`.replace(/\/+$/, '');
@@ -48,43 +54,31 @@ function isTruthyEnv(name) {
   return ['1', 'true', 'yes', 'on'].includes(`${process.env[name] || ''}`.trim().toLowerCase());
 }
 
-function normalizeHost(value = '') {
-  return `${value || ''}`.trim().toLowerCase().replace(/:\d+$/, '');
+function parseCookieHeader(header = '') {
+  return `${header || ''}`
+    .split(';')
+    .map((segment) => segment.trim())
+    .filter(Boolean)
+    .reduce((accumulator, segment) => {
+      const separatorIndex = segment.indexOf('=');
+      if (separatorIndex <= 0) {
+        return accumulator;
+      }
+      const key = segment.slice(0, separatorIndex).trim();
+      const value = segment.slice(separatorIndex + 1).trim();
+      if (key) {
+        accumulator[key] = decodeURIComponent(value);
+      }
+      return accumulator;
+    }, {});
 }
 
-function isTemporaryBypassHost(host = '') {
-  return TEMPORARY_AUTH_BYPASS_HOSTS.has(normalizeHost(host));
-}
-
-function runtimeCandidateHosts() {
-  return [
-    process.env.PUBLIC_BASE_URL,
-    process.env.VERCEL_PROJECT_PRODUCTION_URL,
-    process.env.VERCEL_URL
-  ].map((value) => {
-    if (!value) return '';
-    try {
-      const normalized = `${value}`.includes('://') ? `${value}` : `https://${value}`;
-      return new URL(normalized).host;
-    } catch (error) {
-      return `${value || ''}`;
-    }
-  });
+function normalizeUsername(value = '') {
+  return `${value || ''}`.trim().toLowerCase();
 }
 
 function isAuthBypassEnabled(req = null) {
-  if (isTruthyEnv('TEMPORARY_DISABLE_AUTH')) {
-    return true;
-  }
-
-  if (req) {
-    const requestHost = req.get ? req.get('host') : req.headers?.host;
-    if (isTemporaryBypassHost(requestHost)) {
-      return true;
-    }
-  }
-
-  return runtimeCandidateHosts().some((host) => isTemporaryBypassHost(host));
+  return isTruthyEnv('TEMPORARY_DISABLE_AUTH');
 }
 
 function isLocalAnonymousAccessEnabled() {
@@ -94,6 +88,59 @@ function isLocalAnonymousAccessEnabled() {
 
 function signLocalAnonymousBody(encodedBody) {
   return crypto.createHmac('sha256', localAnonymousSecret).update(encodedBody).digest('base64url');
+}
+
+function signLocalAdminBody(encodedBody) {
+  return crypto.createHmac('sha256', localAdminSecret).update(encodedBody).digest('base64url');
+}
+
+function resolveLocalAdminUser(username = '') {
+  const normalized = normalizeUsername(username);
+  return LOCAL_ADMIN_USERS.find((candidate) => normalizeUsername(candidate) === normalized) || '';
+}
+
+function createLocalAdminPayload(username) {
+  const canonicalUsername = resolveLocalAdminUser(username);
+  if (!canonicalUsername) {
+    const error = new Error('Usuario no autorizado.');
+    error.code = 'LOCAL_ADMIN_UNKNOWN_USER';
+    throw error;
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  return {
+    iss: 'miracle-local-admin',
+    aud: 'authenticated',
+    sub: `local-admin:${normalizeUsername(canonicalUsername)}`,
+    username: canonicalUsername,
+    email: canonicalUsername,
+    role: 'local-admin',
+    is_anonymous: false,
+    iat: now,
+    exp: now + LOCAL_ADMIN_TOKEN_TTL_SECONDS
+  };
+}
+
+function createLocalAdminSession(username, password) {
+  if (`${password || ''}` !== LOCAL_ADMIN_PASSWORD) {
+    const error = new Error('Credenciales invalidas.');
+    error.code = 'LOCAL_ADMIN_INVALID_PASSWORD';
+    throw error;
+  }
+
+  const payload = createLocalAdminPayload(username);
+  const encodedBody = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  return {
+    accessToken: `${LOCAL_ADMIN_TOKEN_PREFIX}.${encodedBody}.${signLocalAdminBody(encodedBody)}`,
+    expiresAt: payload.exp * 1000,
+    user: {
+      id: payload.sub,
+      email: payload.email,
+      username: payload.username,
+      role: payload.role,
+      is_anonymous: false
+    }
+  };
 }
 
 function createLocalAnonymousSession() {
@@ -160,6 +207,40 @@ function verifyLocalAnonymousToken(token) {
   return payload;
 }
 
+function verifyLocalAdminToken(token) {
+  const parts = `${token || ''}`.split('.');
+  if (parts.length !== 3 || parts[0] !== LOCAL_ADMIN_TOKEN_PREFIX) {
+    throw new Error('invalid local admin token');
+  }
+  const expected = Buffer.from(signLocalAdminBody(parts[1]));
+  const actual = Buffer.from(parts[2]);
+  if (expected.length !== actual.length || !crypto.timingSafeEqual(expected, actual)) {
+    throw new Error('invalid local admin signature');
+  }
+
+  let payload;
+  try {
+    payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+  } catch (error) {
+    throw new Error('invalid local admin payload');
+  }
+  const now = Math.floor(Date.now() / 1000);
+  const canonicalUsername = resolveLocalAdminUser(payload.username);
+  if (payload.iss !== 'miracle-local-admin'
+    || payload.aud !== 'authenticated'
+    || payload.role !== 'local-admin'
+    || payload.is_anonymous !== false
+    || !payload.sub
+    || !canonicalUsername
+    || !Number.isFinite(payload.exp)
+    || payload.exp <= now) {
+    throw new Error('expired or invalid local admin token');
+  }
+  payload.username = canonicalUsername;
+  payload.email = canonicalUsername;
+  return payload;
+}
+
 async function getJwks() {
   if (jwks) return jwks;
   const base = supabaseBaseUrl();
@@ -177,6 +258,10 @@ function extractToken(req) {
   const header = (req.get ? req.get('authorization') : req.headers?.authorization) || '';
   const match = /^Bearer\s+(.+)$/i.exec(`${header}`.trim());
   if (match) return match[1].trim();
+  const cookies = parseCookieHeader(req.get ? req.get('cookie') : req.headers?.cookie);
+  if (cookies.miracle_admin_session) {
+    return cookies.miracle_admin_session.trim();
+  }
   // Fallback for WebSocket upgrades, which cannot set headers from the browser.
   try {
     const url = new URL(req.url, 'http://localhost');
@@ -201,7 +286,8 @@ function isSupabasePayloadAnonymous(payload = {}) {
 function setRequestUser(req, payload, token) {
   req.user = {
     id: payload.sub,
-    email: payload.email || '',
+    email: payload.email || payload.username || '',
+    username: payload.username || '',
     role: payload.role || '',
     token,
     isAnonymous: isSupabasePayloadAnonymous(payload)
@@ -232,6 +318,9 @@ async function verifySupabaseToken(token) {
 async function verifyAccessToken(token) {
   if (`${token || ''}`.startsWith(`${LOCAL_ANONYMOUS_TOKEN_PREFIX}.`)) {
     return verifyLocalAnonymousToken(token);
+  }
+  if (`${token || ''}`.startsWith(`${LOCAL_ADMIN_TOKEN_PREFIX}.`)) {
+    return verifyLocalAdminToken(token);
   }
   return verifySupabaseToken(token);
 }
@@ -286,8 +375,10 @@ function attachWorkflowAccess(req, res, next) {
   const adminEmails = new Set(parseEnvList('GLOBAL_WORKFLOW_ADMIN_EMAILS').map(normalizeEmail));
   const isLocalDevUser = ownerId === 'local-dev-user'
     && (!isSupabaseAuthConfigured() || isAuthBypassEnabled(req));
+  const isLocalAdminUser = `${req.user?.role || ''}`.trim() === 'local-admin';
   const canManageGlobalWorkflows = adminIds.has(ownerId)
     || adminEmails.has(normalizeEmail(req.user?.email || ''))
+    || isLocalAdminUser
     || (isLocalDevUser && isTruthyEnv('ALLOW_LOCAL_GLOBAL_WORKFLOW_ADMIN'));
 
   req.workflowAccess = {
@@ -304,6 +395,8 @@ module.exports = {
   attachWorkflowAccess,
   verifySupabaseToken,
   verifyAccessToken,
+  createLocalAdminSession,
+  verifyLocalAdminToken,
   createLocalAnonymousSession,
   verifyLocalAnonymousToken,
   extractToken,

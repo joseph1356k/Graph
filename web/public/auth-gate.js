@@ -1,19 +1,35 @@
 (function () {
-    // Google login gate for the EMR surface. While there is no authenticated user it
-    // shows a blocking overlay; once signed in it resolves window.MiracleAuth.whenAuthenticated().
     let resolveAuthed;
     const authed = new Promise((resolve) => { resolveAuthed = resolve; });
-    const LOCAL_SESSION_KEY = 'miracle-local-anonymous-session';
+    const STORAGE_KEY = 'miracle-admin-session-v1';
     const state = {
-        client: null,
         user: null,
-        overlay: null,
         accessToken: '',
         authMode: '',
-        localAnonymousAccess: false,
-        authBypassEnabled: false
+        overlay: null,
+        errorText: '',
+        busy: false
     };
-    const LOCAL_USER = { id: 'local-dev-user', email: '', role: 'local-dev' };
+
+    function readStoredSession() {
+        try {
+            return JSON.parse(window.localStorage.getItem(STORAGE_KEY) || 'null');
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function writeStoredSession(session) {
+        try {
+            if (!session) {
+                window.localStorage.removeItem(STORAGE_KEY);
+                return;
+            }
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+        } catch (error) {
+            // Ignore storage failures and continue with the in-memory session.
+        }
+    }
 
     function buildOverlay() {
         const overlay = document.createElement('div');
@@ -21,74 +37,170 @@
         overlay.style.cssText = [
             'position:fixed', 'inset:0', 'z-index:2147483000',
             'display:grid', 'place-items:center',
-            'background:rgba(15,23,42,0.55)', 'backdrop-filter:blur(6px)',
+            'padding:24px',
+            'background:radial-gradient(circle at top left, rgba(71, 85, 140, 0.28), transparent 26%), linear-gradient(180deg, rgba(5, 8, 20, 0.92), rgba(4, 7, 18, 0.97))',
+            'backdrop-filter:blur(12px)',
             'font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif'
         ].join(';');
 
         const card = document.createElement('div');
         card.style.cssText = [
-            'width:min(420px,calc(100vw - 40px))', 'background:#ffffff', 'color:#0f172a',
-            'border-radius:20px', 'padding:32px', 'box-shadow:0 32px 90px rgba(15,23,42,0.25)',
-            'text-align:center', 'display:grid', 'gap:16px'
+            'width:min(460px,calc(100vw - 36px))',
+            'padding:32px',
+            'border-radius:28px',
+            'border:1px solid rgba(177,193,232,0.12)',
+            'background:linear-gradient(180deg, rgba(10,16,34,0.98), rgba(8,13,30,0.98))',
+            'box-shadow:0 32px 90px rgba(0,0,0,0.45)',
+            'color:#f4f7ff',
+            'display:grid',
+            'gap:18px'
+        ].join(';');
+
+        const eyebrow = document.createElement('span');
+        eyebrow.textContent = 'Miracle Console';
+        eyebrow.style.cssText = [
+            'display:inline-flex',
+            'align-items:center',
+            'width:max-content',
+            'min-height:28px',
+            'padding:0 10px',
+            'border-radius:999px',
+            'background:rgba(177,193,232,0.08)',
+            'color:#b7c3e4',
+            'font-size:12px',
+            'font-weight:800',
+            'letter-spacing:0.08em',
+            'text-transform:uppercase'
         ].join(';');
 
         const title = document.createElement('h2');
-        title.textContent = 'Inicia sesion en Miracle';
-        title.style.cssText = 'margin:0;font-size:22px;font-weight:800';
+        title.textContent = 'Inicia sesion para entrar a Graph';
+        title.style.cssText = 'margin:0;font-size:32px;line-height:1;letter-spacing:-0.05em';
 
         const subtitle = document.createElement('p');
-        subtitle.id = 'miracle-auth-subtitle';
-        subtitle.textContent = 'Conecta tu cuenta para que tus notas se sincronicen en tiempo real entre tus dispositivos.';
-        subtitle.style.cssText = 'margin:0;color:#475569;line-height:1.5;font-size:14px';
+        subtitle.textContent = 'El acceso al dashboard, al EMR expandido y al workspace integrado de Miracle requiere autenticacion obligatoria.';
+        subtitle.style.cssText = 'margin:0;color:#8f9bbb;line-height:1.65;font-size:14px';
+
+        const form = document.createElement('form');
+        form.id = 'miracle-auth-form';
+        form.style.cssText = 'display:grid;gap:14px';
+
+        const usernameWrap = document.createElement('label');
+        usernameWrap.style.cssText = 'display:grid;gap:8px';
+        const usernameLabel = document.createElement('span');
+        usernameLabel.textContent = 'Usuario';
+        usernameLabel.style.cssText = 'color:#b7c3e4;font-size:12px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase';
+        const usernameInput = document.createElement('input');
+        usernameInput.id = 'miracle-auth-username';
+        usernameInput.name = 'username';
+        usernameInput.type = 'text';
+        usernameInput.autocomplete = 'username';
+        usernameInput.placeholder = 'Isaabelsofia';
+        usernameInput.style.cssText = [
+            'min-height:52px',
+            'padding:0 16px',
+            'border-radius:16px',
+            'border:1px solid rgba(177,193,232,0.16)',
+            'background:#0d1429',
+            'color:#f4f7ff',
+            'outline:none'
+        ].join(';');
+        usernameWrap.append(usernameLabel, usernameInput);
+
+        const passwordWrap = document.createElement('label');
+        passwordWrap.style.cssText = 'display:grid;gap:8px';
+        const passwordLabel = document.createElement('span');
+        passwordLabel.textContent = 'Clave';
+        passwordLabel.style.cssText = usernameLabel.style.cssText;
+        const passwordInput = document.createElement('input');
+        passwordInput.id = 'miracle-auth-password';
+        passwordInput.name = 'password';
+        passwordInput.type = 'password';
+        passwordInput.autocomplete = 'current-password';
+        passwordInput.placeholder = 'Miracle.AI';
+        passwordInput.style.cssText = usernameInput.style.cssText;
+        passwordWrap.append(passwordLabel, passwordInput);
+
+        const error = document.createElement('p');
+        error.id = 'miracle-auth-error';
+        error.style.cssText = 'margin:0;min-height:20px;color:#e49c9c;font-size:13px;line-height:1.5';
 
         const button = document.createElement('button');
-        button.id = 'miracle-auth-button';
-        button.type = 'button';
-        button.textContent = 'Continuar con Google';
+        button.id = 'miracle-auth-submit';
+        button.type = 'submit';
+        button.textContent = 'Entrar';
         button.style.cssText = [
-            'border:0', 'border-radius:999px', 'padding:14px 18px', 'font:inherit', 'font-weight:700',
-            'background:#2f8cff', 'color:#fff', 'cursor:pointer'
+            'min-height:52px',
+            'border:0',
+            'border-radius:16px',
+            'padding:0 18px',
+            'font:inherit',
+            'font-weight:800',
+            'background:#eef2fb',
+            'color:#111629',
+            'cursor:pointer'
         ].join(';');
-        button.addEventListener('click', signIn);
 
-        const guestButton = document.createElement('button');
-        guestButton.id = 'miracle-auth-guest-button';
-        guestButton.type = 'button';
-        guestButton.textContent = 'Entrar como invitado';
-        guestButton.style.cssText = [
-            'border:1px solid #cbd5e1', 'border-radius:999px', 'padding:13px 18px', 'font:inherit', 'font-weight:700',
-            'background:#fff', 'color:#334155', 'cursor:pointer'
+        const note = document.createElement('div');
+        note.style.cssText = [
+            'padding:14px 16px',
+            'border-radius:18px',
+            'background:rgba(255,255,255,0.03)',
+            'border:1px solid rgba(177,193,232,0.08)',
+            'color:#8f9bbb',
+            'font-size:13px',
+            'line-height:1.6'
         ].join(';');
-        guestButton.addEventListener('click', signInAnonymously);
+        note.textContent = 'Usa una de las cuentas autorizadas para operar providers, Graph y las superficies clinicas.';
 
-        const notice = document.createElement('p');
-        notice.id = 'miracle-auth-notice';
-        notice.textContent = 'El modo invitado guarda los cambios solo en este navegador y no habilita funciones administrativas.';
-        notice.style.cssText = 'display:none;margin:0;color:#64748b;line-height:1.45;font-size:12px';
-
-        card.append(title, subtitle, button, guestButton, notice);
+        form.append(usernameWrap, passwordWrap, error, button);
+        card.append(eyebrow, title, subtitle, form, note);
         overlay.appendChild(card);
         return overlay;
     }
 
-    function showOverlay(message) {
+    function ensureOverlay() {
         if (!state.overlay) {
             state.overlay = buildOverlay();
+            const form = state.overlay.querySelector('#miracle-auth-form');
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                signIn().catch((error) => {
+                    setError(error.message || 'No fue posible iniciar sesion.');
+                    setBusy(false);
+                });
+            });
         }
         if (!state.overlay.isConnected) {
             (document.body || document.documentElement).appendChild(state.overlay);
         }
-        const subtitle = state.overlay.querySelector('#miracle-auth-subtitle');
-        const button = state.overlay.querySelector('#miracle-auth-button');
-        const guestButton = state.overlay.querySelector('#miracle-auth-guest-button');
-        const notice = state.overlay.querySelector('#miracle-auth-notice');
-        if (message) {
-            if (subtitle) subtitle.textContent = message;
-        }
-        if (button) button.style.display = state.client ? '' : 'none';
-        if (guestButton) guestButton.style.display = state.localAnonymousAccess || state.client ? '' : 'none';
-        if (notice) notice.style.display = state.localAnonymousAccess ? '' : 'none';
-        state.overlay.style.display = 'grid';
+        return state.overlay;
+    }
+
+    function setBusy(busy) {
+        state.busy = Boolean(busy);
+        const overlay = ensureOverlay();
+        const button = overlay.querySelector('#miracle-auth-submit');
+        const username = overlay.querySelector('#miracle-auth-username');
+        const password = overlay.querySelector('#miracle-auth-password');
+        button.disabled = state.busy;
+        username.disabled = state.busy;
+        password.disabled = state.busy;
+        button.textContent = state.busy ? 'Entrando...' : 'Entrar';
+    }
+
+    function setError(message) {
+        state.errorText = `${message || ''}`.trim();
+        const overlay = ensureOverlay();
+        const error = overlay.querySelector('#miracle-auth-error');
+        error.textContent = state.errorText;
+    }
+
+    function showOverlay() {
+        const overlay = ensureOverlay();
+        overlay.style.display = 'grid';
+        const username = overlay.querySelector('#miracle-auth-username');
+        window.setTimeout(() => username.focus(), 0);
     }
 
     function hideOverlay() {
@@ -97,230 +209,82 @@
         }
     }
 
-    function enableLocalMode() {
-        state.accessToken = '';
-        state.authMode = 'local-dev';
-        setUser(LOCAL_USER);
-        console.warn('[Miracle Auth] Supabase no esta configurado. EMR continua en modo local sin login ni sync.');
-    }
-
-    function enableBypassMode() {
-        state.accessToken = '';
-        state.authMode = 'local-dev';
-        setUser(LOCAL_USER);
-        console.warn('[Miracle Auth] Auth bypass enabled. EMR continua sin login mientras se corrige Supabase.');
-    }
-
-    function buildOAuthRedirectUrl() {
-        const current = new URL(window.location.href);
-        const redirect = new URL(current.pathname, current.origin);
-        const encounterId = `${current.searchParams.get('encounter') || ''}`.trim();
-        if (encounterId) {
-            redirect.searchParams.set('encounter', encounterId);
-        }
-        return redirect.toString();
-    }
-
-    function consumeOAuthError() {
-        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-        const queryParams = new URL(window.location.href).searchParams;
-        const errorCode = `${
-            hashParams.get('error_code')
-            || hashParams.get('error')
-            || queryParams.get('error_code')
-            || queryParams.get('error')
-            || ''
-        }`.trim();
-        const description = `${
-            hashParams.get('error_description')
-            || queryParams.get('error_description')
-            || ''
-        }`.trim();
-        if (!errorCode && !description) return '';
-
-        const cleanUrl = new URL(window.location.href);
-        cleanUrl.hash = '';
-        cleanUrl.searchParams.delete('error');
-        cleanUrl.searchParams.delete('error_code');
-        cleanUrl.searchParams.delete('error_description');
-        window.history.replaceState({}, '', cleanUrl);
-        return description || `Google OAuth fallo (${errorCode}).`;
-    }
-
-    async function signIn() {
-        if (!state.client) return;
-        setButtonsBusy(true, 'Abriendo Google...');
-        try {
-            const statusResponse = await fetch('/api/auth/status', { cache: 'no-store' });
-            const statusPayload = await statusResponse.json().catch(() => ({}));
-            if (!statusResponse.ok || statusPayload?.supabase?.status !== 'ok') {
-                throw new Error('El proyecto Supabase configurado no esta disponible.');
-            }
-            const { error } = await state.client.auth.signInWithOAuth({
-                provider: 'google',
-                options: { redirectTo: buildOAuthRedirectUrl() }
-            });
-            if (error) throw error;
-        } catch (error) {
-            console.error('[Miracle Auth] Sign-in failed:', error);
-            showOverlay('No fue posible contactar el proyecto de autenticacion. Puedes entrar como invitado mientras se corrige Supabase.');
-            setButtonsBusy(false);
-        }
-    }
-
-    function setButtonsBusy(busy, label = '') {
-        if (!state.overlay) return;
-        const googleButton = state.overlay.querySelector('#miracle-auth-button');
-        const guestButton = state.overlay.querySelector('#miracle-auth-guest-button');
-        if (googleButton) googleButton.disabled = busy;
-        if (guestButton) {
-            guestButton.disabled = busy;
-            guestButton.textContent = busy && label ? label : 'Entrar como invitado';
-        }
-    }
-
-    function persistLocalSession(session) {
-        try {
-            sessionStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify(session));
-        } catch (error) { /* ignore */ }
-    }
-
-    function readLocalSession() {
-        try {
-            const session = JSON.parse(sessionStorage.getItem(LOCAL_SESSION_KEY) || 'null');
-            if (!session || !session.accessToken || !session.user || Number(session.expiresAt || 0) <= Date.now()) {
-                sessionStorage.removeItem(LOCAL_SESSION_KEY);
-                return null;
-            }
-            return session;
-        } catch (error) {
-            return null;
-        }
-    }
-
-    function applyLocalAnonymousSession(session) {
-        state.accessToken = session.accessToken || '';
-        state.authMode = 'local-anonymous';
-        persistLocalSession(session);
-        setUser({
-            ...(session.user || {}),
-            role: 'local-anonymous',
-            is_anonymous: true
-        });
-    }
-
-    async function requestLocalAnonymousSession() {
-        const response = await fetch('/api/auth/local-anonymous', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            throw new Error(payload.error || 'No se pudo iniciar la sesion invitada local.');
-        }
-        return payload;
-    }
-
-    async function signInAnonymously() {
-        setButtonsBusy(true, 'Entrando...');
-        try {
-            if (state.localAnonymousAccess) {
-                applyLocalAnonymousSession(await requestLocalAnonymousSession());
-                return;
-            }
-
-            if (state.client) {
-                try {
-                    const { data, error } = await state.client.auth.signInAnonymously();
-                    if (!error && data && data.session) {
-                        state.authMode = 'supabase-anonymous';
-                        state.accessToken = data.session.access_token || '';
-                        setUser(data.session.user);
-                        return;
-                    }
-                    if (error) {
-                        console.warn('[Miracle Auth] Supabase anonymous sign-in unavailable:', error.message);
-                    }
-                } catch (error) {
-                    console.warn('[Miracle Auth] Supabase anonymous sign-in failed:', error.message);
-                }
-            }
-
-            throw new Error('El acceso invitado debe activarse en Supabase.');
-        } catch (error) {
-            console.error('[Miracle Auth] Anonymous sign-in failed:', error);
-            showOverlay(error.message || 'No se pudo iniciar como invitado.');
-        } finally {
-            setButtonsBusy(false);
-        }
-    }
-
     function setUser(user) {
-        const previous = state.user;
         state.user = user || null;
         if (state.user) {
             hideOverlay();
             resolveAuthed(state.user);
-            if (!previous) {
-                window.dispatchEvent(new CustomEvent('miracle-auth-changed', { detail: { user: state.user } }));
-            }
-        } else {
-            showOverlay();
+            window.dispatchEvent(new CustomEvent('miracle-auth-changed', { detail: { user: state.user } }));
+            return;
         }
+        showOverlay();
+    }
+
+    async function validateSession(token) {
+        const response = await fetch('/api/account/me', {
+            cache: 'no-store',
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(payload.error || 'La sesion ya no es valida.');
+        }
+        return payload;
+    }
+
+    async function signIn() {
+        const overlay = ensureOverlay();
+        const username = overlay.querySelector('#miracle-auth-username').value.trim();
+        const password = overlay.querySelector('#miracle-auth-password').value;
+        if (!username || !password) {
+            setError('Ingresa usuario y clave.');
+            return;
+        }
+
+        setBusy(true);
+        setError('');
+        const response = await fetch('/api/auth/local-admin/login', {
+            method: 'POST',
+            cache: 'no-store',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(payload.error || 'Credenciales invalidas.');
+        }
+
+        state.accessToken = payload.accessToken || '';
+        state.authMode = 'local-admin';
+        writeStoredSession({
+            accessToken: state.accessToken,
+            user: payload.user || null
+        });
+        setUser(payload.user || null);
+        setBusy(false);
     }
 
     async function init() {
-        const client = await window.MiracleSupabase.whenReady();
-        state.client = client;
-        state.localAnonymousAccess = Boolean(window.MiracleSupabase.getConfig?.()?.localAnonymousAccess);
-        state.authBypassEnabled = Boolean(window.MiracleSupabase.getConfig?.()?.authBypassEnabled);
-        if (state.authBypassEnabled) {
-            enableBypassMode();
-            return;
-        }
-        const oauthError = consumeOAuthError();
-        if (oauthError) {
-            showOverlay(`Google no pudo iniciar sesion: ${oauthError}`);
-            return;
-        }
-
-        const localSession = state.localAnonymousAccess ? readLocalSession() : null;
-        if (localSession) {
+        const stored = readStoredSession();
+        if (stored?.accessToken) {
             try {
-                applyLocalAnonymousSession(await requestLocalAnonymousSession());
+                const account = await validateSession(stored.accessToken);
+                state.accessToken = stored.accessToken;
+                state.authMode = 'local-admin';
+                setUser({
+                    ...(stored.user || {}),
+                    ...(account.user || {}),
+                    username: stored.user?.username || account.user?.email || ''
+                });
                 return;
             } catch (error) {
-                try { sessionStorage.removeItem(LOCAL_SESSION_KEY); } catch (storageError) { /* ignore */ }
+                writeStoredSession(null);
             }
         }
 
-        if (!client) {
-            if (state.localAnonymousAccess) {
-                showOverlay('Supabase no esta disponible. Entra como invitado para probar el EMR sin sincronizacion.');
-            } else {
-                enableLocalMode();
-            }
-            return;
-        }
-
-        try {
-            const { data, error } = await client.auth.getSession();
-            if (error) throw error;
-            state.accessToken = (data && data.session && data.session.access_token) || '';
-            state.authMode = data && data.session
-                ? (data.session.user?.is_anonymous ? 'supabase-anonymous' : 'supabase')
-                : '';
-            setUser(data && data.session ? data.session.user : null);
-        } catch (error) {
-            console.warn('[Miracle Auth] Session lookup failed:', error.message);
-            showOverlay('No fue posible contactar Supabase. Entra como invitado para continuar localmente.');
-        }
-
-        client.auth.onAuthStateChange((_event, session) => {
-            state.accessToken = (session && session.access_token) || '';
-            state.authMode = session ? (session.user?.is_anonymous ? 'supabase-anonymous' : 'supabase') : '';
-            setUser(session ? session.user : null);
-        });
+        state.accessToken = '';
+        state.authMode = '';
+        setUser(null);
     }
 
     window.MiracleAuth = {
@@ -329,18 +293,20 @@
         getAccessToken() { return state.accessToken || ''; },
         getMode() { return state.authMode || ''; },
         async signOut() {
-            if (state.authMode === 'local-anonymous') {
-                try { sessionStorage.removeItem(LOCAL_SESSION_KEY); } catch (error) { /* ignore */ }
-                window.location.reload();
-                return;
+            writeStoredSession(null);
+            state.accessToken = '';
+            state.authMode = '';
+            try {
+                await fetch('/api/auth/logout', { method: 'POST', cache: 'no-store' });
+            } catch (error) {
+                // Ignore network failures on logout.
             }
-            try { await state.client?.auth.signOut(); } catch (error) { console.warn('[Miracle Auth] Sign-out failed:', error); }
+            window.location.reload();
         }
     };
 
-    if (window.MiracleSupabase) {
-        init();
-    } else {
-        console.error('[Miracle Auth] supabase-client.js must load before auth-gate.js');
-    }
+    init().catch((error) => {
+        setError(error.message || 'No fue posible inicializar el login.');
+        showOverlay();
+    });
 })();

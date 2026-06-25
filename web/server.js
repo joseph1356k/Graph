@@ -36,9 +36,12 @@ const {
   requireAuth,
   requireAccountAuth,
   attachWorkflowAccess,
+  createLocalAdminSession,
   createLocalAnonymousSession,
+  extractToken,
   isLocalAnonymousAccessEnabled,
-  isAuthBypassEnabled
+  isAuthBypassEnabled,
+  verifyAccessToken
 } = require('./api/requireAuth');
 const phoneVoiceStore = require('./api/phoneVoiceStore');
 const { statusForError, publicErrorMessage } = require('./api/httpErrors');
@@ -95,6 +98,38 @@ const graphProviderConfigService = new GraphProviderConfigService(llmProvider, {
 
 app.use(bodyParser.json());
 
+function setAdminSessionCookie(res, accessToken) {
+  const secure = Boolean(process.env.VERCEL)
+    || `${process.env.NODE_ENV || ''}`.trim().toLowerCase() === 'production';
+  const cookieParts = [
+    `miracle_admin_session=${encodeURIComponent(accessToken)}`,
+    'Path=/',
+    'HttpOnly',
+    'SameSite=Lax',
+    `Max-Age=${12 * 60 * 60}`
+  ];
+  if (secure) {
+    cookieParts.push('Secure');
+  }
+  res.setHeader('Set-Cookie', cookieParts.join('; '));
+}
+
+function clearAdminSessionCookie(res) {
+  const secure = Boolean(process.env.VERCEL)
+    || `${process.env.NODE_ENV || ''}`.trim().toLowerCase() === 'production';
+  const cookieParts = [
+    'miracle_admin_session=',
+    'Path=/',
+    'HttpOnly',
+    'SameSite=Lax',
+    'Max-Age=0'
+  ];
+  if (secure) {
+    cookieParts.push('Secure');
+  }
+  res.setHeader('Set-Cookie', cookieParts.join('; '));
+}
+
 const ALLOWED_ORIGINS = `${process.env.ALLOWED_ORIGINS || ''}`
   .split(',')
   .map((value) => value.trim())
@@ -122,6 +157,28 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+async function requireProtectedPageSession(req, res, next) {
+  const token = extractToken(req);
+  if (!token) {
+    return res.redirect(`/index.html?next=${encodeURIComponent(req.originalUrl || req.url || '/provider-studio.html')}`);
+  }
+  try {
+    await verifyAccessToken(token);
+    return next();
+  } catch (error) {
+    return res.redirect(`/index.html?next=${encodeURIComponent(req.originalUrl || req.url || '/provider-studio.html')}`);
+  }
+}
+
+app.use([
+  '/provider-studio.html',
+  '/emr-workspace.html',
+  '/visualize.html',
+  '/usage-dashboard.html',
+  '/miracle',
+  '/miracle/voice-lab'
+], requireProtectedPageSession);
 
 app.get('/', (req, res) => {
   res.redirect('/index.html');
@@ -161,6 +218,21 @@ app.post('/api/auth/local-anonymous', (req, res) => {
   return res.json(createLocalAnonymousSession());
 });
 
+app.post('/api/auth/local-admin/login', (req, res) => {
+  try {
+    const session = createLocalAdminSession(req.body?.username || '', req.body?.password || '');
+    setAdminSessionCookie(res, session.accessToken);
+    return res.json(session);
+  } catch (error) {
+    return res.status(401).json({ error: error.message || 'No fue posible iniciar sesion.' });
+  }
+});
+
+app.post('/api/auth/logout', (_req, res) => {
+  clearAdminSessionCookie(res);
+  return res.json({ ok: true });
+});
+
 async function probeSupabaseAuth(timeoutMs = 1500) {
   const baseUrl = `${process.env.SUPABASE_URL || ''}`.replace(/\/+$/, '');
   if (!baseUrl) {
@@ -184,7 +256,8 @@ app.get('/api/auth/status', async (req, res) => {
     return res.status(200).json({
       supabase: { status: 'bypassed' },
       localAnonymousAccess: false,
-      authBypassEnabled: true
+      authBypassEnabled: true,
+      localAdminAuthEnabled: true
     });
   }
 
@@ -192,9 +265,11 @@ app.get('/api/auth/status', async (req, res) => {
   res.status(supabase.status === 'ok' ? 200 : 503).json({
     supabase,
     localAnonymousAccess: isLocalAnonymousAccessEnabled(),
-    authBypassEnabled: false
+    authBypassEnabled: false,
+    localAdminAuthEnabled: true
   });
 });
+
 
 // Require a real account for workflow-bearing APIs. Anonymous demo sessions can
 // still load static pages, but they cannot read or mutate workflow data.

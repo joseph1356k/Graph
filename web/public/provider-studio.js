@@ -15,6 +15,8 @@
         grid: document.getElementById('provider-studio-grid'),
 
         graphPill: document.getElementById('graph-provider-pill'),
+        graphMetric: document.getElementById('graph-provider-metric'),
+        graphSidebarStatus: document.getElementById('graph-provider-sidebar-status'),
         graphCurrent: document.getElementById('graph-provider-current'),
         graphForm: document.getElementById('graph-provider-form'),
         graphSelect: document.getElementById('graph-provider-select'),
@@ -29,6 +31,8 @@
         graphMessage: document.getElementById('graph-provider-message'),
 
         miracleRuntimePill: document.getElementById('miracle-runtime-pill'),
+        miracleRuntimeMetric: document.getElementById('miracle-runtime-metric'),
+        miracleRuntimeSidebarStatus: document.getElementById('miracle-runtime-sidebar-status'),
         miracleRuntimeCurrent: document.getElementById('miracle-runtime-current'),
         miracleRuntimeForm: document.getElementById('miracle-runtime-form'),
         miracleRuntimeSelect: document.getElementById('miracle-runtime-select'),
@@ -45,6 +49,8 @@
         miracleRuntimeMessage: document.getElementById('miracle-runtime-message'),
 
         miracleProductPill: document.getElementById('miracle-product-pill'),
+        miracleProductMetric: document.getElementById('miracle-product-metric'),
+        miracleProductSidebarStatus: document.getElementById('miracle-product-sidebar-status'),
         miracleProductCurrent: document.getElementById('miracle-product-current'),
         miracleProductForm: document.getElementById('miracle-product-form'),
         miracleProductSelect: document.getElementById('miracle-product-select'),
@@ -186,6 +192,8 @@
         dom.graphCurrent.textContent = current.provider
             ? `Actual: ${current.label || current.provider} · ${current.model || 'sin modelo'} · ${current.source || 'runtime actual'}`
             : 'Sin provider explícito en Graph. Se usa el fallback actual del servidor.';
+        dom.graphMetric.textContent = current.model || current.label || current.provider || 'No configurado';
+        dom.graphSidebarStatus.textContent = current.configured ? 'Configured' : 'Fallback';
         setPill(dom.graphPill, current.configured ? 'Configurado' : 'Sin credenciales', current.configured ? 'ready' : 'warning');
     }
 
@@ -207,6 +215,8 @@
         dom.miracleRuntimeCurrent.textContent = current.provider
             ? `Actual: ${current.label || current.provider} · ${current.model || 'sin modelo'} · upstream ${payload.upstream?.status || 'sin estado'}`
             : `Sin provider configurado todavía. Upstream actual: ${payload.upstream?.status || 'sin estado'}.`;
+        dom.miracleRuntimeMetric.textContent = current.model || current.label || current.provider || 'Pendiente';
+        dom.miracleRuntimeSidebarStatus.textContent = payload.upstream?.status === 'configured' ? 'Configured' : 'Pending';
         setPill(
             dom.miracleRuntimePill,
             payload.upstream?.status === 'configured' ? 'Listo' : (payload.upstream?.status || 'Pendiente'),
@@ -229,6 +239,8 @@
         dom.miracleProductCurrent.textContent = current.provider
             ? `Actual: ${current.label || current.provider} · ${current.model || 'sin modelo'}`
             : 'Actual: fallback heurístico de Miracle.';
+        dom.miracleProductMetric.textContent = current.model || current.label || current.provider || 'Heurístico';
+        dom.miracleProductSidebarStatus.textContent = payload.status?.configured ? 'Configured' : 'Fallback';
         setPill(dom.miracleProductPill, payload.status?.configured ? 'Configurado' : 'Fallback', payload.status?.configured ? 'ready' : 'warning');
     }
 
