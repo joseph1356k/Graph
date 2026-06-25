@@ -303,13 +303,14 @@ function isMiracleMedicalProxyRequest(req) {
 });
 
 const DEFAULT_MIRACLE_MEDICAL_ENGINE_URL = 'https://miracle-ai-t0dn.onrender.com';
+const DEFAULT_MIRACLE_WORKSPACE_URL = 'https://miracle-ai-one.vercel.app';
 
 function resolveMiracleMedicalEngineUrl() {
   return `${process.env.MIRACLE_MEDICAL_ENGINE_URL || process.env.MIRACLE_BASE_URL || DEFAULT_MIRACLE_MEDICAL_ENGINE_URL}`.replace(/\/+$/, '');
 }
 
 function resolveMiracleWorkspaceUrl() {
-  return `${process.env.MIRACLE_WORKSPACE_URL || resolveMiracleMedicalEngineUrl()}`.replace(/\/+$/, '');
+  return DEFAULT_MIRACLE_WORKSPACE_URL;
 }
 
 function resolvePublicAppBaseUrl(req) {
@@ -400,7 +401,7 @@ function buildMiracleProxyRequestBody(req) {
 
 async function proxyMiracleWorkspaceRequest(req, res) {
   const baseUrl = resolveMiracleWorkspaceUrl();
-  const upstreamPath = req.originalUrl.replace(/^\/api\/miracle/, '');
+  const upstreamPath = req.originalUrl.replace(/^\/api\/miracle/, '/api');
   const headers = {};
   const contentType = req.get('content-type');
   const accept = req.get('accept');
