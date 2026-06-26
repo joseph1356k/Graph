@@ -1,4 +1,7 @@
-const policy = require('./NoteFieldMatchingPolicy');
+const {
+  buildNoteFieldMatchingPrompt,
+  buildNoteFieldMatchingResponseFormat
+} = require('./NoteFieldMatchingPolicy');
 
 class NoteFieldMatcher {
   constructor(llmProvider = null) {
@@ -25,7 +28,7 @@ class NoteFieldMatcher {
     }));
 
     return [
-      { role: 'system', content: policy.buildNoteFieldMatchingPrompt() },
+      { role: 'system', content: buildNoteFieldMatchingPrompt() },
       {
         role: 'user',
         content: JSON.stringify({
@@ -69,7 +72,7 @@ class NoteFieldMatcher {
     try {
       const response = await this.llmProvider.chatExpectingJsonWithUsage(
         this.buildMessages(payload),
-        { type: 'json_object' }
+        buildNoteFieldMatchingResponseFormat()
       );
       const parsed = this.llmProvider.parseJsonObject(response.content || '{}');
       const usage = response.usage ? {

@@ -27,6 +27,40 @@ function buildNoteFieldMatchingPrompt() {
   ].join(' ');
 }
 
+function buildNoteFieldMatchingResponseFormat() {
+  return {
+    type: 'json_schema',
+    json_schema: {
+      name: 'note_field_matches',
+      strict: true,
+      schema: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          matches: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                stepOrder: { type: 'number' },
+                value: { type: 'string' },
+                confidence: { type: 'number' },
+                evidence: { type: 'string' }
+              },
+              required: ['stepOrder', 'value', 'confidence', 'evidence']
+            }
+          },
+          readyToSubmit: { type: 'boolean' },
+          submitReason: { type: 'string' }
+        },
+        required: ['matches', 'readyToSubmit', 'submitReason']
+      }
+    }
+  };
+}
+
 module.exports = {
-  buildNoteFieldMatchingPrompt
+  buildNoteFieldMatchingPrompt,
+  buildNoteFieldMatchingResponseFormat
 };

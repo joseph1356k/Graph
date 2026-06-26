@@ -153,32 +153,18 @@ class LLMProvider {
   }
 
   async chatExpectingJsonWithUsage(messages, responseFormat = { type: 'json_object' }, options = {}) {
-    try {
-      const data = await this.postChatCompletions({
-        model: options.model || this.model,
-        messages,
-        response_format: responseFormat
-      });
+    const data = await this.postChatCompletions({
+      model: options.model || this.model,
+      messages,
+      response_format: responseFormat
+    });
 
-      return {
-        content: data.choices?.[0]?.message?.content?.trim() || '{}',
-        usage: data.usage || null,
-        model: data.model || options.model || this.model,
-        provider: this.provider || ''
-      };
-    } catch (error) {
-      const message = `${error.message || ''}`;
-      const formatUnsupported =
-        message.includes('response format is not supported')
-        || message.includes('response_format')
-        || message.includes('Invalid request');
-
-      if (!responseFormat || !formatUnsupported) {
-        throw error;
-      }
-
-      return this.chatWithUsage(messages, options);
-    }
+    return {
+      content: data.choices?.[0]?.message?.content?.trim() || '{}',
+      usage: data.usage || null,
+      model: data.model || options.model || this.model,
+      provider: this.provider || ''
+    };
   }
 
   parseJsonObject(content) {

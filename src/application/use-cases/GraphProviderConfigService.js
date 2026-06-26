@@ -144,9 +144,13 @@ class GraphProviderConfigService {
       throw error;
     }
 
-    const apiKey = `${payload.api_key || ''}`.trim();
-    const model = `${payload.model || spec.defaultModel || ''}`.trim();
-    const baseUrl = `${payload.base_url || spec.defaultBaseUrl || ''}`.trim();
+    const requestedApiKey = `${payload.api_key || ''}`.trim();
+    const requestedModel = `${payload.model || ''}`.trim();
+    const requestedBaseUrl = `${payload.base_url || ''}`.trim();
+    const sameProvider = providerId === (this.llmProvider?.provider || 'disabled');
+    const apiKey = requestedApiKey || (sameProvider ? `${this.llmProvider?.apiKey || ''}`.trim() : '');
+    const model = requestedModel || (sameProvider ? `${this.llmProvider?.model || ''}`.trim() : '') || spec.defaultModel || '';
+    const baseUrl = requestedBaseUrl || (sameProvider ? `${this.llmProvider?.baseUrl || ''}`.trim() : '') || spec.defaultBaseUrl || '';
 
     if (spec.requiresApiKey && !apiKey) {
       const error = new Error('La API key es obligatoria para este provider.');
