@@ -13,9 +13,9 @@ class LLMProvider {
 
     // DeepSeek V4 Flash in Foundry does not meet the structured-output
     // guarantees required by the clinical autofill path, so we force the
-    // supported Grok route until the environment is updated explicitly.
+    // supported GPT-4.1 Mini route until the environment is updated explicitly.
     if (normalized.toLowerCase() === 'deepseek-v4-flash') {
-      return 'grok-4.1';
+      return 'gpt-4.1-mini';
     }
 
     return normalized;
