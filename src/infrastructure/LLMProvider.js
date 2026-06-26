@@ -5,6 +5,22 @@ class LLMProvider {
     this.reloadFromEnv();
   }
 
+  normalizeAzureFoundryModel(model = '') {
+    const normalized = `${model || ''}`.trim();
+    if (!normalized) {
+      return normalized;
+    }
+
+    // DeepSeek V4 Flash in Foundry does not meet the structured-output
+    // guarantees required by the clinical autofill path, so we force the
+    // supported Grok route until the environment is updated explicitly.
+    if (normalized.toLowerCase() === 'deepseek-v4-flash') {
+      return 'grok-4.1';
+    }
+
+    return normalized;
+  }
+
   reloadFromEnv() {
     this.provider = null;
     this.apiKey = '';
@@ -28,7 +44,7 @@ class LLMProvider {
         this.provider = 'azure-foundry';
         this.apiKey = graphApiKey;
         this.baseUrl = graphBaseUrl;
-        this.model = graphModel;
+        this.model = this.normalizeAzureFoundryModel(graphModel);
         this.configSource = 'graph-env';
         return;
       }
@@ -61,7 +77,7 @@ class LLMProvider {
       this.provider = 'azure-foundry';
       this.apiKey = this.azureFoundryApiKey;
       this.baseUrl = this.azureFoundryBaseUrl;
-      this.model = this.azureFoundryModel;
+      this.model = this.normalizeAzureFoundryModel(this.azureFoundryModel);
       this.configSource = 'legacy-env';
       return;
     }
