@@ -6,8 +6,6 @@
     const ENCOUNTER_STORAGE_KEY = 'miracle-active-encounter';
     const UPSERT_DEBOUNCE_MS = 800;
     const senderId = Math.random().toString(36).slice(2) + Date.now().toString(36);
-    const DEFERRED = Symbol('deferred-encounter');
-
     const state = {
         client: null,
         user: null,
@@ -72,13 +70,8 @@
             log('Encuentro previo no disponible, creando uno nuevo.', (error && error.message) || '');
         }
 
-        // No encounter selected. If the patient picker is present, let the clinician
-        // choose/create one (it reloads with ?encounter=<id>); otherwise auto-create.
-        if (window.MiraclePatients && typeof window.MiraclePatients.open === 'function') {
-            window.MiraclePatients.open();
-            return DEFERRED;
-        }
-
+        // A demo encounter does not require a patient. Create it in the background so
+        // the expanded EMR is immediately usable when launched from Provider Studio.
         const label = 'Encuentro ' + new Date().toLocaleString();
         const { data, error } = await client
             .from('encounters')
@@ -325,9 +318,6 @@
         state.client = client;
 
         const note = await ensureEncounter();
-        if (note === DEFERRED) {
-            return; // the patient picker will reload with ?encounter=<id>
-        }
         if (note === null) {
             state.syncDisabled = true;
             return;
