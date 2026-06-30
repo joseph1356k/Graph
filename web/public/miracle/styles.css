@@ -134,13 +134,8 @@ textarea {
 
 .editor-shell #editor,
 .editor-shell .editor-preview {
-  padding-right: 3.2rem;
+  padding-right: 1rem;
   padding-bottom: 8.5rem;
-}
-
-.editor-shell.chat-open #editor,
-.editor-shell.chat-open .editor-preview {
-  padding-right: calc(var(--chat-width) + 1.2rem);
 }
 
 .voice-dock {
@@ -396,30 +391,6 @@ textarea {
   color: var(--muted);
 }
 
-.chat-handle {
-  position: absolute;
-  top: 1rem;
-  right: 0.45rem;
-  min-height: auto;
-  min-width: auto;
-  padding: 0.35rem 0.55rem;
-  border: 1px solid var(--button-border);
-  background: #f8f8f8;
-  color: var(--text);
-  cursor: pointer;
-  z-index: 3;
-  transition: right 140ms ease-out;
-  border-radius: 3px;
-  font-size: 0.74rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-}
-
-.editor-shell.chat-open .chat-handle {
-  right: calc(var(--chat-width) - 1px);
-  background: #ffffff;
-  border-right: 0;
-}
-
 .preview-block {
   position: relative;
 }
@@ -431,63 +402,6 @@ textarea {
 .preview-block.active {
   outline: 1px solid #d9d9d9;
   outline-offset: 0.15rem;
-}
-
-.chat-drawer {
-  position: absolute;
-  inset: 0 0 0 auto;
-  width: min(var(--chat-width), 100%);
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  background: #fafafa;
-  border-left: 1px solid var(--line);
-  transform: translateX(100%);
-  transition: transform 140ms ease-out;
-  z-index: 2;
-  overflow: hidden;
-}
-
-.chat-drawer.is-open {
-  transform: translateX(0);
-}
-
-.chat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.55rem 0.65rem;
-  border-bottom: 1px solid var(--line);
-}
-
-.chat-actions {
-  display: flex;
-  gap: 0.35rem;
-}
-
-.chat-messages {
-  overflow-y: auto;
-  padding: 0.6rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-}
-
-.chat-message {
-  border: 1px solid var(--line);
-  background: #ffffff;
-  padding: 0.6rem;
-  white-space: pre-wrap;
-  font-size: 0.88rem;
-  line-height: 1.42;
-}
-
-.chat-message.user {
-  background: #f2f7ff;
-}
-
-.chat-message.system {
-  background: #f7f7f7;
-  color: var(--muted);
 }
 
 .setup-overlay {
@@ -590,22 +504,6 @@ textarea {
   line-height: 1.42;
 }
 
-.chat-form {
-  display: grid;
-  gap: 0.4rem;
-  padding: 0.6rem;
-  border-top: 1px solid var(--line);
-  background: #fafafa;
-}
-
-#chatInput {
-  resize: vertical;
-  min-height: 88px;
-  border: 1px solid var(--line);
-  padding: 0.55rem;
-  font-family: var(--ui);
-}
-
 .statusbar {
   display: flex;
   justify-content: space-between;
@@ -632,29 +530,7 @@ textarea {
   }
 
   .editor-shell #editor,
-  .editor-shell .editor-preview,
-  .editor-shell.chat-open #editor,
-  .editor-shell.chat-open .editor-preview {
+  .editor-shell .editor-preview {
     padding-right: 1rem;
-  }
-
-  .chat-drawer {
-    width: 100%;
-    transform: translateX(100%);
-  }
-
-  .chat-handle {
-    top: auto;
-    bottom: 0.75rem;
-    right: 0.75rem;
-    writing-mode: horizontal-tb;
-    min-height: auto;
-    min-width: auto;
-    padding: 0.45rem 0.7rem;
-  }
-
-  .editor-shell.chat-open .chat-handle {
-    right: 0.75rem;
-    border-right: 1px solid var(--button-border);
   }
 }

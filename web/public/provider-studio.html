@@ -51,17 +51,6 @@
 
                     <article class="studio-status-item">
                         <div>
-                            <strong>Miracle runtime</strong>
-                            <p id="miracle-runtime-current">Leyendo estado actual...</p>
-                        </div>
-                        <div class="studio-status-meta">
-                            <strong id="miracle-runtime-metric">Cargando</strong>
-                            <span id="miracle-runtime-pill" class="status-pill">Cargando</span>
-                        </div>
-                    </article>
-
-                    <article class="studio-status-item">
-                        <div>
                             <strong>Product LLM</strong>
                             <p id="miracle-product-current">Leyendo estado actual...</p>
                         </div>
@@ -114,44 +103,6 @@
                             </div>
                         </form>
                         <p id="graph-provider-message" class="form-message"></p>
-                    </section>
-
-                    <section class="studio-card">
-                        <div class="studio-card-head">
-                            <div>
-                                <p class="studio-kicker">Miracle</p>
-                                <h3>Runtime Upstream</h3>
-                            </div>
-                        </div>
-                        <form id="miracle-runtime-form" class="studio-form">
-                            <div class="studio-form-grid">
-                                <label class="field">
-                                    <span>Provider</span>
-                                    <select id="miracle-runtime-select"></select>
-                                </label>
-                                <label class="field is-hidden" id="miracle-runtime-base-url-field">
-                                    <span>Base URL</span>
-                                    <input id="miracle-runtime-base-url" type="url" placeholder="https://llm.example.com/v1">
-                                </label>
-                                <label class="field is-hidden" id="miracle-runtime-model-preset-field">
-                                    <span>Modelo</span>
-                                    <select id="miracle-runtime-model-preset"></select>
-                                </label>
-                                <label class="field is-hidden" id="miracle-runtime-model-field">
-                                    <span>Modelo personalizado</span>
-                                    <input id="miracle-runtime-model" type="text" placeholder="grok-4.1">
-                                </label>
-                                <label class="field is-hidden field-span-2" id="miracle-runtime-api-key-field">
-                                    <span>API key</span>
-                                    <input id="miracle-runtime-api-key" type="password" autocomplete="off" placeholder="Clave del runtime upstream">
-                                </label>
-                            </div>
-                            <div class="studio-actions">
-                                <button type="button" class="button ghost" id="miracle-runtime-refresh">Releer</button>
-                                <button type="submit" class="button primary" id="miracle-runtime-submit">Guardar Runtime</button>
-                            </div>
-                        </form>
-                        <p id="miracle-runtime-message" class="form-message"></p>
                     </section>
 
                     <section class="studio-card">

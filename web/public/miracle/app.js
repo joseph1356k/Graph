@@ -1,11 +1,9 @@
 import { fetchJSON } from "/miracle/assets/lib/api.js";
-import { createChatController } from "/miracle/assets/chat/controller.js";
 import { addEntryToCheckpoint, finalizeCheckpoint } from "/miracle/assets/notes/checkpoints.js";
 import { createEditorController } from "/miracle/assets/notes/editor.js";
 import { createPreviewRenderer } from "/miracle/assets/notes/preview.js";
 import { createProductLlmController } from "/miracle/assets/product_llm/controller.js";
 import { createWorkspaceController } from "/miracle/assets/notes/workspace.js";
-import { createSetupController } from "/miracle/assets/setup/controller.js";
 import { createVoiceStreamingController } from "/miracle/assets/voice/controller.js";
 
 const state = {
@@ -19,11 +17,7 @@ const state = {
   contextTimer: null,
   changeCaptureTimer: null,
   contextRequestToken: 0,
-  chatPinned: false,
-  chatCloseTimer: null,
   workspaceBooted: false,
-  setup: null,
-  setupOverlayMode: "required",
   voiceOrchestrationQueue: Promise.resolve(),
   voiceOrchestrationSessionId: null,
   voiceOrchestrationSequence: 0,
@@ -53,38 +47,12 @@ const dom = {
   voiceDockDebugOutput: document.getElementById("voiceDockDebugOutput"),
   saveButton: document.getElementById("saveButton"),
   refreshButton: document.getElementById("refreshButton"),
-  providerConfigButton: document.getElementById("providerConfigButton"),
   productLlmConfigButton: document.getElementById("productLlmConfigButton"),
   voiceLabButton: document.getElementById("voiceLabButton"),
   newNoteButton: document.getElementById("newNoteButton"),
   statusPath: document.getElementById("statusPath"),
   statusBlock: document.getElementById("statusBlock"),
   statusMessage: document.getElementById("statusMessage"),
-  chatHandle: document.getElementById("chatHandle"),
-  chatDrawer: document.getElementById("chatDrawer"),
-  chatMessages: document.getElementById("chatMessages"),
-  chatForm: document.getElementById("chatForm"),
-  chatInput: document.getElementById("chatInput"),
-  newChatButton: document.getElementById("newChatButton"),
-  pinChatButton: document.getElementById("pinChatButton"),
-  setupOverlay: document.getElementById("setupOverlay"),
-  setupTitle: document.getElementById("setupTitle"),
-  setupIntro: document.getElementById("setupIntro"),
-  setupCurrentConfig: document.getElementById("setupCurrentConfig"),
-  setupForm: document.getElementById("setupForm"),
-  setupProvider: document.getElementById("setupProvider"),
-  setupApiKeyField: document.getElementById("setupApiKeyField"),
-  setupApiKey: document.getElementById("setupApiKey"),
-  setupBaseUrlField: document.getElementById("setupBaseUrlField"),
-  setupBaseUrl: document.getElementById("setupBaseUrl"),
-  setupOpenrouterModelField: document.getElementById("setupOpenrouterModelField"),
-  setupOpenrouterModel: document.getElementById("setupOpenrouterModel"),
-  setupModelField: document.getElementById("setupModelField"),
-  setupModel: document.getElementById("setupModel"),
-  setupStatus: document.getElementById("setupStatus"),
-  setupRefreshButton: document.getElementById("setupRefreshButton"),
-  setupSubmitButton: document.getElementById("setupSubmitButton"),
-  setupCloseButton: document.getElementById("setupCloseButton"),
   productLlmOverlay: document.getElementById("productLlmOverlay"),
   productLlmCurrentConfig: document.getElementById("productLlmCurrentConfig"),
   productLlmForm: document.getElementById("productLlmForm"),
@@ -102,7 +70,6 @@ const dom = {
 };
 
 const previewRenderer = createPreviewRenderer(dom.editorPreview);
-let chatController = null;
 let editorController = null;
 let voiceController = null;
 let productLlmController = null;
@@ -143,7 +110,7 @@ function classifyVoiceDebugEntry(entry) {
     detailsText.includes("gpt-4.1") ||
     detailsText.includes("product-llm") ||
     detailsText.includes("chat_completions") ||
-    detailsText.includes("usageModel".toLowerCase())
+    detailsText.includes("usagemodel")
   ) {
     return "llm";
   }
@@ -161,7 +128,7 @@ function renderVoiceDebug() {
   if (!dom.voiceDockDebugOutput || !dom.voiceDockDebugToggle) {
     return;
   }
-  dom.voiceDockDebugToggle.textContent = state.voiceDebugOpen ? "Cerrar diagnóstico" : "Abrir diagnóstico";
+  dom.voiceDockDebugToggle.textContent = state.voiceDebugOpen ? "Cerrar diagnostico" : "Abrir diagnostico";
   dom.voiceDockDebugToggle.setAttribute("aria-expanded", state.voiceDebugOpen ? "true" : "false");
   if (dom.voiceDockDebugFilters) {
     dom.voiceDockDebugFilters.classList.toggle("is-hidden", !state.voiceDebugOpen);
@@ -176,7 +143,7 @@ function renderVoiceDebug() {
   const visibleEntries = getFilteredVoiceDebugEntries();
   const emptyLabel = state.voiceDebugEntries.length > 0
     ? "No hay eventos para este filtro."
-    : "Sin eventos de diagnóstico todavía.";
+    : "Sin eventos de diagnostico todavia.";
   dom.voiceDockDebugOutput.textContent = visibleEntries.length > 0
     ? visibleEntries.map((entry) => `[${entry.timestamp}] ${entry.event} ${JSON.stringify(entry.details)}`).join("\n")
     : emptyLabel;
@@ -205,7 +172,6 @@ function renderActiveTab(tab) {
   });
   dom.statusPath.textContent = tab?.path ? `workspaces/miracle/knowledge/${tab.path}` : "Sin guardar";
   dom.statusBlock.textContent = tab?.contextPacket?.active_block?.preview || "Sin bloque activo";
-  chatController?.updateHandlePosition(tab);
 }
 
 const workspaceController = createWorkspaceController({
@@ -221,16 +187,6 @@ const workspaceController = createWorkspaceController({
   },
 });
 
-chatController = createChatController({
-  state,
-  dom,
-  fetchJSON,
-  setStatus,
-  getActiveTab: workspaceController.getActiveTab,
-  requestContextPacket: (...args) => editorController.requestContextPacket(...args),
-  scheduleSessionPersist: workspaceController.scheduleSessionPersist,
-});
-
 editorController = createEditorController({
   state,
   dom,
@@ -243,7 +199,7 @@ editorController = createEditorController({
   scheduleSessionPersist: workspaceController.scheduleSessionPersist,
   saveActiveFile: workspaceController.saveActiveFile,
   addEntryToCheckpoint,
-  updateChatHandlePosition: (tab) => chatController.updateHandlePosition(tab),
+  updateChatHandlePosition: () => {},
   showEditMode,
   showPreviewMode,
 });
@@ -278,10 +234,6 @@ async function bootWorkspace() {
   if (state.workspaceBooted) return;
   await workspaceController.loadTree();
   await workspaceController.loadSession();
-  chatController.syncLayout();
-  chatController.appendSystemMessage(
-    "Escribe normalmente. El sistema conserva el contexto de cambios por debajo y el chat se mantiene simple."
-  );
   state.workspaceBooted = true;
 }
 
@@ -289,7 +241,7 @@ function renderVoiceOrchestrationMeta({ backendStatus, tasks, visible = true } =
   const resolvedBackend = backendStatus || state.voiceOrchestrationStatus?.status || "sin estado";
   const labelMap = {
     configured: "product LLM",
-    heuristic: "heurístico",
+    heuristic: "heuristico",
     disabled: "deshabilitado",
     "product-llm": "product LLM",
     "duplicate-segment": "duplicado",
@@ -414,7 +366,7 @@ function resolveVoiceStatusMessage(payload) {
     return "Voz procesada y tarea ejecutada";
   }
   if (tasks.some((task) => task?.status === "execution_failed")) {
-    return "Voz procesada pero la tarea falló";
+    return "Voz procesada pero la tarea fallo";
   }
   if (tasks.length > 0) {
     return "Voz procesada y tareas planificadas";
@@ -422,27 +374,15 @@ function resolveVoiceStatusMessage(payload) {
   return "Voz procesada";
 }
 
-const setupController = createSetupController({
-  state,
-  dom,
-  fetchJSON,
-  setStatus,
-  scheduleSessionPersist: workspaceController.scheduleSessionPersist,
-  bootWorkspace,
-  appendSystemMessage: (message) => chatController.appendSystemMessage(message),
-});
-
 productLlmController = createProductLlmController({
   state,
   dom,
   fetchJSON,
   setStatus,
-  appendSystemMessage: (message) => chatController.appendSystemMessage(message),
+  appendSystemMessage: () => {},
 });
 
-setupController.bindEvents();
 productLlmController.bindEvents();
-chatController.bindEvents();
 editorController.bindEvents();
 voiceController.bindEvents();
 renderVoiceDebug();
@@ -509,8 +449,6 @@ window.addEventListener("beforeunload", () => {
   voiceController.dispose();
 });
 
-setupController.loadStatus().then((setup) => {
-  Promise.all([bootWorkspace(), loadVoiceOrchestrationStatus(), productLlmController.loadStatus()]).catch((error) =>
-    setStatus(error.message)
-  );
-});
+Promise.all([bootWorkspace(), loadVoiceOrchestrationStatus(), productLlmController.loadStatus()]).catch((error) =>
+  setStatus(error.message)
+);

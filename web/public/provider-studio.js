@@ -2,7 +2,6 @@
     const state = {
         account: null,
         graph: null,
-        miracleRuntime: null,
         miracleProduct: null,
     };
 
@@ -27,23 +26,6 @@
         graphRefresh: document.getElementById('graph-provider-refresh'),
         graphSubmit: document.getElementById('graph-provider-submit'),
         graphMessage: document.getElementById('graph-provider-message'),
-
-        miracleRuntimePill: document.getElementById('miracle-runtime-pill'),
-        miracleRuntimeMetric: document.getElementById('miracle-runtime-metric'),
-        miracleRuntimeCurrent: document.getElementById('miracle-runtime-current'),
-        miracleRuntimeForm: document.getElementById('miracle-runtime-form'),
-        miracleRuntimeSelect: document.getElementById('miracle-runtime-select'),
-        miracleRuntimeBaseUrlField: document.getElementById('miracle-runtime-base-url-field'),
-        miracleRuntimeBaseUrl: document.getElementById('miracle-runtime-base-url'),
-        miracleRuntimeModelPresetField: document.getElementById('miracle-runtime-model-preset-field'),
-        miracleRuntimeModelPreset: document.getElementById('miracle-runtime-model-preset'),
-        miracleRuntimeModelField: document.getElementById('miracle-runtime-model-field'),
-        miracleRuntimeModel: document.getElementById('miracle-runtime-model'),
-        miracleRuntimeApiKeyField: document.getElementById('miracle-runtime-api-key-field'),
-        miracleRuntimeApiKey: document.getElementById('miracle-runtime-api-key'),
-        miracleRuntimeRefresh: document.getElementById('miracle-runtime-refresh'),
-        miracleRuntimeSubmit: document.getElementById('miracle-runtime-submit'),
-        miracleRuntimeMessage: document.getElementById('miracle-runtime-message'),
 
         miracleProductPill: document.getElementById('miracle-product-pill'),
         miracleProductMetric: document.getElementById('miracle-product-metric'),
@@ -140,27 +122,6 @@
         }
     }
 
-    function syncMiracleRuntimeFields() {
-        const provider = currentProvider(state.miracleRuntime?.providers, dom.miracleRuntimeSelect);
-        const showsPreset = Boolean(provider?.supports_model_override && (provider?.model_options?.length || 0) > 0);
-        dom.miracleRuntimeApiKeyField.classList.toggle('is-hidden', !provider?.requires_api_key);
-        dom.miracleRuntimeBaseUrlField.classList.toggle('is-hidden', !provider?.requires_base_url);
-        dom.miracleRuntimeModelPresetField.classList.toggle('is-hidden', !showsPreset);
-        dom.miracleRuntimeModelField.classList.toggle('is-hidden', !provider?.requires_model || showsPreset);
-        if (showsPreset) {
-            dom.miracleRuntimeModelPreset.innerHTML = '';
-            (provider.model_options || []).forEach((item) => {
-                const option = document.createElement('option');
-                option.value = item.value;
-                option.textContent = item.label;
-                dom.miracleRuntimeModelPreset.appendChild(option);
-            });
-            if (provider.default_model && !dom.miracleRuntimeModelPreset.value) {
-                dom.miracleRuntimeModelPreset.value = provider.default_model;
-            }
-        }
-    }
-
     function syncMiracleProductFields() {
         const provider = currentProvider(state.miracleProduct?.providers, dom.miracleProductSelect);
         dom.miracleProductApiKeyField.classList.toggle('is-hidden', !provider?.requires_api_key);
@@ -190,32 +151,6 @@
             : 'Sin provider explicito en Graph. Se usa el fallback actual del servidor.';
         dom.graphMetric.textContent = current.model || current.label || current.provider || 'No configurado';
         setPill(dom.graphPill, current.configured ? 'Configurado' : 'Sin credenciales', current.configured ? 'ready' : 'warning');
-    }
-
-    function renderMiracleRuntime(payload) {
-        state.miracleRuntime = payload;
-        renderOptions(dom.miracleRuntimeSelect, payload.providers || []);
-        const current = payload.current_setup || {};
-        if (current.provider) {
-            dom.miracleRuntimeSelect.value = current.provider;
-        }
-        const provider = currentProvider(payload.providers, dom.miracleRuntimeSelect);
-        dom.miracleRuntimeBaseUrl.value = current.base_url || '';
-        dom.miracleRuntimeModel.value = current.model || provider?.default_model || '';
-        dom.miracleRuntimeApiKey.value = '';
-        syncMiracleRuntimeFields();
-        if (dom.miracleRuntimeModelPreset.options.length > 0) {
-            dom.miracleRuntimeModelPreset.value = current.model || provider?.default_model || dom.miracleRuntimeModelPreset.options[0]?.value || '';
-        }
-        dom.miracleRuntimeCurrent.textContent = current.provider
-            ? `Actual: ${current.label || current.provider} - ${current.model || 'sin modelo'} - upstream ${payload.upstream?.status || 'sin estado'}`
-            : `Sin provider configurado todavia. Upstream actual: ${payload.upstream?.status || 'sin estado'}.`;
-        dom.miracleRuntimeMetric.textContent = current.model || current.label || current.provider || 'Pendiente';
-        setPill(
-            dom.miracleRuntimePill,
-            payload.upstream?.status === 'configured' ? 'Listo' : (payload.upstream?.status || 'Pendiente'),
-            payload.upstream?.status === 'configured' ? 'ready' : 'warning'
-        );
     }
 
     function renderMiracleProduct(payload) {
@@ -263,13 +198,11 @@
         }
 
         renderAccessState(true, '');
-        const [graph, miracleRuntime, miracleProduct] = await Promise.all([
+        const [graph, miracleProduct] = await Promise.all([
             fetchJson('/api/providers/graph/status'),
-            fetchJson('/api/miracle/setup/status'),
             fetchJson('/api/miracle/product-llm/status')
         ]);
         renderGraph(graph);
-        renderMiracleRuntime(miracleRuntime);
         renderMiracleProduct(miracleProduct);
         dom.overallStatus.textContent = 'Listo';
     }
@@ -297,34 +230,6 @@
             setMessage(dom.graphMessage, error.message || 'No fue posible guardar Graph.', 'error');
         } finally {
             dom.graphSubmit.disabled = false;
-        }
-    }
-
-    async function submitMiracleRuntime(event) {
-        event.preventDefault();
-        const provider = currentProvider(state.miracleRuntime?.providers, dom.miracleRuntimeSelect);
-        if (!provider) return;
-        dom.miracleRuntimeSubmit.disabled = true;
-        setMessage(dom.miracleRuntimeMessage, 'Reconfigurando runtime...');
-        try {
-            await fetchJson('/api/miracle/setup/openclaw', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    provider: provider.id,
-                    base_url: dom.miracleRuntimeBaseUrl.value,
-                    model: dom.miracleRuntimeModelPresetField.classList.contains('is-hidden')
-                        ? dom.miracleRuntimeModel.value
-                        : dom.miracleRuntimeModelPreset.value,
-                    api_key: dom.miracleRuntimeApiKey.value
-                })
-            });
-            await refreshAll();
-            setMessage(dom.miracleRuntimeMessage, 'Runtime actualizado.', 'success');
-        } catch (error) {
-            setMessage(dom.miracleRuntimeMessage, error.message || 'No fue posible guardar el runtime.', 'error');
-        } finally {
-            dom.miracleRuntimeSubmit.disabled = false;
         }
     }
 
@@ -361,14 +266,6 @@
         });
         dom.graphForm.addEventListener('submit', (event) => {
             submitGraph(event).catch((error) => setMessage(dom.graphMessage, error.message, 'error'));
-        });
-
-        dom.miracleRuntimeSelect.addEventListener('change', syncMiracleRuntimeFields);
-        dom.miracleRuntimeRefresh.addEventListener('click', () => {
-            refreshAll().catch((error) => setMessage(dom.miracleRuntimeMessage, error.message, 'error'));
-        });
-        dom.miracleRuntimeForm.addEventListener('submit', (event) => {
-            submitMiracleRuntime(event).catch((error) => setMessage(dom.miracleRuntimeMessage, error.message, 'error'));
         });
 
         dom.miracleProductSelect.addEventListener('change', syncMiracleProductFields);
