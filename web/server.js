@@ -392,15 +392,27 @@ function isMiracleMedicalProxyRequest(req) {
   app.use(routePrefix, requireAccountAuth, attachWorkflowAccess);
 });
 
-const DEFAULT_MIRACLE_MEDICAL_ENGINE_URL = 'https://miracle-ai-t0dn.onrender.com';
-function resolveMiracleMedicalEngineUrl() {
-  return `${process.env.MIRACLE_MEDICAL_ENGINE_URL || process.env.MIRACLE_BASE_URL || DEFAULT_MIRACLE_MEDICAL_ENGINE_URL}`.replace(/\/+$/, '');
-}
-
 function resolvePublicAppBaseUrl(req) {
   const forwardedProto = (req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
   const protocol = forwardedProto || req.protocol || 'https';
   return `${process.env.PUBLIC_BASE_URL || `${protocol}://${req.get('host') || ''}`}`.replace(/\/+$/, '');
+}
+
+function resolveMiracleRuntimeUrl(req) {
+  const configured = `${process.env.MIRACLE_RUNTIME_URL || ''}`.trim().replace(/\/+$/, '');
+  if (configured) {
+    return configured;
+  }
+  if (process.env.VERCEL) {
+    return `${resolvePublicAppBaseUrl(req)}/api/miracle-runtime`;
+  }
+  return '';
+}
+
+function extractQueryString(req) {
+  const original = `${req.originalUrl || req.url || ''}`;
+  const queryIndex = original.indexOf('?');
+  return queryIndex >= 0 ? original.slice(queryIndex) : '';
 }
 
 app.get('/api/public-config', (req, res) => {
@@ -419,91 +431,21 @@ app.get('/api/public-config', (req, res) => {
   });
 });
 
-app.get('/api/tree', (req, res) => {
-  res.json(miracleWorkspaceStore.listFiles());
-});
-
-app.get('/api/file', (req, res) => {
-  try {
-    return res.json(miracleWorkspaceStore.readFile(req.query.path || ''));
-  } catch (error) {
-    return res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible leer el archivo.' });
-  }
-});
-
-app.post('/api/files', (req, res) => {
-  try {
-    return res.status(201).json(miracleWorkspaceStore.createFile(req.body?.path || '', req.body?.template || ''));
-  } catch (error) {
-    return res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible crear el archivo.' });
-  }
-});
-
-app.put('/api/file', (req, res) => {
-  try {
-    return res.json(miracleWorkspaceStore.writeFile(req.body?.path || '', req.body?.content || ''));
-  } catch (error) {
-    return res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible guardar el archivo.' });
-  }
-});
-
-app.get('/api/session', (req, res) => {
-  res.json(miracleWorkspaceStore.getSession());
-});
-
-app.put('/api/session', (req, res) => {
-  res.json(miracleWorkspaceStore.saveSession(req.body || {}));
-});
-
-app.post('/api/context', (req, res) => {
-  res.json(miracleWorkspaceStore.buildContextPacket(req.body || {}));
-});
-
-app.post('/api/history-change', (req, res) => {
-  res.json(miracleWorkspaceStore.buildHistoryEntry(req.body || {}));
-});
-
-app.get('/api/product-llm/status', (req, res) => {
-  res.json(miracleWorkspaceStore.getProductLlmStatus());
-});
-
-app.post('/api/setup/product-llm', (req, res) => {
-  try {
-    return res.json(miracleWorkspaceStore.saveProductLlmSetup(req.body || {}));
-  } catch (error) {
-    return res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible actualizar la hoja en blanco.' });
-  }
-});
-
-async function probeMiracleSidecar(timeoutMs = 1500) {
-  const baseUrl = resolveMiracleMedicalEngineUrl();
+async function proxyMiracleRuntimeRequest(req, res, targetPath, init = {}) {
+  const baseUrl = resolveMiracleRuntimeUrl(req);
   if (!baseUrl) {
-    return { status: 'not_configured' };
+    return false;
   }
-
+  const internalToken = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '';
   try {
-    const response = await fetch(`${baseUrl}/api/setup/status`, {
-      signal: AbortSignal.timeout(timeoutMs)
-    });
-    return {
-      status: response.ok ? 'ok' : 'unavailable',
-      httpStatus: response.status
-    };
-  } catch (error) {
-    return { status: 'unavailable' };
-  }
-}
-
-async function proxyMiracleMedicalRequest(req, res, path, init = {}) {
-  const baseUrl = resolveMiracleMedicalEngineUrl();
-  try {
-    const upstreamResponse = await fetch(`${baseUrl}${path}`, {
+    const upstreamResponse = await fetch(`${baseUrl}${targetPath}${init.includeQueryString === false ? '' : extractQueryString(req)}`, {
       method: init.method || req.method,
       headers: {
         'Content-Type': 'application/json',
+        ...(internalToken ? { 'X-Graph-Internal-Token': internalToken } : {}),
         ...(init.headers || {})
       },
-      body: init.body
+      body: typeof init.body !== 'undefined' ? init.body : buildMiracleProxyRequestBody(req)
     });
     const payloadText = await upstreamResponse.text();
     let payload = {};
@@ -516,13 +458,148 @@ async function proxyMiracleMedicalRequest(req, res, path, init = {}) {
     }
     if (!upstreamResponse.ok) {
       return res.status(upstreamResponse.status).json({
-        error: payload?.error || payload?.message || 'Miracle medical engine request failed'
+        error: payload?.error || payload?.message || 'Miracle runtime request failed'
       });
     }
     return res.status(upstreamResponse.status).json(payload);
   } catch (error) {
-    console.error(`[Miracle Proxy] ${path} failed: ${error.message}`);
-    return res.status(502).json({ error: 'Miracle medical engine unavailable' });
+    console.error(`[Miracle Runtime Proxy] ${targetPath} failed: ${error.message}`);
+    return res.status(502).json({ error: 'Miracle runtime unavailable' });
+  }
+}
+
+app.get('/api/tree', async (req, res) => {
+  if (await proxyMiracleRuntimeRequest(req, res, '/api/tree')) {
+    return;
+  }
+  res.json(miracleWorkspaceStore.listFiles());
+});
+
+app.get('/api/file', async (req, res) => {
+  if (await proxyMiracleRuntimeRequest(req, res, '/api/file')) {
+    return;
+  }
+  try {
+    return res.json(miracleWorkspaceStore.readFile(req.query.path || ''));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible leer el archivo.' });
+  }
+});
+
+app.post('/api/files', async (req, res) => {
+  if (await proxyMiracleRuntimeRequest(req, res, '/api/files', {
+    method: 'POST',
+    body: JSON.stringify(req.body || {})
+  })) {
+    return;
+  }
+  try {
+    return res.status(201).json(miracleWorkspaceStore.createFile(req.body?.path || '', req.body?.template || ''));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible crear el archivo.' });
+  }
+});
+
+app.put('/api/file', async (req, res) => {
+  if (await proxyMiracleRuntimeRequest(req, res, '/api/file', {
+    method: 'PUT',
+    body: JSON.stringify(req.body || {})
+  })) {
+    return;
+  }
+  try {
+    return res.json(miracleWorkspaceStore.writeFile(req.body?.path || '', req.body?.content || ''));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible guardar el archivo.' });
+  }
+});
+
+app.get('/api/session', async (req, res) => {
+  if (await proxyMiracleRuntimeRequest(req, res, '/api/session')) {
+    return;
+  }
+  res.json(miracleWorkspaceStore.getSession());
+});
+
+app.put('/api/session', async (req, res) => {
+  if (await proxyMiracleRuntimeRequest(req, res, '/api/session', {
+    method: 'PUT',
+    body: JSON.stringify(req.body || {})
+  })) {
+    return;
+  }
+  res.json(miracleWorkspaceStore.saveSession(req.body || {}));
+});
+
+app.post('/api/session', async (req, res) => {
+  if (await proxyMiracleRuntimeRequest(req, res, '/api/session', {
+    method: 'POST',
+    body: JSON.stringify(req.body || {})
+  })) {
+    return;
+  }
+  res.json(miracleWorkspaceStore.saveSession(req.body || {}));
+});
+
+app.post('/api/context', async (req, res) => {
+  if (await proxyMiracleRuntimeRequest(req, res, '/api/context', {
+    method: 'POST',
+    body: JSON.stringify(req.body || {})
+  })) {
+    return;
+  }
+  res.json(miracleWorkspaceStore.buildContextPacket(req.body || {}));
+});
+
+app.post('/api/history-change', async (req, res) => {
+  if (await proxyMiracleRuntimeRequest(req, res, '/api/history-change', {
+    method: 'POST',
+    body: JSON.stringify(req.body || {})
+  })) {
+    return;
+  }
+  res.json(miracleWorkspaceStore.buildHistoryEntry(req.body || {}));
+});
+
+app.get('/api/product-llm/status', async (req, res) => {
+  if (await proxyMiracleRuntimeRequest(req, res, '/api/product-llm/status')) {
+    return;
+  }
+  res.json(miracleWorkspaceStore.getProductLlmStatus());
+});
+
+app.post('/api/setup/product-llm', async (req, res) => {
+  if (await proxyMiracleRuntimeRequest(req, res, '/api/setup/product-llm', {
+    method: 'POST',
+    body: JSON.stringify(req.body || {})
+  })) {
+    return;
+  }
+  try {
+    return res.json(miracleWorkspaceStore.saveProductLlmSetup(req.body || {}));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible actualizar la hoja en blanco.' });
+  }
+});
+
+async function probeMiracleSidecar(req, timeoutMs = 1500) {
+  const baseUrl = resolveMiracleRuntimeUrl(req);
+  if (!baseUrl) {
+    return { status: 'not_configured' };
+  }
+  const internalToken = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '';
+
+  try {
+    const response = await fetch(`${baseUrl}/api/setup/status`, {
+      headers: internalToken ? { 'X-Graph-Internal-Token': internalToken } : {},
+      signal: AbortSignal.timeout(timeoutMs)
+    });
+    return {
+      status: response.ok ? 'ok' : 'unavailable',
+      httpStatus: response.status
+    };
+  } catch (error) {
+    return { status: 'unavailable' };
   }
 }
 
@@ -540,28 +617,38 @@ function buildMiracleProxyRequestBody(req) {
 }
 
 app.post('/api/voice/stream-session', async (req, res) => {
-  await proxyMiracleMedicalRequest(req, res, '/api/voice/stream-session', {
-    method: 'POST'
-  });
+  if (await proxyMiracleRuntimeRequest(req, res, '/api/voice/stream-session', {
+    method: 'POST',
+    body: JSON.stringify(req.body || {})
+  })) {
+    return;
+  }
+  return res.status(503).json({ error: 'Miracle runtime unavailable' });
 });
 
 app.post('/api/voice/orchestrator/events', async (req, res) => {
-  await proxyMiracleMedicalRequest(req, res, '/api/voice/orchestrator/events', {
+  if (await proxyMiracleRuntimeRequest(req, res, '/api/voice/orchestrator/events', {
     method: 'POST',
     body: JSON.stringify(req.body || {})
-  });
+  })) {
+    return;
+  }
+  return res.status(503).json({ error: 'Miracle runtime unavailable' });
 });
 
 app.get('/api/voice/orchestrator/status', async (req, res) => {
-  await proxyMiracleMedicalRequest(req, res, '/api/voice/orchestrator/status', {
+  if (await proxyMiracleRuntimeRequest(req, res, '/api/voice/orchestrator/status', {
     method: 'GET'
-  });
+  })) {
+    return;
+  }
+  return res.status(503).json({ error: 'Miracle runtime unavailable' });
 });
 
 app.get('/api/health', async (req, res) => {
   const [neo4j, miracle, supabase] = await Promise.all([
     db.healthCheck(),
-    probeMiracleSidecar(),
+    probeMiracleSidecar(req),
     probeSupabaseAuth()
   ]);
   const authBypassEnabled = isAuthBypassEnabled();

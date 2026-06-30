@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Miracle Notes</title>
+    <link rel="stylesheet" href="/styles.css?v=4" />
+  </head>
+  <body>
+    <div class="window">
+      <header class="titlebar">Miracle Notes</header>
+
+      <div class="menubar">
+        <button id="newNoteButton" type="button">Nuevo</button>
+        <button id="openNoteButton" type="button">Abrir</button>
+        <button id="saveButton" type="button">Guardar</button>
+        <select id="notePicker" aria-label="Notas guardadas">
+          <option value="">Sin notas guardadas</option>
+        </select>
+        <button id="refreshButton" type="button">Actualizar</button>
+        <button id="providerConfigButton" type="button">Provider</button>
+        <button id="productLlmConfigButton" type="button">Product LLM</button>
+        <button id="voiceLabButton" type="button">Voz</button>
+      </div>
+
+      <main class="workspace">
+        <section class="notepad">
+          <section id="tabs" class="tabs"></section>
+          <section class="editor-shell">
+            <div id="editorPreview" class="editor-preview" tabindex="0"></div>
+            <textarea id="editor" spellcheck="false" placeholder="Empieza a escribir..."></textarea>
+
+            <div id="voiceDock" class="voice-dock" aria-label="Grabacion de voz">
+              <div class="voice-dock-panel">
+                <textarea
+                  id="voiceDockTranscriptOutput"
+                  class="voice-dock-transcript"
+                  rows="5"
+                  spellcheck="false"
+                  readonly
+                ></textarea>
+                <div id="voiceDockMeta" class="voice-dock-meta is-hidden" aria-live="polite">
+                  <div class="voice-dock-meta-row">
+                    <span id="voiceDockBackendStatus">Motor: sin estado</span>
+                    <span id="voiceDockTaskCount">Tareas: 0</span>
+                  </div>
+                  <div id="voiceDockTaskList" class="voice-dock-task-list"></div>
+                </div>
+                <button id="voiceDockRecordToggleButton" class="voice-dock-toggle" type="button">
+                  Grabar
+                </button>
+              </div>
+            </div>
+
+            <button
+              id="chatHandle"
+              class="chat-handle"
+              type="button"
+              aria-label="Abrir chat contextual"
+              title="Abrir chat contextual"
+            >
+              Chat
+            </button>
+
+            <aside id="chatDrawer" class="chat-drawer" aria-label="Chat contextual">
+              <div class="chat-header">
+                <strong>Chat</strong>
+                <div class="chat-actions">
+                  <button id="pinChatButton" type="button">Fijar</button>
+                  <button id="newChatButton" type="button">Nuevo</button>
+                </div>
+              </div>
+
+              <div id="chatMessages" class="chat-messages"></div>
+
+              <form id="chatForm" class="chat-form">
+                <textarea
+                  id="chatInput"
+                  rows="4"
+                  placeholder="Pregunta sobre lo que acabas de escribir."
+                ></textarea>
+                <button id="sendChatButton" type="submit">Enviar</button>
+              </form>
+            </aside>
+          </section>
+        </section>
+      </main>
+
+      <footer class="statusbar">
+        <span id="statusPath">Sin guardar</span>
+        <span id="statusBlock">Sin bloque activo</span>
+        <span id="statusMessage">Listo</span>
+      </footer>
+    </div>
+
+    <div id="setupOverlay" class="setup-overlay is-hidden" aria-hidden="true">
+      <section class="setup-card" aria-label="Configuración inicial de Miracle">
+        <div class="setup-header">
+          <h1 id="setupTitle">Configura Miracle</h1>
+          <button id="setupCloseButton" class="setup-close is-hidden" type="button">Cerrar</button>
+        </div>
+        <p id="setupIntro" class="setup-copy">
+          La primera vez configuramos el runtime upstream por detrás. La UX del editor no cambia.
+        </p>
+        <p id="setupCurrentConfig" class="setup-meta"></p>
+
+        <form id="setupForm" class="setup-form">
+          <label class="setup-field">
+            <span>Provider</span>
+            <select id="setupProvider"></select>
+          </label>
+
+          <label id="setupApiKeyField" class="setup-field">
+            <span>API key</span>
+            <input id="setupApiKey" type="password" autocomplete="off" />
+          </label>
+
+          <label id="setupBaseUrlField" class="setup-field is-hidden">
+            <span>Base URL</span>
+            <input id="setupBaseUrl" type="url" placeholder="https://llm.example.com/v1" />
+          </label>
+
+          <label id="setupOpenrouterModelField" class="setup-field is-hidden">
+            <span>Modelo</span>
+            <select id="setupOpenrouterModel"></select>
+          </label>
+
+          <label id="setupModelField" class="setup-field is-hidden">
+            <span>Model ID</span>
+            <input id="setupModel" type="text" placeholder="gpt-4.1-mini" />
+          </label>
+
+          <div class="setup-actions">
+            <button id="setupSubmitButton" type="submit">Guardar y configurar</button>
+            <button id="setupRefreshButton" type="button">Revisar estado</button>
+          </div>
+        </form>
+
+        <div id="setupStatus" class="setup-status"></div>
+      </section>
+    </div>
+
+    <div id="productLlmOverlay" class="setup-overlay is-hidden" aria-hidden="true">
+      <section class="setup-card" aria-label="Configuración del product LLM">
+        <div class="setup-header">
+          <h1>Configurar Product LLM</h1>
+          <button id="productLlmCloseButton" class="setup-close" type="button">Cerrar</button>
+        </div>
+        <p class="setup-copy">
+          Esta configuración es para la capa de LLM propia de Miracle. No cambia el provider upstream de OpenClaw.
+        </p>
+        <p id="productLlmCurrentConfig" class="setup-meta"></p>
+
+        <form id="productLlmForm" class="setup-form">
+          <label class="setup-field">
+            <span>Provider</span>
+            <select id="productLlmProvider"></select>
+          </label>
+
+          <label id="productLlmApiKeyField" class="setup-field">
+            <span>API key</span>
+            <input id="productLlmApiKey" type="password" autocomplete="off" />
+          </label>
+
+          <label id="productLlmBaseUrlField" class="setup-field is-hidden">
+            <span>Base URL</span>
+            <input id="productLlmBaseUrl" type="url" placeholder="https://api.openai.com" />
+          </label>
+
+          <label id="productLlmModelField" class="setup-field">
+            <span>Model ID</span>
+            <input id="productLlmModel" type="text" placeholder="gpt-4.1-mini" />
+          </label>
+
+          <div class="setup-actions">
+            <button id="productLlmSubmitButton" type="submit">Guardar Product LLM</button>
+            <button id="productLlmRefreshButton" type="button">Revisar estado</button>
+          </div>
+        </form>
+
+        <div id="productLlmStatus" class="setup-status"></div>
+      </section>
+    </div>
+
+    <script src="/app.js?v=5" type="module"></script>
+  </body>
+</html>

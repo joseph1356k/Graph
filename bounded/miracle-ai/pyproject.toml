@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "miracle-agent"
+version = "0.1.0"
+description = "Miracle workspace for product orchestration, notes, and durable prompts."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "python-dotenv>=1.0.1",
+  "starlette>=0.46.0",
+  "uvicorn>=0.35.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.0",
+  "py>=1.11.0",
+]
+
+[project.scripts]
+miracle-agent = "miracle_agent.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/miracle_agent"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

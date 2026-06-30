@@ -114,9 +114,12 @@ function buildBlocks(content = '') {
 
 class MiracleWorkspaceStore {
   constructor(options = {}) {
-    this.workspaceRoot = options.workspaceRoot || path.join(process.cwd(), 'workspaces', 'miracle');
+    const writableRoot = process.env.VERCEL
+      ? path.join('/tmp', 'graph-miracle-workspace')
+      : process.cwd();
+    this.workspaceRoot = options.workspaceRoot || path.join(writableRoot, 'workspaces', 'miracle');
     this.knowledgeRoot = path.join(this.workspaceRoot, 'knowledge');
-    this.stateRoot = options.stateRoot || path.join(process.cwd(), 'generated', 'miracle');
+    this.stateRoot = options.stateRoot || path.join(writableRoot, 'generated', 'miracle');
     this.sessionPath = path.join(this.stateRoot, 'session.json');
     this.productLlmPath = path.join(this.stateRoot, 'product-llm.json');
     ensureDir(this.knowledgeRoot);

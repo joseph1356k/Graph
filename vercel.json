@@ -4,7 +4,16 @@
   "installCommand": "npm ci",
   "buildCommand": "npm run build:vercel",
   "outputDirectory": "public",
+  "functions": {
+    "api/miracle_runtime.py": {
+      "includeFiles": "bounded/miracle-ai/**"
+    }
+  },
   "rewrites": [
+    {
+      "source": "/api/miracle-runtime/:path*",
+      "destination": "/api/miracle_runtime?path=:path*"
+    },
     {
       "source": "/api/:path*",
       "destination": "/api?path=:path*"
