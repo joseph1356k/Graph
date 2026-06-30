@@ -118,6 +118,9 @@ export function createWorkspaceController({
 
   function applyTabToEditor(tab) {
     dom.editor.value = tab.content;
+    if (dom.notePicker) {
+      dom.notePicker.value = tab.path || "";
+    }
     renderActiveTab(tab);
   }
 

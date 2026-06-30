@@ -58,7 +58,7 @@ def _rewrite_scope(scope: dict[str, object]) -> dict[str, object]:
     filtered_pairs: list[tuple[str, str]] = []
 
     for key, value in query_pairs:
-        if key == "path" and not target_path:
+        if key == "__miracle_target" and not target_path:
             target_path = value
             continue
         filtered_pairs.append((key, value))

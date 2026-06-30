@@ -24,6 +24,7 @@ const NoteFieldMatcher = require('../src/application/use-cases/NoteFieldMatcher'
 const ClinicalDiagnosisSuggestionService = require('../src/application/use-cases/ClinicalDiagnosisSuggestionService');
 const UsageDashboardService = require('../src/application/use-cases/UsageDashboardService');
 const GraphProviderConfigService = require('../src/application/use-cases/GraphProviderConfigService');
+const MiracleSttProviderConfigService = require('../src/application/use-cases/MiracleSttProviderConfigService');
 const registerLearningRoutes = require('./api/registerLearningRoutes');
 const registerWorkflowRoutes = require('./api/registerWorkflowRoutes');
 const registerContextRoutes = require('./api/registerContextRoutes');
@@ -96,6 +97,7 @@ const diagnosisSuggestionService = new ClinicalDiagnosisSuggestionService(llmPro
 const graphProviderConfigService = new GraphProviderConfigService(llmProvider, {
   envPath: path.resolve(__dirname, '..', '.env')
 });
+const miracleSttProviderConfigService = new MiracleSttProviderConfigService();
 const miracleWorkspaceStore = new MiracleWorkspaceStore();
 
 app.use(bodyParser.json());
@@ -703,6 +705,26 @@ app.post('/api/providers/graph/configure', (req, res) => {
   } catch (error) {
     return res.status(error.statusCode || 500).json({
       error: error.message || 'No fue posible actualizar el provider de Graph.'
+    });
+  }
+});
+
+app.get('/api/providers/miracle-stt/status', (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar providers.' });
+  }
+  return res.json(miracleSttProviderConfigService.status());
+});
+
+app.post('/api/providers/miracle-stt/configure', async (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar providers.' });
+  }
+  try {
+    return res.json(await miracleSttProviderConfigService.configure(req.body || {}));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      error: error.message || 'No fue posible actualizar el STT Provider.'
     });
   }
 });

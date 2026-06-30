@@ -12,7 +12,7 @@
   "rewrites": [
     {
       "source": "/api/miracle-runtime/:path*",
-      "destination": "/api/miracle_runtime?path=:path*"
+      "destination": "/api/miracle_runtime?__miracle_target=:path*"
     },
     {
       "source": "/api/:path*",
