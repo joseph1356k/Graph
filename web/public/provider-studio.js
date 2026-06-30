@@ -10,13 +10,11 @@
         accountEmail: document.getElementById('provider-studio-account-email'),
         accountRole: document.getElementById('provider-studio-account-role'),
         overallStatus: document.getElementById('provider-studio-overall-status'),
-        overallDetail: document.getElementById('provider-studio-overall-detail'),
         access: document.getElementById('provider-studio-access'),
         grid: document.getElementById('provider-studio-grid'),
 
         graphPill: document.getElementById('graph-provider-pill'),
         graphMetric: document.getElementById('graph-provider-metric'),
-        graphSidebarStatus: document.getElementById('graph-provider-sidebar-status'),
         graphCurrent: document.getElementById('graph-provider-current'),
         graphForm: document.getElementById('graph-provider-form'),
         graphSelect: document.getElementById('graph-provider-select'),
@@ -32,7 +30,6 @@
 
         miracleRuntimePill: document.getElementById('miracle-runtime-pill'),
         miracleRuntimeMetric: document.getElementById('miracle-runtime-metric'),
-        miracleRuntimeSidebarStatus: document.getElementById('miracle-runtime-sidebar-status'),
         miracleRuntimeCurrent: document.getElementById('miracle-runtime-current'),
         miracleRuntimeForm: document.getElementById('miracle-runtime-form'),
         miracleRuntimeSelect: document.getElementById('miracle-runtime-select'),
@@ -50,7 +47,6 @@
 
         miracleProductPill: document.getElementById('miracle-product-pill'),
         miracleProductMetric: document.getElementById('miracle-product-metric'),
-        miracleProductSidebarStatus: document.getElementById('miracle-product-sidebar-status'),
         miracleProductCurrent: document.getElementById('miracle-product-current'),
         miracleProductForm: document.getElementById('miracle-product-form'),
         miracleProductSelect: document.getElementById('miracle-product-select'),
@@ -190,10 +186,9 @@
         dom.graphApiKey.value = '';
         syncGraphFields();
         dom.graphCurrent.textContent = current.provider
-            ? `Actual: ${current.label || current.provider} · ${current.model || 'sin modelo'} · ${current.source || 'runtime actual'}`
-            : 'Sin provider explícito en Graph. Se usa el fallback actual del servidor.';
+            ? `Actual: ${current.label || current.provider} - ${current.model || 'sin modelo'} - ${current.source || 'runtime actual'}`
+            : 'Sin provider explicito en Graph. Se usa el fallback actual del servidor.';
         dom.graphMetric.textContent = current.model || current.label || current.provider || 'No configurado';
-        dom.graphSidebarStatus.textContent = current.configured ? 'Configured' : 'Fallback';
         setPill(dom.graphPill, current.configured ? 'Configurado' : 'Sin credenciales', current.configured ? 'ready' : 'warning');
     }
 
@@ -213,10 +208,9 @@
             dom.miracleRuntimeModelPreset.value = current.model || provider?.default_model || dom.miracleRuntimeModelPreset.options[0]?.value || '';
         }
         dom.miracleRuntimeCurrent.textContent = current.provider
-            ? `Actual: ${current.label || current.provider} · ${current.model || 'sin modelo'} · upstream ${payload.upstream?.status || 'sin estado'}`
-            : `Sin provider configurado todavía. Upstream actual: ${payload.upstream?.status || 'sin estado'}.`;
+            ? `Actual: ${current.label || current.provider} - ${current.model || 'sin modelo'} - upstream ${payload.upstream?.status || 'sin estado'}`
+            : `Sin provider configurado todavia. Upstream actual: ${payload.upstream?.status || 'sin estado'}.`;
         dom.miracleRuntimeMetric.textContent = current.model || current.label || current.provider || 'Pendiente';
-        dom.miracleRuntimeSidebarStatus.textContent = payload.upstream?.status === 'configured' ? 'Configured' : 'Pending';
         setPill(
             dom.miracleRuntimePill,
             payload.upstream?.status === 'configured' ? 'Listo' : (payload.upstream?.status || 'Pendiente'),
@@ -237,21 +231,19 @@
         dom.miracleProductApiKey.value = '';
         syncMiracleProductFields();
         dom.miracleProductCurrent.textContent = current.provider
-            ? `Actual: ${current.label || current.provider} · ${current.model || 'sin modelo'}`
-            : 'Actual: fallback heurístico de Miracle.';
-        dom.miracleProductMetric.textContent = current.model || current.label || current.provider || 'Heurístico';
-        dom.miracleProductSidebarStatus.textContent = payload.status?.configured ? 'Configured' : 'Fallback';
+            ? `Actual: ${current.label || current.provider} - ${current.model || 'sin modelo'}`
+            : 'Actual: fallback heuristico de Miracle.';
+        dom.miracleProductMetric.textContent = current.model || current.label || current.provider || 'Heuristico';
         setPill(dom.miracleProductPill, payload.status?.configured ? 'Configurado' : 'Fallback', payload.status?.configured ? 'ready' : 'warning');
     }
 
     async function loadAccount() {
         const payload = await fetchJson('/api/account/me');
         state.account = payload;
-        const email = payload?.user?.email || 'Cuenta activa';
-        dom.accountEmail.textContent = email;
+        dom.accountEmail.textContent = payload?.user?.email || 'Cuenta activa';
         dom.accountRole.textContent = payload?.permissions?.canManageGlobalWorkflows
-            ? 'Admin con permiso para providers y workflows globales'
-            : 'Sesión autenticada sin permiso para administrar providers';
+            ? 'Admin con permiso para providers globales'
+            : 'Sesion autenticada sin permiso de administracion';
         return payload;
     }
 
@@ -263,16 +255,10 @@
 
     async function refreshAll() {
         dom.overallStatus.textContent = 'Sincronizando';
-        if (dom.overallDetail) {
-            dom.overallDetail.textContent = '';
-        }
         const account = await loadAccount();
         if (!account?.permissions?.canManageGlobalWorkflows) {
-            renderAccessState(false, 'Esta superficie está reservada para cuentas con permisos de administración global.');
+            renderAccessState(false, 'Esta superficie esta reservada para cuentas con permisos de administracion global.');
             dom.overallStatus.textContent = 'Acceso restringido';
-            if (dom.overallDetail) {
-                dom.overallDetail.textContent = '';
-            }
             return;
         }
 
@@ -285,10 +271,7 @@
         renderGraph(graph);
         renderMiracleRuntime(miracleRuntime);
         renderMiracleProduct(miracleProduct);
-        dom.overallStatus.textContent = 'Todo en calma';
-        if (dom.overallDetail) {
-            dom.overallDetail.textContent = '';
-        }
+        dom.overallStatus.textContent = 'Listo';
     }
 
     async function submitGraph(event) {
@@ -296,7 +279,7 @@
         const provider = currentProvider(state.graph?.providers, dom.graphSelect);
         if (!provider) return;
         dom.graphSubmit.disabled = true;
-        setMessage(dom.graphMessage, 'Guardando configuración de Graph...');
+        setMessage(dom.graphMessage, 'Guardando configuracion de Graph...');
         try {
             await fetchJson('/api/providers/graph/configure', {
                 method: 'POST',
@@ -309,7 +292,7 @@
                 })
             });
             await refreshAll();
-            setMessage(dom.graphMessage, 'Graph quedó actualizado.', 'success');
+            setMessage(dom.graphMessage, 'Graph quedo actualizado.', 'success');
         } catch (error) {
             setMessage(dom.graphMessage, error.message || 'No fue posible guardar Graph.', 'error');
         } finally {
@@ -322,7 +305,7 @@
         const provider = currentProvider(state.miracleRuntime?.providers, dom.miracleRuntimeSelect);
         if (!provider) return;
         dom.miracleRuntimeSubmit.disabled = true;
-        setMessage(dom.miracleRuntimeMessage, 'Reconfigurando runtime upstream...');
+        setMessage(dom.miracleRuntimeMessage, 'Reconfigurando runtime...');
         try {
             await fetchJson('/api/miracle/setup/openclaw', {
                 method: 'POST',
@@ -337,7 +320,7 @@
                 })
             });
             await refreshAll();
-            setMessage(dom.miracleRuntimeMessage, 'Runtime de Miracle actualizado.', 'success');
+            setMessage(dom.miracleRuntimeMessage, 'Runtime actualizado.', 'success');
         } catch (error) {
             setMessage(dom.miracleRuntimeMessage, error.message || 'No fue posible guardar el runtime.', 'error');
         } finally {
@@ -363,7 +346,7 @@
                 })
             });
             await refreshAll();
-            setMessage(dom.miracleProductMessage, 'Product LLM de Miracle actualizado.', 'success');
+            setMessage(dom.miracleProductMessage, 'Product LLM actualizado.', 'success');
         } catch (error) {
             setMessage(dom.miracleProductMessage, error.message || 'No fue posible guardar el Product LLM.', 'error');
         } finally {
@@ -399,10 +382,7 @@
 
     bindEvents();
     refreshAll().catch((error) => {
-        dom.overallStatus.textContent = 'Algo requiere atención';
-        if (dom.overallDetail) {
-            dom.overallDetail.textContent = '';
-        }
+        dom.overallStatus.textContent = 'Error';
         renderAccessState(false, error.message || 'No pudimos cargar el Provider Studio.');
     });
 })();

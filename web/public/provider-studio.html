@@ -8,139 +8,87 @@
     <link rel="stylesheet" href="/provider-studio.css">
 </head>
 <body>
-    <div class="studio-app">
-        <aside class="studio-sidebar">
-            <div class="studio-sidebar-top">
-                <a class="studio-mark" href="/provider-studio.html">
-                    <span class="studio-mark-icon" aria-hidden="true"></span>
-                    <span class="studio-mark-copy">
-                        <strong>Miracle Admin</strong>
-                        <span>Provider Studio</span>
-                    </span>
-                </a>
+    <main class="studio-shell">
+        <header class="studio-header">
+            <div class="studio-header-copy">
+                <p class="studio-kicker">Miracle Admin</p>
+                <h1>Provider Studio</h1>
+                <p class="studio-intro">Panel minimo para revisar, cambiar y validar los providers principales de Miracle.</p>
             </div>
-
-            <div class="studio-sidebar-group">
-                <span class="studio-sidebar-label">General</span>
-                <nav class="studio-sidebar-nav" aria-label="Primary">
-                    <a class="studio-sidebar-link is-active" href="/provider-studio.html">Dashboard</a>
-                    <a class="studio-sidebar-link" href="/miracle">Workspace Miracle</a>
-                    <a class="studio-sidebar-link" href="/emr-workspace.html">Probar EMR</a>
-                    <a class="studio-sidebar-link" href="/visualize.html">Workflow Graph</a>
-                </nav>
-            </div>
-
-            <div class="studio-sidebar-group">
-                <span class="studio-sidebar-label">Systems</span>
-                <div class="studio-sidebar-meta">
-                    <span>Graph field matching</span>
-                    <strong id="graph-provider-sidebar-status">Syncing</strong>
-                </div>
-                <div class="studio-sidebar-meta">
-                    <span>Miracle runtime</span>
-                    <strong id="miracle-runtime-sidebar-status">Syncing</strong>
-                </div>
-                <div class="studio-sidebar-meta">
-                    <span>Miracle product LLM</span>
-                    <strong id="miracle-product-sidebar-status">Syncing</strong>
-                </div>
-            </div>
-
-            <div class="studio-sidebar-footer">
-                <div class="studio-user-badge">MN</div>
-                <div class="studio-user-copy">
+            <div class="studio-header-side">
+                <div class="studio-account">
                     <strong id="provider-studio-account-email">Cargando...</strong>
                     <span id="provider-studio-account-role">Verificando permisos</span>
                 </div>
-            </div>
-        </aside>
-
-        <main class="studio-main">
-            <header class="studio-topbar">
-                <div class="studio-topbar-left">
-                    <button class="studio-square-button" type="button" aria-label="Open dashboard">
-                        <span></span>
-                    </button>
-                    <nav class="studio-tabs" aria-label="Sections">
-                        <a class="studio-tab is-active" href="/provider-studio.html">Overview</a>
-                        <a class="studio-tab" href="/miracle">Customers</a>
-                        <a class="studio-tab" href="/emr-workspace.html">Products</a>
-                        <a class="studio-tab" href="/visualize.html">Settings</a>
-                    </nav>
-                </div>
-
-                <div class="studio-topbar-right">
-                    <a class="studio-action-button" href="/emr-workspace.html">Probar</a>
-                </div>
-            </header>
-
-            <section class="studio-hero">
-                <div class="studio-hero-copy">
-                    <h1>Dashboard</h1>
-                    <nav class="studio-segmented" aria-label="Dashboard views">
-                        <a class="studio-segment is-active" href="/provider-studio.html">Overview</a>
-                        <span class="studio-segment">Analytics</span>
-                        <span class="studio-segment">Reports</span>
-                        <span class="studio-segment">Notifications</span>
-                    </nav>
-                </div>
-                <div class="studio-hero-state">
-                    <span class="studio-hero-state-label">System Status</span>
+                <div class="studio-overall">
+                    <span>Estado general</span>
                     <strong id="provider-studio-overall-status">Sincronizando</strong>
+                </div>
+            </div>
+        </header>
+
+        <section id="provider-studio-access" class="studio-access is-hidden" aria-live="polite"></section>
+
+        <section id="provider-studio-grid" class="studio-content is-hidden">
+            <section class="studio-section">
+                <div class="studio-section-head">
+                    <div>
+                        <p class="studio-kicker">Actual</p>
+                        <h2>Configuracion activa</h2>
+                    </div>
+                </div>
+                <div class="studio-status-list">
+                    <article class="studio-status-item">
+                        <div>
+                            <strong>Graph field matching</strong>
+                            <p id="graph-provider-current">Leyendo estado actual...</p>
+                        </div>
+                        <div class="studio-status-meta">
+                            <strong id="graph-provider-metric">Cargando</strong>
+                            <span id="graph-provider-pill" class="status-pill">Cargando</span>
+                        </div>
+                    </article>
+
+                    <article class="studio-status-item">
+                        <div>
+                            <strong>Miracle runtime</strong>
+                            <p id="miracle-runtime-current">Leyendo estado actual...</p>
+                        </div>
+                        <div class="studio-status-meta">
+                            <strong id="miracle-runtime-metric">Cargando</strong>
+                            <span id="miracle-runtime-pill" class="status-pill">Cargando</span>
+                        </div>
+                    </article>
+
+                    <article class="studio-status-item">
+                        <div>
+                            <strong>Product LLM</strong>
+                            <p id="miracle-product-current">Leyendo estado actual...</p>
+                        </div>
+                        <div class="studio-status-meta">
+                            <strong id="miracle-product-metric">Cargando</strong>
+                            <span id="miracle-product-pill" class="status-pill">Cargando</span>
+                        </div>
+                    </article>
                 </div>
             </section>
 
-            <section id="provider-studio-access" class="studio-access is-hidden" aria-live="polite"></section>
-
-            <section id="provider-studio-grid" class="studio-dashboard is-hidden">
-                <div class="studio-stats">
-                    <article class="studio-stat-card">
-                        <div class="studio-stat-header">
-                            <span>Graph Matching</span>
-                            <span class="studio-stat-icon">$</span>
-                        </div>
-                        <strong id="graph-provider-metric">Cargando</strong>
-                        <p id="graph-provider-current">Leyendo estado actual...</p>
-                    </article>
-
-                    <article class="studio-stat-card">
-                        <div class="studio-stat-header">
-                            <span>Runtime Upstream</span>
-                            <span class="studio-stat-icon">@</span>
-                        </div>
-                        <strong id="miracle-runtime-metric">Cargando</strong>
-                        <p id="miracle-runtime-current">Leyendo estado actual...</p>
-                    </article>
-
-                    <article class="studio-stat-card">
-                        <div class="studio-stat-header">
-                            <span>Product LLM</span>
-                            <span class="studio-stat-icon">=</span>
-                        </div>
-                        <strong id="miracle-product-metric">Cargando</strong>
-                        <p id="miracle-product-current">Leyendo estado actual...</p>
-                    </article>
-
-                    <article class="studio-stat-card">
-                        <div class="studio-stat-header">
-                            <span>Clinical Surface</span>
-                            <span class="studio-stat-icon">~</span>
-                        </div>
-                        <strong>Expanded EMR</strong>
-                        <p>Abre el workspace clinico completo para validar dictado y autofill.</p>
-                    </article>
+            <section class="studio-section">
+                <div class="studio-section-head">
+                    <div>
+                        <p class="studio-kicker">Editar</p>
+                        <h2>Providers</h2>
+                    </div>
                 </div>
 
-                <div class="studio-panels">
-                    <section class="studio-panel studio-panel-graph">
-                        <div class="studio-panel-top">
+                <div class="studio-form-stack">
+                    <section class="studio-card">
+                        <div class="studio-card-head">
                             <div>
-                                <span class="studio-panel-kicker">Graph</span>
-                                <h2>Field Matching Provider</h2>
+                                <p class="studio-kicker">Graph</p>
+                                <h3>Field Matching Provider</h3>
                             </div>
-                            <span id="graph-provider-pill" class="status-pill">Cargando</span>
                         </div>
-                        <p class="studio-panel-copy">Control central del matching y structured outputs de Graph.</p>
                         <form id="graph-provider-form" class="studio-form">
                             <div class="studio-form-grid">
                                 <label class="field">
@@ -168,36 +116,36 @@
                         <p id="graph-provider-message" class="form-message"></p>
                     </section>
 
-                    <section class="studio-panel">
-                        <div class="studio-panel-top">
+                    <section class="studio-card">
+                        <div class="studio-card-head">
                             <div>
-                                <span class="studio-panel-kicker">Miracle</span>
-                                <h2>Runtime Upstream</h2>
+                                <p class="studio-kicker">Miracle</p>
+                                <h3>Runtime Upstream</h3>
                             </div>
-                            <span id="miracle-runtime-pill" class="status-pill">Cargando</span>
                         </div>
-                        <p class="studio-panel-copy">Provider base del runtime de voz y transcripcion.</p>
                         <form id="miracle-runtime-form" class="studio-form">
-                            <label class="field">
-                                <span>Provider</span>
-                                <select id="miracle-runtime-select"></select>
-                            </label>
-                            <label class="field is-hidden" id="miracle-runtime-base-url-field">
-                                <span>Base URL</span>
-                                <input id="miracle-runtime-base-url" type="url" placeholder="https://llm.example.com/v1">
-                            </label>
-                            <label class="field is-hidden" id="miracle-runtime-model-preset-field">
-                                <span>Modelo</span>
-                                <select id="miracle-runtime-model-preset"></select>
-                            </label>
-                            <label class="field is-hidden" id="miracle-runtime-model-field">
-                                <span>Modelo personalizado</span>
-                                <input id="miracle-runtime-model" type="text" placeholder="grok-4.1">
-                            </label>
-                            <label class="field is-hidden" id="miracle-runtime-api-key-field">
-                                <span>API key</span>
-                                <input id="miracle-runtime-api-key" type="password" autocomplete="off" placeholder="Clave del runtime upstream">
-                            </label>
+                            <div class="studio-form-grid">
+                                <label class="field">
+                                    <span>Provider</span>
+                                    <select id="miracle-runtime-select"></select>
+                                </label>
+                                <label class="field is-hidden" id="miracle-runtime-base-url-field">
+                                    <span>Base URL</span>
+                                    <input id="miracle-runtime-base-url" type="url" placeholder="https://llm.example.com/v1">
+                                </label>
+                                <label class="field is-hidden" id="miracle-runtime-model-preset-field">
+                                    <span>Modelo</span>
+                                    <select id="miracle-runtime-model-preset"></select>
+                                </label>
+                                <label class="field is-hidden" id="miracle-runtime-model-field">
+                                    <span>Modelo personalizado</span>
+                                    <input id="miracle-runtime-model" type="text" placeholder="grok-4.1">
+                                </label>
+                                <label class="field is-hidden field-span-2" id="miracle-runtime-api-key-field">
+                                    <span>API key</span>
+                                    <input id="miracle-runtime-api-key" type="password" autocomplete="off" placeholder="Clave del runtime upstream">
+                                </label>
+                            </div>
                             <div class="studio-actions">
                                 <button type="button" class="button ghost" id="miracle-runtime-refresh">Releer</button>
                                 <button type="submit" class="button primary" id="miracle-runtime-submit">Guardar Runtime</button>
@@ -206,32 +154,32 @@
                         <p id="miracle-runtime-message" class="form-message"></p>
                     </section>
 
-                    <section class="studio-panel">
-                        <div class="studio-panel-top">
+                    <section class="studio-card">
+                        <div class="studio-card-head">
                             <div>
-                                <span class="studio-panel-kicker">Miracle</span>
-                                <h2>Product LLM</h2>
+                                <p class="studio-kicker">Miracle</p>
+                                <h3>Product LLM</h3>
                             </div>
-                            <span id="miracle-product-pill" class="status-pill">Cargando</span>
                         </div>
-                        <p class="studio-panel-copy">Capa que organiza el dictado clinico para autofill.</p>
                         <form id="miracle-product-form" class="studio-form">
-                            <label class="field">
-                                <span>Provider</span>
-                                <select id="miracle-product-select"></select>
-                            </label>
-                            <label class="field is-hidden" id="miracle-product-base-url-field">
-                                <span>Base URL</span>
-                                <input id="miracle-product-base-url" type="url" placeholder="https://.../openai/v1">
-                            </label>
-                            <label class="field is-hidden" id="miracle-product-model-field">
-                                <span>Modelo</span>
-                                <input id="miracle-product-model" type="text" placeholder="grok-4.1">
-                            </label>
-                            <label class="field is-hidden" id="miracle-product-api-key-field">
-                                <span>API key</span>
-                                <input id="miracle-product-api-key" type="password" autocomplete="off" placeholder="Clave del product LLM">
-                            </label>
+                            <div class="studio-form-grid">
+                                <label class="field">
+                                    <span>Provider</span>
+                                    <select id="miracle-product-select"></select>
+                                </label>
+                                <label class="field is-hidden" id="miracle-product-base-url-field">
+                                    <span>Base URL</span>
+                                    <input id="miracle-product-base-url" type="url" placeholder="https://.../openai/v1">
+                                </label>
+                                <label class="field is-hidden" id="miracle-product-model-field">
+                                    <span>Modelo</span>
+                                    <input id="miracle-product-model" type="text" placeholder="grok-4.1">
+                                </label>
+                                <label class="field is-hidden field-span-2" id="miracle-product-api-key-field">
+                                    <span>API key</span>
+                                    <input id="miracle-product-api-key" type="password" autocomplete="off" placeholder="Clave del product LLM">
+                                </label>
+                            </div>
                             <div class="studio-actions">
                                 <button type="button" class="button ghost" id="miracle-product-refresh">Releer</button>
                                 <button type="submit" class="button primary" id="miracle-product-submit">Guardar Product LLM</button>
@@ -239,44 +187,24 @@
                         </form>
                         <p id="miracle-product-message" class="form-message"></p>
                     </section>
-
-                    <section class="studio-panel">
-                        <div class="studio-panel-top">
-                            <div>
-                                <span class="studio-panel-kicker">Surfaces</span>
-                                <h2>Launch Paths</h2>
-                            </div>
-                            <span class="status-pill" data-tone="ready">Ready</span>
-                        </div>
-                        <p class="studio-panel-copy">Accesos rapidos para validar los cambios en superficies reales.</p>
-                        <div class="studio-launch-list">
-                            <a class="studio-launch-item" href="/emr-workspace.html">
-                                <div>
-                                    <strong>Probar EMR Expandido</strong>
-                                    <span>Workspace clinico completo.</span>
-                                </div>
-                                <em>Open</em>
-                            </a>
-                            <a class="studio-launch-item" href="/miracle">
-                                <div>
-                                    <strong>Workspace Miracle</strong>
-                                    <span>Hoja en blanco, grabacion y logs.</span>
-                                </div>
-                                <em>Open</em>
-                            </a>
-                            <a class="studio-launch-item" href="/visualize.html">
-                                <div>
-                                    <strong>Workflow Graph</strong>
-                                    <span>Inspeccion global del sistema.</span>
-                                </div>
-                                <em>Open</em>
-                            </a>
-                        </div>
-                    </section>
                 </div>
             </section>
-        </main>
-    </div>
+
+            <section class="studio-section">
+                <div class="studio-section-head">
+                    <div>
+                        <p class="studio-kicker">Validar</p>
+                        <h2>Superficies reales</h2>
+                    </div>
+                </div>
+                <div class="studio-links">
+                    <a class="studio-link" href="/emr-workspace.html">Abrir EMR expandido</a>
+                    <a class="studio-link" href="/miracle">Abrir Workspace Miracle</a>
+                    <a class="studio-link" href="/visualize.html">Abrir Workflow Graph</a>
+                </div>
+            </section>
+        </section>
+    </main>
 
     <script src="/supabase-client.js"></script>
     <script src="/auth-gate.js"></script>
