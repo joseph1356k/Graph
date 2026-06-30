@@ -24,6 +24,7 @@ const NoteFieldMatcher = require('../src/application/use-cases/NoteFieldMatcher'
 const ClinicalDiagnosisSuggestionService = require('../src/application/use-cases/ClinicalDiagnosisSuggestionService');
 const UsageDashboardService = require('../src/application/use-cases/UsageDashboardService');
 const GraphProviderConfigService = require('../src/application/use-cases/GraphProviderConfigService');
+const MiracleProductLlmProviderConfigService = require('../src/application/use-cases/MiracleProductLlmProviderConfigService');
 const MiracleSttProviderConfigService = require('../src/application/use-cases/MiracleSttProviderConfigService');
 const registerLearningRoutes = require('./api/registerLearningRoutes');
 const registerWorkflowRoutes = require('./api/registerWorkflowRoutes');
@@ -94,9 +95,8 @@ const getGraphVisualization = new GetGraphVisualization(repository);
 const executionIntelligenceService = new ExecutionIntelligenceService(llmProvider);
 const noteFieldMatcher = new NoteFieldMatcher(llmProvider);
 const diagnosisSuggestionService = new ClinicalDiagnosisSuggestionService(llmProvider);
-const graphProviderConfigService = new GraphProviderConfigService(llmProvider, {
-  envPath: path.resolve(__dirname, '..', '.env')
-});
+const graphProviderConfigService = new GraphProviderConfigService(llmProvider);
+const miracleProductLlmProviderConfigService = new MiracleProductLlmProviderConfigService();
 const miracleSttProviderConfigService = new MiracleSttProviderConfigService();
 const miracleWorkspaceStore = new MiracleWorkspaceStore();
 
@@ -564,21 +564,18 @@ app.post('/api/history-change', async (req, res) => {
 });
 
 app.get('/api/product-llm/status', async (req, res) => {
-  if (await proxyMiracleRuntimeRequest(req, res, '/api/product-llm/status')) {
-    return;
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar providers.' });
   }
-  res.json(miracleWorkspaceStore.getProductLlmStatus());
+  return res.json(miracleProductLlmProviderConfigService.status());
 });
 
 app.post('/api/setup/product-llm', async (req, res) => {
-  if (await proxyMiracleRuntimeRequest(req, res, '/api/setup/product-llm', {
-    method: 'POST',
-    body: JSON.stringify(req.body || {})
-  })) {
-    return;
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar providers.' });
   }
   try {
-    return res.json(miracleWorkspaceStore.saveProductLlmSetup(req.body || {}));
+    return res.json(await miracleProductLlmProviderConfigService.configure(req.body || {}));
   } catch (error) {
     return res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible actualizar la hoja en blanco.' });
   }
@@ -696,12 +693,12 @@ app.get('/api/providers/graph/status', (req, res) => {
   return res.json(graphProviderConfigService.status());
 });
 
-app.post('/api/providers/graph/configure', (req, res) => {
+app.post('/api/providers/graph/configure', async (req, res) => {
   if (!req.workflowAccess?.canManageGlobalWorkflows) {
     return res.status(403).json({ error: 'No autorizado para administrar providers.' });
   }
   try {
-    return res.json(graphProviderConfigService.configure(req.body || {}));
+    return res.json(await graphProviderConfigService.configure(req.body || {}));
   } catch (error) {
     return res.status(error.statusCode || 500).json({
       error: error.message || 'No fue posible actualizar el provider de Graph.'

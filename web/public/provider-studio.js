@@ -180,6 +180,17 @@
             : 'Sin provider explicito en Graph. Se usa el fallback actual del servidor.';
         dom.graphMetric.textContent = current.model || current.label || current.provider || 'No configurado';
         setPill(dom.graphPill, current.configured ? 'Configurado' : 'Sin credenciales', current.configured ? 'ready' : 'warning');
+        const vercelReady = payload?.vercel?.write_enabled;
+        const redeployMode = payload?.vercel?.deploy_hook_configured ? 'deploy hook' : 'redeploy API/manual';
+        if (!vercelReady) {
+            setMessage(
+                dom.graphMessage,
+                `Falta GRAPH_VERCEL_API_TOKEN en el servidor para guardar secretos en Vercel. Estrategia de deploy: ${redeployMode}.`,
+                'warning'
+            );
+        } else if (dom.graphMessage.dataset.tone === 'warning') {
+            setMessage(dom.graphMessage, '');
+        }
     }
 
     function renderMiracleProduct(payload) {
@@ -199,6 +210,17 @@
             : 'Actual: fallback heuristico de Miracle.';
         dom.miracleProductMetric.textContent = current.model || current.label || current.provider || 'Heuristico';
         setPill(dom.miracleProductPill, payload.status?.configured ? 'Configurado' : 'Fallback', payload.status?.configured ? 'ready' : 'warning');
+        const vercelReady = payload?.vercel?.write_enabled;
+        const redeployMode = payload?.vercel?.deploy_hook_configured ? 'deploy hook' : 'redeploy API/manual';
+        if (!vercelReady) {
+            setMessage(
+                dom.miracleProductMessage,
+                `Falta GRAPH_VERCEL_API_TOKEN en el servidor para guardar secretos en Vercel. Estrategia de deploy: ${redeployMode}.`,
+                'warning'
+            );
+        } else if (dom.miracleProductMessage.dataset.tone === 'warning') {
+            setMessage(dom.miracleProductMessage, '');
+        }
     }
 
     function renderMiracleStt(payload) {
@@ -278,9 +300,9 @@
         const provider = currentProvider(state.graph?.providers, dom.graphSelect);
         if (!provider) return;
         dom.graphSubmit.disabled = true;
-        setMessage(dom.graphMessage, 'Guardando configuracion de Graph...');
+        setMessage(dom.graphMessage, 'Guardando configuracion de Graph en Vercel...');
         try {
-            await fetchJson('/api/providers/graph/configure', {
+            const payload = await fetchJson('/api/providers/graph/configure', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -291,7 +313,10 @@
                 })
             });
             await refreshAll();
-            setMessage(dom.graphMessage, 'Graph quedo actualizado.', 'success');
+            const deploymentMessage = payload?.deployment?.triggered
+                ? ' Vercel ya empezo el redeploy.'
+                : ` ${payload?.deployment?.message || 'Recuerda redeployar para aplicar el cambio.'}`;
+            setMessage(dom.graphMessage, `Graph actualizado.${deploymentMessage}`, 'success');
         } catch (error) {
             setMessage(dom.graphMessage, error.message || 'No fue posible guardar Graph.', 'error');
         } finally {
@@ -304,9 +329,9 @@
         const provider = currentProvider(state.miracleProduct?.providers, dom.miracleProductSelect);
         if (!provider) return;
         dom.miracleProductSubmit.disabled = true;
-        setMessage(dom.miracleProductMessage, 'Actualizando Product LLM...');
+        setMessage(dom.miracleProductMessage, 'Guardando hoja en blanco en Vercel...');
         try {
-            await fetchJson('/api/setup/product-llm', {
+            const payload = await fetchJson('/api/setup/product-llm', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -317,7 +342,10 @@
                 })
             });
             await refreshAll();
-            setMessage(dom.miracleProductMessage, 'Product LLM actualizado.', 'success');
+            const deploymentMessage = payload?.deployment?.triggered
+                ? ' Vercel ya empezo el redeploy.'
+                : ` ${payload?.deployment?.message || 'Recuerda redeployar para aplicar el cambio.'}`;
+            setMessage(dom.miracleProductMessage, `Hoja en blanco actualizada.${deploymentMessage}`, 'success');
         } catch (error) {
             setMessage(dom.miracleProductMessage, error.message || 'No fue posible guardar el Product LLM.', 'error');
         } finally {
