@@ -31,6 +31,7 @@ const registerExecutionIntelligenceRoutes = require('./api/registerExecutionInte
 const registerVoiceRoutes = require('./api/registerVoiceRoutes');
 const registerClinicalRoutes = require('./api/registerClinicalRoutes');
 const registerUsageRoutes = require('./api/registerUsageRoutes');
+const MiracleWorkspaceStore = require('./api/miracleWorkspaceStore');
 const rateLimit = require('express-rate-limit');
 const {
   requireAuth,
@@ -95,6 +96,7 @@ const diagnosisSuggestionService = new ClinicalDiagnosisSuggestionService(llmPro
 const graphProviderConfigService = new GraphProviderConfigService(llmProvider, {
   envPath: path.resolve(__dirname, '..', '.env')
 });
+const miracleWorkspaceStore = new MiracleWorkspaceStore();
 
 app.use(bodyParser.json());
 
@@ -375,6 +377,14 @@ function isMiracleMedicalProxyRequest(req) {
   '/api/agent',
   '/api/pitch',
   '/api/surface-profile',
+  '/api/tree',
+  '/api/file',
+  '/api/files',
+  '/api/session',
+  '/api/context',
+  '/api/history-change',
+  '/api/product-llm',
+  '/api/setup/product-llm',
   '/api/account',
   '/api/visualize',
   '/api/providers'
@@ -383,14 +393,8 @@ function isMiracleMedicalProxyRequest(req) {
 });
 
 const DEFAULT_MIRACLE_MEDICAL_ENGINE_URL = 'https://miracle-ai-t0dn.onrender.com';
-const DEFAULT_MIRACLE_WORKSPACE_URL = 'https://miracle-ai-one.vercel.app';
-
 function resolveMiracleMedicalEngineUrl() {
   return `${process.env.MIRACLE_MEDICAL_ENGINE_URL || process.env.MIRACLE_BASE_URL || DEFAULT_MIRACLE_MEDICAL_ENGINE_URL}`.replace(/\/+$/, '');
-}
-
-function resolveMiracleWorkspaceUrl() {
-  return DEFAULT_MIRACLE_WORKSPACE_URL;
 }
 
 function resolvePublicAppBaseUrl(req) {
@@ -413,6 +417,62 @@ app.get('/api/public-config', (req, res) => {
     ),
     voiceGatewayUrl: process.env.VOICE_GATEWAY_URL || ''
   });
+});
+
+app.get('/api/tree', (req, res) => {
+  res.json(miracleWorkspaceStore.listFiles());
+});
+
+app.get('/api/file', (req, res) => {
+  try {
+    return res.json(miracleWorkspaceStore.readFile(req.query.path || ''));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible leer el archivo.' });
+  }
+});
+
+app.post('/api/files', (req, res) => {
+  try {
+    return res.status(201).json(miracleWorkspaceStore.createFile(req.body?.path || '', req.body?.template || ''));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible crear el archivo.' });
+  }
+});
+
+app.put('/api/file', (req, res) => {
+  try {
+    return res.json(miracleWorkspaceStore.writeFile(req.body?.path || '', req.body?.content || ''));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible guardar el archivo.' });
+  }
+});
+
+app.get('/api/session', (req, res) => {
+  res.json(miracleWorkspaceStore.getSession());
+});
+
+app.put('/api/session', (req, res) => {
+  res.json(miracleWorkspaceStore.saveSession(req.body || {}));
+});
+
+app.post('/api/context', (req, res) => {
+  res.json(miracleWorkspaceStore.buildContextPacket(req.body || {}));
+});
+
+app.post('/api/history-change', (req, res) => {
+  res.json(miracleWorkspaceStore.buildHistoryEntry(req.body || {}));
+});
+
+app.get('/api/product-llm/status', (req, res) => {
+  res.json(miracleWorkspaceStore.getProductLlmStatus());
+});
+
+app.post('/api/setup/product-llm', (req, res) => {
+  try {
+    return res.json(miracleWorkspaceStore.saveProductLlmSetup(req.body || {}));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible actualizar la hoja en blanco.' });
+  }
 });
 
 async function probeMiracleSidecar(timeoutMs = 1500) {
@@ -479,37 +539,6 @@ function buildMiracleProxyRequestBody(req) {
   return JSON.stringify(req.body);
 }
 
-async function proxyMiracleWorkspaceRequest(req, res) {
-  const baseUrl = resolveMiracleWorkspaceUrl();
-  const upstreamPath = req.originalUrl.replace(/^\/api\/miracle/, '/api');
-  const headers = {};
-  const contentType = req.get('content-type');
-  const accept = req.get('accept');
-
-  if (contentType) {
-    headers['Content-Type'] = contentType;
-  }
-  if (accept) {
-    headers.Accept = accept;
-  }
-
-  try {
-    const upstreamResponse = await fetch(`${baseUrl}${upstreamPath}`, {
-      method: req.method,
-      headers,
-      body: buildMiracleProxyRequestBody(req)
-    });
-    const payloadText = await upstreamResponse.text();
-    const upstreamContentType = upstreamResponse.headers.get('content-type') || 'application/json; charset=utf-8';
-    res.status(upstreamResponse.status);
-    res.setHeader('Content-Type', upstreamContentType);
-    return res.send(payloadText);
-  } catch (error) {
-    console.error(`[Miracle Workspace Proxy] ${upstreamPath} failed: ${error.message}`);
-    return res.status(502).json({ error: 'Miracle workspace unavailable' });
-  }
-}
-
 app.post('/api/voice/stream-session', async (req, res) => {
   await proxyMiracleMedicalRequest(req, res, '/api/voice/stream-session', {
     method: 'POST'
@@ -523,8 +552,10 @@ app.post('/api/voice/orchestrator/events', async (req, res) => {
   });
 });
 
-app.use('/api/miracle', async (req, res) => {
-  await proxyMiracleWorkspaceRequest(req, res);
+app.get('/api/voice/orchestrator/status', async (req, res) => {
+  await proxyMiracleMedicalRequest(req, res, '/api/voice/orchestrator/status', {
+    method: 'GET'
+  });
 });
 
 app.get('/api/health', async (req, res) => {

@@ -200,7 +200,7 @@
         renderAccessState(true, '');
         const [graph, miracleProduct] = await Promise.all([
             fetchJson('/api/providers/graph/status'),
-            fetchJson('/api/miracle/product-llm/status')
+            fetchJson('/api/product-llm/status')
         ]);
         renderGraph(graph);
         renderMiracleProduct(miracleProduct);
@@ -240,7 +240,7 @@
         dom.miracleProductSubmit.disabled = true;
         setMessage(dom.miracleProductMessage, 'Actualizando Product LLM...');
         try {
-            await fetchJson('/api/miracle/setup/product-llm', {
+            await fetchJson('/api/setup/product-llm', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

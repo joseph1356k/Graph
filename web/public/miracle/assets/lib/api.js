@@ -1,10 +1,4 @@
 function resolveMiracleUrl(url) {
-  if (typeof url !== "string") {
-    return url;
-  }
-  if (url.startsWith("/api/")) {
-    return `/api/miracle${url.slice("/api".length)}`;
-  }
   return url;
 }
 

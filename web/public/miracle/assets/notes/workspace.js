@@ -233,7 +233,7 @@ export function createWorkspaceController({
     try {
       persistSelectionIntoTab();
       const payload = JSON.stringify(buildSessionPayload({ promoteSnapshot: true }));
-      navigator.sendBeacon("/api/miracle/session", new Blob([payload], { type: "application/json" }));
+      navigator.sendBeacon("/api/session", new Blob([payload], { type: "application/json" }));
     } catch {
       // Best effort only.
     }
