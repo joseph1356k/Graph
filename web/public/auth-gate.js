@@ -83,6 +83,7 @@
 
         const form = document.createElement('form');
         form.id = 'miracle-auth-form';
+        form.autocomplete = 'off';
         form.style.cssText = 'display:grid;gap:14px';
 
         const usernameWrap = document.createElement('label');
@@ -94,8 +95,10 @@
         usernameInput.id = 'miracle-auth-username';
         usernameInput.name = 'username';
         usernameInput.type = 'text';
-        usernameInput.autocomplete = 'username';
-        usernameInput.placeholder = 'Isaabelsofia';
+        usernameInput.autocomplete = 'off';
+        usernameInput.autocapitalize = 'none';
+        usernameInput.spellcheck = false;
+        usernameInput.placeholder = 'Tu usuario autorizado';
         usernameInput.style.cssText = [
             'min-height:52px',
             'padding:0 16px',
@@ -116,8 +119,8 @@
         passwordInput.id = 'miracle-auth-password';
         passwordInput.name = 'password';
         passwordInput.type = 'password';
-        passwordInput.autocomplete = 'current-password';
-        passwordInput.placeholder = 'Miracle.AI';
+        passwordInput.autocomplete = 'new-password';
+        passwordInput.placeholder = 'Tu clave';
         passwordInput.style.cssText = usernameInput.style.cssText;
         passwordWrap.append(passwordLabel, passwordInput);
 
@@ -200,6 +203,9 @@
         const overlay = ensureOverlay();
         overlay.style.display = 'grid';
         const username = overlay.querySelector('#miracle-auth-username');
+        const password = overlay.querySelector('#miracle-auth-password');
+        username.value = '';
+        password.value = '';
         window.setTimeout(() => username.focus(), 0);
     }
 
