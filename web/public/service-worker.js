@@ -23,7 +23,6 @@ const SHELL = [
     '/plugin/plugin-api.js',
     '/plugin/plugin-learning-bridge.js',
     '/plugin/plugin-learning-client.js',
-    '/plugin/plugin-voice-client.js',
     '/plugin/plugin-trainer-shell.js',
     '/plugin/plugin-surface-profile-client.js',
     '/plugin/plugin-execution-client.js',

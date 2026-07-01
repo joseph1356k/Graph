@@ -32,10 +32,6 @@
         interaction: {
             lastTouchAt: 0
         },
-        mic: {
-            longPressTimer: null,
-            longPressTriggered: false
-        },
         ui: {
             expanded: false,
             escapeBound: false
@@ -492,12 +488,9 @@
             }
             body[data-assistant-expanded="false"] .graph-assistant-bubble,
             body[data-assistant-expanded="false"] .graph-assistant-user-bubble,
-            body[data-assistant-expanded="false"] .graph-assistant-bubble-mic,
             body[data-assistant-expanded="false"] .graph-assistant-chat-toggle,
             body[data-assistant-expanded="false"] .graph-assistant-note-toggle,
-            body[data-assistant-expanded="false"] .graph-assistant-chat-composer,
-            body[data-assistant-expanded="false"] .assistant-phone-mic-pairing,
-            body[data-assistant-expanded="false"] .phone-mic-pairing {
+            body[data-assistant-expanded="false"] .graph-assistant-chat-composer {
                 opacity: 0 !important;
                 pointer-events: none !important;
                 transform: translateY(10px) scale(0.94) !important;
@@ -564,39 +557,6 @@
             .graph-assistant-user-bubble[data-visible="true"] {
                 opacity: 1;
                 transform: translateY(0);
-            }
-            .graph-assistant-bubble-mic {
-                position: fixed;
-                width: 42px;
-                height: 42px;
-                border: none;
-                border-radius: 999px;
-                background: rgba(255, 255, 255, 0.98);
-                color: #102033;
-                box-shadow:
-                    0 18px 36px rgba(4, 10, 20, 0.32),
-                    0 0 0 1px rgba(255, 255, 255, 0.78);
-                z-index: calc(var(--graph-assistant-z, 2147483000) + 3);
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                pointer-events: auto;
-                transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
-            }
-            .graph-assistant-bubble-mic:hover {
-                transform: translateY(-1px);
-                box-shadow:
-                    0 22px 42px rgba(4, 10, 20, 0.38),
-                    0 0 0 1px rgba(255, 255, 255, 0.88);
-            }
-            .graph-assistant-bubble-mic[data-active="true"] {
-                background: #0f5f8c;
-                color: #ffffff;
-            }
-            .graph-assistant-bubble-mic svg {
-                width: 18px;
-                height: 18px;
             }
             .graph-assistant-chat-toggle {
                 position: fixed;
@@ -1228,19 +1188,6 @@
             document.body.appendChild(userBubble);
         }
 
-        let micButton = document.getElementById('graph-assistant-bubble-mic');
-        if (!micButton) {
-            micButton = document.createElement('button');
-            micButton.id = 'graph-assistant-bubble-mic';
-            micButton.className = 'graph-assistant-bubble-mic';
-            micButton.type = 'button';
-            micButton.dataset.active = 'false';
-            micButton.setAttribute('aria-label', 'Hablar con Miracle');
-            micButton.title = 'Hablar con Miracle';
-            setElementHtml(micButton, '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3Zm5-3a1 1 0 1 1 2 0 7 7 0 0 1-6 6.92V21h2a1 1 0 1 1 0 2H9a1 1 0 1 1 0-2h2v-2.08A7 7 0 0 1 5 12a1 1 0 1 1 2 0 5 5 0 1 0 10 0Z" fill="currentColor"/></svg>');
-            document.body.appendChild(micButton);
-        }
-
         let chatButton = document.getElementById('graph-assistant-chat-toggle');
         if (!chatButton) {
             chatButton = document.createElement('button');
@@ -1334,7 +1281,6 @@
             bubble,
             bubbleText: document.getElementById('graph-assistant-bubble-text'),
             userBubble,
-            micButton,
             chatButton,
             noteButton,
             chatComposer,
@@ -1490,7 +1436,6 @@
             || element?.closest?.('#graph-assistant-note-toggle')
             || element?.closest?.('#graph-assistant-chat-composer')
             || element?.closest?.('#graph-assistant-note-panel')
-            || element?.closest?.('#graph-assistant-bubble-mic')
             || element?.closest?.('#graph-assistant-spotlight')
         );
     }
@@ -1844,7 +1789,6 @@
         const shell = document.getElementById('graph-assistant-shell');
         const bubble = document.getElementById('graph-assistant-bubble');
         const userBubble = document.getElementById('graph-assistant-user-bubble');
-        const micButton = document.getElementById('graph-assistant-bubble-mic');
         const chatButton = document.getElementById('graph-assistant-chat-toggle');
         const noteButton = document.getElementById('graph-assistant-note-toggle');
         const chatComposer = document.getElementById('graph-assistant-chat-composer');
@@ -1867,7 +1811,7 @@
 
         const buttonSize = 42;
         const buttonGap = 10;
-        const controlsWidth = (buttonSize * 3) + (buttonGap * 2);
+        const controlsWidth = (buttonSize * 2) + buttonGap;
         const controlsLeft = clamp(
             rawLeft + (bubbleRect.width / 2) - (controlsWidth / 2),
             padding,
@@ -1916,12 +1860,8 @@
             chatButton.style.left = `${controlsLeft}px`;
             chatButton.style.top = `${controlsTop}px`;
         }
-        if (micButton) {
-            micButton.style.left = `${controlsLeft + buttonSize + buttonGap}px`;
-            micButton.style.top = `${controlsTop}px`;
-        }
         if (noteButton) {
-            noteButton.style.left = `${controlsLeft + (buttonSize + buttonGap) * 2}px`;
+            noteButton.style.left = `${controlsLeft + buttonSize + buttonGap}px`;
             noteButton.style.top = `${controlsTop}px`;
         }
         if (notePanel && notePanel.dataset.visible === 'true') {
@@ -1959,13 +1899,6 @@
         spotlight.dataset.visible = 'true';
     }
 
-    function clearMicLongPressTimer() {
-        if (state.mic.longPressTimer) {
-            window.clearTimeout(state.mic.longPressTimer);
-            state.mic.longPressTimer = null;
-        }
-    }
-
     function emit(eventName, payload) {
         const handlers = state.listeners.get(eventName) || [];
         handlers.forEach((handler) => {
@@ -1984,7 +1917,6 @@
             ensureStyles();
             const {
                 label,
-                micButton,
                 chatButton,
                 noteButton,
                 notePanelClose,
@@ -2006,29 +1938,6 @@
                     if (event.key === 'Escape' && state.ui.expanded) {
                         setAssistantExpanded(false, { source: 'escape' });
                     }
-                });
-            }
-            if (micButton && micButton.dataset.bound !== 'true') {
-                micButton.dataset.bound = 'true';
-                micButton.addEventListener('pointerdown', () => {
-                    state.mic.longPressTriggered = false;
-                    clearMicLongPressTimer();
-                    state.mic.longPressTimer = window.setTimeout(() => {
-                        state.mic.longPressTriggered = true;
-                        emit('voice-button-long-press', {});
-                    }, 550);
-                });
-                ['pointerup', 'pointerleave', 'pointercancel'].forEach((eventName) => {
-                    micButton.addEventListener(eventName, clearMicLongPressTimer);
-                });
-                micButton.addEventListener('click', (event) => {
-                    if (state.mic.longPressTriggered) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        state.mic.longPressTriggered = false;
-                        return;
-                    }
-                    emit('voice-button', {});
                 });
             }
             if (chatButton && chatButton.dataset.bound !== 'true') {

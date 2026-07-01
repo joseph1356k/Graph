@@ -51,7 +51,6 @@
     function createClient(config) {
         const baseUrl = normalizeBaseUrl(config?.baseUrl || '');
         const miracleBaseUrl = normalizeBaseUrl(config?.miracleBaseUrl || '');
-        const voiceGatewayUrl = normalizeBaseUrl(config?.voiceGatewayUrl || '');
         const fetchImpl = typeof config?.fetchImpl === 'function'
             ? config.fetchImpl
             : fetch;
@@ -187,19 +186,6 @@
                     body: JSON.stringify(payload || {})
                 }, fetchImpl);
             },
-            createPhoneSession(payload) {
-                return createJsonRequest(baseUrl, '/api/voice/phone-session', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload || {})
-                }, fetchImpl);
-            },
-            getPhoneSessionEvents(sessionId, afterId) {
-                const query = Number(afterId) > 0 ? `?after=${encodeURIComponent(Number(afterId))}` : '';
-                return createJsonRequest(baseUrl, `/api/voice/phone-session/${encodeURIComponent(sessionId || '')}/events${query}`, {
-                    method: 'GET'
-                }, fetchImpl);
-            },
             createMiracleStreamSession() {
                 if (!miracleBaseUrl) {
                     return Promise.reject(new Error('El motor medico Miracle no esta configurado en Vercel. Render no se usa como fallback.'));
@@ -219,23 +205,6 @@
                     body: JSON.stringify(payload || {})
                 }, fetchImpl);
             },
-            processVoiceComplaints(payload) {
-                return createJsonRequest(baseUrl, '/api/voice/complaints/process', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload || {})
-                }, fetchImpl);
-            },
-            createOpenAiRealtimeSession(sdp, headers) {
-                return withAuth({
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/sdp',
-                        ...(headers || {})
-                    },
-                    body: sdp
-                }).then((authenticatedInit) => fetchImpl(buildUrl(baseUrl, '/api/voice/openai/session'), authenticatedInit));
-            }
         };
     }
 

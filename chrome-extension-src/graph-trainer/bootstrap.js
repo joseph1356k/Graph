@@ -50,7 +50,6 @@
   try {
     const publicConfig = await fetchPublicConfig(backendUrl);
     const miracleBaseUrl = `${publicConfig?.miracleBaseUrl || backendUrl}`.trim() || backendUrl;
-    const voiceGatewayUrl = `${publicConfig?.voiceGatewayUrl || ''}`.trim();
 
     window.PageState.init({ storageKey });
     emitExtensionLog('info', 'PageState initialized.', { storageKey });
@@ -61,7 +60,6 @@
       appId,
       apiBaseUrl: backendUrl,
       miracleBaseUrl,
-      voiceGatewayUrl,
       assistantRuntime: {
         name: 'Miracle',
         accentColor: '#0f5f8c',
@@ -72,8 +70,7 @@
     emitExtensionLog('info', 'Miracle plugin mounted.', {
       appId,
       backendUrl,
-      miracleBaseUrl,
-      voiceGatewayUrl
+      miracleBaseUrl
     });
   } catch (error) {
     emitExtensionLog('error', 'Miracle bootstrap failed.', {

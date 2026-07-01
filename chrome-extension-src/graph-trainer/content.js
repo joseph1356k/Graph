@@ -581,7 +581,6 @@ async function bootstrap() {
   const workflowDescription = `Workflow on ${window.location.hostname || 'current-page'}`;
   const publicConfig = await fetchPublicConfig(backendUrl);
   const miracleBaseUrl = `${publicConfig?.miracleBaseUrl || backendUrl}`.trim() || backendUrl;
-  const voiceGatewayUrl = `${publicConfig?.voiceGatewayUrl || ''}`.trim();
 
   document.addEventListener('graph-trainer-extension-log', (event) => {
     const detail = event?.detail || {};
@@ -611,7 +610,6 @@ async function bootstrap() {
     appId,
     apiBaseUrl: backendUrl,
     miracleBaseUrl,
-    voiceGatewayUrl,
     assistantRuntime: {
       name: 'Miracle',
       accentColor: '#0f5f8c',
@@ -622,8 +620,7 @@ async function bootstrap() {
   await log('info', 'content', 'Miracle mounted in the isolated extension context.', {
     backendUrl,
     appId,
-    miracleBaseUrl,
-    voiceGatewayUrl
+    miracleBaseUrl
   });
 }
 
