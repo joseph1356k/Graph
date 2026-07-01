@@ -5,6 +5,148 @@
         root: null
     };
 
+    // ---- Captura de logs del cliente (para depurar el flujo voz → nota) ----
+    let logToggleButton = null;
+    let logPanel = null;
+    let logListEl = null;
+    const LOG_LIMIT = 600;
+    const logEntries = [];
+
+    function nowStamp() {
+        const d = new Date();
+        return `${d.toTimeString().slice(0, 8)}.${String(d.getMilliseconds()).padStart(3, '0')}`;
+    }
+
+    function serializeArg(arg) {
+        if (typeof arg === 'string') return arg;
+        if (arg instanceof Error) return `${arg.name}: ${arg.message}`;
+        try { return JSON.stringify(arg); } catch (error) { return String(arg); }
+    }
+
+    function updateLogBadge() {
+        if (!logToggleButton) return;
+        const errors = logEntries.reduce((count, entry) => count + (entry.level === 'error' ? 1 : 0), 0);
+        logToggleButton.textContent = errors > 0 ? `Logs (${errors})` : 'Logs';
+    }
+
+    function renderLogEntry(entry) {
+        if (!logListEl) return;
+        const row = document.createElement('div');
+        row.className = `miracle-log-row miracle-log-${entry.level}`;
+        row.textContent = `${entry.t}  ${entry.level.toUpperCase()}  ${entry.message}`;
+        logListEl.appendChild(row);
+        logListEl.scrollTop = logListEl.scrollHeight;
+    }
+
+    function appendLogEntry(level, message) {
+        const entry = { t: nowStamp(), level, message: `${message}` };
+        logEntries.push(entry);
+        if (logEntries.length > LOG_LIMIT) logEntries.shift();
+        renderLogEntry(entry);
+        updateLogBadge();
+    }
+
+    function installLogCapture() {
+        if (window.__miracleLogCaptureInstalled) return;
+        window.__miracleLogCaptureInstalled = true;
+
+        ['log', 'info', 'warn', 'error'].forEach((level) => {
+            const original = typeof console[level] === 'function' ? console[level].bind(console) : null;
+            console[level] = (...args) => {
+                try { appendLogEntry(level === 'log' ? 'info' : level, args.map(serializeArg).join(' ')); } catch (error) { /* ignore */ }
+                if (original) original(...args);
+            };
+        });
+
+        window.addEventListener('error', (event) => {
+            appendLogEntry('error', `window.onerror: ${event.message} @ ${event.filename || ''}:${event.lineno || 0}`);
+        });
+        window.addEventListener('unhandledrejection', (event) => {
+            const reason = event.reason;
+            appendLogEntry('error', `unhandledrejection: ${reason instanceof Error ? `${reason.name}: ${reason.message}` : serializeArg(reason)}`);
+        });
+
+        const originalFetch = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
+        if (originalFetch) {
+            window.fetch = async (input, init = {}) => {
+                const method = `${init.method || (input && typeof input === 'object' ? input.method : '') || 'GET'}`.toUpperCase();
+                const url = typeof input === 'string' ? input : (input && input.url) || `${input}`;
+                const isVoiceFlow = /\/api\/(voice|medical|clinical)\b/.test(url);
+                const startedAt = Date.now();
+                try {
+                    const response = await originalFetch(input, init);
+                    const ms = Date.now() - startedAt;
+                    if (!response.ok || isVoiceFlow) {
+                        let bodyPreview = '';
+                        try {
+                            const text = await response.clone().text();
+                            bodyPreview = text.length > 700 ? `${text.slice(0, 700)}…` : text;
+                        } catch (error) { bodyPreview = '<sin cuerpo legible>'; }
+                        appendLogEntry(response.ok ? 'info' : 'error', `${method} ${url} → ${response.status} (${ms}ms) ${bodyPreview}`.trim());
+                    }
+                    return response;
+                } catch (error) {
+                    const ms = Date.now() - startedAt;
+                    appendLogEntry('error', `${method} ${url} → ERROR DE RED (${ms}ms) ${error && error.message ? error.message : error}`);
+                    throw error;
+                }
+            };
+        }
+
+        appendLogEntry('info', 'Captura de logs activa (consola, errores y llamadas /api/voice·medical·clinical).');
+    }
+
+    installLogCapture();
+
+    function copyLogs() {
+        const text = logEntries.map((entry) => `${entry.t} ${entry.level.toUpperCase()} ${entry.message}`).join('\n');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).catch(() => {});
+        }
+    }
+
+    function clearLogs() {
+        logEntries.length = 0;
+        if (logListEl) logListEl.textContent = '';
+        updateLogBadge();
+    }
+
+    function ensureLogPanel() {
+        if (logPanel) return logPanel;
+        const panel = document.createElement('div');
+        panel.className = 'miracle-log-panel';
+        panel.hidden = true;
+
+        const bar = document.createElement('div');
+        bar.className = 'miracle-log-bar';
+        const barTitle = document.createElement('strong');
+        barTitle.textContent = 'Logs del cliente';
+        bar.append(
+            barTitle,
+            actionButton('Copiar', 'secondary', copyLogs),
+            actionButton('Limpiar', 'secondary', clearLogs),
+            actionButton('Cerrar', 'secondary', () => { panel.hidden = true; })
+        );
+
+        const list = document.createElement('div');
+        list.className = 'miracle-log-list';
+        logListEl = list;
+        logEntries.forEach(renderLogEntry);
+
+        panel.append(bar, list);
+        document.body.appendChild(panel);
+        logPanel = panel;
+        return panel;
+    }
+
+    function toggleLogPanel() {
+        const panel = ensureLogPanel();
+        panel.hidden = !panel.hidden;
+        if (!panel.hidden && logListEl) {
+            logListEl.scrollTop = logListEl.scrollHeight;
+        }
+    }
+
     function getAccessToken() {
         return window.MiracleAuth && typeof window.MiracleAuth.getAccessToken === 'function'
             ? window.MiracleAuth.getAccessToken()
@@ -127,6 +269,59 @@
                 cursor: not-allowed;
                 opacity: 0.55;
             }
+            .miracle-log-panel {
+                position: fixed;
+                right: 18px;
+                bottom: 96px;
+                z-index: 2147482499;
+                width: min(560px, calc(100vw - 32px));
+                max-height: min(52vh, 520px);
+                display: flex;
+                flex-direction: column;
+                border: 1px solid rgba(15, 23, 42, 0.18);
+                border-radius: 14px;
+                background: #0b1220;
+                color: #e2e8f0;
+                box-shadow: 0 24px 60px rgba(2, 8, 20, 0.4);
+                overflow: hidden;
+            }
+            .miracle-log-panel[hidden] {
+                display: none;
+            }
+            .miracle-log-bar {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 10px;
+                background: rgba(255, 255, 255, 0.06);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            }
+            .miracle-log-bar strong {
+                flex: 1;
+                font-size: 12px;
+                color: #f8fafc;
+            }
+            .miracle-log-bar .miracle-admin-action {
+                padding: 6px 10px;
+                font-size: 11px;
+                background: rgba(255, 255, 255, 0.12);
+                color: #e2e8f0;
+            }
+            .miracle-log-list {
+                flex: 1;
+                overflow-y: auto;
+                padding: 8px 10px;
+                font: 11px/1.5 "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+                white-space: pre-wrap;
+                word-break: break-word;
+            }
+            .miracle-log-row {
+                padding: 2px 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            }
+            .miracle-log-info { color: #cbd5e1; }
+            .miracle-log-warn { color: #fbbf24; }
+            .miracle-log-error { color: #fca5a5; }
             @media (max-width: 680px) {
                 .miracle-admin-workspace {
                     right: 12px;
@@ -229,7 +424,10 @@
 
         const body = document.createElement('div');
         body.className = 'miracle-admin-body';
+        logToggleButton = actionButton('Logs', 'secondary', toggleLogPanel);
+        updateLogBadge();
         body.append(
+            logToggleButton,
             actionButton('Crear workflow', 'warning', () => {
                 startWorkflowRecording().catch((error) => window.alert(error.message || 'No se pudo iniciar la grabacion.'));
             }),
