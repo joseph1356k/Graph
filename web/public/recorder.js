@@ -675,7 +675,6 @@ window.WorkflowRecorder = (() => {
       '#graph-assistant-shell, ' +
       '#graph-assistant-bubble, ' +
       '#graph-assistant-user-bubble, ' +
-      '#graph-assistant-bubble-mic, ' +
       '#graph-assistant-chat-toggle, ' +
       '#graph-assistant-chat-composer, ' +
       '#graph-assistant-note-toggle, ' +
@@ -684,9 +683,7 @@ window.WorkflowRecorder = (() => {
       '#teaching-console, ' +
       '#workflow-overlay, ' +
       '#feedback-overlay, ' +
-      '#voice-toggle, ' +
-      '#phone-mic-pairing, ' +
-      '#assistant-phone-mic-pairing'
+      '#voice-toggle'
     ));
   }
 

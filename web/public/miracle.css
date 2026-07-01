@@ -2029,7 +2029,6 @@ textarea {
 /* === Floating Miracle assistant: collapse by default, expand on hover/click === */
 body:not([data-assistant-expanded="true"]) .console,
 body:not([data-assistant-expanded="true"]) .graph-assistant-bubble,
-body:not([data-assistant-expanded="true"]) .graph-assistant-bubble-mic,
 body:not([data-assistant-expanded="true"]) .graph-assistant-user-bubble,
 body:not([data-assistant-expanded="true"]) .graph-assistant-chat-toggle,
 body:not([data-assistant-expanded="true"]) .graph-assistant-chat-composer {
@@ -2041,7 +2040,6 @@ body:not([data-assistant-expanded="true"]) .graph-assistant-chat-composer {
 
 body[data-assistant-expanded="true"] .console,
 body[data-assistant-expanded="true"] .graph-assistant-bubble[data-visible="true"],
-body[data-assistant-expanded="true"] .graph-assistant-bubble-mic,
 body[data-assistant-expanded="true"] .graph-assistant-chat-toggle {
     opacity: 1 !important;
     pointer-events: auto !important;
