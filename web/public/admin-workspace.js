@@ -93,7 +93,50 @@
             };
         }
 
-        appendLogEntry('info', 'Captura de logs activa (consola, errores y llamadas /api/voice·medical·clinical).');
+        const OriginalWebSocket = window.WebSocket;
+        if (typeof OriginalWebSocket === 'function' && !OriginalWebSocket.__miracleWrapped) {
+            const WrappedWebSocket = function (url, protocols) {
+                const ws = protocols === undefined
+                    ? new OriginalWebSocket(url)
+                    : new OriginalWebSocket(url, protocols);
+                const shortUrl = `${url}`.split('?')[0];
+                const isDeepgram = /deepgram\.com/i.test(`${url}`);
+                appendLogEntry('info', `WS → conectando ${shortUrl}${isDeepgram ? ' (Deepgram)' : ''}`);
+                let messageCount = 0;
+                let finalCount = 0;
+                ws.addEventListener('open', () => appendLogEntry('info', `WS ✓ abierto ${shortUrl}`));
+                ws.addEventListener('error', () => appendLogEntry('error', `WS ✗ error ${shortUrl}`));
+                ws.addEventListener('close', (event) => {
+                    appendLogEntry(event.code === 1000 ? 'info' : 'error',
+                        `WS ✗ cerrado code=${event.code} reason="${event.reason || ''}" msgs=${messageCount} finales=${finalCount} ${shortUrl}`);
+                });
+                ws.addEventListener('message', (event) => {
+                    messageCount += 1;
+                    if (!isDeepgram) return;
+                    let data = null;
+                    try { data = JSON.parse(event.data); } catch (error) { return; }
+                    if (data && data.type && data.type !== 'Results') {
+                        appendLogEntry('info', `WS Deepgram ${data.type}${data.reason ? `: ${data.reason}` : ''}${data.description ? `: ${data.description}` : ''}`);
+                        return;
+                    }
+                    const alt = data && data.channel && Array.isArray(data.channel.alternatives) ? data.channel.alternatives[0] : null;
+                    const transcript = alt && typeof alt.transcript === 'string' ? alt.transcript : '';
+                    if (data && data.is_final && transcript) {
+                        finalCount += 1;
+                        appendLogEntry('info', `WS Deepgram FINAL #${finalCount}: "${transcript}"`);
+                    } else if (messageCount <= 4) {
+                        appendLogEntry('info', `WS Deepgram msg#${messageCount} is_final=${data && data.is_final} transcript="${transcript}"`);
+                    }
+                });
+                return ws;
+            };
+            WrappedWebSocket.prototype = OriginalWebSocket.prototype;
+            ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'].forEach((key) => { WrappedWebSocket[key] = OriginalWebSocket[key]; });
+            WrappedWebSocket.__miracleWrapped = true;
+            try { window.WebSocket = WrappedWebSocket; } catch (error) { /* ignore */ }
+        }
+
+        appendLogEntry('info', 'Captura de logs activa (consola, errores, fetch /api/voice·medical·clinical y WebSocket Deepgram).');
     }
 
     installLogCapture();
