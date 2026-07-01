@@ -6,7 +6,6 @@ const path = require('path');
 const Neo4jDriver = require('../src/infrastructure/Neo4jDriver');
 const LLMProvider = require('../src/infrastructure/LLMProvider');
 const PlaywrightRunner = require('../src/infrastructure/PlaywrightRunner');
-const VoiceRealtimeGateway = require('../src/infrastructure/VoiceRealtimeGateway');
 const Neo4jWorkflowRepository = require('../src/infrastructure/repositories/Neo4jWorkflowRepository');
 const MarkdownCatalogWriter = require('../src/infrastructure/file-system/MarkdownCatalogWriter');
 const UsageLedgerStore = require('../src/infrastructure/file-system/UsageLedgerStore');
@@ -31,7 +30,6 @@ const registerLearningRoutes = require('./api/registerLearningRoutes');
 const registerWorkflowRoutes = require('./api/registerWorkflowRoutes');
 const registerContextRoutes = require('./api/registerContextRoutes');
 const registerExecutionIntelligenceRoutes = require('./api/registerExecutionIntelligenceRoutes');
-const registerVoiceRoutes = require('./api/registerVoiceRoutes');
 const registerClinicalRoutes = require('./api/registerClinicalRoutes');
 const registerMedicalRoutes = require('./api/registerMedicalRoutes');
 const registerUsageRoutes = require('./api/registerUsageRoutes');
@@ -48,7 +46,6 @@ const {
   isAuthBypassEnabled,
   verifyAccessToken
 } = require('./api/requireAuth');
-const phoneVoiceStore = require('./api/phoneVoiceStore');
 const { statusForError, publicErrorMessage } = require('./api/httpErrors');
 
 const GetGraphVisualization = require('../src/application/use-cases/GetGraphVisualization');
@@ -158,7 +155,7 @@ app.use((req, res, next) => {
     res.setHeader('Vary', 'Origin');
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Graph-Voice-Context, X-Graph-Voice-History, X-Graph-Phone-Session-Id, X-Graph-Phone-Token');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') {
     return res.sendStatus(204);
   }
@@ -280,66 +277,11 @@ app.get('/api/auth/status', async (req, res) => {
 
 // Require a real account for workflow-bearing APIs. Anonymous demo sessions can
 // still load static pages, but they cannot read or mutate workflow data.
-app.use('/api/voice/openai', costlyLimiter);
 app.use('/api/voice/stream-session', costlyLimiter);
 app.use('/api/voice/orchestrator/events', costlyLimiter);
 app.use('/api/medical', costlyLimiter);
 app.use('/api/workflows/:id/note-field-matches', costlyLimiter);
 app.use('/api/clinical/diagnosis-suggestions', costlyLimiter);
-app.use('/api/voice/openai/session', async (req, res, next) => {
-  const phoneSessionId = `${req.get('x-graph-phone-session-id') || ''}`.trim();
-  const phoneToken = `${req.get('x-graph-phone-token') || ''}`.trim();
-  if (!phoneSessionId && !phoneToken) {
-    return next();
-  }
-  try {
-    const session = await phoneVoiceStore.verifyPhoneVoiceToken(phoneSessionId, phoneToken);
-    req.phoneVoiceSession = session;
-    req.user = {
-      id: session.ownerId,
-      email: session.ownerEmail,
-      role: 'phone-pairing',
-      token: '',
-      isAnonymous: false
-    };
-    req.workflowAccess = {
-      ownerId: session.ownerId,
-      includeGlobal: true,
-      canManageGlobalWorkflows: false
-    };
-    return next();
-  } catch (error) {
-    return res.status(error.statusCode || 401).json({ error: error.message || 'No autorizado.' });
-  }
-});
-app.use('/api/voice/phone-session/:id/events', async (req, res, next) => {
-  if (req.method !== 'POST') {
-    return next();
-  }
-  const phoneToken = `${req.get('x-graph-phone-token') || ''}`.trim();
-  if (!phoneToken) {
-    return res.status(401).json({ error: 'Missing phone microphone token.' });
-  }
-  try {
-    const session = await phoneVoiceStore.verifyPhoneVoiceToken(req.params.id, phoneToken);
-    req.phoneVoiceSession = session;
-    req.user = {
-      id: session.ownerId,
-      email: session.ownerEmail,
-      role: 'phone-pairing',
-      token: '',
-      isAnonymous: false
-    };
-    req.workflowAccess = {
-      ownerId: session.ownerId,
-      includeGlobal: true,
-      canManageGlobalWorkflows: false
-    };
-    return next();
-  } catch (error) {
-    return res.status(error.statusCode || 401).json({ error: error.message || 'No autorizado.' });
-  }
-});
 function isMiracleMedicalProxyRequest(req) {
   const method = `${req.method || ''}`.toUpperCase();
   const path = `${req.originalUrl || req.path || req.url || ''}`.split('?')[0];
@@ -353,9 +295,6 @@ function isMiracleMedicalProxyRequest(req) {
   '/api/usage'
 ].forEach((routePrefix) => {
   app.use(routePrefix, (req, res, next) => {
-    if (req.phoneVoiceSession) {
-      return next();
-    }
     if (isMiracleMedicalProxyRequest(req)) {
       req.user = {
         id: 'miracle-medical-demo',
@@ -430,11 +369,6 @@ app.get('/api/public-config', (req, res) => {
     localAnonymousAccess: isLocalAnonymousAccessEnabled(),
     authBypassEnabled: isAuthBypassEnabled(req),
     miracleBaseUrl,
-    phoneMicrophoneAvailable: Boolean(
-      (process.env.SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL)
-      && (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY)
-    ),
-    voiceGatewayUrl: process.env.VOICE_GATEWAY_URL || ''
   });
 });
 
@@ -770,12 +704,6 @@ registerContextRoutes(app, {
   surfaceProfileService
 });
 registerExecutionIntelligenceRoutes(app, { catalogService, executionIntelligenceService });
-registerVoiceRoutes(app, {
-  express,
-  agentChat,
-  catalogService,
-  phoneVoiceStore
-});
 registerClinicalRoutes(app, { diagnosisSuggestionService });
 registerMedicalRoutes(app, {
   rawTranscriptionService,
@@ -817,15 +745,6 @@ app.set('port', PORT);
 
 function startServer() {
   const server = http.createServer(app);
-  const voiceGateway = new VoiceRealtimeGateway({
-    deepgramApiKey: process.env.DEEPGRAM_API_KEY,
-    openAiApiKey: process.env.OPENAI_API_KEY,
-    llmProvider,
-    catalogService,
-    agentChat,
-    conversationInsights
-  });
-  voiceGateway.attach(server);
   server.listen(PORT, () => console.log(`[Server] Running on http://localhost:${PORT}`));
   return server;
 }
