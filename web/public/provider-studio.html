@@ -9,184 +9,165 @@
 </head>
 <body>
     <main class="studio-shell">
-        <header class="studio-header">
-            <div class="studio-header-copy">
-                <p class="studio-kicker">Miracle Admin</p>
+        <header class="studio-hero">
+            <div class="studio-topbar">
+                <div class="studio-topbar-pill studio-account-pill">
+                    <svg class="studio-topbar-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 20V7l5-3 5 3v13M14 10h6v10M7 9h2m-2 4h2m-2 4h2m8-3h2m-2 3h2M2 20h20"/>
+                    </svg>
+                    <div class="studio-topbar-copy">
+                        <span class="studio-topbar-label">Sesion</span>
+                        <strong id="provider-studio-account-email">Cargando...</strong>
+                        <span id="provider-studio-account-role">Verificando permisos</span>
+                    </div>
+                    <svg class="studio-topbar-caret" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>
+                </div>
+                <div class="studio-topbar-right">
+                    <div class="studio-topbar-pill studio-overall-pill">
+                        <span class="studio-topbar-status-dot" aria-hidden="true"></span>
+                        <div class="studio-topbar-copy">
+                            <span class="studio-topbar-label">Estado general</span>
+                            <strong id="provider-studio-overall-status">Sincronizando</strong>
+                        </div>
+                    </div>
+                    <div class="studio-topbar-pill studio-context-pill">
+                        <strong>Finanzas</strong>
+                        <svg class="studio-topbar-caret" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="studio-hero-copy">
+                <div class="studio-hero-mark" aria-hidden="true">
+                    <svg viewBox="0 0 60 54"><path d="M30 3 57 51H3Z"/></svg>
+                </div>
                 <h1>Provider Studio</h1>
                 <p class="studio-intro">Panel minimo para revisar, cambiar y validar los providers principales de Miracle.</p>
-            </div>
-            <div class="studio-header-side">
-                <div class="studio-account">
-                    <strong id="provider-studio-account-email">Cargando...</strong>
-                    <span id="provider-studio-account-role">Verificando permisos</span>
-                </div>
-                <div class="studio-overall">
-                    <span>Estado general</span>
-                    <strong id="provider-studio-overall-status">Sincronizando</strong>
-                </div>
             </div>
         </header>
 
         <section id="provider-studio-access" class="studio-access is-hidden" aria-live="polite"></section>
 
         <section id="provider-studio-grid" class="studio-content is-hidden">
-            <section class="studio-section">
-                <div class="studio-section-head">
-                    <div>
-                        <p class="studio-kicker">Actual</p>
-                        <h2>Configuracion activa</h2>
-                    </div>
-                </div>
-                <div class="studio-status-list">
-                    <article class="studio-status-item">
+            <section class="studio-board">
+                <section class="studio-card">
+                    <div class="studio-card-head">
                         <div>
-                            <strong>Graph field matching</strong>
-                            <p id="graph-provider-current">Leyendo estado actual...</p>
-                        </div>
-                        <div class="studio-status-meta">
-                            <strong id="graph-provider-metric">Cargando</strong>
-                            <span id="graph-provider-pill" class="status-pill">Cargando</span>
-                        </div>
-                    </article>
-
-                    <article class="studio-status-item">
-                        <div>
-                            <strong>Product LLM</strong>
-                            <p id="miracle-product-current">Leyendo estado actual...</p>
-                        </div>
-                        <div class="studio-status-meta">
-                            <strong id="miracle-product-metric">Cargando</strong>
-                            <span id="miracle-product-pill" class="status-pill">Cargando</span>
-                        </div>
-                    </article>
-
-                    <article class="studio-status-item">
-                        <div>
-                            <strong>STT Provider</strong>
-                            <p id="miracle-stt-current">Leyendo estado actual...</p>
+                            <p class="studio-kicker">Miracle</p>
+                            <h2>STT</h2>
                         </div>
                         <div class="studio-status-meta">
                             <strong id="miracle-stt-metric">Cargando</strong>
                             <span id="miracle-stt-pill" class="status-pill">Cargando</span>
                         </div>
-                    </article>
-                </div>
-            </section>
-
-            <section class="studio-section">
-                <div class="studio-section-head">
-                    <div>
-                        <p class="studio-kicker">Editar</p>
-                        <h2>Providers</h2>
                     </div>
-                </div>
-
-                <div class="studio-form-stack">
-                    <section class="studio-card">
-                        <div class="studio-card-head">
-                            <div>
-                                <p class="studio-kicker">Graph</p>
-                                <h3>Field Matching Provider</h3>
-                            </div>
+                    <p id="miracle-stt-current" class="studio-current">Leyendo estado actual...</p>
+                    <form id="miracle-stt-form" class="studio-form">
+                        <div class="studio-form-grid">
+                            <label class="field">
+                                <span>Provider</span>
+                                <select id="miracle-stt-select"></select>
+                            </label>
+                            <label class="field" id="miracle-stt-model-field">
+                                <span>Modelo</span>
+                                <input id="miracle-stt-model" type="text" placeholder="nova-3">
+                            </label>
+                            <label class="field" id="miracle-stt-language-field">
+                                <span>Idioma</span>
+                                <input id="miracle-stt-language" type="text" placeholder="es">
+                            </label>
+                            <label class="field field-editor field-span-2" id="miracle-stt-api-key-field">
+                                <span>API key</span>
+                                <input id="miracle-stt-api-key" type="password" autocomplete="off" placeholder="Clave de Deepgram">
+                            </label>
                         </div>
-                        <form id="graph-provider-form" class="studio-form">
-                            <div class="studio-form-grid">
-                                <label class="field">
-                                    <span>Provider</span>
-                                    <select id="graph-provider-select"></select>
-                                </label>
-                                <label class="field" id="graph-provider-model-field">
-                                    <span>Modelo</span>
-                                    <input id="graph-provider-model" type="text" placeholder="grok-4.1">
-                                </label>
-                                <label class="field field-span-2" id="graph-provider-base-url-field">
-                                    <span>Base URL</span>
-                                    <input id="graph-provider-base-url" type="url" placeholder="https://.../openai/v1">
-                                </label>
-                                <label class="field field-span-2" id="graph-provider-api-key-field">
-                                    <span>API key</span>
-                                    <input id="graph-provider-api-key" type="password" autocomplete="off" placeholder="Pega la clave del provider">
-                                </label>
-                            </div>
-                            <div class="studio-actions">
-                                <button type="button" class="button ghost" id="graph-provider-refresh">Releer</button>
-                                <button type="submit" class="button primary" id="graph-provider-submit">Guardar Graph</button>
-                            </div>
-                        </form>
-                        <p id="graph-provider-message" class="form-message"></p>
-                    </section>
-
-                    <section class="studio-card">
-                        <div class="studio-card-head">
-                            <div>
-                                <p class="studio-kicker">Miracle</p>
-                                <h3>Product LLM</h3>
-                            </div>
+                        <div class="studio-actions">
+                            <button type="button" class="button ghost" id="miracle-stt-refresh">Releer</button>
+                            <button type="submit" class="button primary" id="miracle-stt-submit">Guardar STT</button>
                         </div>
-                        <form id="miracle-product-form" class="studio-form">
-                            <div class="studio-form-grid">
-                                <label class="field">
-                                    <span>Provider</span>
-                                    <select id="miracle-product-select"></select>
-                                </label>
-                                <label class="field is-hidden" id="miracle-product-base-url-field">
-                                    <span>Base URL</span>
-                                    <input id="miracle-product-base-url" type="url" placeholder="https://.../openai/v1">
-                                </label>
-                                <label class="field is-hidden" id="miracle-product-model-field">
-                                    <span>Modelo</span>
-                                    <input id="miracle-product-model" type="text" placeholder="grok-4.1">
-                                </label>
-                                <label class="field is-hidden field-span-2" id="miracle-product-api-key-field">
-                                    <span>API key</span>
-                                    <input id="miracle-product-api-key" type="password" autocomplete="off" placeholder="Clave del product LLM">
-                                </label>
-                            </div>
-                            <div class="studio-actions">
-                                <button type="button" class="button ghost" id="miracle-product-refresh">Releer</button>
-                                <button type="submit" class="button primary" id="miracle-product-submit">Guardar Product LLM</button>
-                            </div>
-                        </form>
-                        <p id="miracle-product-message" class="form-message"></p>
-                    </section>
+                    </form>
+                    <p id="miracle-stt-message" class="form-message"></p>
+                </section>
 
-                    <section class="studio-card">
-                        <div class="studio-card-head">
-                            <div>
-                                <p class="studio-kicker">Miracle</p>
-                                <h3>STT Provider</h3>
-                            </div>
+                <section class="studio-card">
+                    <div class="studio-card-head">
+                        <div>
+                            <p class="studio-kicker">Miracle</p>
+                            <h2>Hoja en blanco</h2>
                         </div>
-                        <form id="miracle-stt-form" class="studio-form">
-                            <div class="studio-form-grid">
-                                <label class="field">
-                                    <span>Provider</span>
-                                    <select id="miracle-stt-select"></select>
-                                </label>
-                                <label class="field" id="miracle-stt-model-field">
-                                    <span>Modelo</span>
-                                    <input id="miracle-stt-model" type="text" placeholder="nova-3">
-                                </label>
-                                <label class="field" id="miracle-stt-language-field">
-                                    <span>Idioma</span>
-                                    <input id="miracle-stt-language" type="text" placeholder="es">
-                                </label>
-                                <label class="field field-span-2" id="miracle-stt-api-key-field">
-                                    <span>API key</span>
-                                    <input id="miracle-stt-api-key" type="password" autocomplete="off" placeholder="Clave de Deepgram">
-                                </label>
-                            </div>
-                            <div class="studio-actions">
-                                <button type="button" class="button ghost" id="miracle-stt-refresh">Releer</button>
-                                <button type="submit" class="button primary" id="miracle-stt-submit">Guardar STT</button>
-                            </div>
-                        </form>
-                        <p id="miracle-stt-message" class="form-message"></p>
-                    </section>
-                </div>
+                        <div class="studio-status-meta">
+                            <strong id="miracle-product-metric">Cargando</strong>
+                            <span id="miracle-product-pill" class="status-pill">Cargando</span>
+                        </div>
+                    </div>
+                    <p id="miracle-product-current" class="studio-current">Leyendo estado actual...</p>
+                    <form id="miracle-product-form" class="studio-form">
+                        <div class="studio-form-grid">
+                            <label class="field">
+                                <span>Provider</span>
+                                <select id="miracle-product-select"></select>
+                            </label>
+                            <label class="field field-editor is-hidden" id="miracle-product-base-url-field">
+                                <span>Base URL</span>
+                                <input id="miracle-product-base-url" type="url" placeholder="https://.../openai/v1">
+                            </label>
+                            <label class="field is-hidden" id="miracle-product-model-field">
+                                <span>Modelo</span>
+                                <input id="miracle-product-model" type="text" placeholder="grok-4.1">
+                            </label>
+                            <label class="field field-editor is-hidden field-span-2" id="miracle-product-api-key-field">
+                                <span>API key</span>
+                                <input id="miracle-product-api-key" type="password" autocomplete="off" placeholder="Clave del product LLM">
+                            </label>
+                        </div>
+                        <div class="studio-actions">
+                            <button type="button" class="button ghost" id="miracle-product-refresh">Releer</button>
+                            <button type="submit" class="button primary" id="miracle-product-submit">Guardar Product LLM</button>
+                        </div>
+                    </form>
+                    <p id="miracle-product-message" class="form-message"></p>
+                </section>
+
+                <section class="studio-card">
+                    <div class="studio-card-head">
+                        <div>
+                            <p class="studio-kicker">Graph</p>
+                            <h2>Field Matching Provider</h2>
+                        </div>
+                        <div class="studio-status-meta">
+                            <strong id="graph-provider-metric">Cargando</strong>
+                            <span id="graph-provider-pill" class="status-pill">Cargando</span>
+                        </div>
+                    </div>
+                    <p id="graph-provider-current" class="studio-current">Leyendo estado actual...</p>
+                    <form id="graph-provider-form" class="studio-form">
+                        <div class="studio-form-grid">
+                            <label class="field">
+                                <span>Provider</span>
+                                <select id="graph-provider-select"></select>
+                            </label>
+                            <label class="field" id="graph-provider-model-field">
+                                <span>Modelo</span>
+                                <input id="graph-provider-model" type="text" placeholder="grok-4.1">
+                            </label>
+                            <label class="field field-editor field-span-2" id="graph-provider-base-url-field">
+                                <span>Base URL</span>
+                                <input id="graph-provider-base-url" type="url" placeholder="https://.../openai/v1">
+                            </label>
+                            <label class="field field-editor field-span-2" id="graph-provider-api-key-field">
+                                <span>API key</span>
+                                <input id="graph-provider-api-key" type="password" autocomplete="off" placeholder="Pega la clave del provider">
+                            </label>
+                        </div>
+                        <div class="studio-actions">
+                            <button type="button" class="button ghost" id="graph-provider-refresh">Releer</button>
+                            <button type="submit" class="button primary" id="graph-provider-submit">Guardar Graph</button>
+                        </div>
+                    </form>
+                    <p id="graph-provider-message" class="form-message"></p>
+                </section>
             </section>
 
-            <section class="studio-section">
+            <section class="studio-section studio-section-links">
                 <div class="studio-section-head">
                     <div>
                         <p class="studio-kicker">Validar</p>
@@ -194,8 +175,16 @@
                     </div>
                 </div>
                 <div class="studio-links">
-                    <a class="studio-link" href="/emr-workspace.html">Abrir EMR expandido</a>
-                    <a class="studio-link" href="/miracle">Abrir Workspace Miracle</a>
+                    <a class="studio-link" href="/miracle">
+                        <svg class="studio-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM15 3v5h4M9 13h6M9 17h6M9 9h2"/></svg>
+                        <span>Nota en blanco</span>
+                        <svg class="studio-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
+                    </a>
+                    <a class="studio-link" href="/emr-workspace.html">
+                        <svg class="studio-link-icon studio-link-play" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 3 16 9L5 21Z"/></svg>
+                        <span>Probar</span>
+                        <svg class="studio-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
+                    </a>
                     <a class="studio-link" href="/visualize.html">Abrir Workflow Graph</a>
                 </div>
             </section>

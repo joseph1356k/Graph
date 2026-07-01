@@ -22,6 +22,7 @@ const LearningSessionService = require('../src/application/use-cases/LearningSes
 const ExecutionIntelligenceService = require('../src/application/use-cases/ExecutionIntelligenceService');
 const NoteFieldMatcher = require('../src/application/use-cases/NoteFieldMatcher');
 const ClinicalDiagnosisSuggestionService = require('../src/application/use-cases/ClinicalDiagnosisSuggestionService');
+const ClinicalRawTranscriptionService = require('../src/application/use-cases/ClinicalRawTranscriptionService');
 const UsageDashboardService = require('../src/application/use-cases/UsageDashboardService');
 const GraphProviderConfigService = require('../src/application/use-cases/GraphProviderConfigService');
 const MiracleProductLlmProviderConfigService = require('../src/application/use-cases/MiracleProductLlmProviderConfigService');
@@ -32,6 +33,7 @@ const registerContextRoutes = require('./api/registerContextRoutes');
 const registerExecutionIntelligenceRoutes = require('./api/registerExecutionIntelligenceRoutes');
 const registerVoiceRoutes = require('./api/registerVoiceRoutes');
 const registerClinicalRoutes = require('./api/registerClinicalRoutes');
+const registerMedicalRoutes = require('./api/registerMedicalRoutes');
 const registerUsageRoutes = require('./api/registerUsageRoutes');
 const MiracleWorkspaceStore = require('./api/miracleWorkspaceStore');
 const rateLimit = require('express-rate-limit');
@@ -95,12 +97,13 @@ const getGraphVisualization = new GetGraphVisualization(repository);
 const executionIntelligenceService = new ExecutionIntelligenceService(llmProvider);
 const noteFieldMatcher = new NoteFieldMatcher(llmProvider);
 const diagnosisSuggestionService = new ClinicalDiagnosisSuggestionService(llmProvider);
+const rawTranscriptionService = new ClinicalRawTranscriptionService();
 const graphProviderConfigService = new GraphProviderConfigService(llmProvider);
 const miracleProductLlmProviderConfigService = new MiracleProductLlmProviderConfigService();
 const miracleSttProviderConfigService = new MiracleSttProviderConfigService();
 const miracleWorkspaceStore = new MiracleWorkspaceStore();
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '16mb' }));
 
 function setAdminSessionCookie(res, accessToken) {
   const secure = Boolean(process.env.VERCEL)
@@ -280,6 +283,7 @@ app.get('/api/auth/status', async (req, res) => {
 app.use('/api/voice/openai', costlyLimiter);
 app.use('/api/voice/stream-session', costlyLimiter);
 app.use('/api/voice/orchestrator/events', costlyLimiter);
+app.use('/api/medical', costlyLimiter);
 app.use('/api/workflows/:id/note-field-matches', costlyLimiter);
 app.use('/api/clinical/diagnosis-suggestions', costlyLimiter);
 app.use('/api/voice/openai/session', async (req, res, next) => {
@@ -387,6 +391,7 @@ function isMiracleMedicalProxyRequest(req) {
   '/api/history-change',
   '/api/product-llm',
   '/api/setup/product-llm',
+  '/api/medical',
   '/api/account',
   '/api/visualize',
   '/api/providers'
@@ -434,40 +439,70 @@ app.get('/api/public-config', (req, res) => {
 });
 
 async function proxyMiracleRuntimeRequest(req, res, targetPath, init = {}) {
+  try {
+    const response = await callMiracleRuntime(req, targetPath, {
+      ...init,
+      method: init.method || req.method,
+      body: typeof init.body !== 'undefined' ? init.body : buildMiracleProxyRequestBody(req)
+    });
+    return res.status(response.statusCode).json(response.body);
+  } catch (error) {
+    if (error.code === 'MIRACLE_RUNTIME_NOT_CONFIGURED') {
+      return false;
+    }
+    console.error(`[Miracle Runtime Proxy] ${targetPath} failed: ${error.message}`);
+    return res.status(error.statusCode || 502).json({ error: error.message || 'Miracle runtime unavailable' });
+  }
+}
+
+async function callMiracleRuntime(req, targetPath, init = {}) {
   const baseUrl = resolveMiracleRuntimeUrl(req);
   if (!baseUrl) {
-    return false;
+    const error = new Error('Miracle runtime no configurado.');
+    error.code = 'MIRACLE_RUNTIME_NOT_CONFIGURED';
+    throw error;
   }
   const internalToken = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '';
+
+  let upstreamResponse;
   try {
-    const upstreamResponse = await fetch(`${baseUrl}${targetPath}${init.includeQueryString === false ? '' : extractQueryString(req)}`, {
+    upstreamResponse = await fetch(`${baseUrl}${targetPath}${init.includeQueryString === false ? '' : extractQueryString(req)}`, {
       method: init.method || req.method,
       headers: {
         'Content-Type': 'application/json',
         ...(internalToken ? { 'X-Graph-Internal-Token': internalToken } : {}),
         ...(init.headers || {})
       },
-      body: typeof init.body !== 'undefined' ? init.body : buildMiracleProxyRequestBody(req)
+      body: typeof init.body === 'undefined'
+        ? undefined
+        : (typeof init.body === 'string' || Buffer.isBuffer(init.body) ? init.body : JSON.stringify(init.body))
     });
-    const payloadText = await upstreamResponse.text();
-    let payload = {};
-    if (payloadText) {
-      try {
-        payload = JSON.parse(payloadText);
-      } catch (error) {
-        payload = { message: payloadText };
-      }
-    }
-    if (!upstreamResponse.ok) {
-      return res.status(upstreamResponse.status).json({
-        error: payload?.error || payload?.message || 'Miracle runtime request failed'
-      });
-    }
-    return res.status(upstreamResponse.status).json(payload);
   } catch (error) {
-    console.error(`[Miracle Runtime Proxy] ${targetPath} failed: ${error.message}`);
-    return res.status(502).json({ error: 'Miracle runtime unavailable' });
+    const upstreamError = new Error('Miracle runtime unavailable');
+    upstreamError.statusCode = 502;
+    throw upstreamError;
   }
+
+  const payloadText = await upstreamResponse.text();
+  let payload = {};
+  if (payloadText) {
+    try {
+      payload = JSON.parse(payloadText);
+    } catch (error) {
+      payload = { message: payloadText };
+    }
+  }
+
+  if (!upstreamResponse.ok) {
+    const upstreamError = new Error(payload?.error || payload?.message || 'Miracle runtime request failed');
+    upstreamError.statusCode = upstreamResponse.status || 502;
+    throw upstreamError;
+  }
+
+  return {
+    statusCode: upstreamResponse.status,
+    body: payload
+  };
 }
 
 app.get('/api/tree', async (req, res) => {
@@ -742,6 +777,10 @@ registerVoiceRoutes(app, {
   phoneVoiceStore
 });
 registerClinicalRoutes(app, { diagnosisSuggestionService });
+registerMedicalRoutes(app, {
+  rawTranscriptionService,
+  callMiracleRuntime
+});
 registerUsageRoutes(app, { usageDashboardService });
 
 app.post('/api/agent/chat', costlyLimiter, async (req, res) => {
