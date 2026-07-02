@@ -33,6 +33,7 @@ const registerExecutionIntelligenceRoutes = require('./api/registerExecutionInte
 const registerClinicalRoutes = require('./api/registerClinicalRoutes');
 const registerMedicalRoutes = require('./api/registerMedicalRoutes');
 const registerUsageRoutes = require('./api/registerUsageRoutes');
+const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
 const MiracleWorkspaceStore = require('./api/miracleWorkspaceStore');
 const rateLimit = require('express-rate-limit');
 const {
@@ -282,6 +283,7 @@ app.use('/api/voice/orchestrator/events', costlyLimiter);
 app.use('/api/medical', costlyLimiter);
 app.use('/api/workflows/:id/note-field-matches', costlyLimiter);
 app.use('/api/clinical/diagnosis-suggestions', costlyLimiter);
+app.use('/api/v1/pipeline', costlyLimiter);
 function isMiracleMedicalProxyRequest(req) {
   const method = `${req.method || ''}`.toUpperCase();
   const path = `${req.originalUrl || req.path || req.url || ''}`.split('?')[0];
@@ -333,7 +335,8 @@ function isMiracleMedicalProxyRequest(req) {
   '/api/medical',
   '/api/account',
   '/api/visualize',
-  '/api/providers'
+  '/api/providers',
+  '/api/v1'
 ].forEach((routePrefix) => {
   app.use(routePrefix, requireAccountAuth, attachWorkflowAccess);
 });
@@ -710,6 +713,7 @@ registerMedicalRoutes(app, {
   callMiracleRuntime
 });
 registerUsageRoutes(app, { usageDashboardService });
+registerPublicApiRoutes(app, { callMiracleRuntime, noteFieldMatcher });
 
 app.post('/api/agent/chat', costlyLimiter, async (req, res) => {
   try {
