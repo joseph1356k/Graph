@@ -718,3 +718,62 @@ select {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* Central dashboard tabs + embedded surfaces */
+.studio-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-bottom: 22px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.studio-tab {
+    height: 46px;
+    padding: 0 22px;
+    border: 1px solid var(--line-soft);
+    border-radius: 15px;
+    background: var(--control);
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.studio-tab:hover {
+    background: var(--control-hover);
+    color: var(--ink);
+}
+
+.studio-tab.is-active {
+    background: var(--ink);
+    color: #050505;
+    border-color: var(--ink);
+}
+
+.studio-panel {
+    display: none;
+}
+
+.studio-panel.is-active {
+    display: block;
+}
+
+.studio-embed {
+    border: 1px solid var(--line-soft);
+    border-radius: 22px;
+    overflow: hidden;
+    background: var(--panel);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.studio-frame {
+    display: block;
+    width: 100%;
+    height: calc(100vh - 300px);
+    min-height: 620px;
+    border: 0;
+    background: #050505;
+}
