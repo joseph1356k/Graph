@@ -43,6 +43,7 @@ function build() {
   copyFile(path.join(runtimeRoot, 'page-state.js'), path.join(outputRoot, 'assets', 'page-state.js'));
   copyFile(path.join(runtimeRoot, 'recorder.js'), path.join(outputRoot, 'assets', 'recorder.js'));
   copyFile(path.join(runtimeRoot, 'assistant-runtime.js'), path.join(outputRoot, 'assets', 'assistant-runtime.js'));
+  copyFile(path.join(runtimeRoot, 'shared', 'deepgram-dictation.js'), path.join(outputRoot, 'assets', 'shared', 'deepgram-dictation.js'));
   copyFile(path.join(runtimeRoot, 'trainer-plugin.js'), path.join(outputRoot, 'assets', 'trainer-plugin.js'));
   copyDirectoryContents(path.join(runtimeRoot, 'plugin'), path.join(outputRoot, 'assets', 'plugin'));
 

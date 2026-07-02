@@ -1265,127 +1265,6 @@
         return `${`${base || ''}`.trim()} ${next}`;
     }
 
-    function readMiracleDeepgramTranscript(payload) {
-        const channel = payload?.channel;
-        const alternatives = Array.isArray(channel?.alternatives) ? channel.alternatives : [];
-        const transcript = alternatives[0]?.transcript;
-        return typeof transcript === 'string' ? transcript.trim() : '';
-    }
-
-    function resetMiracleFinalizeQuietTimer() {
-        if (miracleNoteState.finalizeQuietTimer) {
-            window.clearTimeout(miracleNoteState.finalizeQuietTimer);
-            miracleNoteState.finalizeQuietTimer = null;
-        }
-    }
-
-    function releaseMiracleMicrophone() {
-        if (!miracleNoteState.mediaStream) {
-            return;
-        }
-        miracleNoteState.mediaStream.getTracks().forEach((track) => track.stop());
-        miracleNoteState.mediaStream = null;
-    }
-
-    function chooseMiracleMimeType() {
-        const options = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'];
-        for (const candidate of options) {
-            if (window.MediaRecorder?.isTypeSupported(candidate)) {
-                return candidate;
-            }
-        }
-        return '';
-    }
-
-    async function waitForMiracleMicrophoneReady(stream) {
-        const track = stream && typeof stream.getAudioTracks === 'function' ? stream.getAudioTracks()[0] : null;
-        // A freshly opened mic track starts "muted" until the device produces audio.
-        if (track && track.muted) {
-            await new Promise((resolve) => {
-                const finish = () => {
-                    window.clearTimeout(timer);
-                    track.removeEventListener('unmute', finish);
-                    resolve();
-                };
-                const timer = window.setTimeout(finish, 1500);
-                track.addEventListener('unmute', finish, { once: true });
-            });
-        }
-        // Extra settle so MediaRecorder reads stable track settings and writes a valid
-        // WebM header; otherwise Deepgram cannot decode the first stream (duration:0 / NET-0000).
-        await new Promise((resolve) => window.setTimeout(resolve, 300));
-    }
-
-    async function ensureMiracleMicrophone() {
-        if (!navigator.mediaDevices?.getUserMedia) {
-            throw new Error('Este navegador no expone acceso a microfono.');
-        }
-        if (miracleNoteState.mediaStream && miracleNoteState.mediaStream.active) {
-            return miracleNoteState.mediaStream;
-        }
-        miracleNoteState.mediaStream = await navigator.mediaDevices.getUserMedia({
-            audio: {
-                autoGainControl: true,
-                echoCancellation: true,
-                noiseSuppression: true
-            }
-        });
-        await waitForMiracleMicrophoneReady(miracleNoteState.mediaStream);
-        return miracleNoteState.mediaStream;
-    }
-
-    async function closeMiracleSocket() {
-        if (!miracleNoteState.socket) {
-            return;
-        }
-        const socket = miracleNoteState.socket;
-        if (socket.readyState === WebSocket.CLOSED) {
-            if (miracleNoteState.socket === socket) {
-                miracleNoteState.socket = null;
-            }
-            return;
-        }
-        await new Promise((resolve) => {
-            socket.addEventListener('close', resolve, { once: true });
-            socket.close();
-        });
-        if (miracleNoteState.socket === socket) {
-            miracleNoteState.socket = null;
-        }
-    }
-
-    async function waitForMiracleFinalize() {
-        if (!miracleNoteState.socket) {
-            return;
-        }
-        await new Promise((resolve) => {
-            let settled = false;
-            let maxWaitTimer = null;
-            const socket = miracleNoteState.socket;
-            const settle = () => {
-                if (settled) {
-                    return;
-                }
-                settled = true;
-                socket.removeEventListener('message', onMessage);
-                if (maxWaitTimer) {
-                    window.clearTimeout(maxWaitTimer);
-                }
-                resetMiracleFinalizeQuietTimer();
-                resolve();
-            };
-            const onMessage = () => {
-                resetMiracleFinalizeQuietTimer();
-                miracleNoteState.finalizeQuietTimer = window.setTimeout(settle, 900);
-            };
-
-            resetMiracleFinalizeQuietTimer();
-            miracleNoteState.finalizeQuietTimer = window.setTimeout(settle, 900);
-            socket.addEventListener('message', onMessage);
-            maxWaitTimer = window.setTimeout(settle, 2200);
-        });
-    }
-
     async function sendMiracleFinalSegment(transcript, language) {
         const trimmedTranscript = `${transcript || ''}`.trim();
         if (!trimmedTranscript) {
@@ -1474,81 +1353,46 @@
         dispatchMiracleNoteToDynamicFill(miracleNoteState.noteContent);
     }
 
-    function handleMiracleSocketMessage(event) {
-        let payload;
-        try {
-            payload = JSON.parse(event.data);
-        } catch (error) {
-            return;
+    let miracleDictationInstance = null;
+    function miracleDictation() {
+        if (miracleDictationInstance) {
+            return miracleDictationInstance;
         }
-
-        const transcript = readMiracleDeepgramTranscript(payload);
-        if (!transcript) {
-            return;
+        const engine = window.MiracleDeepgramDictation;
+        if (!engine || typeof engine.create !== 'function') {
+            throw new Error('El motor de dictado compartido (MiracleDeepgramDictation) no esta cargado.');
         }
-
-        if (payload.is_final) {
-            miracleNoteState.committedTranscript = mergeMiracleTranscript(
-                miracleNoteState.committedTranscript,
-                transcript
-            );
-            miracleNoteState.pendingDraft = '';
-            syncMiracleNotePanel('Miracle esta organizando la nota...');
-            sendMiracleFinalSegment(transcript, miracleNoteState.streamSession?.language || null).catch((error) => {
-                syncMiracleNotePanel(error.message || 'No pude enviar el segmento a Miracle.');
-            });
-            return;
-        }
-
-        miracleNoteState.pendingDraft = transcript;
-        syncMiracleNotePanel('Transcribiendo con Miracle...');
-        runtime()?.speak('Escuchando.', { mode: 'listening' });
-    }
-
-    async function openMiracleSocket() {
-        const session = await requireApiClient().createMiracleStreamSession();
-        miracleNoteState.streamSession = session;
-        miracleNoteState.timesliceMs = Number(session?.timeslice_ms) || 250;
-
-        await new Promise((resolve, reject) => {
-            const authScheme = `${session?.auth_scheme || ''}`.trim() || 'bearer';
-            const socket = new WebSocket(session.websocket_url, [authScheme, session.access_token]);
-            miracleNoteState.socket = socket;
-            socket.addEventListener('message', handleMiracleSocketMessage);
-            socket.addEventListener('open', resolve, { once: true });
-            socket.addEventListener('error', () => {
-                reject(new Error('No fue posible abrir el stream en Deepgram.'));
-            }, { once: true });
-            socket.addEventListener('close', (closeEvent) => {
-                if (miracleNoteState.active && !closeEvent.wasClean) {
-                    syncMiracleNotePanel('El stream de Miracle se cerro antes de tiempo.');
-                    stopMiracleNoteDictation().catch(() => {});
+        miracleDictationInstance = engine.create({
+            createStreamSession: () => requireApiClient().createMiracleStreamSession(),
+            onDebug: (event, details) => {
+                if (event === 'deepgram.session.created' && details && details.model) {
+                    miracleNoteState.streamModel = details.model;
                 }
-            });
-        });
-    }
-
-    async function startMiracleMediaRecorder() {
-        await ensureMiracleMicrophone();
-        const mimeType = chooseMiracleMimeType();
-        const recorder = mimeType
-            ? new MediaRecorder(miracleNoteState.mediaStream, { mimeType })
-            : new MediaRecorder(miracleNoteState.mediaStream);
-        miracleNoteState.mediaRecorder = recorder;
-        miracleNoteState.mediaRecorderStopped = new Promise((resolve, reject) => {
-            recorder.addEventListener('stop', () => resolve(), { once: true });
-            recorder.addEventListener('error', () => reject(new Error('No fue posible capturar audio.')), { once: true });
-        });
-
-        recorder.addEventListener('dataavailable', async (event) => {
-            if (!event.data || event.data.size === 0 || !miracleNoteState.socket || miracleNoteState.socket.readyState !== WebSocket.OPEN) {
-                return;
+            },
+            onError: (message) => syncMiracleNotePanel(message),
+            onUnexpectedClose: () => {
+                miracleNoteState.active = false;
+                miracleNoteState.busy = false;
+                syncMiracleNotePanel('El stream de Miracle se cerro antes de tiempo.');
+            },
+            onPartialTranscript: (transcript) => {
+                miracleNoteState.pendingDraft = transcript;
+                syncMiracleNotePanel('Transcribiendo con Miracle...');
+                runtime()?.speak('Escuchando.', { mode: 'listening' });
+            },
+            onFinalTranscript: (segment) => {
+                miracleNoteState.committedTranscript = mergeMiracleTranscript(
+                    miracleNoteState.committedTranscript,
+                    segment.transcript
+                );
+                miracleNoteState.pendingDraft = '';
+                syncMiracleNotePanel('Miracle esta organizando la nota...');
+                sendMiracleFinalSegment(segment.transcript, segment.language || null).catch((error) => {
+                    syncMiracleNotePanel(error.message || 'No pude enviar el segmento a Miracle.');
+                });
             }
-            const audioBuffer = await event.data.arrayBuffer();
-            miracleNoteState.socket.send(audioBuffer);
         });
-
-        recorder.start(miracleNoteState.timesliceMs);
+        return miracleDictationInstance;
     }
 
     async function startMiracleNoteDictation() {
@@ -1565,19 +1409,18 @@
             miracleNoteState.fillSummary = '';
             miracleNoteState.undoAvailable = false;
             miracleNoteState.dictationStartedAt = Date.now();
-            await ensureMiracleMicrophone();
-            await openMiracleSocket();
+            miracleNoteState.streamModel = '';
+            await miracleDictation().start();
             recordUsageEvent({
                 sourceRepo: 'miracle',
                 eventType: 'deepgram_stream_started',
                 provider: 'deepgram',
                 apiFamily: 'streaming_stt',
-                model: miracleNoteState.streamSession?.model || '',
+                model: miracleNoteState.streamModel || '',
                 sessionId: miracleNoteState.voiceSessionId,
                 feature: 'dictation_note_fill',
                 status: 'started'
             });
-            await startMiracleMediaRecorder();
             miracleNoteState.active = true;
             syncMiracleNotePanel('Dictando hacia Miracle...');
             runtime()?.speak('Escuchando.', { mode: 'listening' });
@@ -1590,26 +1433,13 @@
     async function stopMiracleNoteDictation() {
         miracleNoteState.busy = true;
         syncMiracleNotePanel('Cerrando dictado...');
-        const streamModel = miracleNoteState.streamSession?.model || '';
+        const streamModel = miracleNoteState.streamModel || '';
         const dictationStartedAt = miracleNoteState.dictationStartedAt || 0;
         const finalSegmentCount = miracleNoteState.finalSegmentCount || 0;
         try {
-            if (miracleNoteState.mediaRecorder && miracleNoteState.mediaRecorder.state !== 'inactive') {
-                miracleNoteState.mediaRecorder.stop();
-            }
-            if (miracleNoteState.mediaRecorderStopped) {
-                await miracleNoteState.mediaRecorderStopped;
-            }
-            if (miracleNoteState.socket && miracleNoteState.socket.readyState === WebSocket.OPEN) {
-                miracleNoteState.socket.send(JSON.stringify({ type: 'Finalize' }));
-                await waitForMiracleFinalize();
-            }
-            await closeMiracleSocket();
+            await miracleDictation().stop();
             miracleNoteState.pendingDraft = '';
         } finally {
-            miracleNoteState.mediaRecorder = null;
-            miracleNoteState.mediaRecorderStopped = null;
-            miracleNoteState.streamSession = null;
             miracleNoteState.active = false;
             miracleNoteState.busy = false;
             const durationMs = dictationStartedAt ? Math.max(0, Date.now() - dictationStartedAt) : 0;
@@ -1632,7 +1462,6 @@
                 });
             }
             miracleNoteState.dictationStartedAt = 0;
-            releaseMiracleMicrophone();
             syncMiracleNotePanel(miracleNoteState.noteContent ? 'Dictado detenido.' : 'Lista para dictado con Miracle.');
             runtime()?.speak(miracleNoteState.noteContent ? 'Nota lista para revisar.' : 'Lista para dictado.', {
                 mode: miracleNoteState.noteContent ? 'review' : 'idle'
@@ -1795,11 +1624,8 @@
         } catch (error) {
             miracleNoteState.active = false;
             miracleNoteState.busy = false;
-            miracleNoteState.mediaRecorder = null;
-            miracleNoteState.mediaRecorderStopped = null;
-            miracleNoteState.streamSession = null;
-            releaseMiracleMicrophone();
-            await closeMiracleSocket().catch(() => {});
+            miracleNoteState.pendingDraft = '';
+            miracleDictation().reset();
             syncMiracleNotePanel(error.message || 'No fue posible procesar la transcripcion.');
         }
     }

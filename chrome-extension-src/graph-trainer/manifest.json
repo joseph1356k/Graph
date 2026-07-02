@@ -38,6 +38,7 @@
         "assets/plugin/plugin-surface-profile-client.js",
         "assets/plugin/plugin-execution-client.js",
         "assets/plugin/plugin-workflow-overlay-bridge.js",
+        "assets/shared/deepgram-dictation.js",
         "assets/trainer-plugin.js",
         "content.js"
       ],

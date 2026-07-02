@@ -15,6 +15,7 @@ const SHELL = [
     '/clinical-review.js',
     '/recorder.js',
     '/assistant-runtime.js',
+    '/shared/deepgram-dictation.js',
     '/trainer-plugin.js',
     '/plugin/plugin-events.js',
     '/plugin/plugin-host.js',
