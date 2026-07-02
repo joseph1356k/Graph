@@ -136,7 +136,8 @@
                     let data = null;
                     try { data = JSON.parse(event.data); } catch (error) { return; }
                     if (data && data.type && data.type !== 'Results') {
-                        appendLogEntry('info', `WS Deepgram ${data.type}${data.reason ? `: ${data.reason}` : ''}${data.description ? `: ${data.description}` : ''}`);
+                        const dump = JSON.stringify(data);
+                        appendLogEntry('info', `WS Deepgram ${data.type}: ${dump.length > 600 ? `${dump.slice(0, 600)}…` : dump}`);
                         return;
                     }
                     const alt = data && data.channel && Array.isArray(data.channel.alternatives) ? data.channel.alternatives[0] : null;
