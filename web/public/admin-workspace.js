@@ -104,11 +104,31 @@
                 appendLogEntry('info', `WS → conectando ${shortUrl}${isDeepgram ? ' (Deepgram)' : ''}`);
                 let messageCount = 0;
                 let finalCount = 0;
+                let sentChunks = 0;
+                let sentBytes = 0;
+                try {
+                    const originalSend = ws.send.bind(ws);
+                    ws.send = (payload) => {
+                        try {
+                            if (payload && typeof payload !== 'string') {
+                                const size = payload.byteLength || payload.size || (payload.buffer && payload.buffer.byteLength) || 0;
+                                sentChunks += 1;
+                                sentBytes += size;
+                                if (sentChunks <= 3 || sentChunks % 20 === 0) {
+                                    appendLogEntry('info', `WS send audio #${sentChunks} (${size}B, total ${sentBytes}B) ${shortUrl}`);
+                                }
+                            } else if (typeof payload === 'string') {
+                                appendLogEntry('info', `WS send texto: ${payload.slice(0, 120)}`);
+                            }
+                        } catch (error) { /* ignore */ }
+                        return originalSend(payload);
+                    };
+                } catch (error) { /* ignore */ }
                 ws.addEventListener('open', () => appendLogEntry('info', `WS ✓ abierto ${shortUrl}`));
                 ws.addEventListener('error', () => appendLogEntry('error', `WS ✗ error ${shortUrl}`));
                 ws.addEventListener('close', (event) => {
                     appendLogEntry(event.code === 1000 ? 'info' : 'error',
-                        `WS ✗ cerrado code=${event.code} reason="${event.reason || ''}" msgs=${messageCount} finales=${finalCount} ${shortUrl}`);
+                        `WS ✗ cerrado code=${event.code} reason="${event.reason || ''}" enviados=${sentChunks}chunks/${sentBytes}B recibidos=${messageCount}msgs finales=${finalCount} ${shortUrl}`);
                 });
                 ws.addEventListener('message', (event) => {
                     messageCount += 1;
