@@ -1297,6 +1297,25 @@
         return '';
     }
 
+    async function waitForMiracleMicrophoneReady(stream) {
+        const track = stream && typeof stream.getAudioTracks === 'function' ? stream.getAudioTracks()[0] : null;
+        // A freshly opened mic track starts "muted" until the device produces audio.
+        if (track && track.muted) {
+            await new Promise((resolve) => {
+                const finish = () => {
+                    window.clearTimeout(timer);
+                    track.removeEventListener('unmute', finish);
+                    resolve();
+                };
+                const timer = window.setTimeout(finish, 1500);
+                track.addEventListener('unmute', finish, { once: true });
+            });
+        }
+        // Extra settle so MediaRecorder reads stable track settings and writes a valid
+        // WebM header; otherwise Deepgram cannot decode the first stream (duration:0 / NET-0000).
+        await new Promise((resolve) => window.setTimeout(resolve, 300));
+    }
+
     async function ensureMiracleMicrophone() {
         if (!navigator.mediaDevices?.getUserMedia) {
             throw new Error('Este navegador no expone acceso a microfono.');
@@ -1311,6 +1330,7 @@
                 noiseSuppression: true
             }
         });
+        await waitForMiracleMicrophoneReady(miracleNoteState.mediaStream);
         return miracleNoteState.mediaStream;
     }
 
@@ -1545,6 +1565,7 @@
             miracleNoteState.fillSummary = '';
             miracleNoteState.undoAvailable = false;
             miracleNoteState.dictationStartedAt = Date.now();
+            await ensureMiracleMicrophone();
             await openMiracleSocket();
             recordUsageEvent({
                 sourceRepo: 'miracle',

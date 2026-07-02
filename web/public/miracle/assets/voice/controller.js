@@ -115,6 +115,25 @@ export function createVoiceStreamingController({
     return "";
   }
 
+  async function waitForMicrophoneReady(stream) {
+    const track = stream && typeof stream.getAudioTracks === "function" ? stream.getAudioTracks()[0] : null;
+    // A freshly opened mic track starts "muted" until the device produces audio.
+    if (track && track.muted) {
+      await new Promise((resolve) => {
+        const finish = () => {
+          clearTimeout(timer);
+          track.removeEventListener("unmute", finish);
+          resolve();
+        };
+        const timer = setTimeout(finish, 1500);
+        track.addEventListener("unmute", finish, { once: true });
+      });
+    }
+    // Extra settle so MediaRecorder reads stable track settings and writes a valid
+    // WebM header; otherwise Deepgram cannot decode the first stream (duration:0 / NET-0000).
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  }
+
   async function ensureMicrophone() {
     if (!navigator.mediaDevices?.getUserMedia) {
       throw new Error("Este navegador no expone acceso a microfono.");
@@ -129,6 +148,7 @@ export function createVoiceStreamingController({
         noiseSuppression: true,
       },
     });
+    await waitForMicrophoneReady(state.mediaStream);
     return state.mediaStream;
   }
 
@@ -310,6 +330,7 @@ export function createVoiceStreamingController({
       state.finalSegmentCount = 0;
       state.pendingDraft = "";
       renderTranscript();
+      await ensureMicrophone();
       await openDeepgramSocket();
       await startMediaRecorder();
       state.isRecording = true;
