@@ -2,8 +2,29 @@ function resolveMiracleUrl(url) {
   return url;
 }
 
-export async function fetchJSON(url, options) {
-  const response = await fetch(resolveMiracleUrl(url), options);
+async function resolveAuthToken() {
+  const auth = typeof window !== "undefined" ? window.MiracleAuth : null;
+  if (auth && typeof auth.whenAuthenticated === "function") {
+    try {
+      await auth.whenAuthenticated();
+    } catch (error) {
+      // Ignore: fall through and send the request without a token.
+    }
+  }
+  return auth && typeof auth.getAccessToken === "function" ? auth.getAccessToken() || "" : "";
+}
+
+export async function fetchJSON(url, options = {}) {
+  const token = await resolveAuthToken();
+  const requestInit = {
+    ...options,
+    cache: "no-store",
+    headers: {
+      ...(options.headers || {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  };
+  const response = await fetch(resolveMiracleUrl(url), requestInit);
   const contentType = (response.headers.get("content-type") || "").toLowerCase();
   const rawBody = await response.text();
 
