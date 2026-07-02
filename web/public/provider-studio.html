@@ -48,14 +48,6 @@
         <section id="provider-studio-access" class="studio-access is-hidden" aria-live="polite"></section>
 
         <section id="provider-studio-grid" class="studio-content is-hidden">
-            <nav class="studio-tabs" role="tablist" aria-label="Secciones del dashboard">
-                <button class="studio-tab is-active" role="tab" type="button" data-tab="providers">Providers</button>
-                <button class="studio-tab" role="tab" type="button" data-tab="nota">Nota en blanco</button>
-                <button class="studio-tab" role="tab" type="button" data-tab="emr">EMR expandido</button>
-                <button class="studio-tab" role="tab" type="button" data-tab="grafo">Grafo</button>
-                <button class="studio-tab" role="tab" type="button" data-tab="usage">Usage</button>
-            </nav>
-            <section class="studio-panel is-active" role="tabpanel" data-panel="providers">
             <section class="studio-board">
                 <section class="studio-card">
                     <div class="studio-card-head">
@@ -174,26 +166,26 @@
                     <p id="graph-provider-message" class="form-message"></p>
                 </section>
             </section>
-            </section>
 
-            <section class="studio-panel" role="tabpanel" data-panel="nota" hidden>
-                <div class="studio-embed">
-                    <iframe class="studio-frame" title="Nota en blanco" data-src="/miracle" allow="microphone; camera" loading="lazy"></iframe>
+            <section class="studio-section studio-section-links">
+                <div class="studio-section-head">
+                    <div>
+                        <p class="studio-kicker">Validar</p>
+                        <h2>Superficies reales</h2>
+                    </div>
                 </div>
-            </section>
-            <section class="studio-panel" role="tabpanel" data-panel="emr" hidden>
-                <div class="studio-embed">
-                    <iframe class="studio-frame" title="EMR expandido" data-src="/emr-workspace.html" allow="microphone; camera" loading="lazy"></iframe>
-                </div>
-            </section>
-            <section class="studio-panel" role="tabpanel" data-panel="grafo" hidden>
-                <div class="studio-embed">
-                    <iframe class="studio-frame" title="Grafo de workflows" data-src="/visualize.html" loading="lazy"></iframe>
-                </div>
-            </section>
-            <section class="studio-panel" role="tabpanel" data-panel="usage" hidden>
-                <div class="studio-embed">
-                    <iframe class="studio-frame" title="Usage dashboard" data-src="/usage-dashboard.html" loading="lazy"></iframe>
+                <div class="studio-links">
+                    <a class="studio-link" href="/miracle">
+                        <svg class="studio-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM15 3v5h4M9 13h6M9 17h6M9 9h2"/></svg>
+                        <span>Nota en blanco</span>
+                        <svg class="studio-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
+                    </a>
+                    <a class="studio-link" href="/emr-workspace.html">
+                        <svg class="studio-link-icon studio-link-play" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 3 16 9L5 21Z"/></svg>
+                        <span>Probar</span>
+                        <svg class="studio-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
+                    </a>
+                    <a class="studio-link" href="/visualize.html">Abrir Workflow Graph</a>
                 </div>
             </section>
         </section>
@@ -203,35 +195,5 @@
     <script src="/auth-gate.js"></script>
     <script src="/admin-workspace.js"></script>
     <script src="/provider-studio.js?v=2"></script>
-    <script>
-      (function () {
-        const grid = document.getElementById('provider-studio-grid');
-        if (!grid) return;
-        const tabs = Array.from(grid.querySelectorAll('.studio-tab'));
-        const panels = Array.from(grid.querySelectorAll('.studio-panel'));
-        function activate(name) {
-          tabs.forEach((tab) => {
-            const on = tab.dataset.tab === name;
-            tab.classList.toggle('is-active', on);
-            tab.setAttribute('aria-selected', on ? 'true' : 'false');
-          });
-          panels.forEach((panel) => {
-            const on = panel.dataset.panel === name;
-            panel.classList.toggle('is-active', on);
-            panel.hidden = !on;
-            if (on) {
-              const frame = panel.querySelector('iframe[data-src]');
-              if (frame && !frame.getAttribute('src')) {
-                frame.setAttribute('src', frame.dataset.src);
-              }
-            }
-          });
-          try { window.history.replaceState(null, '', '#' + name); } catch (error) { /* ignore */ }
-        }
-        tabs.forEach((tab) => tab.addEventListener('click', () => activate(tab.dataset.tab)));
-        const initial = (window.location.hash || '').replace('#', '');
-        activate(tabs.some((tab) => tab.dataset.tab === initial) ? initial : 'providers');
-      })();
-    </script>
 </body>
 </html>
