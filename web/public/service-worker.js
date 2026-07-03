@@ -1,17 +1,15 @@
 // Miracle EMR service worker: makes the EMR shell installable and usable offline.
 // HTML is network-first (so code updates are picked up); same-origin static assets
 // are stale-while-revalidate (instant + offline, refreshed in the background).
-// API calls and cross-origin requests (Supabase, OpenAI, CDN) are never cached.
-const CACHE = 'miracle-shell-v13';
+// API calls and cross-origin requests (OpenAI, CDN) are never cached.
+const CACHE = 'miracle-shell-v14';
 const SHELL = [
     '/emr-workspace.html',
     '/manifest.webmanifest',
     '/page-state.js',
-    '/supabase-client.js',
     '/auth-gate.js',
     '/demo-auth.js',
     '/admin-workspace.js',
-    '/note-sync.js',
     '/clinical-review.js',
     '/recorder.js',
     '/assistant-runtime.js',
@@ -51,7 +49,7 @@ self.addEventListener('fetch', (event) => {
     if (req.method !== 'GET') return;
 
     const url = new URL(req.url);
-    if (url.origin !== self.location.origin) return; // leave Supabase/OpenAI/CDN alone
+    if (url.origin !== self.location.origin) return; // leave OpenAI/CDN alone
     if (url.pathname.startsWith('/api/')) return;     // never cache API responses
 
     if (req.mode === 'navigate' || req.destination === 'document') {

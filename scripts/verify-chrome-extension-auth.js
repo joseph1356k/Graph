@@ -38,15 +38,11 @@ function sendMessage(listener, message) {
 
 async function verifyBackground() {
   let listener = null;
-  let networkCalls = 0;
+  const fetchCalls = [];
   const chrome = {
     storage: {
       sync: createStorageArea({ backendUrl: 'https://miracle-zeta.vercel.app' }),
       local: createStorageArea()
-    },
-    identity: {
-      getRedirectURL: () => 'https://extension-id.chromiumapp.org/supabase',
-      launchWebAuthFlow() {}
     },
     runtime: {
       lastError: null,
@@ -63,9 +59,29 @@ async function verifyBackground() {
     URLSearchParams,
     Headers,
     Response,
-    fetch: async () => {
-      networkCalls += 1;
-      throw new Error('unexpected network call');
+    fetch: async (url, init = {}) => {
+      fetchCalls.push({ url: `${url}`, init });
+      if (`${url}`.endsWith('/api/auth/local-admin/login')) {
+        const body = JSON.parse(init.body || '{}');
+        if (body.username === 'admin' && body.password === 'secret') {
+          return new Response(JSON.stringify({
+            accessToken: 'miracle-local-admin-v1.token.sig',
+            expiresAt: Date.now() + 3_600_000,
+            user: { id: 'local-admin:admin', email: 'admin' }
+          }), { status: 200, headers: { 'content-type': 'application/json' } });
+        }
+        return new Response(JSON.stringify({ error: 'Credenciales invalidas.' }), {
+          status: 401,
+          headers: { 'content-type': 'application/json' }
+        });
+      }
+      if (`${url}`.startsWith('https://miracle-zeta.vercel.app/api/')) {
+        return new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        });
+      }
+      throw new Error(`unexpected fetch: ${url}`);
     },
     console,
     setTimeout,
@@ -75,19 +91,16 @@ async function verifyBackground() {
   vm.runInContext(fs.readFileSync(path.join(extensionRoot, 'background.js'), 'utf8'), context);
   assert.ok(listener, 'background message listener should be registered');
 
-  const parsed = context.GraphTrainerBackgroundInternals.parseSessionFromUrl(
-    'https://extension-id.chromiumapp.org/supabase#access_token=access&refresh_token=refresh&expires_in=3600'
-  );
-  assert.strictEqual(parsed.accessToken, 'access');
-  assert.strictEqual(parsed.refreshToken, 'refresh');
+  const unauthenticatedStatus = await sendMessage(listener, { type: 'graph:auth-status' });
+  assert.strictEqual(unauthenticatedStatus.authenticated, false);
 
-  const unauthenticated = await sendMessage(listener, {
+  // Requests proceed even without a session — the backend decides whether the
+  // route requires a real account or tolerates an anonymous/local-dev caller.
+  const unauthenticatedFetch = await sendMessage(listener, {
     type: 'graph:api-fetch',
     request: { url: 'https://miracle-zeta.vercel.app/api/agent/chat', method: 'POST' }
   });
-  assert.strictEqual(unauthenticated.status, 401);
-  assert.match(unauthenticated.body, /Inicia sesion con Google/);
-  assert.strictEqual(networkCalls, 0);
+  assert.strictEqual(unauthenticatedFetch.status, 200);
 
   const blocked = await sendMessage(listener, {
     type: 'graph:api-fetch',
@@ -95,7 +108,25 @@ async function verifyBackground() {
   });
   assert.strictEqual(blocked.status, 403);
   assert.match(blocked.body, /bloqueo una solicitud/);
-  assert.strictEqual(networkCalls, 0);
+
+  const badLogin = await sendMessage(listener, { type: 'graph:auth-login', username: 'admin', password: 'wrong' })
+    .catch((error) => error);
+  assert.ok(badLogin instanceof Error, 'wrong credentials should reject');
+
+  const loggedIn = await sendMessage(listener, { type: 'graph:auth-login', username: 'admin', password: 'secret' });
+  assert.strictEqual(loggedIn.authenticated, true);
+  assert.strictEqual(loggedIn.user.email, 'admin');
+
+  const authenticatedFetch = await sendMessage(listener, {
+    type: 'graph:api-fetch',
+    request: { url: 'https://miracle-zeta.vercel.app/api/workflows', method: 'GET' }
+  });
+  assert.strictEqual(authenticatedFetch.status, 200);
+  const lastCall = fetchCalls.at(-1);
+  assert.strictEqual(lastCall.init.headers.get('authorization'), 'Bearer miracle-local-admin-v1.token.sig');
+
+  const loggedOut = await sendMessage(listener, { type: 'graph:auth-logout' });
+  assert.strictEqual(loggedOut.authenticated, false);
 }
 
 async function verifyExtensionHost() {
@@ -154,16 +185,12 @@ async function verifyMiracleMedicalProxyDemoAccess() {
   const previousEnv = {
     VERCEL: process.env.VERCEL,
     NODE_ENV: process.env.NODE_ENV,
-    SUPABASE_URL: process.env.SUPABASE_URL,
-    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
     MIRACLE_MEDICAL_ENGINE_URL: process.env.MIRACLE_MEDICAL_ENGINE_URL
   };
   const previousFetch = global.fetch;
 
   process.env.VERCEL = '1';
   process.env.NODE_ENV = 'production';
-  process.env.SUPABASE_URL = 'https://example.supabase.co';
-  process.env.SUPABASE_ANON_KEY = 'anon';
   process.env.MIRACLE_MEDICAL_ENGINE_URL = 'https://miracle-engine.test';
 
   global.fetch = async (url, init = {}) => {
@@ -217,7 +244,7 @@ async function verifyMiracleMedicalProxyDemoAccess() {
 
 async function main() {
   const manifest = JSON.parse(fs.readFileSync(path.join(extensionRoot, 'manifest.json'), 'utf8'));
-  assert.ok(manifest.permissions.includes('identity'));
+  assert.ok(!manifest.permissions.includes('identity'), 'the extension no longer needs the identity permission');
   assert.strictEqual(manifest.background.service_worker, 'background.js');
   const scripts = manifest.content_scripts[0].js;
   assert.strictEqual(scripts.at(-1), 'content.js');
@@ -225,10 +252,8 @@ async function main() {
 
   const popup = fs.readFileSync(path.join(extensionRoot, 'popup.html'), 'utf8');
   assert.match(popup, /id="authLogin"/);
-  assert.match(popup, /Continuar con Google/);
-
-  const callback = fs.readFileSync(path.join(root, 'web', 'public', 'extension-auth.html'), 'utf8');
-  assert.match(callback, /chromiumapp\.org/);
+  assert.match(popup, /id="authUsername"/);
+  assert.match(popup, /id="authPassword"/);
 
   await verifyBackground();
   await verifyExtensionHost();

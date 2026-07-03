@@ -10,17 +10,12 @@
         // path are tagged with this origin (e.g. the AI note fill) instead of 'human'.
         let programmaticMeta = null;
 
-        function getSyncHook() {
-            return (typeof window !== 'undefined' && window.MiracleNoteSync) || null;
-        }
-
         function notifyFieldChange(id, value, meta) {
             const info = meta || { source: 'human' };
             try {
                 if (typeof config.onFieldChange === 'function') {
                     config.onFieldChange(id, value, info);
                 }
-                getSyncHook()?.onLocalFieldChange?.(id, value, info);
                 if (typeof document !== 'undefined' && typeof CustomEvent === 'function') {
                     document.dispatchEvent(new CustomEvent('miracle-field-change', {
                         detail: {
@@ -133,7 +128,6 @@
                 if (typeof config.onReady === 'function') {
                     config.onReady(api);
                 }
-                getSyncHook()?.attach?.(api);
             } catch (error) {
                 console.warn('[Page State] Ready hook failed:', error);
             }
@@ -161,38 +155,6 @@
             },
             getState() {
                 return readState();
-            },
-            // Apply a single field value coming from another device. Persists locally
-            // and updates the DOM, but does not re-broadcast (guarded by applyingRemote).
-            applyRemoteField(id, value) {
-                const element = document.getElementById(id);
-                if (!element || !isPersistableField(element)) {
-                    return false;
-                }
-                // Never yank a field the user is actively editing on this device.
-                if (document.activeElement === element) {
-                    return false;
-                }
-                applyingRemote = true;
-                try {
-                    if (element.type === 'checkbox' || element.type === 'radio') {
-                        element.checked = Boolean(value);
-                    } else {
-                        element.value = value ?? '';
-                    }
-                    element.dispatchEvent(new Event('input', { bubbles: true }));
-                    element.dispatchEvent(new Event('change', { bubbles: true }));
-                } finally {
-                    applyingRemote = false;
-                }
-                return true;
-            },
-            // Apply a full { fieldId: value } map (e.g. initial load from the server).
-            applyRemoteState(state) {
-                if (!state || typeof state !== 'object') {
-                    return;
-                }
-                Object.keys(state).forEach((id) => api.applyRemoteField(id, state[id]));
             },
             // Apply a value written by an automated source (e.g. the AI note fill).
             // Tags the change with its origin/evidence for the audit trail and the

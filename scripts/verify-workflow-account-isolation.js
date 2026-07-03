@@ -6,7 +6,7 @@ const {
   requireAuth,
   requireAccountAuth,
   attachWorkflowAccess,
-  isSupabasePayloadAnonymous,
+  isAnonymousPayload,
   createLocalAnonymousSession
 } = require('../web/api/requireAuth');
 
@@ -189,16 +189,14 @@ async function verifyLearningSessionIsolation() {
 }
 
 async function verifyAuthMiddleware() {
-  assert.strictEqual(isSupabasePayloadAnonymous({ is_anonymous: true }), true);
-  assert.strictEqual(isSupabasePayloadAnonymous({ app_metadata: { provider: 'anonymous' } }), true);
-  assert.strictEqual(isSupabasePayloadAnonymous({ app_metadata: { providers: ['google'] } }), false);
+  assert.strictEqual(isAnonymousPayload({ is_anonymous: true }), true);
+  assert.strictEqual(isAnonymousPayload({ is_anonymous: false }), false);
+  assert.strictEqual(isAnonymousPayload({}), false);
 
-  const previousSupabaseUrl = process.env.SUPABASE_URL;
   const previousLocalAdmin = process.env.ALLOW_LOCAL_GLOBAL_WORKFLOW_ADMIN;
   const previousLocalAnonymous = process.env.ALLOW_LOCAL_ANONYMOUS;
   const previousNodeEnv = process.env.NODE_ENV;
   const previousAdminEmails = process.env.GLOBAL_WORKFLOW_ADMIN_EMAILS;
-  delete process.env.SUPABASE_URL;
   delete process.env.ALLOW_LOCAL_GLOBAL_WORKFLOW_ADMIN;
   delete process.env.GLOBAL_WORKFLOW_ADMIN_EMAILS;
   const localReq = { headers: {}, get() { return ''; }, url: '/api/workflows' };
@@ -220,7 +218,7 @@ async function verifyAuthMiddleware() {
 
   process.env.GLOBAL_WORKFLOW_ADMIN_EMAILS = 'Felipemaldonado2255@gmail.com,isaabel.garcia10@gmail.com,josedavid135642@gmail.com';
   const emailAdminReq = {
-    user: { id: 'supabase-admin', email: 'FELIPEMALDONADO2255@GMAIL.COM' },
+    user: { id: 'external-admin', email: 'FELIPEMALDONADO2255@GMAIL.COM' },
     headers: {},
     get() { return ''; },
     url: '/api/workflows'
@@ -237,7 +235,7 @@ async function verifyAuthMiddleware() {
   await invokeMiddleware(attachWorkflowAccess, normalReq);
   assert.strictEqual(normalReq.workflowAccess.canManageGlobalWorkflows, false);
 
-  process.env.SUPABASE_URL = 'https://example.supabase.co';
+  process.env.NODE_ENV = 'production';
   const missingTokenReq = { headers: {}, get() { return ''; }, url: '/api/workflows' };
   const missingTokenResult = await invokeMiddleware(requireAccountAuth, missingTokenReq);
   assert.strictEqual(missingTokenResult.statusCode, 401);
@@ -262,13 +260,8 @@ async function verifyAuthMiddleware() {
   };
   const accountAnonymousResult = await invokeMiddleware(requireAccountAuth, accountAnonymousReq);
   assert.strictEqual(accountAnonymousResult.statusCode, 401);
-  assert.match(accountAnonymousResult.payload.error, /Google/);
+  assert.match(accountAnonymousResult.payload.error, /administrador/);
 
-  if (previousSupabaseUrl === undefined) {
-    delete process.env.SUPABASE_URL;
-  } else {
-    process.env.SUPABASE_URL = previousSupabaseUrl;
-  }
   if (previousLocalAdmin === undefined) {
     delete process.env.ALLOW_LOCAL_GLOBAL_WORKFLOW_ADMIN;
   } else {

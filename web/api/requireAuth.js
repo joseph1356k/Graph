@@ -1,10 +1,7 @@
-// Verifies Supabase access tokens (JWT) locally against the project's JWKS.
-// The project signs tokens with an asymmetric key (ES256), so we can verify
-// offline with `jose` — no per-request call to Supabase and no service key.
+// Local-only auth: signed session tokens for the admin login and the
+// opt-in anonymous guest mode, plus permanent API keys for client apps.
 const crypto = require('crypto');
 
-let jwks = null;
-let joseModulePromise = null;
 const LOCAL_ANONYMOUS_TOKEN_PREFIX = 'miracle-local-v1';
 const LOCAL_ADMIN_TOKEN_PREFIX = 'miracle-local-admin-v1';
 const LOCAL_ANONYMOUS_TOKEN_TTL_SECONDS = 12 * 60 * 60;
@@ -23,21 +20,6 @@ const localAdminSecret = crypto
   .digest();
 const LOCAL_ADMIN_USERS = parseEnvList('LOCAL_ADMIN_USERS');
 const LOCAL_ADMIN_PASSWORD = `${process.env.LOCAL_ADMIN_PASSWORD || ''}`;
-
-function supabaseBaseUrl() {
-  return `${process.env.SUPABASE_URL || ''}`.replace(/\/+$/, '');
-}
-
-function getJoseModule() {
-  if (!joseModulePromise) {
-    joseModulePromise = import('jose');
-  }
-  return joseModulePromise;
-}
-
-function isSupabaseAuthConfigured() {
-  return Boolean(supabaseBaseUrl());
-}
 
 function isProductionRuntime() {
   return Boolean(process.env.VERCEL)
@@ -86,9 +68,10 @@ function isAuthBypassEnabled(req = null) {
   return isTruthyEnv('TEMPORARY_DISABLE_AUTH');
 }
 
+// Opt-in guest mode for public demo pages (no login). Works in production
+// too, but only when the operator explicitly enables it.
 function isLocalAnonymousAccessEnabled() {
-  return isTruthyEnv('ALLOW_LOCAL_ANONYMOUS')
-    && `${process.env.NODE_ENV || ''}`.trim().toLowerCase() !== 'production';
+  return isTruthyEnv('ALLOW_LOCAL_ANONYMOUS');
 }
 
 function signLocalAnonymousBody(encodedBody) {
@@ -251,19 +234,6 @@ function verifyLocalAdminToken(token) {
   return payload;
 }
 
-async function getJwks() {
-  if (jwks) return jwks;
-  const base = supabaseBaseUrl();
-  if (!base) return null;
-  const { createRemoteJWKSet } = await getJoseModule();
-  jwks = createRemoteJWKSet(new URL(`${base}/auth/v1/.well-known/jwks.json`));
-  return jwks;
-}
-
-function getIssuer() {
-  return `${supabaseBaseUrl()}/auth/v1`;
-}
-
 function extractToken(req) {
   const header = (req.get ? req.get('authorization') : req.headers?.authorization) || '';
   const match = /^Bearer\s+(.+)$/i.exec(`${header}`.trim());
@@ -281,16 +251,8 @@ function extractToken(req) {
   }
 }
 
-function isSupabasePayloadAnonymous(payload = {}) {
-  if (payload.is_anonymous === true) {
-    return true;
-  }
-  const provider = `${payload.app_metadata?.provider || payload.user_metadata?.provider || ''}`.trim().toLowerCase();
-  if (provider === 'anonymous') {
-    return true;
-  }
-  const providers = payload.app_metadata?.providers;
-  return Array.isArray(providers) && providers.map((value) => `${value || ''}`.trim().toLowerCase()).includes('anonymous');
+function isAnonymousPayload(payload = {}) {
+  return payload.is_anonymous === true;
 }
 
 function setRequestUser(req, payload, token) {
@@ -300,31 +262,12 @@ function setRequestUser(req, payload, token) {
     username: payload.username || '',
     role: payload.role || '',
     token,
-    isAnonymous: isSupabasePayloadAnonymous(payload)
+    isAnonymous: isAnonymousPayload(payload)
   };
 }
 
-// Verifies a raw token string. Returns the JWT payload (sub = user id, email, role...).
-async function verifySupabaseToken(token) {
-  if (!token) {
-    throw new Error('missing token');
-  }
-  const [keySet, { jwtVerify }] = await Promise.all([
-    getJwks(),
-    getJoseModule()
-  ]);
-  if (!keySet) {
-    const error = new Error('auth not configured (missing SUPABASE_URL)');
-    error.code = 'AUTH_NOT_CONFIGURED';
-    throw error;
-  }
-  const { payload } = await jwtVerify(token, keySet, {
-    issuer: getIssuer(),
-    audience: 'authenticated'
-  });
-  return payload;
-}
-
+// Verifies a raw token string. Only the local token formats are supported —
+// admin session or opt-in anonymous guest. Anything else is rejected.
 async function verifyAccessToken(token) {
   if (`${token || ''}`.startsWith(`${LOCAL_ANONYMOUS_TOKEN_PREFIX}.`)) {
     return verifyLocalAnonymousToken(token);
@@ -332,48 +275,46 @@ async function verifyAccessToken(token) {
   if (`${token || ''}`.startsWith(`${LOCAL_ADMIN_TOKEN_PREFIX}.`)) {
     return verifyLocalAdminToken(token);
   }
-  return verifySupabaseToken(token);
+  throw new Error('unsupported token');
 }
 
-function requireSupabaseAuth(req, res, next, options = {}) {
+function authenticateRequest(req, res, next, options = {}) {
   if (isAuthBypassEnabled(req)) {
     req.user = { id: 'local-dev-user', email: '', role: 'local-dev', token: '', isAnonymous: false };
     return next();
   }
 
-  if (!isSupabaseAuthConfigured()) {
+  const token = extractToken(req);
+  if (!token) {
     if (isProductionRuntime()) {
-      return res.status(503).json({ error: 'Autenticacion no configurada en el servidor.' });
+      return res.status(401).json({ error: 'No autorizado.' });
     }
     req.user = { id: 'local-dev-user', email: '', role: 'local-dev', token: '', isAnonymous: false };
     return next();
   }
 
-  const token = extractToken(req);
   verifyAccessToken(token)
     .then((payload) => {
-      if (!options.allowAnonymous && isSupabasePayloadAnonymous(payload)) {
-        return res.status(401).json({ error: 'Se requiere iniciar sesion con Google.' });
+      if (!options.allowAnonymous && isAnonymousPayload(payload)) {
+        return res.status(401).json({ error: 'Se requiere una cuenta de administrador.' });
       }
       setRequestUser(req, payload, token);
       next();
     })
-    .catch((error) => {
-      if (error.code === 'AUTH_NOT_CONFIGURED') {
-        return res.status(503).json({ error: 'Autenticación no configurada en el servidor.' });
-      }
+    .catch(() => {
       res.status(401).json({ error: 'No autorizado.' });
     });
 }
 
-// Express middleware: requires a valid Supabase session when auth is configured.
-// If Supabase is absent, degrade to a local anonymous user so the app remains usable.
+// Express middleware: accepts the local admin session or the opt-in local
+// anonymous guest session. With no token, degrades to a local-dev user
+// outside production so the app stays usable without any login setup.
 function requireAuth(req, res, next) {
-  return requireSupabaseAuth(req, res, next, { allowAnonymous: true });
+  return authenticateRequest(req, res, next, { allowAnonymous: true });
 }
 
 function requireAccountAuth(req, res, next) {
-  return requireSupabaseAuth(req, res, next, { allowAnonymous: false });
+  return authenticateRequest(req, res, next, { allowAnonymous: false });
 }
 
 function attachWorkflowAccess(req, res, next) {
@@ -384,7 +325,7 @@ function attachWorkflowAccess(req, res, next) {
   const adminIds = new Set(parseEnvList('GLOBAL_WORKFLOW_ADMIN_IDS'));
   const adminEmails = new Set(parseEnvList('GLOBAL_WORKFLOW_ADMIN_EMAILS').map(normalizeEmail));
   const isLocalDevUser = ownerId === 'local-dev-user'
-    && (!isSupabaseAuthConfigured() || isAuthBypassEnabled(req));
+    && (!isProductionRuntime() || isAuthBypassEnabled(req));
   const isLocalAdminUser = `${req.user?.role || ''}`.trim() === 'local-admin';
   const canManageGlobalWorkflows = adminIds.has(ownerId)
     || adminEmails.has(normalizeEmail(req.user?.email || ''))
@@ -458,16 +399,14 @@ module.exports = {
   requireAccountAuth,
   requireApiKey,
   attachWorkflowAccess,
-  verifySupabaseToken,
   verifyAccessToken,
   createLocalAdminSession,
   verifyLocalAdminToken,
   createLocalAnonymousSession,
   verifyLocalAnonymousToken,
   extractToken,
-  isSupabaseAuthConfigured,
   isProductionRuntime,
-  isSupabasePayloadAnonymous,
+  isAnonymousPayload,
   isLocalAnonymousAccessEnabled,
   isAuthBypassEnabled,
   parseEnvList,

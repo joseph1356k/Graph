@@ -26,7 +26,8 @@
       margin: 10px 0 6px;
       font-weight: 600;
     }
-    input[type="text"] {
+    input[type="text"],
+    input[type="password"] {
       width: 100%;
       box-sizing: border-box;
       padding: 10px 12px;
@@ -361,7 +362,13 @@
 
     <section class="auth-panel" aria-label="Cuenta de Miracle">
       <p id="authStatus">Comprobando sesion...</p>
-      <button id="authLogin" type="button">Continuar con Google</button>
+      <div id="authLoginForm">
+        <label for="authUsername">Usuario</label>
+        <input id="authUsername" type="text" autocomplete="off" placeholder="Tu usuario autorizado">
+        <label for="authPassword">Clave</label>
+        <input id="authPassword" type="password" autocomplete="off" placeholder="Tu clave">
+        <button id="authLogin" type="button">Entrar</button>
+      </div>
       <button id="authLogout" type="button" class="danger-button">Cerrar sesion</button>
     </section>
 

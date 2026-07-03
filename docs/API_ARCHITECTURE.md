@@ -32,7 +32,7 @@ Cliente (extensión / Windows / web)
 |---|---|---|
 | Central de exposición | `web/api/registerPublicApiRoutes.js` | Define `/api/v1`, `/api/v1/pipeline`, `/api/v1/transcription/session`. |
 | Composition root | `web/server.js` | Importa y registra la central; aplica auth + rate limit. |
-| Auth | `web/api/requireAuth.js` | `requireAccountAuth` valida el token (local-admin o Supabase). |
+| Auth | `web/api/requireAuth.js` | `requireAccountAuth` valida el token (sesion local-admin o guest local). |
 | Motor de nota (backend real) | `bounded/miracle-ai/` (Python) | `voice_orchestration` + `integrations/product_llm` organizan la nota. |
 | Autofill | `src/application/use-cases/NoteFieldMatcher.js` | Mapea la nota a los campos del cliente vía LLM. |
 | Proxy al runtime Python | `web/server.js` → `callMiracleRuntime()` | Reenvía al runtime Python con el token interno. |

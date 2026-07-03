@@ -4,7 +4,6 @@
   "description": "Asistente flotante de Miracle para dictado, voz y workflows sobre tus paginas.",
   "version": "0.2.0",
   "permissions": [
-    "identity",
     "storage",
     "tabs"
   ],

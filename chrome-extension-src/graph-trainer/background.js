@@ -22,91 +22,25 @@ async function getSettings() {
   };
 }
 
-async function getPublicConfig(backendUrl) {
-  const response = await fetch(`${backendUrl}/api/public-config`, { cache: 'no-store' });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok || !payload.supabaseUrl || !payload.supabaseAnonKey) {
-    throw new Error(payload.error || 'Supabase no esta configurado en el backend de Miracle.');
-  }
-  return payload;
-}
-
-function parseSessionFromUrl(finalUrl) {
-  const url = new URL(finalUrl);
-  const hash = new URLSearchParams(url.hash.replace(/^#/, ''));
-  const query = url.searchParams;
-  const read = (name) => hash.get(name) || query.get(name) || '';
-  const error = read('error_description') || read('error');
-  if (error) {
-    throw new Error(error);
-  }
-  const accessToken = read('access_token');
-  const refreshToken = read('refresh_token');
-  const expiresIn = Number(read('expires_in') || 3600);
-  if (!accessToken || !refreshToken) {
-    throw new Error('Google no devolvio una sesion valida para la extension.');
-  }
-  return {
-    accessToken,
-    refreshToken,
-    expiresAt: Date.now() + Math.max(60, expiresIn) * 1000
-  };
-}
-
-function launchWebAuthFlow(details) {
-  return new Promise((resolve, reject) => {
-    chrome.identity.launchWebAuthFlow(details, (redirectUrl) => {
-      const runtimeError = chrome.runtime.lastError;
-      if (runtimeError) {
-        reject(new Error(runtimeError.message || 'No fue posible abrir Google.'));
-        return;
-      }
-      if (!redirectUrl) {
-        reject(new Error('Google no devolvio una URL de autenticacion.'));
-        return;
-      }
-      resolve(redirectUrl);
-    });
-  });
-}
-
-async function fetchSupabaseUser(config, accessToken) {
-  const response = await fetch(`${config.supabaseUrl}/auth/v1/user`, {
-    headers: {
-      apikey: config.supabaseAnonKey,
-      Authorization: `Bearer ${accessToken}`
-    }
-  });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok || !payload.id) {
-    throw new Error(payload.message || payload.error_description || 'No fue posible validar la cuenta de Google.');
-  }
-  return payload;
-}
-
-async function signInWithGoogle() {
+async function signInWithLocalAdmin(username, password) {
   const { backendUrl } = await getSettings();
-  const config = await getPublicConfig(backendUrl);
-  const extensionRedirectUrl = chrome.identity.getRedirectURL('supabase');
-  const webCallbackUrl = new URL('/extension-auth.html', backendUrl);
-  webCallbackUrl.searchParams.set('redirect_uri', extensionRedirectUrl);
-
-  const authorizeUrl = new URL('/auth/v1/authorize', config.supabaseUrl);
-  authorizeUrl.searchParams.set('provider', 'google');
-  authorizeUrl.searchParams.set('redirect_to', webCallbackUrl.toString());
-
-  const finalUrl = await launchWebAuthFlow({ url: authorizeUrl.toString(), interactive: true });
-  const session = parseSessionFromUrl(finalUrl);
-  const user = await fetchSupabaseUser(config, session.accessToken);
+  const response = await fetch(`${backendUrl}/api/auth/local-admin/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: username || '', password: password || '' })
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error || 'No fue posible iniciar sesion.');
+  }
   const stored = {
-    ...session,
+    accessToken: payload.accessToken || '',
+    expiresAt: Number(payload.expiresAt || 0),
     user: {
-      id: user.id,
-      email: user.email || '',
-      isAnonymous: Boolean(user.is_anonymous)
-    },
-    supabaseUrl: config.supabaseUrl,
-    supabaseAnonKey: config.supabaseAnonKey
+      id: payload.user?.id || '',
+      email: payload.user?.email || payload.user?.username || '',
+      isAnonymous: false
+    }
   };
   await storageSet(chrome.storage.local, { [AUTH_SESSION_KEY]: stored });
   return stored;
@@ -117,56 +51,15 @@ async function readStoredSession() {
   return result[AUTH_SESSION_KEY] || null;
 }
 
-async function refreshSession(session) {
-  if (!session?.refreshToken || !session?.supabaseUrl || !session?.supabaseAnonKey) {
-    return null;
-  }
-  const response = await fetch(`${session.supabaseUrl}/auth/v1/token?grant_type=refresh_token`, {
-    method: 'POST',
-    headers: {
-      apikey: session.supabaseAnonKey,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ refresh_token: session.refreshToken })
-  });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok || !payload.access_token) {
-    await storageRemove(chrome.storage.local, AUTH_SESSION_KEY);
-    return null;
-  }
-  const next = {
-    ...session,
-    accessToken: payload.access_token,
-    refreshToken: payload.refresh_token || session.refreshToken,
-    expiresAt: Date.now() + Math.max(60, Number(payload.expires_in || 3600)) * 1000,
-    user: {
-      id: payload.user?.id || session.user?.id || '',
-      email: payload.user?.email || session.user?.email || '',
-      isAnonymous: Boolean(payload.user?.is_anonymous)
-    }
-  };
-  await storageSet(chrome.storage.local, { [AUTH_SESSION_KEY]: next });
-  return next;
-}
-
 async function getValidSession() {
   const session = await readStoredSession();
-  if (!session) return null;
+  if (!session?.accessToken) return null;
   if (Number(session.expiresAt || 0) > Date.now() + 60_000) return session;
-  return refreshSession(session);
+  await storageRemove(chrome.storage.local, AUTH_SESSION_KEY);
+  return null;
 }
 
 async function signOut() {
-  const session = await readStoredSession();
-  if (session?.accessToken && session?.supabaseUrl && session?.supabaseAnonKey) {
-    await fetch(`${session.supabaseUrl}/auth/v1/logout`, {
-      method: 'POST',
-      headers: {
-        apikey: session.supabaseAnonKey,
-        Authorization: `Bearer ${session.accessToken}`
-      }
-    }).catch(() => {});
-  }
   await storageRemove(chrome.storage.local, AUTH_SESSION_KEY);
 }
 
@@ -213,14 +106,10 @@ async function proxyApiFetch(request = {}) {
   }
 
   const session = await getValidSession();
-  if (!session?.accessToken) {
-    return responsePayload(401, JSON.stringify({ error: 'Inicia sesion con Google desde el popup de Miracle.' }), {
-      'content-type': 'application/json'
-    });
-  }
-
   const headers = new Headers(request.headers || {});
-  headers.set('Authorization', `Bearer ${session.accessToken}`);
+  if (session?.accessToken) {
+    headers.set('Authorization', `Bearer ${session.accessToken}`);
+  }
 
   try {
     const response = await fetch(target.toString(), {
@@ -248,7 +137,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       case 'graph:auth-status':
         return publicSession(await getValidSession());
       case 'graph:auth-login':
-        return publicSession(await signInWithGoogle());
+        return publicSession(await signInWithLocalAdmin(message.username, message.password));
       case 'graph:auth-logout':
         await signOut();
         return publicSession(null);
@@ -266,7 +155,6 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 
 globalThis.GraphTrainerBackgroundInternals = {
-  parseSessionFromUrl,
   publicSession,
   responsePayload
 };

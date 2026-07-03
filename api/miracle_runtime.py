@@ -72,11 +72,7 @@ def _rewrite_scope(scope: dict[str, object]) -> dict[str, object]:
 
 
 def _expected_internal_token() -> str:
-    return (
-        os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-        or os.getenv("SUPABASE_SECRET_KEY")
-        or ""
-    ).strip()
+    return (os.getenv("GRAPH_INTERNAL_TOKEN") or "").strip()
 
 
 def _is_authorized_internal_request(scope: dict[str, object]) -> bool:
