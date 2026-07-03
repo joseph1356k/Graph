@@ -97,19 +97,33 @@ construyen.
 
 ## 5. Autenticación
 
-`requireAccountAuth` (en `requireAuth.js`) acepta dos tipos de token:
+`/api/v1` usa `requireApiKeyOrAccount` (en `requireAuth.js`), que acepta:
 
-1. **Local-admin** — emitido por `POST /api/auth/local-admin/login`
-   (usuario + clave). Es el que usa el dashboard hoy. Token de 12 h.
-2. **Supabase JWT** — si el proyecto tiene `SUPABASE_URL` configurado, valida
-   el token contra el JWKS del proyecto (login con Google).
+1. **API key permanente** — cadena secreta en la env var `MIRACLE_API_KEYS`
+   (`label:key,label2:key2`), enviada por el cliente como `X-API-Key` o
+   `Authorization: Bearer`. Es lo recomendado para apps externas. No expira.
+2. **Token de sesión** (fallback) — el mismo que usa el dashboard:
+   - **Local-admin** — `POST /api/auth/local-admin/login` (usuario + clave), 12 h.
+   - **Supabase JWT** — si hay `SUPABASE_URL`, verificado contra el JWKS.
 
-`verifyAccessToken()` decide por el prefijo del token cuál verificar. Los
-tokens anónimos quedan rechazados en `/api/v1` (requiere cuenta real).
+`verifyApiKey()` compara en tiempo constante contra las claves de la env; si no
+matchea, cae a `requireAccountAuth` (que verifica el token de sesión). Los
+tokens anónimos quedan rechazados.
 
-> ⚠️ **Deuda técnica de seguridad:** hoy las credenciales local-admin están
-> **hardcodeadas** en `requireAuth.js`. Deben moverse a variables de entorno y,
-> para apps externas, conviene un esquema de **API keys** por cliente (ver §7).
+### Secretos por env (no en el código)
+
+Para no exponer credenciales en el repo (público), estos valores se leen de
+variables de entorno (con fallback temporal para no romper producción):
+
+| Env var | Para qué |
+|---|---|
+| `MIRACLE_API_KEYS` | API keys permanentes de los clientes. |
+| `LOCAL_ADMIN_PASSWORD` | Clave del login de dashboard. |
+| `LOCAL_ADMIN_USERS` | Usuarios admin permitidos (coma-separados). |
+| `LOCAL_ADMIN_SECRET` | Secreto HMAC que firma los tokens de sesión admin. |
+
+> Una vez configuradas en Vercel, las credenciales viejas del código dejan de
+> autenticar. Conviene eliminar los fallbacks hardcodeados en un commit posterior.
 
 ---
 

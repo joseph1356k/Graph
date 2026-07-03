@@ -21,14 +21,23 @@ https://miracle-zeta.vercel.app
 
 ## 2. Autenticación: cómo obtener tu token
 
-**Todas** las llamadas a `/api/v1/*` necesitan una cabecera:
+**Todas** las llamadas a `/api/v1/*` necesitan autenticación. Para apps/scripts
+lo recomendado es una **API key permanente**; también se acepta un token de
+sesión temporal.
+
+### Opción 0 — API key permanente (recomendada para apps) ✅
+
+El dueño del backend te entrega una **API key** (una cadena secreta) por un
+canal privado. **No expira** y va en la cabecera `X-API-Key`:
 
 ```
-Authorization: Bearer <TU_TOKEN>
+X-API-Key: <TU_API_KEY>
 ```
 
-Tienes **dos formas** de conseguir ese token. Ambas entregan el mismo tipo de
-token y dura **12 horas** (luego hay que pedir otro).
+(También funciona como `Authorization: Bearer <TU_API_KEY>`.)
+
+Esa es toda la autenticación que necesitas para una app. Las opciones A y B de
+abajo (token de sesión de 12 h) son solo si prefieres usar una cuenta humana.
 
 ### Opción A — Programática (recomendada para apps/scripts)
 

@@ -15,15 +15,18 @@ const localAnonymousSecret = crypto
   .digest();
 const localAdminSecret = crypto
   .createHash('sha256')
-  .update('miracle-local-admin-session-v1::Miracle.AI::FelipeMaldonado::Isaabelsofia::Jamesbondagent007-max::JoseDavid')
+  .update(process.env.LOCAL_ADMIN_SECRET
+    || 'miracle-local-admin-session-v1::Miracle.AI::FelipeMaldonado::Isaabelsofia::Jamesbondagent007-max::JoseDavid')
   .digest();
-const LOCAL_ADMIN_USERS = [
-  'Isaabelsofia',
-  'Jamesbondagent007-max',
-  'FelipeMaldonado',
-  'JoseDavid'
-];
-const LOCAL_ADMIN_PASSWORD = 'Miracle.AI';
+const LOCAL_ADMIN_USERS = parseEnvList('LOCAL_ADMIN_USERS').length
+  ? parseEnvList('LOCAL_ADMIN_USERS')
+  : [
+      'Isaabelsofia',
+      'Jamesbondagent007-max',
+      'FelipeMaldonado',
+      'JoseDavid'
+    ];
+const LOCAL_ADMIN_PASSWORD = process.env.LOCAL_ADMIN_PASSWORD || 'Miracle.AI';
 
 function supabaseBaseUrl() {
   return `${process.env.SUPABASE_URL || ''}`.replace(/\/+$/, '');
@@ -395,9 +398,64 @@ function attachWorkflowAccess(req, res, next) {
   next();
 }
 
+// ---- API keys for external client apps (permanent, env-provided) ----
+// MIRACLE_API_KEYS = "label1:key1,label2:key2"  (or just "key1,key2")
+function getConfiguredApiKeys() {
+  return parseEnvList('MIRACLE_API_KEYS')
+    .map((entry) => {
+      const separatorIndex = entry.indexOf(':');
+      if (separatorIndex > 0) {
+        return { label: entry.slice(0, separatorIndex).trim() || 'client', key: entry.slice(separatorIndex + 1).trim() };
+      }
+      return { label: 'client', key: entry.trim() };
+    })
+    .filter((entry) => entry.key);
+}
+
+function extractApiKey(req) {
+  const headerKey = (req.get ? req.get('x-api-key') : req.headers?.['x-api-key']) || '';
+  if (`${headerKey}`.trim()) {
+    return `${headerKey}`.trim();
+  }
+  return extractToken(req);
+}
+
+function verifyApiKey(candidate) {
+  const provided = Buffer.from(`${candidate || ''}`);
+  for (const entry of getConfiguredApiKeys()) {
+    const expected = Buffer.from(entry.key);
+    if (expected.length === provided.length && crypto.timingSafeEqual(expected, provided)) {
+      return entry;
+    }
+  }
+  return null;
+}
+
+// Auth for the public /api/v1 surface: a permanent client API key
+// (from MIRACLE_API_KEYS) OR a normal account session token.
+function requireApiKeyOrAccount(req, res, next) {
+  const candidate = extractApiKey(req);
+  const match = candidate ? verifyApiKey(candidate) : null;
+  if (match) {
+    req.user = {
+      id: `api-client:${match.label}`,
+      email: '',
+      username: match.label,
+      role: 'api-client',
+      token: '',
+      isAnonymous: false
+    };
+    req.apiClient = { label: match.label };
+    req.workflowAccess = { ownerId: req.user.id, includeGlobal: true, canManageGlobalWorkflows: false };
+    return next();
+  }
+  return requireAccountAuth(req, res, () => attachWorkflowAccess(req, res, next));
+}
+
 module.exports = {
   requireAuth,
   requireAccountAuth,
+  requireApiKeyOrAccount,
   attachWorkflowAccess,
   verifySupabaseToken,
   verifyAccessToken,
