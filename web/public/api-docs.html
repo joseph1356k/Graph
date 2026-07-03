@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miracle API · Documentación</title>
+    <style>
+        :root {
+            --bg: #020202;
+            --panel: rgba(9, 9, 9, 0.92);
+            --control: rgba(18, 18, 18, 0.94);
+            --control-hover: rgba(26, 26, 26, 0.98);
+            --line-soft: rgba(255, 255, 255, 0.13);
+            --ink: #f4f4f2;
+            --muted: rgba(244, 244, 242, 0.72);
+            --accent: rgba(120, 170, 255, 0.9);
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+        }
+
+        .doc-shell {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 48px 24px 96px;
+        }
+
+        .doc-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 0;
+            margin-bottom: 24px;
+            background: linear-gradient(180deg, var(--bg) 65%, transparent);
+            backdrop-filter: blur(6px);
+        }
+
+        .doc-topbar .brand {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .doc-kicker {
+            font-size: 0.72rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .doc-topbar h1 {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        .doc-actions { display: flex; gap: 10px; }
+
+        .button {
+            appearance: none;
+            border: 1px solid var(--line-soft);
+            background: var(--control);
+            color: var(--ink);
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 9px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+
+        .button:hover { background: var(--control-hover); border-color: rgba(255, 255, 255, 0.24); }
+        .button.primary { background: var(--ink); color: #050505; border-color: var(--ink); }
+        .button.primary:hover { background: #fff; }
+
+        h2 {
+            font-size: 1.28rem;
+            margin: 44px 0 12px;
+            padding-top: 20px;
+            border-top: 1px solid var(--line-soft);
+        }
+
+        h2:first-of-type { border-top: none; padding-top: 0; }
+
+        h3 { font-size: 1.02rem; margin: 26px 0 8px; }
+
+        p { color: var(--muted); margin: 10px 0; }
+        strong { color: var(--ink); }
+
+        a { color: var(--accent); }
+
+        code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.86em;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 1px 6px;
+            border-radius: 6px;
+            color: var(--ink);
+        }
+
+        pre {
+            background: var(--control);
+            border: 1px solid var(--line-soft);
+            border-radius: 12px;
+            padding: 16px 18px;
+            overflow-x: auto;
+            margin: 14px 0;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            font-size: 0.82rem;
+            line-height: 1.55;
+            color: var(--ink);
+        }
+
+        ul { color: var(--muted); padding-left: 22px; }
+        li { margin: 6px 0; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.88rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 9px 12px;
+            border-bottom: 1px solid var(--line-soft);
+            vertical-align: top;
+        }
+
+        th { color: var(--ink); font-weight: 600; }
+        td { color: var(--muted); }
+
+        blockquote {
+            margin: 16px 0;
+            padding: 10px 16px;
+            border-left: 2px solid var(--accent);
+            background: rgba(120, 170, 255, 0.06);
+            border-radius: 0 8px 8px 0;
+        }
+
+        blockquote p { color: var(--ink); margin: 0; }
+
+        .copy-hint {
+            font-size: 0.78rem;
+            color: var(--muted);
+            min-height: 1.2em;
+        }
+
+        @media (max-width: 560px) {
+            .doc-topbar { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div class="doc-shell">
+        <div class="doc-topbar">
+            <div class="brand">
+                <span class="doc-kicker">Miracle API</span>
+                <h1>Documentación para conectar tu app</h1>
+            </div>
+            <div class="doc-actions">
+                <span id="copy-hint" class="copy-hint"></span>
+                <button type="button" class="button primary" id="copy-page">Copiar toda la página</button>
+            </div>
+        </div>
+
+        <main id="doc-content">
+            <p>Guía para conectar <strong>cualquier app cliente</strong> (extensión de
+            Chrome, app de Windows, web, scripts) al backend de Miracle y usar sus
+            funcionalidades: transcripción de voz, organización de la nota médica y
+            (pronto) autofill. Todo se consume vía HTTPS bajo <code>/api/v1</code>.</p>
+
+            <h2>1. URL base</h2>
+            <pre><code>__BASE__</code></pre>
+            <p>Si más adelante hay un dominio propio, solo cambia la URL base; las rutas
+            (<code>/api/v1/...</code>) no cambian.</p>
+
+            <h2>2. Autenticación: tu API key</h2>
+            <p><strong>Todas</strong> las llamadas a <code>/api/v1/*</code> se autentican
+            con una <strong>API key permanente</strong>. Es el único método (no hay
+            tokens temporales).</p>
+            <p>El dueño del backend te entrega la API key (una cadena secreta) por un
+            canal privado. <strong>No expira.</strong> Va en la cabecera
+            <code>X-API-Key</code>:</p>
+            <pre><code>X-API-Key: &lt;TU_API_KEY&gt;</code></pre>
+            <p>(También se acepta como <code>Authorization: Bearer &lt;TU_API_KEY&gt;</code>.)</p>
+            <p>Si falta o es inválida, la API responde <code>401 API key invalida o
+            ausente</code>. Guarda la key en un gestor de secretos; nunca la subas a un repo.</p>
+
+            <h2>3. El llamado principal: <code>POST /api/v1/pipeline</code></h2>
+            <p>Un solo llamado que hace <strong>transcripción cruda + nota organizada +
+            autofill</strong>. Con <code>stages</code> decides qué procesa el backend; lo
+            que no actives, no se procesa (ni se cobra en LLM).</p>
+
+            <h3>Ejemplo mínimo (transcripción → nota)</h3>
+            <pre><code>curl -sX POST __BASE__/api/v1/pipeline \
+  -H "X-API-Key: &lt;TU_API_KEY&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transcript": "paciente con dolor de rodilla derecha desde la semana pasada",
+    "note": { "content": "", "title": "Nota" },
+    "stages": { "transcription": true, "note": true, "autofill": false }
+  }'</code></pre>
+
+            <p>Respuesta (solo trae lo que pediste):</p>
+            <pre><code>{
+  "session_id": "…",
+  "stages": { "transcription": true, "note": true, "autofill": false },
+  "transcription": { "text": "paciente con dolor de rodilla derecha desde la semana pasada" },
+  "note": {
+    "content": "## Motivo de consulta\n- Dolor de rodilla derecha (1 semana)",
+    "backend_status": "product-llm",
+    "usage": { "model": "gpt-4.1-mini", "total_tokens": 1110 }
+  }
+}</code></pre>
+
+            <h3>Parámetros del body</h3>
+            <table>
+                <thead><tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr></thead>
+                <tbody>
+                    <tr><td><code>transcript</code></td><td>string</td><td>Texto crudo a procesar (obligatorio si activas <code>note</code>).</td></tr>
+                    <tr><td><code>note.content</code></td><td>string</td><td>Nota actual (markdown). El backend acumula sobre esto.</td></tr>
+                    <tr><td><code>note.title</code></td><td>string</td><td>Título de la nota.</td></tr>
+                    <tr><td><code>session_id</code></td><td>string</td><td>Reúsalo entre llamadas para acumular una misma sesión de dictado.</td></tr>
+                    <tr><td><code>sequence</code></td><td>number</td><td>Nº de segmento (1, 2, 3…) en dictado en streaming.</td></tr>
+                    <tr><td><code>language</code></td><td>string</td><td>Idioma (<code>es</code>).</td></tr>
+                    <tr><td><code>fields</code></td><td>array</td><td>Campos detectados por el cliente (para autofill).</td></tr>
+                    <tr><td><code>stages</code></td><td>object</td><td><code>{ transcription, note, autofill }</code> — activa/desactiva etapas.</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Combinaciones típicas</h3>
+            <ul>
+                <li><strong>Solo transcripción cruda:</strong> <code>"stages": { "transcription": true, "note": false, "autofill": false }</code></li>
+                <li><strong>Transcripción + nota</strong> (default): <code>"stages": { "note": true }</code></li>
+                <li><strong>Todo</strong> (cuando llegue autofill): <code>"stages": { "note": true, "autofill": true }</code> + <code>"fields": [...]</code></li>
+            </ul>
+
+            <h3>Ejemplo en JavaScript (fetch)</h3>
+            <pre><code>const res = await fetch("__BASE__/api/v1/pipeline", {
+  method: "POST",
+  headers: {
+    "X-API-Key": apiKey,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    transcript: "el paciente refiere fiebre de 3 dias",
+    note: { content: "", title: "Nota" },
+    stages: { note: true },
+  }),
+});
+const data = await res.json();
+console.log(data.note.content);</code></pre>
+
+            <h2>4. Dictado en tiempo real (streaming)</h2>
+            <p>La transcripción cruda en vivo es un flujo bidireccional, así que va por su
+            propio canal:</p>
+            <p>1. Pide credenciales de streaming:</p>
+            <pre><code>curl -sX POST __BASE__/api/v1/transcription/session \
+  -H "X-API-Key: &lt;TU_API_KEY&gt;" -H "Content-Type: application/json" -d '{}'</code></pre>
+            <p>Respuesta:</p>
+            <pre><code>{
+  "provider": "deepgram",
+  "access_token": "…",
+  "auth_scheme": "bearer",
+  "websocket_url": "wss://api.deepgram.com/v1/listen?model=nova-3&language=es&…",
+  "timeslice_ms": 250
+}</code></pre>
+            <ul>
+                <li>Con esas credenciales, tu cliente abre el WebSocket a <code>websocket_url</code>
+                (subprotocolos <code>["bearer", access_token]</code>) y envía audio
+                (<code>MediaRecorder</code>, webm/opus, chunks cada <code>timeslice_ms</code>).
+                Deepgram devuelve parciales y finales.</li>
+                <li>Por cada transcripción <strong>final</strong>, llama a
+                <code>POST /api/v1/pipeline</code> con ese <code>transcript</code>
+                (reutilizando el <code>session_id</code>) para obtener la nota organizada.</li>
+            </ul>
+            <blockquote><p>El motor de dictado del navegador ya hace esto; la
+            implementación de referencia está en
+            <code>web/public/shared/deepgram-dictation.js</code>.</p></blockquote>
+
+            <h2>5. Descubrir capacidades</h2>
+            <pre><code>curl -s __BASE__/api/v1 -H "X-API-Key: &lt;TU_API_KEY&gt;"</code></pre>
+            <p>Devuelve el manifiesto con las etapas y endpoints disponibles.</p>
+
+            <h2>6. Errores comunes</h2>
+            <table>
+                <thead><tr><th>Código</th><th>Significado</th><th>Qué hacer</th></tr></thead>
+                <tbody>
+                    <tr><td><code>401</code></td><td>Falta la <code>X-API-Key</code> o no es válida.</td><td>Revisa la API key (sección 2).</td></tr>
+                    <tr><td><code>429</code></td><td>Límite de tasa (20/min en <code>/pipeline</code>).</td><td>Reintenta con backoff.</td></tr>
+                    <tr><td><code>503</code></td><td>El motor de nota no está disponible en ese entorno.</td><td>Avisa al dueño del backend.</td></tr>
+                    <tr><td><code>note.status: "skipped"</code></td><td>Faltó <code>transcript</code>.</td><td>Envía <code>transcript</code>.</td></tr>
+                    <tr><td><code>autofill.status: "skipped"</code></td><td>Falta <code>fields</code> (o autofill aún no activo).</td><td>Envía <code>fields</code> cuando esté disponible.</td></tr>
+                </tbody>
+            </table>
+
+            <h2>7. Estado actual</h2>
+            <ul>
+                <li>✅ <strong>Transcripción cruda</strong> (streaming) y <strong>nota organizada</strong>: listas.</li>
+                <li>🟡 <strong>Autofill</strong>: la etapa ya existe; se activa enviando <code>fields</code>.</li>
+                <li>🔜 <strong>Pipeline unificado en streaming</strong> (un solo canal audio→crudo→nota→autofill).</li>
+            </ul>
+        </main>
+    </div>
+
+    <script>
+        (function () {
+            var content = document.getElementById('doc-content');
+            var base = window.location.origin || 'https://miracle-zeta.vercel.app';
+            content.innerHTML = content.innerHTML.split('__BASE__').join(base);
+
+            var button = document.getElementById('copy-page');
+            var hint = document.getElementById('copy-hint');
+
+            function showHint(text) {
+                hint.textContent = text;
+                window.setTimeout(function () { hint.textContent = ''; }, 2500);
+            }
+
+            button.addEventListener('click', async function () {
+                var text = content.innerText.replace(/\n{3,}/g, '\n\n').trim();
+                try {
+                    await navigator.clipboard.writeText(text);
+                    button.textContent = 'Copiado ✓';
+                    showHint('Documentación copiada al portapapeles.');
+                    window.setTimeout(function () { button.textContent = 'Copiar toda la página'; }, 1600);
+                } catch (error) {
+                    // Fallback: select the content so the user can copy manually.
+                    var range = document.createRange();
+                    range.selectNodeContents(content);
+                    var selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                    showHint('Selecciona y copia manualmente (Ctrl/Cmd + C).');
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

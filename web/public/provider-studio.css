@@ -488,6 +488,14 @@ select {
     cursor: wait;
 }
 
+a.button {
+    text-decoration: none;
+}
+
+a.button:hover {
+    text-decoration: none;
+}
+
 .form-message {
     min-height: 0;
     margin: -8px 0 0;
