@@ -26,6 +26,7 @@ const UsageDashboardService = require('../src/application/use-cases/UsageDashboa
 const GraphProviderConfigService = require('../src/application/use-cases/GraphProviderConfigService');
 const MiracleProductLlmProviderConfigService = require('../src/application/use-cases/MiracleProductLlmProviderConfigService');
 const MiracleSttProviderConfigService = require('../src/application/use-cases/MiracleSttProviderConfigService');
+const ApiKeyService = require('../src/application/use-cases/ApiKeyService');
 const registerLearningRoutes = require('./api/registerLearningRoutes');
 const registerWorkflowRoutes = require('./api/registerWorkflowRoutes');
 const registerContextRoutes = require('./api/registerContextRoutes');
@@ -100,6 +101,7 @@ const rawTranscriptionService = new ClinicalRawTranscriptionService();
 const graphProviderConfigService = new GraphProviderConfigService(llmProvider);
 const miracleProductLlmProviderConfigService = new MiracleProductLlmProviderConfigService();
 const miracleSttProviderConfigService = new MiracleSttProviderConfigService();
+const apiKeyService = new ApiKeyService();
 const miracleWorkspaceStore = new MiracleWorkspaceStore();
 
 app.use(bodyParser.json({ limit: '16mb' }));
@@ -698,6 +700,39 @@ app.post('/api/providers/miracle-stt/configure', async (req, res) => {
   } catch (error) {
     return res.status(error.statusCode || 500).json({
       error: error.message || 'No fue posible actualizar el STT Provider.'
+    });
+  }
+});
+
+app.get('/api/providers/api-keys/status', (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar API keys.' });
+  }
+  return res.json(apiKeyService.status());
+});
+
+app.post('/api/providers/api-keys/generate', async (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar API keys.' });
+  }
+  try {
+    return res.json(await apiKeyService.generate(req.body || {}));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      error: error.message || 'No fue posible generar la API key.'
+    });
+  }
+});
+
+app.post('/api/providers/api-keys/revoke', async (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar API keys.' });
+  }
+  try {
+    return res.json(await apiKeyService.revoke(req.body || {}));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      error: error.message || 'No fue posible revocar la API key.'
     });
   }
 });

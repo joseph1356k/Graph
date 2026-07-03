@@ -176,4 +176,6 @@ Devuelve el manifiesto con las etapas y endpoints disponibles.
 - 🟡 **Autofill**: la etapa ya existe en la API; se activa enviando `fields` y
   se completará al refactorizar la capa de detección de campos del cliente.
 - 🔜 **Pipeline unificado en streaming** (un solo canal audio→crudo→nota→autofill).
-- 🔜 **Gestión de API keys desde el dashboard** (crear/rotar sin tocar env vars).
+- ✅ **Gestión de API keys desde el dashboard**: en Provider Studio, tarjeta
+  "API keys de clientes" (crear/revocar). Cada cambio se guarda en la env var de
+  Vercel y se activa tras el redeploy automático.

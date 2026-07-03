@@ -165,6 +165,41 @@
                     </form>
                     <p id="graph-provider-message" class="form-message"></p>
                 </section>
+
+                <section class="studio-card">
+                    <div class="studio-card-head">
+                        <div>
+                            <p class="studio-kicker">API pública</p>
+                            <h2>API keys de clientes</h2>
+                        </div>
+                        <div class="studio-status-meta">
+                            <strong id="api-key-metric">Cargando</strong>
+                            <span id="api-key-pill" class="status-pill">Cargando</span>
+                        </div>
+                    </div>
+                    <p id="api-key-current" class="studio-current">Claves permanentes que autentican <code>/api/v1</code>.</p>
+                    <ul id="api-key-list" class="api-key-list"></ul>
+                    <form id="api-key-form" class="studio-form">
+                        <div class="studio-form-grid">
+                            <label class="field field-span-2">
+                                <span>Etiqueta del cliente</span>
+                                <input id="api-key-label" type="text" autocomplete="off" placeholder="p.ej. extension-chrome">
+                            </label>
+                        </div>
+                        <div class="studio-actions">
+                            <button type="button" class="button ghost" id="api-key-refresh">Releer</button>
+                            <button type="submit" class="button primary" id="api-key-submit">Generar API key</button>
+                        </div>
+                    </form>
+                    <div id="api-key-reveal" class="api-key-reveal" hidden>
+                        <p class="api-key-reveal-warn">Copiala ahora — no se vuelve a mostrar.</p>
+                        <div class="api-key-reveal-row">
+                            <code id="api-key-reveal-value"></code>
+                            <button type="button" class="button ghost" id="api-key-copy">Copiar</button>
+                        </div>
+                    </div>
+                    <p id="api-key-message" class="form-message"></p>
+                </section>
             </section>
 
             <section class="studio-section studio-section-links">
@@ -195,5 +230,155 @@
     <script src="/auth-gate.js"></script>
     <script src="/admin-workspace.js"></script>
     <script src="/provider-studio.js?v=2"></script>
+    <script>
+      (function () {
+        const els = {
+          metric: document.getElementById('api-key-metric'),
+          pill: document.getElementById('api-key-pill'),
+          current: document.getElementById('api-key-current'),
+          list: document.getElementById('api-key-list'),
+          form: document.getElementById('api-key-form'),
+          label: document.getElementById('api-key-label'),
+          submit: document.getElementById('api-key-submit'),
+          refresh: document.getElementById('api-key-refresh'),
+          reveal: document.getElementById('api-key-reveal'),
+          revealValue: document.getElementById('api-key-reveal-value'),
+          copy: document.getElementById('api-key-copy'),
+          message: document.getElementById('api-key-message')
+        };
+        if (!els.form) return;
+
+        function setMessage(text, tone) {
+          els.message.textContent = text || '';
+          if (tone) els.message.setAttribute('data-tone', tone);
+          else els.message.removeAttribute('data-tone');
+        }
+
+        async function authedFetch(url, options) {
+          const opts = options || {};
+          const headers = Object.assign({}, opts.headers);
+          if (window.MiracleAuth && typeof window.MiracleAuth.whenAuthenticated === 'function') {
+            await window.MiracleAuth.whenAuthenticated();
+            const token = typeof window.MiracleAuth.getAccessToken === 'function'
+              ? window.MiracleAuth.getAccessToken() : null;
+            if (token) headers.Authorization = 'Bearer ' + token;
+          }
+          return fetch(url, Object.assign({}, opts, { headers }));
+        }
+
+        function renderStatus(status) {
+          const count = status && typeof status.count === 'number' ? status.count : 0;
+          els.metric.textContent = count === 1 ? '1 clave' : count + ' claves';
+          const writable = Boolean(status && status.vercel && status.vercel.write_enabled);
+          els.pill.textContent = writable ? 'Activo' : 'Solo lectura';
+          els.pill.setAttribute('data-tone', writable ? 'success' : 'warning');
+          els.submit.disabled = !writable;
+          if (!writable) {
+            setMessage('Falta configurar el token de Vercel (GRAPH_VERCEL_API_TOKEN) para poder emitir o revocar claves.', 'warning');
+          }
+
+          els.list.innerHTML = '';
+          const keys = (status && status.keys) || [];
+          if (!keys.length) {
+            const empty = document.createElement('li');
+            empty.className = 'api-key-empty';
+            empty.textContent = 'Aún no hay API keys. Genera la primera abajo.';
+            els.list.appendChild(empty);
+            return;
+          }
+          keys.forEach((entry) => {
+            const li = document.createElement('li');
+            li.className = 'api-key-row';
+            const info = document.createElement('div');
+            info.className = 'api-key-info';
+            const label = document.createElement('strong');
+            label.textContent = entry.label;
+            const preview = document.createElement('code');
+            preview.textContent = entry.preview;
+            info.appendChild(label);
+            info.appendChild(preview);
+            const revoke = document.createElement('button');
+            revoke.type = 'button';
+            revoke.className = 'button ghost api-key-revoke';
+            revoke.textContent = 'Revocar';
+            revoke.addEventListener('click', () => revokeKey(entry, revoke));
+            li.appendChild(info);
+            li.appendChild(revoke);
+            els.list.appendChild(li);
+          });
+        }
+
+        async function load() {
+          try {
+            const res = await authedFetch('/api/providers/api-keys/status');
+            if (!res.ok) throw new Error('No se pudo leer el estado (' + res.status + ').');
+            renderStatus(await res.json());
+          } catch (error) {
+            els.metric.textContent = 'Error';
+            els.pill.textContent = 'Error';
+            els.pill.setAttribute('data-tone', 'danger');
+            setMessage(error.message || 'No fue posible leer las API keys.', 'error');
+          }
+        }
+
+        async function revokeKey(entry, button) {
+          if (!window.confirm('¿Revocar la API key "' + entry.label + '"? Los clientes que la usen dejarán de tener acceso tras el redeploy.')) return;
+          button.disabled = true;
+          setMessage('Revocando…', 'warning');
+          try {
+            const res = await authedFetch('/api/providers/api-keys/revoke', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: entry.id, label: entry.label })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'No fue posible revocar la clave.');
+            setMessage('Clave revocada. Se aplica tras el redeploy de Vercel.', 'success');
+            await load();
+          } catch (error) {
+            button.disabled = false;
+            setMessage(error.message || 'No fue posible revocar la clave.', 'error');
+          }
+        }
+
+        els.form.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          els.reveal.hidden = true;
+          els.submit.disabled = true;
+          setMessage('Generando…', 'warning');
+          try {
+            const res = await authedFetch('/api/providers/api-keys/generate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ label: els.label.value || '' })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'No fue posible generar la clave.');
+            els.revealValue.textContent = data.api_key;
+            els.reveal.hidden = false;
+            els.label.value = '';
+            setMessage('API key "' + data.label + '" creada. Activa tras el redeploy de Vercel.', 'success');
+            await load();
+          } catch (error) {
+            setMessage(error.message || 'No fue posible generar la clave.', 'error');
+          } finally {
+            els.submit.disabled = false;
+          }
+        });
+
+        els.copy.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(els.revealValue.textContent || '');
+            els.copy.textContent = 'Copiado';
+            setTimeout(() => { els.copy.textContent = 'Copiar'; }, 1500);
+          } catch (error) {
+            setMessage('Copia manual: selecciona la clave mostrada.', 'warning');
+          }
+        });
+
+        els.refresh.addEventListener('click', load);
+        load();
+      })();
+    </script>
 </body>
 </html>
