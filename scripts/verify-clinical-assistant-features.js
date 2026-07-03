@@ -186,7 +186,7 @@ async function startStaticServer() {
     const requestUrl = new URL(req.url, 'http://127.0.0.1');
     if (requestUrl.pathname === '/api/public-config') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ supabaseUrl: '', supabaseAnonKey: '' }));
+      res.end(JSON.stringify({ localAnonymousAccess: false, authBypassEnabled: false, miracleBaseUrl: '' }));
       return;
     }
     if (requestUrl.pathname === '/api/clinical/diagnosis-suggestions' && req.method === 'POST') {

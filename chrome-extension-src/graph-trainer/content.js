@@ -303,7 +303,7 @@ function createExtensionAuthBridge() {
     if (!state.session?.authenticated) {
       return '';
     }
-    return state.session.user?.isAnonymous ? 'supabase-anonymous' : 'supabase';
+    return state.session.user?.isAnonymous ? 'local-anonymous' : 'local-admin';
   }
 
   function dispatchAuthChanged() {

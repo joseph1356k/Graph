@@ -1,5 +1,3 @@
-const dns = require('dns').promises;
-const fs = require('fs');
 const net = require('net');
 const path = require('path');
 
@@ -40,42 +38,6 @@ async function canConnect(host, port, timeoutMs = 1500) {
     socket.once('timeout', () => finish(false));
     socket.once('error', () => finish(false));
   });
-}
-
-async function auditSupabase() {
-  const baseUrl = envValue('SUPABASE_URL').replace(/\/+$/, '');
-  const publishableKey = envValue('SUPABASE_ANON_KEY');
-  if (!baseUrl || isPlaceholder(baseUrl)) {
-    addCheck('Supabase URL', 'FAIL', 'SUPABASE_URL is missing or is a placeholder.');
-    return;
-  }
-  if (!publishableKey || isPlaceholder(publishableKey)) {
-    addCheck('Supabase key', 'FAIL', 'SUPABASE_ANON_KEY is missing or is a placeholder.');
-  } else {
-    const expectedFormat = publishableKey.startsWith('sb_publishable_') || publishableKey.startsWith('eyJ');
-    addCheck('Supabase key', expectedFormat ? 'PASS' : 'WARN', expectedFormat
-      ? 'A browser-safe publishable/legacy anon key is configured.'
-      : 'The configured key has an unexpected format.');
-  }
-
-  let parsed;
-  try {
-    parsed = new URL(baseUrl);
-    await dns.lookup(parsed.hostname);
-    addCheck('Supabase DNS', 'PASS', `${parsed.hostname} resolves.`);
-  } catch (error) {
-    addCheck('Supabase DNS', 'FAIL', 'The configured project hostname does not resolve.');
-    return;
-  }
-
-  try {
-    const response = await fetch(`${baseUrl}/auth/v1/health`, {
-      signal: AbortSignal.timeout(2500)
-    });
-    addCheck('Supabase Auth', 'PASS', `Auth health endpoint responded with HTTP ${response.status}.`);
-  } catch (error) {
-    addCheck('Supabase Auth', 'FAIL', 'The Auth health endpoint is unreachable.');
-  }
 }
 
 async function auditNeo4j() {
@@ -133,20 +95,11 @@ function auditStaticConfiguration() {
   const localAnonymous = isTruthy(envValue('ALLOW_LOCAL_ANONYMOUS'));
   addCheck('Local guest mode', localAnonymous ? 'WARN' : 'PASS',
     localAnonymous ? 'Local guest mode is enabled; keep NODE_ENV=production in deployments.' : 'Local guest mode is disabled.');
-
-  const migrationDir = path.join(process.cwd(), 'supabase', 'migrations');
-  const migrations = fs.existsSync(migrationDir)
-    ? fs.readdirSync(migrationDir).filter((name) => name.endsWith('.sql'))
-    : [];
-  const hardeningMigration = migrations.some((name) => name.includes('harden_clinical_access'));
-  addCheck('Supabase migrations', hardeningMigration ? 'PASS' : 'FAIL',
-    `${migrations.length} migration(s) found; clinical hardening ${hardeningMigration ? 'present' : 'missing'}.`);
 }
 
 async function main() {
   auditStaticConfiguration();
   await Promise.all([
-    auditSupabase(),
     auditNeo4j(),
     auditMiracleSidecar()
   ]);

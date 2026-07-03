@@ -273,10 +273,9 @@
     }
 
     function apiClient() {
-        const publicMiracleBaseUrl = window.MiracleSupabase?.getConfig?.()?.miracleBaseUrl || '';
         return window.GraphPluginApi?.createClient?.({
             baseUrl: pluginHost()?.apiBaseUrl || options.apiBaseUrl || '',
-            miracleBaseUrl: options.miracleBaseUrl || publicMiracleBaseUrl || DEFAULTS.miracleBaseUrl,
+            miracleBaseUrl: options.miracleBaseUrl || DEFAULTS.miracleBaseUrl,
             fetchImpl: pluginHost()?.fetchImpl || null
         }) || null;
     }

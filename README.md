@@ -27,22 +27,9 @@ Graph closes this loop:
 5. An assistant chooses the right workflow for the current page context.
 6. Playwright replays the workflow and fills missing values.
 
-## Real-Time Sync & Accounts — "Doble conexión"
+## Auth
 
-> Status: experimental, on branch `feature/doble-conexion`.
-
-Lets a clinician sign in with Google and have the clinical note **sync live across every device on the same account**, stored per patient/encounter. The note fills on the PC (by typing or by voice) and mirrors to a second device in ~1 s, so the doctor can step away from the PC while the encounter keeps being recorded.
-
-How it works:
-
-- **Identity:** Supabase Auth (Google), browser-side, protected by Row Level Security.
-- **Durable note:** Postgres table `encounters` (`note jsonb` is a flat `{ fieldId: value }` map); each user only sees their own rows.
-- **Real-time:** a Supabase Broadcast channel per encounter (`encounter:<id>`) mirrors field deltas, plus a debounced upsert of the full note for durability.
-- **Integration:** everything hangs off [web/public/page-state.js](web/public/page-state.js), the single place page form-state flows through. Local voice uses the Vercel-compatible WebRTC path; phone QR pairing also avoids persistent WebSockets by using phone WebRTC plus HTTP/Supabase event relay.
-
-New pieces: `web/public/supabase-client.js`, `auth-gate.js`, `note-sync.js` (wired into `emr-workspace.html`), plus `GET /api/public-config` in `web/server.js`. Requires the Express server (`node web/server.js`, port 3000) — not the static 4173 server.
-
-**Full setup, including the manual Google OAuth steps, is in [DOBLE_CONEXION.md](DOBLE_CONEXION.md).**
+Local only, no third-party identity provider: an admin login (`web/api/requireAuth.js`, username/password from env) protects the dashboard and the learning-capture API, and an opt-in local anonymous guest mode (`ALLOW_LOCAL_ANONYMOUS`) covers the public demo pages. This repo does not persist patient/encounter data — it is a stateless backend that serves transcription, note-organization, and autofill to client apps.
 
 ## Architecture
 
@@ -217,8 +204,8 @@ Main environment variables used today:
 - `NEO4J_USER`
 - `NEO4J_PASSWORD`
 - `WEB_PORT`
-- `SUPABASE_URL` (doble conexión — real-time sync & accounts)
-- `SUPABASE_ANON_KEY` (doble conexión — real-time sync & accounts)
+- `LOCAL_ADMIN_USERS` / `LOCAL_ADMIN_PASSWORD` (local admin login for the dashboard)
+- `ALLOW_LOCAL_ANONYMOUS` (opt-in guest mode for public demo pages)
 
 ## Current State
 

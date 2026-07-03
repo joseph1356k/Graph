@@ -241,39 +241,10 @@ app.post('/api/auth/logout', (_req, res) => {
   return res.json({ ok: true });
 });
 
-async function probeSupabaseAuth(timeoutMs = 1500) {
-  const baseUrl = `${process.env.SUPABASE_URL || ''}`.replace(/\/+$/, '');
-  if (!baseUrl) {
-    return { status: 'not_configured' };
-  }
-  try {
-    const response = await fetch(`${baseUrl}/auth/v1/health`, {
-      signal: AbortSignal.timeout(timeoutMs)
-    });
-    return {
-      status: 'ok',
-      httpStatus: response.status
-    };
-  } catch (error) {
-    return { status: 'unavailable' };
-  }
-}
-
 app.get('/api/auth/status', async (req, res) => {
-  if (isAuthBypassEnabled(req)) {
-    return res.status(200).json({
-      supabase: { status: 'bypassed' },
-      localAnonymousAccess: false,
-      authBypassEnabled: true,
-      localAdminAuthEnabled: true
-    });
-  }
-
-  const supabase = await probeSupabaseAuth();
-  res.status(supabase.status === 'ok' ? 200 : 503).json({
-    supabase,
+  res.status(200).json({
     localAnonymousAccess: isLocalAnonymousAccessEnabled(),
-    authBypassEnabled: false,
+    authBypassEnabled: isAuthBypassEnabled(req),
     localAdminAuthEnabled: true
   });
 });
@@ -373,8 +344,6 @@ function extractQueryString(req) {
 app.get('/api/public-config', (req, res) => {
   const miracleBaseUrl = resolvePublicAppBaseUrl(req);
   res.json({
-    supabaseUrl: process.env.SUPABASE_URL || '',
-    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
     localAnonymousAccess: isLocalAnonymousAccessEnabled(),
     authBypassEnabled: isAuthBypassEnabled(req),
     miracleBaseUrl,
@@ -405,7 +374,7 @@ async function callMiracleRuntime(req, targetPath, init = {}) {
     error.code = 'MIRACLE_RUNTIME_NOT_CONFIGURED';
     throw error;
   }
-  const internalToken = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '';
+  const internalToken = process.env.GRAPH_INTERNAL_TOKEN || '';
 
   let upstreamResponse;
   try {
@@ -564,7 +533,7 @@ async function probeMiracleSidecar(req, timeoutMs = 1500) {
   if (!baseUrl) {
     return { status: 'not_configured' };
   }
-  const internalToken = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '';
+  const internalToken = process.env.GRAPH_INTERNAL_TOKEN || '';
 
   try {
     const response = await fetch(`${baseUrl}/api/setup/status`, {
@@ -623,15 +592,13 @@ app.get('/api/voice/orchestrator/status', async (req, res) => {
 });
 
 app.get('/api/health', async (req, res) => {
-  const [neo4j, miracle, supabase] = await Promise.all([
+  const [neo4j, miracle] = await Promise.all([
     db.healthCheck(),
-    probeMiracleSidecar(req),
-    probeSupabaseAuth()
+    probeMiracleSidecar(req)
   ]);
   const authBypassEnabled = isAuthBypassEnabled();
   const degraded = neo4j.status !== 'ok'
-    || (miracle.status !== 'ok' && miracle.status !== 'not_configured')
-    || (!authBypassEnabled && supabase.status !== 'ok' && supabase.status !== 'not_configured');
+    || (miracle.status !== 'ok' && miracle.status !== 'not_configured');
   res.status(degraded ? 503 : 200).json({
     status: degraded ? 'degraded' : 'ok',
     services: {
@@ -643,7 +610,6 @@ app.get('/api/health', async (req, res) => {
         provider: llmProvider.provider || '',
         model: llmProvider.model || ''
       },
-      supabase,
       auth: {
         status: authBypassEnabled ? 'bypassed' : 'enabled'
       }

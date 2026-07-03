@@ -13,7 +13,7 @@ El repositorio es la acumulación de dos etapas de desarrollo que hoy conviven m
 | | **"Graph" (motor de aprendizaje)** | **"Miracle" (flujo clínico)** |
 |---|---|---|
 | Qué hace | Aprende el mapa de campos de cada EMR: graba interacciones (clicks/inputs/selects) como `Workflow` + `Step`, y luego puede reproducirlas / usarlas para autofill | Voz → transcripción en tiempo real → nota médica organizada → autofill |
-| Persistencia | Neo4j (`Workflow`, `Step`, `WorkflowBranch`, `SurfaceProfile`) | Sesiones en archivo / Supabase (`encounters`) |
+| Persistencia | Neo4j (`Workflow`, `Step`, `WorkflowBranch`, `SurfaceProfile`) | Sin persistencia de paciente/encuentro (backend de servicios sin estado) |
 | Ejecución | Playwright (server) / execution-client (browser) | Deepgram streaming + Product-LLM orchestrator (Python) |
 
 **IMPORTANTE — corrección clave del análisis:** el motor de aprendizaje de
@@ -97,6 +97,16 @@ como `api/miracle_runtime.py`) para voz y organización de la nota.
 6. **Clientes:** la **extensión Chrome** es una aplicación cliente (vive en el
    repo, se distribuirá desde el dashboard). La **app de Windows** irá en **otro
    repo** y consumirá la API. La **web app** también consume la API.
+7. **Supabase: eliminado por completo.** Este repo no es un producto que guarde
+   datos de pacientes/encuentros — es un backend de servicios (transcripción +
+   nota + autofill) para apps cliente. Se elimina: auth JWT/JWKS de Supabase
+   (queda solo login local-admin + guest local anónimo opt-in), las tablas
+   `patients`/`encounters`/`encounter_events`/`leads`/`phone_voice_sessions`
+   (Postgres+RLS) y la sincronización en vivo "doble conexión" (Realtime
+   Broadcast) que dependía de ellas. El login Google de la extensión Chrome
+   pasa a usar el mismo login local-admin que el dashboard. El secreto
+   compartido Node↔Python para el proxy interno ya no reutiliza claves de
+   Supabase — usa `GRAPH_INTERNAL_TOKEN` dedicado.
 
 ---
 
@@ -117,7 +127,7 @@ Graph/
 │   │   ├── autofill/                # NoteFieldMatcher (usa workflows aprendidos)
 │   │   ├── clinical/                # diagnosis suggestions
 │   │   ├── voice/                   # gateway / sesiones
-│   │   ├── accounts/                # auth, Supabase, doble-conexión/sync
+│   │   ├── accounts/                # auth local (admin + guest), sin proveedor externo
 │   │   └── usage/                   # ledger, métricas, costos
 │   ├── runtime-python/              # = bounded/miracle-ai (motor voz/nota)
 │   ├── engine/                      # Neo4j, Playwright, LLMProvider (infra)

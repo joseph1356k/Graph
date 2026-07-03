@@ -504,15 +504,18 @@ async function init() {
   const refreshImprovementsButton = document.getElementById('popupImprovementsRefresh');
   const overlayToggleButton = document.getElementById('popupOverlayToggle');
   const authStatusEl = document.getElementById('authStatus');
+  const authLoginFormEl = document.getElementById('authLoginForm');
+  const authUsernameEl = document.getElementById('authUsername');
+  const authPasswordEl = document.getElementById('authPassword');
   const authLoginButton = document.getElementById('authLogin');
   const authLogoutButton = document.getElementById('authLogout');
 
   const renderAuthStatus = (session) => {
     const authenticated = Boolean(session?.authenticated);
     authStatusEl.textContent = authenticated
-      ? `Sesion activa: ${session.user?.email || 'cuenta de Google'}`
-      : 'Inicia sesion con Google para usar workflows y el asistente en otras paginas.';
-    authLoginButton.style.display = authenticated ? 'none' : '';
+      ? `Sesion activa: ${session.user?.email || 'administrador'}`
+      : 'Inicia sesion como administrador para usar workflows y el asistente en otras paginas.';
+    authLoginFormEl.style.display = authenticated ? 'none' : '';
     authLogoutButton.style.display = authenticated ? '' : 'none';
   };
 
@@ -537,12 +540,17 @@ async function init() {
 
   authLoginButton.addEventListener('click', async () => {
     authLoginButton.disabled = true;
-    authStatusEl.textContent = 'Abriendo Google...';
+    authStatusEl.textContent = 'Iniciando sesion...';
     try {
-      renderAuthStatus(await sendRuntimeMessage({ type: 'graph:auth-login' }));
+      renderAuthStatus(await sendRuntimeMessage({
+        type: 'graph:auth-login',
+        username: authUsernameEl.value.trim(),
+        password: authPasswordEl.value
+      }));
+      authPasswordEl.value = '';
       statusEl.textContent = 'Sesion conectada. Recarga la pagina objetivo.';
     } catch (error) {
-      authStatusEl.textContent = error.message || 'No fue posible iniciar sesion con Google.';
+      authStatusEl.textContent = error.message || 'No fue posible iniciar sesion.';
     } finally {
       authLoginButton.disabled = false;
     }

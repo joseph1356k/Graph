@@ -1,22 +1,14 @@
 (function () {
     // Lightweight auth for PUBLIC DEMO surfaces (landing / pitch). Signs the visitor
-    // in ANONYMOUSLY so the protected voice/LLM endpoints accept the request, WITHOUT
-    // showing a login gate. Requires "Anonymous sign-ins" enabled in the Supabase
-    // dashboard (Authentication → Sign In / Providers → Anonymous).
-    //
-    // Exposes the same window.MiracleAuth shape as auth-gate.js so the existing token
-    // attachment (plugin-api.js, trainer-plugin.js) works unchanged.
+    // in as a local guest (if ALLOW_LOCAL_ANONYMOUS is enabled) or leaves the request
+    // unauthenticated, WITHOUT showing a login gate. Exposes the same window.MiracleAuth
+    // shape as auth-gate.js so the existing token attachment (plugin-api.js,
+    // trainer-plugin.js) works unchanged.
     let resolveReady;
     const ready = new Promise((resolve) => { resolveReady = resolve; });
     const LOCAL_SESSION_KEY = 'miracle-demo-local-anonymous-session';
-    const state = { client: null, user: null, accessToken: '', authMode: '' };
+    const state = { user: null, accessToken: '', authMode: '' };
     const LOCAL_USER = { id: 'local-dev-user', email: '', role: 'local-dev' };
-
-    function setSession(session) {
-        state.accessToken = (session && session.access_token) || '';
-        state.user = (session && session.user) || null;
-        state.authMode = state.user?.is_anonymous ? 'supabase-anonymous' : (state.user ? 'supabase' : '');
-    }
 
     function applyLocalSession(session) {
         state.accessToken = session?.accessToken || '';
@@ -40,12 +32,10 @@
     }
 
     async function init() {
-        const client = await window.MiracleSupabase.whenReady();
-        state.client = client;
-        const authBypassEnabled = Boolean(window.MiracleSupabase.getConfig?.()?.authBypassEnabled);
-        const localAnonymousAccess = Boolean(window.MiracleSupabase.getConfig?.()?.localAnonymousAccess);
+        const response = await fetch('/api/public-config', { cache: 'no-store' });
+        const config = await response.json().catch(() => ({}));
 
-        if (authBypassEnabled) {
+        if (config?.authBypassEnabled) {
             state.accessToken = '';
             state.user = LOCAL_USER;
             state.authMode = 'local-dev';
@@ -53,7 +43,7 @@
             return;
         }
 
-        if (localAnonymousAccess) {
+        if (config?.localAnonymousAccess) {
             try {
                 applyLocalSession(await createLocalSession());
             } catch (error) {
@@ -63,26 +53,9 @@
             return;
         }
 
-        if (!client) { resolveReady(null); return; }
-
-        const { data } = await client.auth.getSession();
-        if (data && data.session) {
-            setSession(data.session);
-        } else {
-            try {
-                const { data: anon, error } = await client.auth.signInAnonymously();
-                if (error) {
-                    console.warn('[Miracle Demo Auth] Anonymous sign-in failed — enable "Anonymous sign-ins" in Supabase:', error.message);
-                } else {
-                    setSession(anon.session);
-                }
-            } catch (error) {
-                console.warn('[Miracle Demo Auth] Anonymous sign-in threw:', error.message);
-            }
-        }
-
-        client.auth.onAuthStateChange((_event, session) => setSession(session));
-        resolveReady(state.user);
+        // No guest mode configured: requests go out unauthenticated. Endpoints that
+        // allow anonymous access still work (see requireAuth.js); the rest will 401.
+        resolveReady(null);
     }
 
     window.MiracleAuth = {
@@ -94,15 +67,9 @@
             if (state.authMode === 'local-anonymous') {
                 try { sessionStorage.removeItem(LOCAL_SESSION_KEY); } catch (error) { /* ignore */ }
                 window.location.reload();
-                return;
             }
-            try { await state.client && state.client.auth.signOut(); } catch (error) { /* ignore */ }
         }
     };
 
-    if (window.MiracleSupabase) {
-        init();
-    } else {
-        console.error('[Miracle Demo Auth] supabase-client.js must load before demo-auth.js');
-    }
+    init();
 })();

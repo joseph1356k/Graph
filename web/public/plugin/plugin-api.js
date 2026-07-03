@@ -22,7 +22,7 @@
         } catch (error) { /* ignore */ }
     }
 
-    // Attaches the Supabase access token after MiracleAuth has resolved. In
+    // Attaches the session access token after MiracleAuth has resolved. In
     // local mode there is no token, and the server falls back to local-dev-user.
     async function withAuth(init = {}) {
         await waitForAuthReady();
