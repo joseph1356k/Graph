@@ -13,20 +13,16 @@ const localAnonymousSecret = crypto
   .createHash('sha256')
   .update('miracle-local-anonymous-session-v1')
   .digest();
+// Admin login credentials come exclusively from env vars — no hardcoded
+// fallbacks (this repo is public). If LOCAL_ADMIN_SECRET is missing we sign
+// with a random per-process secret so no fixed secret ships in the code; if
+// the users/password are missing, admin login is simply disabled.
 const localAdminSecret = crypto
   .createHash('sha256')
-  .update(process.env.LOCAL_ADMIN_SECRET
-    || 'miracle-local-admin-session-v1::Miracle.AI::FelipeMaldonado::Isaabelsofia::Jamesbondagent007-max::JoseDavid')
+  .update(`${process.env.LOCAL_ADMIN_SECRET || ''}`.trim() || crypto.randomBytes(32).toString('hex'))
   .digest();
-const LOCAL_ADMIN_USERS = parseEnvList('LOCAL_ADMIN_USERS').length
-  ? parseEnvList('LOCAL_ADMIN_USERS')
-  : [
-      'Isaabelsofia',
-      'Jamesbondagent007-max',
-      'FelipeMaldonado',
-      'JoseDavid'
-    ];
-const LOCAL_ADMIN_PASSWORD = process.env.LOCAL_ADMIN_PASSWORD || 'Miracle.AI';
+const LOCAL_ADMIN_USERS = parseEnvList('LOCAL_ADMIN_USERS');
+const LOCAL_ADMIN_PASSWORD = `${process.env.LOCAL_ADMIN_PASSWORD || ''}`;
 
 function supabaseBaseUrl() {
   return `${process.env.SUPABASE_URL || ''}`.replace(/\/+$/, '');
@@ -131,6 +127,11 @@ function createLocalAdminPayload(username) {
 }
 
 function createLocalAdminSession(username, password) {
+  if (!LOCAL_ADMIN_PASSWORD || !LOCAL_ADMIN_USERS.length) {
+    const error = new Error('Login de administrador no configurado en el servidor.');
+    error.code = 'LOCAL_ADMIN_NOT_CONFIGURED';
+    throw error;
+  }
   if (`${password || ''}` !== LOCAL_ADMIN_PASSWORD) {
     const error = new Error('Credenciales invalidas.');
     error.code = 'LOCAL_ADMIN_INVALID_PASSWORD';

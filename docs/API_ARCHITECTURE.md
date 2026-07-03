@@ -111,18 +111,18 @@ de la API pública. El sistema aún no tiene usuarios reales.
 
 ### Secretos por env (no en el código)
 
-Para no exponer credenciales en el repo (público), estos valores se leen de
-variables de entorno (con fallback temporal para no romper producción):
+Para no exponer credenciales en el repo (público), estos valores se leen
+**exclusivamente** de variables de entorno. Ya **no hay fallbacks hardcodeados**:
 
-| Env var | Para qué |
-|---|---|
-| `MIRACLE_API_KEYS` | API keys permanentes de los clientes. |
-| `LOCAL_ADMIN_PASSWORD` | Clave del login de dashboard. |
-| `LOCAL_ADMIN_USERS` | Usuarios admin permitidos (coma-separados). |
-| `LOCAL_ADMIN_SECRET` | Secreto HMAC que firma los tokens de sesión admin. |
+| Env var | Para qué | Si falta |
+|---|---|---|
+| `MIRACLE_API_KEYS` | API keys permanentes de los clientes. | `/api/v1` responde `401` a todo. |
+| `LOCAL_ADMIN_PASSWORD` | Clave del login de dashboard. | El login admin queda deshabilitado. |
+| `LOCAL_ADMIN_USERS` | Usuarios admin permitidos (coma-separados). | El login admin queda deshabilitado. |
+| `LOCAL_ADMIN_SECRET` | Secreto HMAC que firma los tokens de sesión admin. | Se firma con un secreto aleatorio por proceso (las sesiones no persisten entre reinicios). |
 
-> Una vez configuradas en Vercel, las credenciales viejas del código dejan de
-> autenticar. Conviene eliminar los fallbacks hardcodeados en un commit posterior.
+> Estas variables deben estar configuradas en Vercel. Sin `LOCAL_ADMIN_PASSWORD`
+> y `LOCAL_ADMIN_USERS`, el login del dashboard rechaza cualquier intento.
 
 ---
 
