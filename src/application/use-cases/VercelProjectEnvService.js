@@ -55,6 +55,35 @@ class VercelProjectEnvService {
     }
   }
 
+  // Finds the most recent production deployment so we can redeploy it even
+  // when VERCEL_DEPLOYMENT_ID isn't exposed to the runtime.
+  async resolveLatestDeploymentId() {
+    if (!this.apiToken || !this.projectId) {
+      return '';
+    }
+    const params = new URLSearchParams({
+      projectId: this.projectId,
+      target: 'production',
+      limit: '1'
+    });
+    if (this.teamId) {
+      params.set('teamId', this.teamId);
+    }
+    try {
+      const response = await fetch(`https://api.vercel.com/v6/deployments?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${this.apiToken}` }
+      });
+      if (!response.ok) {
+        return '';
+      }
+      const payload = await response.json();
+      const deployment = Array.isArray(payload?.deployments) ? payload.deployments[0] : null;
+      return `${deployment?.uid || deployment?.id || ''}`.trim();
+    } catch (error) {
+      return '';
+    }
+  }
+
   async triggerRedeploy() {
     if (this.deployHookUrl) {
       const response = await fetch(this.deployHookUrl, { method: 'POST' });
@@ -70,12 +99,15 @@ class VercelProjectEnvService {
       };
     }
 
-    const deploymentId = `${process.env.VERCEL_DEPLOYMENT_ID || ''}`.trim();
+    let deploymentId = `${process.env.VERCEL_DEPLOYMENT_ID || ''}`.trim();
+    if (!deploymentId) {
+      deploymentId = await this.resolveLatestDeploymentId();
+    }
     if (!deploymentId) {
       return {
         triggered: false,
         strategy: 'manual',
-        message: 'Las variables ya quedaron guardadas en Vercel, pero falta un deploy hook o VERCEL_DEPLOYMENT_ID para redeploy automatico.'
+        message: 'Las variables ya quedaron guardadas en Vercel, pero no se encontro un deployment de produccion para redeploy automatico. Configura un deploy hook (GRAPH_VERCEL_DEPLOY_HOOK_URL) o redeploya manualmente.'
       };
     }
 

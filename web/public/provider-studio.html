@@ -254,6 +254,18 @@
           else els.message.removeAttribute('data-tone');
         }
 
+        function deploymentNote(deployment) {
+          if (deployment && deployment.triggered) {
+            return ' Redeploy de Vercel en curso; la clave estará activa en ~1 min.';
+          }
+          const detail = deployment && deployment.message ? ' ' + deployment.message : '';
+          return ' La clave quedó guardada, pero el redeploy automático no se disparó.' + detail;
+        }
+
+        function deploymentTone(deployment) {
+          return deployment && deployment.triggered ? 'success' : 'warning';
+        }
+
         async function authedFetch(url, options) {
           const opts = options || {};
           const headers = Object.assign({}, opts.headers);
@@ -333,7 +345,7 @@
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'No fue posible revocar la clave.');
-            setMessage('Clave revocada. Se aplica tras el redeploy de Vercel.', 'success');
+            setMessage('Clave revocada.' + deploymentNote(data.deployment), deploymentTone(data.deployment));
             await load();
           } catch (error) {
             button.disabled = false;
@@ -357,7 +369,7 @@
             els.revealValue.textContent = data.api_key;
             els.reveal.hidden = false;
             els.label.value = '';
-            setMessage('API key "' + data.label + '" creada. Activa tras el redeploy de Vercel.', 'success');
+            setMessage('API key "' + data.label + '" creada.' + deploymentNote(data.deployment), deploymentTone(data.deployment));
             await load();
           } catch (error) {
             setMessage(error.message || 'No fue posible generar la clave.', 'error');
