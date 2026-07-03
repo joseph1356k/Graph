@@ -39,7 +39,7 @@ const rateLimit = require('express-rate-limit');
 const {
   requireAuth,
   requireAccountAuth,
-  requireApiKeyOrAccount,
+  requireApiKey,
   attachWorkflowAccess,
   createLocalAdminSession,
   createLocalAnonymousSession,
@@ -341,9 +341,9 @@ function isMiracleMedicalProxyRequest(req) {
   app.use(routePrefix, requireAccountAuth, attachWorkflowAccess);
 });
 
-// Public API surface: a permanent client API key (MIRACLE_API_KEYS) OR an
-// account session token.
-app.use('/api/v1', requireApiKeyOrAccount);
+// Public API surface: authenticated only with a permanent client API key
+// (MIRACLE_API_KEYS). No session-token fallback.
+app.use('/api/v1', requireApiKey);
 
 function resolvePublicAppBaseUrl(req) {
   const forwardedProto = (req.headers['x-forwarded-proto'] || '').split(',')[0].trim();

@@ -97,18 +97,17 @@ construyen.
 
 ## 5. Autenticación
 
-`/api/v1` usa `requireApiKeyOrAccount` (en `requireAuth.js`), que acepta:
+`/api/v1` usa `requireApiKey` (en `requireAuth.js`): **solo API key**, sin
+fallback de token de sesión.
 
-1. **API key permanente** — cadena secreta en la env var `MIRACLE_API_KEYS`
-   (`label:key,label2:key2`), enviada por el cliente como `X-API-Key` o
-   `Authorization: Bearer`. Es lo recomendado para apps externas. No expira.
-2. **Token de sesión** (fallback) — el mismo que usa el dashboard:
-   - **Local-admin** — `POST /api/auth/local-admin/login` (usuario + clave), 12 h.
-   - **Supabase JWT** — si hay `SUPABASE_URL`, verificado contra el JWKS.
+- **API key permanente** — cadena secreta en la env var `MIRACLE_API_KEYS`
+  (`label:key,label2:key2`), enviada por el cliente como `X-API-Key` o
+  `Authorization: Bearer`. No expira. `verifyApiKey()` compara en tiempo
+  constante; si no matchea (o falta), responde `401`.
 
-`verifyApiKey()` compara en tiempo constante contra las claves de la env; si no
-matchea, cae a `requireAccountAuth` (que verifica el token de sesión). Los
-tokens anónimos quedan rechazados.
+El login del dashboard (`/api/auth/local-admin/login`, token de sesión) sigue
+existiendo **solo para las páginas del dashboard** (zonas de prueba), separado
+de la API pública. El sistema aún no tiene usuarios reales.
 
 ### Secretos por env (no en el código)
 

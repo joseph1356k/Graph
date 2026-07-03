@@ -431,31 +431,31 @@ function verifyApiKey(candidate) {
   return null;
 }
 
-// Auth for the public /api/v1 surface: a permanent client API key
-// (from MIRACLE_API_KEYS) OR a normal account session token.
-function requireApiKeyOrAccount(req, res, next) {
+// Auth for the public /api/v1 surface: a permanent client API key only
+// (from the MIRACLE_API_KEYS env var). No session-token fallback.
+function requireApiKey(req, res, next) {
   const candidate = extractApiKey(req);
   const match = candidate ? verifyApiKey(candidate) : null;
-  if (match) {
-    req.user = {
-      id: `api-client:${match.label}`,
-      email: '',
-      username: match.label,
-      role: 'api-client',
-      token: '',
-      isAnonymous: false
-    };
-    req.apiClient = { label: match.label };
-    req.workflowAccess = { ownerId: req.user.id, includeGlobal: true, canManageGlobalWorkflows: false };
-    return next();
+  if (!match) {
+    return res.status(401).json({ error: 'API key invalida o ausente.' });
   }
-  return requireAccountAuth(req, res, () => attachWorkflowAccess(req, res, next));
+  req.user = {
+    id: `api-client:${match.label}`,
+    email: '',
+    username: match.label,
+    role: 'api-client',
+    token: '',
+    isAnonymous: false
+  };
+  req.apiClient = { label: match.label };
+  req.workflowAccess = { ownerId: req.user.id, includeGlobal: true, canManageGlobalWorkflows: false };
+  return next();
 }
 
 module.exports = {
   requireAuth,
   requireAccountAuth,
-  requireApiKeyOrAccount,
+  requireApiKey,
   attachWorkflowAccess,
   verifySupabaseToken,
   verifyAccessToken,

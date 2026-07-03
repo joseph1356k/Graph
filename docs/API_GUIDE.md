@@ -21,60 +21,20 @@ https://miracle-zeta.vercel.app
 
 ## 2. Autenticación: cómo obtener tu token
 
-**Todas** las llamadas a `/api/v1/*` necesitan autenticación. Para apps/scripts
-lo recomendado es una **API key permanente**; también se acepta un token de
-sesión temporal.
+**Todas** las llamadas a `/api/v1/*` se autentican con una **API key
+permanente**. Es el único método (no hay tokens temporales).
 
-### Opción 0 — API key permanente (recomendada para apps) ✅
-
-El dueño del backend te entrega una **API key** (una cadena secreta) por un
-canal privado. **No expira** y va en la cabecera `X-API-Key`:
+El dueño del backend te entrega la API key (una cadena secreta) por un canal
+privado. **No expira**. Va en la cabecera `X-API-Key`:
 
 ```
 X-API-Key: <TU_API_KEY>
 ```
 
-(También funciona como `Authorization: Bearer <TU_API_KEY>`.)
+(También se acepta como `Authorization: Bearer <TU_API_KEY>`.)
 
-Esa es toda la autenticación que necesitas para una app. Las opciones A y B de
-abajo (token de sesión de 12 h) son solo si prefieres usar una cuenta humana.
-
-### Opción A — Programática (recomendada para apps/scripts)
-
-Haz un POST al endpoint de login con el usuario y la clave que te comparta el
-dueño del backend **por un canal privado** (no están en esta guía a propósito):
-
-```bash
-curl -sX POST https://miracle-zeta.vercel.app/api/auth/local-admin/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"<usuario>","password":"<clave>"}'
-```
-
-Respuesta:
-
-```json
-{
-  "accessToken": "miracle-local-admin-v1.<...>.<...>",
-  "expiresAt": 1782999999000,
-  "user": { "id": "local-admin:...", "username": "...", "role": "local-admin" }
-}
-```
-
-El valor de `accessToken` es tu token. Úsalo tal cual en `Authorization: Bearer`.
-
-### Opción B — Desde el navegador (rápida, manual)
-
-1. Abre el dashboard e inicia sesión: `https://miracle-zeta.vercel.app`
-2. Abre las **DevTools** del navegador (F12) → pestaña **Application**
-   (o *Almacenamiento*).
-3. En **Local Storage** → `https://miracle-zeta.vercel.app`, busca la clave
-   **`miracle-admin-session-v1`**.
-4. Su valor es un JSON; copia el campo **`accessToken`**.
-
-Ese es el mismo token de la Opción A.
-
-> Cuando el token expire (12 h) verás respuestas `401 No autorizado`; vuelve a
-> pedir uno.
+Eso es todo. Si falta o es inválida, la API responde `401 API key invalida o
+ausente`. Guarda la key en un gestor de secretos; nunca la subas a un repo.
 
 ---
 
@@ -88,7 +48,7 @@ Con `stages` decides qué procesa el backend; lo que no actives, no se procesa
 
 ```bash
 curl -sX POST https://miracle-zeta.vercel.app/api/v1/pipeline \
-  -H "Authorization: Bearer <TU_TOKEN>" \
+  -H "X-API-Key: <TU_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{
     "transcript": "paciente con dolor de rodilla derecha desde la semana pasada",
@@ -137,7 +97,7 @@ Respuesta (solo trae lo que pediste):
 const res = await fetch("https://miracle-zeta.vercel.app/api/v1/pipeline", {
   method: "POST",
   headers: {
-    "Authorization": `Bearer ${token}`,
+    "X-API-Key": apiKey,
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
@@ -161,7 +121,7 @@ propio canal:
 
 ```bash
 curl -sX POST https://miracle-zeta.vercel.app/api/v1/transcription/session \
-  -H "Authorization: Bearer <TU_TOKEN>" -H "Content-Type: application/json" -d '{}'
+  -H "X-API-Key: <TU_API_KEY>" -H "Content-Type: application/json" -d '{}'
 ```
 
 Respuesta:
@@ -191,7 +151,7 @@ Respuesta:
 ## 5. Descubrir capacidades
 
 ```bash
-curl -s https://miracle-zeta.vercel.app/api/v1 -H "Authorization: Bearer <TU_TOKEN>"
+curl -s https://miracle-zeta.vercel.app/api/v1 -H "X-API-Key: <TU_API_KEY>"
 ```
 
 Devuelve el manifiesto con las etapas y endpoints disponibles.
@@ -202,7 +162,7 @@ Devuelve el manifiesto con las etapas y endpoints disponibles.
 
 | Código | Significado | Qué hacer |
 |---|---|---|
-| `401` `No autorizado` | Falta el token, es inválido o expiró (12 h). | Vuelve a pedir un token (sección 2). |
+| `401` `API key invalida o ausente` | Falta la `X-API-Key` o no es válida. | Revisa la API key (sección 2). |
 | `429` | Límite de tasa (20/min en `/pipeline`). | Reintenta con backoff. |
 | `503` `runtime no configurado` | El motor de nota no está disponible en ese entorno. | Avisa al dueño del backend. |
 | `note.status: "skipped"` | Faltó `transcript`. | Envía `transcript`. |
@@ -216,4 +176,4 @@ Devuelve el manifiesto con las etapas y endpoints disponibles.
 - 🟡 **Autofill**: la etapa ya existe en la API; se activa enviando `fields` y
   se completará al refactorizar la capa de detección de campos del cliente.
 - 🔜 **Pipeline unificado en streaming** (un solo canal audio→crudo→nota→autofill).
-- 🔜 **API keys por cliente** (para no usar el token de sesión del dashboard).
+- 🔜 **Gestión de API keys desde el dashboard** (crear/rotar sin tocar env vars).
