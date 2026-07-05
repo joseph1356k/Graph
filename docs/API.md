@@ -6,14 +6,15 @@ exposición bajo `/api/v1`.
 
 ## Autenticación
 
-Todas las rutas `/api/v1/*` requieren una cuenta autenticada:
+Todas las rutas `/api/v1/*` se autentican con una **API key permanente** por
+cliente (`MIRACLE_API_KEYS`), enviada como `X-API-Key` o `Authorization:
+Bearer`. Es el único método: no hay fallback al token de sesión del dashboard.
 
 ```
-Authorization: Bearer <token>
+X-API-Key: <TU_API_KEY>
 ```
 
-> Nota: hoy se usa el mismo token de sesión del dashboard. Un esquema de
-> API-keys por cliente es el siguiente paso.
+Si falta o es inválida, la API responde `401`.
 
 ---
 
@@ -114,4 +115,3 @@ bidireccional que no cabe en un request/response único.
 - **Pipeline en streaming (SSE/WS):** fusionar audio-in → transcripción cruda +
   nota + autofill en un único flujo en tiempo real (hoy la transcripción cruda
   usa `transcription/session` + Deepgram directo).
-- **API keys por cliente** para apps externas (app de Windows en otro repo).

@@ -5,11 +5,6 @@ so the repository root stays focused on source code, docs, tests, and operationa
 
 ## Layout
 
-- `openclaw/agent/`
-  Official OpenClaw agent workspace for the Miracle profile.
-  This is where workspace files such as `AGENTS.md`, `SOUL.md`, `USER.md`,
-  `IDENTITY.md`, `TOOLS.md`, and `HEARTBEAT.md` live.
-
 - `miracle/knowledge/`
   User-facing Markdown content for the Miracle notes app.
 
@@ -18,6 +13,5 @@ so the repository root stays focused on source code, docs, tests, and operationa
 
 ## Rule of thumb
 
-- If it is OpenClaw workspace state, put it in `openclaw/agent/`.
 - If it is Miracle product data, put it in `miracle/`.
 - If it is application code, it belongs in `src/`.

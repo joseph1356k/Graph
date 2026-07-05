@@ -52,51 +52,51 @@ The codebase is moving toward three layers:
    - medical demo
    - future plugin entrypoints for external pages/apps
 
-For a deeper explanation, see [ARCHITECTURE.md](C:/Users/User/Desktop/Graph/ARCHITECTURE.md).
+For the current backend architecture and cleanup plan, see [ARQUITECTURA_Y_PLAN.md](ARQUITECTURA_Y_PLAN.md).
 
 ## Main Runtime Pieces
 
-- [web/server.js](C:/Users/User/Desktop/Graph/web/server.js)
+- [web/server.js](web/server.js)
   - Express server
   - serves demo pages
   - exposes workflow and agent APIs
 
-- [web/public/recorder.js](C:/Users/User/Desktop/Graph/web/public/recorder.js)
+- [web/public/recorder.js](web/public/recorder.js)
   - generic DOM action recorder
   - captures `navigation`, `click`, `input`, and `select`
 
-- [web/public/trainer-plugin.js](C:/Users/User/Desktop/Graph/web/public/trainer-plugin.js)
+- [web/public/trainer-plugin.js](web/public/trainer-plugin.js)
   - floating trainer widget
   - workflow recording controls
   - agent chat entrypoint
   - page context and assistant personality wiring
 
-- [web/public/assistant-runtime.js](C:/Users/User/Desktop/Graph/web/public/assistant-runtime.js)
+- [web/public/assistant-runtime.js](web/public/assistant-runtime.js)
   - reusable floating assistant body
   - guided spotlight and page-tour runtime
   - execution telemetry surface for Playwright and future voice/memory features
 
-- [web/public/page-state.js](C:/Users/User/Desktop/Graph/web/public/page-state.js)
+- [web/public/page-state.js](web/public/page-state.js)
   - generic page form-state persistence
 
-- [chrome-extension-src/graph-trainer](C:/Users/User/Desktop/Graph/chrome-extension-src/graph-trainer)
+- [chrome-extension-src/graph-trainer](chrome-extension-src/graph-trainer)
   - Chrome-specific host wrapper
   - injects the shared runtime into arbitrary pages
 
-- [scripts/build-chrome-extension.js](C:/Users/User/Desktop/Graph/scripts/build-chrome-extension.js)
+- [scripts/build-chrome-extension.js](scripts/build-chrome-extension.js)
   - local packaging script for the Chrome extension
   - writes ignored build output into `generated/chrome-extension/`
 
-- [src/application/use-cases/AgentChat.js](C:/Users/User/Desktop/Graph/src/application/use-cases/AgentChat.js)
+- [src/application/use-cases/AgentChat.js](src/application/use-cases/AgentChat.js)
   - workflow selection
   - page-context filtering
   - assistant personality prompt shaping
 
-- [src/application/use-cases/WorkflowExecutor.js](C:/Users/User/Desktop/Graph/src/application/use-cases/WorkflowExecutor.js)
+- [src/application/use-cases/WorkflowExecutor.js](src/application/use-cases/WorkflowExecutor.js)
   - workflow replay with Playwright
   - select-option choice handling via LLM
 
-- [src/infrastructure/LLMProvider.js](C:/Users/User/Desktop/Graph/src/infrastructure/LLMProvider.js)
+- [src/infrastructure/LLMProvider.js](src/infrastructure/LLMProvider.js)
   - LLM transport
   - currently supports OpenRouter-first configuration
 
@@ -106,9 +106,9 @@ For a deeper explanation, see [ARCHITECTURE.md](C:/Users/User/Desktop/Graph/ARCH
 
 Pages:
 
-- [web/public/index.html](C:/Users/User/Desktop/Graph/web/public/index.html)
-- [web/public/page1.html](C:/Users/User/Desktop/Graph/web/public/page1.html)
-- [web/public/page2.html](C:/Users/User/Desktop/Graph/web/public/page2.html)
+- [web/public/index.html](web/public/index.html)
+- [web/public/page1.html](web/public/page1.html)
+- [web/public/page2.html](web/public/page2.html)
 
 Characteristics:
 
@@ -155,7 +155,7 @@ That means the medical pages are examples of the runtime in action, not the long
 npm ci
 ```
 
-On this Windows setup, prefer `npm.cmd` for npm scripts when PowerShell blocks `npm.ps1`.
+On this Windows setup, prefer `npm` for npm scripts when PowerShell blocks `npm.ps1`.
 
 2. Start the web server:
 
@@ -174,7 +174,7 @@ node web/server.js
 1. Generate the unpacked Chrome extension locally:
 
 ```bash
-npm.cmd run build:chrome-extension
+npm run build:chrome-extension
 ```
 
 2. Load the unpacked folder in Chrome:
@@ -182,7 +182,7 @@ npm.cmd run build:chrome-extension
 - `chrome://extensions`
 - enable Developer mode
 - click `Load unpacked`
-- select `C:\Users\User\Desktop\Graph\generated\chrome-extension\graph-trainer`
+- select `generated/chrome-extension/graph-trainer`
 
 Notes:
 
@@ -219,7 +219,7 @@ The system already supports:
 - page-context filtering
 - per-page assistant personality
 - a reusable floating assistant runtime for guided movement on the page
-- generation of `improvement-tour.json` alongside pitch artifacts
+- Deepgram voice transcription, LLM note organization, and autofill of learned fields
 
 Still intentionally incomplete:
 
