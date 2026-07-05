@@ -39,7 +39,6 @@
         activity: {
             voice: false,
             note: false,
-            phone: false,
             recording: false,
             executing: false,
             filling: false,
@@ -62,7 +61,6 @@
     const ACTIVITY_LABELS = {
         voice: 'voz activa',
         note: 'dictado activo',
-        phone: 'telefono conectado',
         recording: 'grabacion activa',
         executing: 'ejecucion activa',
         filling: 'llenando campos',

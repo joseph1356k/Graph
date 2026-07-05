@@ -61,22 +61,6 @@
         return {};
     }
 
-    function getDefaultSuggestions() {
-        return [
-            {
-                id: 'generic-cta-clarity',
-                selector: 'main, body',
-                title: 'La pagina necesita mas claridad en el siguiente paso',
-                summary: 'Un usuario nuevo podria no identificar de inmediato cual es la accion principal para continuar.',
-                evidence: '"La pagina se ve bien, pero no supe cual era el siguiente paso recomendado."',
-                opportunity: 'Resaltar mejor la accion principal y reducir competencia visual.',
-                source: 'Observacion de experiencia',
-                priority: 'media',
-                area: 'Experiencia general'
-            }
-        ];
-    }
-
     function createAdapter(config) {
         const adapterConfig = config && typeof config === 'object' ? config : {};
         const preset = getSurfacePreset(adapterConfig);
@@ -102,7 +86,6 @@
                 learning: true,
                 execution: true,
                 voice: true,
-                improvements: true,
                 ...(adapterConfig.capabilities || {})
             },
             getDemoMode(context) {
@@ -135,9 +118,6 @@
             },
             filterWorkflows(workflows, context) {
                 return (workflows || []).filter((workflow) => this.matchesWorkflow(workflow, context));
-            },
-            getImprovementSuggestions() {
-                return getDefaultSuggestions();
             }
         };
 

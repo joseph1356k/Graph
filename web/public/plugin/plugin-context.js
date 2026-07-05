@@ -22,7 +22,6 @@
         '#graph-assistant-spotlight',
         '#teaching-console',
         '#workflow-overlay',
-        '#feedback-overlay',
         '#voice-toggle',
         '#miracle-auth-gate'
     ].join(', ');

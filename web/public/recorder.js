@@ -682,7 +682,6 @@ window.WorkflowRecorder = (() => {
       '#graph-assistant-spotlight, ' +
       '#teaching-console, ' +
       '#workflow-overlay, ' +
-      '#feedback-overlay, ' +
       '#voice-toggle'
     ));
   }

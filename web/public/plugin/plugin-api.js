@@ -179,13 +179,6 @@
                     })
                 }, fetchImpl);
             },
-            generatePitchArtifacts(payload) {
-                return createJsonRequest(baseUrl, '/api/pitch/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload || {})
-                }, fetchImpl);
-            },
             createMiracleStreamSession() {
                 if (!miracleBaseUrl) {
                     return Promise.reject(new Error('El motor medico Miracle no esta configurado en Vercel. Render no se usa como fallback.'));

@@ -3,13 +3,8 @@
         const runtime = typeof deps.runtime === 'function' ? deps.runtime : () => null;
         const longPressMs = Number.isFinite(deps.longPressMs) ? deps.longPressMs : 650;
         const isWorkflowOverlayVisible = typeof deps.isWorkflowOverlayVisible === 'function' ? deps.isWorkflowOverlayVisible : () => false;
-        const isFeedbackOverlayVisible = typeof deps.isFeedbackOverlayVisible === 'function' ? deps.isFeedbackOverlayVisible : () => false;
         const renderWorkflowOverlay = typeof deps.renderWorkflowOverlay === 'function' ? deps.renderWorkflowOverlay : () => {};
-        const renderFeedbackOverlay = typeof deps.renderFeedbackOverlay === 'function' ? deps.renderFeedbackOverlay : () => {};
         const loadWorkflowPanel = typeof deps.loadWorkflowPanel === 'function' ? deps.loadWorkflowPanel : async () => {};
-        const loadImprovementPanel = typeof deps.loadImprovementPanel === 'function' ? deps.loadImprovementPanel : async () => {};
-        const toggleFeedbackOverlay = typeof deps.toggleFeedbackOverlay === 'function' ? deps.toggleFeedbackOverlay : () => {};
-        const runPitchGeneration = typeof deps.runPitchGeneration === 'function' ? deps.runPitchGeneration : async () => {};
         const executeWorkflowFromPanel = typeof deps.executeWorkflowFromPanel === 'function' ? deps.executeWorkflowFromPanel : async () => {};
         const getWorkflowEntryById = typeof deps.getWorkflowEntryById === 'function' ? deps.getWorkflowEntryById : () => null;
         const toggleWorkflowOverlay = typeof deps.toggleWorkflowOverlay === 'function' ? deps.toggleWorkflowOverlay : () => {};
@@ -27,11 +22,9 @@
         function updateConsoleExpandedState() {
             const consoleEl = document.getElementById('teaching-console');
             const panel = document.getElementById('workflow-panel');
-            const improvementPanel = document.getElementById('improvement-panel');
-            if (!consoleEl || !panel || !improvementPanel) return;
+            if (!consoleEl || !panel) return;
 
-            const shouldExpand = panel.classList.contains('open')
-                || improvementPanel.classList.contains('open');
+            const shouldExpand = panel.classList.contains('open');
             consoleEl.classList.toggle('compact-open', shouldExpand);
         }
 
@@ -42,16 +35,8 @@
             updateConsoleExpandedState();
         }
 
-        function closeImprovementPanel() {
-            const panel = document.getElementById('improvement-panel');
-            if (!panel) return;
-            panel.classList.remove('open');
-            updateConsoleExpandedState();
-        }
-
         function openChatPanel() {
             closeWorkflowPanel();
-            closeImprovementPanel();
             updateConsoleExpandedState();
             runtime()?.setExpanded?.(true, { source: 'console-chat' });
             runtime()?.openChatComposer?.({ focus: true });
@@ -60,22 +45,9 @@
 
         function openWorkflowPanel() {
             const panel = document.getElementById('workflow-panel');
-            const improvementPanel = document.getElementById('improvement-panel');
-            if (!panel || !improvementPanel) return;
+            if (!panel) return;
             runtime()?.setExpanded?.(true, { source: 'workflow-panel' });
             runtime()?.closeChatComposer?.();
-            improvementPanel.classList.remove('open');
-            panel.classList.add('open');
-            updateConsoleExpandedState();
-        }
-
-        function openImprovementPanel() {
-            const panel = document.getElementById('improvement-panel');
-            const workflowPanel = document.getElementById('workflow-panel');
-            if (!panel || !workflowPanel) return;
-            runtime()?.setExpanded?.(true, { source: 'improvement-panel' });
-            runtime()?.closeChatComposer?.();
-            workflowPanel.classList.remove('open');
             panel.classList.add('open');
             updateConsoleExpandedState();
         }
@@ -91,26 +63,8 @@
             loadWorkflowPanel(true);
         }
 
-        function toggleImprovementPanel() {
-            const panel = document.getElementById('improvement-panel');
-            if (!panel) return;
-            if (panel.classList.contains('open')) {
-                closeImprovementPanel();
-                return;
-            }
-            openImprovementPanel();
-            loadImprovementPanel(true);
-        }
-
         function updateWorkflowPanelStatus(text) {
             const status = document.getElementById('workflow-panel-status');
-            if (status) {
-                status.textContent = text;
-            }
-        }
-
-        function updateImprovementPanelStatus(text) {
-            const status = document.getElementById('improvement-panel-status');
             if (status) {
                 status.textContent = text;
             }
@@ -186,7 +140,6 @@
             document.getElementById('btn-stop-execution').addEventListener('click', onStopWorkflowExecution);
 
             bindLongPressGesture('btn-record-toggle', toggleWorkflowPanel, async () => {
-                closeImprovementPanel();
                 closeWorkflowPanel();
 
                 if (onWorkflowRecordingCheck()) {
@@ -200,27 +153,12 @@
                 closeWorkflowPanel();
             });
 
-            document.getElementById('improvement-panel-refresh').addEventListener('click', () => {
-                loadImprovementPanel(true);
-            });
-            document.getElementById('feedback-overlay-toggle').addEventListener('click', () => {
-                toggleFeedbackOverlay();
-            });
-            document.getElementById('improvement-run-pitch').addEventListener('click', async () => {
-                await runPitchGeneration();
-            });
             window.addEventListener('scroll', () => {
-                if (isFeedbackOverlayVisible()) {
-                    renderFeedbackOverlay();
-                }
                 if (isWorkflowOverlayVisible()) {
                     renderWorkflowOverlay();
                 }
             }, { passive: true });
             window.addEventListener('resize', () => {
-                if (isFeedbackOverlayVisible()) {
-                    renderFeedbackOverlay();
-                }
                 if (isWorkflowOverlayVisible()) {
                     renderWorkflowOverlay();
                 }
@@ -280,14 +218,10 @@
         return {
             updateConsoleExpandedState,
             closeWorkflowPanel,
-            closeImprovementPanel,
             openChatPanel,
             openWorkflowPanel,
-            openImprovementPanel,
             toggleWorkflowPanel,
-            toggleImprovementPanel,
             updateWorkflowPanelStatus,
-            updateImprovementPanelStatus,
             updateVoiceStatus,
             setVoiceButton,
             setExecutionStopButtonVisible,

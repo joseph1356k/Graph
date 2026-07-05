@@ -21,10 +21,8 @@
     let agentHistory = [];
     let mounted = false;
     let workflowPanelLoaded = false;
-    let improvementPanelLoaded = false;
     let authLifecycleBound = false;
     let runtimeTouchBound = false;
-    let feedbackOverlayVisible = false;
     let workflowOverlayVisible = false;
     let workflowOverlayWorkflow = null;
     let surfaceProfileHydration = null;
@@ -216,13 +214,8 @@
             runtime,
             longPressMs: LONG_PRESS_MS,
             isWorkflowOverlayVisible: () => workflowOverlayVisible,
-            isFeedbackOverlayVisible: () => feedbackOverlayVisible,
             renderWorkflowOverlay,
-            renderFeedbackOverlay,
             loadWorkflowPanel,
-            loadImprovementPanel,
-            toggleFeedbackOverlay,
-            runPitchGeneration,
             executeWorkflowFromPanel,
             getWorkflowEntryById,
             toggleWorkflowOverlay,
@@ -398,14 +391,12 @@
                 color: white;
             }
             .console-chat,
-            .workflow-panel,
-            .improvement-panel {
+            .workflow-panel {
                 display: none;
                 width: 100%;
             }
             .console-chat.open,
-            .workflow-panel.open,
-            .improvement-panel.open {
+            .workflow-panel.open {
                 display: flex;
                 flex-direction: column;
                 gap: 10px;
@@ -448,16 +439,9 @@
             .workflow-panel {
                 padding-top: 2px;
             }
-            .improvement-panel {
-                padding-top: 2px;
-            }
             .workflow-panel-header,
-            .improvement-panel-header,
             .workflow-panel-empty,
-            .workflow-panel-status,
-            .improvement-panel-empty,
-            .improvement-panel-status,
-            .improvement-panel-footnote {
+            .workflow-panel-status {
                 color: #1d2a33;
                 font-size: 13px;
             }
@@ -467,20 +451,10 @@
                 justify-content: space-between;
                 gap: 10px;
             }
-            .improvement-panel-header {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 10px;
-            }
             .workflow-panel-header strong {
                 font-size: 14px;
             }
-            .improvement-panel-header strong {
-                font-size: 14px;
-            }
             .workflow-panel-header button,
-            .improvement-panel-header button,
             .workflow-item-actions button {
                 border: none;
                 border-radius: 999px;
@@ -499,46 +473,8 @@
                 color: #111111;
                 box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.08);
             }
-            .improvement-panel-header button {
-                background: #fff4dd;
-                color: #8a4b08;
-            }
-            .improvement-panel-actions {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-            .improvement-panel-actions button {
-                border: none;
-                border-radius: 999px;
-                padding: 9px 12px;
-                cursor: pointer;
-                font: inherit;
-                font-size: 12px;
-                font-weight: 700;
-            }
-            .improvement-panel-actions button[data-action="toggle-overlay"] {
-                background: #fff1d6;
-                color: #8a4b08;
-            }
-            .improvement-panel-actions button[data-action="run-pitch"] {
-                background: #8a4b08;
-                color: white;
-            }
-            .improvement-panel-actions button:disabled {
-                opacity: 0.65;
-                cursor: wait;
-            }
             .workflow-panel-list {
                 max-height: 260px;
-                overflow: auto;
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                padding-right: 4px;
-            }
-            .improvement-panel-list {
-                max-height: 280px;
                 overflow: auto;
                 display: flex;
                 flex-direction: column;
@@ -553,129 +489,16 @@
                 display: grid;
                 gap: 8px;
             }
-            .improvement-item {
-                border: 1px solid rgba(15, 23, 42, 0.08);
-                border-radius: 22px;
-                padding: 16px;
-                background:
-                    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(252, 249, 245, 0.98) 100%),
-                    radial-gradient(circle at top left, rgba(245, 158, 11, 0.12), transparent 36%);
-                box-shadow: 0 24px 48px rgba(15, 23, 42, 0.08);
-                display: grid;
-                gap: 12px;
-            }
             .workflow-item-title {
                 margin: 0;
                 font-size: 13px;
                 font-weight: 800;
                 color: #1b2733;
             }
-            .improvement-item-header {
-                display: flex;
-                align-items: flex-start;
-                justify-content: space-between;
-                gap: 12px;
-            }
-            .improvement-item-eyebrow {
-                display: inline-flex;
-                align-items: center;
-                width: fit-content;
-                padding: 5px 10px;
-                border-radius: 999px;
-                background: rgba(255, 247, 237, 0.95);
-                color: #9a3412;
-                font-size: 10px;
-                font-weight: 700;
-                letter-spacing: 0.08em;
-                text-transform: uppercase;
-            }
-            .improvement-item-title {
-                margin: 0;
-                font-size: 16px;
-                font-weight: 700;
-                line-height: 1.25;
-                letter-spacing: -0.02em;
-                color: #111827;
-            }
             .workflow-item-meta {
                 font-size: 12px;
                 color: #526170;
                 line-height: 1.45;
-            }
-            .improvement-item-meta {
-                font-size: 13px;
-                color: #4b5563;
-                line-height: 1.6;
-                display: grid;
-                gap: 10px;
-            }
-            .improvement-item-quote {
-                margin: 0;
-                padding: 12px 14px;
-                border-radius: 16px;
-                background: rgba(255, 250, 245, 0.95);
-                border: 1px solid rgba(245, 158, 11, 0.18);
-                color: #7c2d12;
-                font-size: 13px;
-                line-height: 1.6;
-            }
-            .improvement-item-quote-label,
-            .improvement-item-recommendation-label {
-                display: block;
-                margin-bottom: 4px;
-                font-size: 10px;
-                font-weight: 700;
-                letter-spacing: 0.08em;
-                text-transform: uppercase;
-                color: #9ca3af;
-            }
-            .improvement-item-recommendation {
-                padding: 14px 16px;
-                border-radius: 18px;
-                background: rgba(248, 250, 252, 0.96);
-                border: 1px solid rgba(148, 163, 184, 0.18);
-                color: #111827;
-                font-size: 13px;
-                line-height: 1.6;
-            }
-            .improvement-item-target {
-                font-size: 11px;
-                color: #9ca3af;
-                word-break: break-word;
-            }
-            .improvement-item-pill {
-                display: inline-flex;
-                align-items: center;
-                width: fit-content;
-                padding: 5px 9px;
-                border-radius: 999px;
-                font-size: 10px;
-                font-weight: 700;
-                letter-spacing: 0.08em;
-                text-transform: uppercase;
-                background: rgba(17, 24, 39, 0.06);
-                color: #111827;
-            }
-            .improvement-item-pill[data-priority="alta"] {
-                background: rgba(239, 68, 68, 0.1);
-                color: #b91c1c;
-            }
-            .improvement-item-pill[data-priority="media"] {
-                background: rgba(245, 158, 11, 0.14);
-                color: #b45309;
-            }
-            .improvement-item-pill[data-priority="baja"] {
-                background: rgba(59, 130, 246, 0.1);
-                color: #1d4ed8;
-            }
-            .improvement-panel-footnote {
-                padding: 14px 16px;
-                border-radius: 18px;
-                background: rgba(248, 250, 252, 0.96);
-                border: 1px solid rgba(148, 163, 184, 0.16);
-                color: #475569;
-                line-height: 1.55;
-                font-size: 12px;
             }
             .workflow-item-actions {
                 display: flex;
@@ -835,24 +658,6 @@
                 <div class="workflow-panel-list" id="workflow-panel-list"></div>
                 <div class="workflow-panel-empty" id="workflow-panel-empty" hidden>No hay workflows grabados para esta pagina todavia.</div>
             </div>
-            <div class="improvement-panel" id="improvement-panel" aria-live="polite">
-                <div class="improvement-panel-header">
-                    <div>
-                        <strong>Feedback visible sobre la pagina</strong>
-                        <div class="improvement-panel-status" id="improvement-panel-status">Manten este boton oprimido para ver comentarios y acciones de mejora.</div>
-                    </div>
-                    <button id="improvement-panel-refresh" type="button">Actualizar</button>
-                </div>
-                <div class="improvement-panel-actions">
-                    <button type="button" data-action="toggle-overlay" id="feedback-overlay-toggle">Mostrar puntos en la pagina</button>
-                    <button type="button" data-action="run-pitch" id="improvement-run-pitch">Generar pitch</button>
-                </div>
-                <div class="improvement-panel-list" id="improvement-panel-list"></div>
-                <div class="improvement-panel-empty" id="improvement-panel-empty" hidden>No hay sugerencias disponibles para esta pagina todavia.</div>
-                <div class="improvement-panel-footnote" id="improvement-panel-footnote">
-                    Esta capa resume fricciones y oportunidades de claridad detectadas para la experiencia actual. Mas adelante la conectaremos con feedback real y señales observadas en produccion.
-                </div>
-            </div>
             <div class="console-chat" id="console-chat">
                 <div class="console-chat-log" id="console-chat-log" aria-live="polite" aria-label="AI chat messages"></div>
                 <div class="voice-status" id="voice-status"></div>
@@ -870,22 +675,7 @@
             <button id="btn-stop" class="sr-only" type="button">Stop</button>
         `);
         document.body.appendChild(consoleEl);
-        ensureFeedbackOverlay();
         return consoleEl;
-    }
-
-    function ensureFeedbackOverlay() {
-        let overlay = document.getElementById('feedback-overlay');
-        if (overlay) {
-            return overlay;
-        }
-
-        overlay = document.createElement('div');
-        overlay.className = 'feedback-overlay';
-        overlay.id = 'feedback-overlay';
-        overlay.hidden = true;
-        document.body.appendChild(overlay);
-        return overlay;
     }
 
     function ensureWorkflowOverlay() {
@@ -910,10 +700,6 @@
         return requireTrainerShell().closeWorkflowPanel();
     }
 
-    function closeImprovementPanel() {
-        return requireTrainerShell().closeImprovementPanel();
-    }
-
     function openChatPanel() {
         return requireTrainerShell().openChatPanel();
     }
@@ -922,16 +708,8 @@
         return requireTrainerShell().openWorkflowPanel();
     }
 
-    function openImprovementPanel() {
-        return requireTrainerShell().openImprovementPanel();
-    }
-
     function toggleWorkflowPanel() {
         return requireTrainerShell().toggleWorkflowPanel();
-    }
-
-    function toggleImprovementPanel() {
-        return requireTrainerShell().toggleImprovementPanel();
     }
 
     function escapeHtml(value) {
@@ -941,14 +719,6 @@
             .replaceAll('>', '&gt;')
             .replaceAll('"', '&quot;')
             .replaceAll("'", '&#39;');
-    }
-
-    function getMockFeedbackSuggestions() {
-        const adapter = getSurfaceAdapter();
-        if (!adapter || typeof adapter.getImprovementSuggestions !== 'function') {
-            return [];
-        }
-        return adapter.getImprovementSuggestions(getPageContext()) || [];
     }
 
     function resolveOverlayAnchors(items) {
@@ -1003,45 +773,6 @@
             `);
             overlay.appendChild(item);
         });
-    }
-
-    function updateFeedbackOverlayButton() {
-        const toggle = document.getElementById('feedback-overlay-toggle');
-        const pitchButton = document.getElementById('pitch-generate');
-        if (toggle) {
-            toggle.textContent = feedbackOverlayVisible ? 'Ocultar puntos en la pagina' : 'Mostrar puntos en la pagina';
-        }
-        if (pitchButton) {
-            pitchButton.dataset.active = feedbackOverlayVisible ? 'true' : 'false';
-            pitchButton.title = feedbackOverlayVisible ? 'Ocultar feedback de usuarios' : 'Mostrar feedback de usuarios';
-            pitchButton.setAttribute('aria-label', pitchButton.title);
-        }
-    }
-
-    function renderFeedbackOverlay() {
-        const overlay = ensureFeedbackOverlay();
-        renderCardsOverlay(overlay, resolveOverlayAnchors(getMockFeedbackSuggestions()));
-    }
-
-    function showFeedbackOverlay() {
-        feedbackOverlayVisible = true;
-        renderFeedbackOverlay();
-        ensureFeedbackOverlay().hidden = false;
-        updateFeedbackOverlayButton();
-    }
-
-    function hideFeedbackOverlay() {
-        feedbackOverlayVisible = false;
-        ensureFeedbackOverlay().hidden = true;
-        updateFeedbackOverlayButton();
-    }
-
-    function toggleFeedbackOverlay() {
-        if (feedbackOverlayVisible) {
-            hideFeedbackOverlay();
-            return;
-        }
-        showFeedbackOverlay();
     }
 
     function getWorkflowOverlayItems(workflow) {
@@ -1125,10 +856,6 @@
 
     function updateWorkflowPanelStatus(text) {
         return requireTrainerShell().updateWorkflowPanelStatus(text);
-    }
-
-    function updateImprovementPanelStatus(text) {
-        return requireTrainerShell().updateImprovementPanelStatus(text);
     }
 
     function updateVoiceStatus(text) {
@@ -1671,14 +1398,6 @@
         }
     }
 
-    function setImprovementPanelLoadingState(isLoading) {
-        const refresh = document.getElementById('improvement-panel-refresh');
-        if (refresh) {
-            refresh.disabled = isLoading;
-            refresh.textContent = isLoading ? 'Cargando...' : 'Actualizar';
-        }
-    }
-
     function readPendingExecution() {
         return requireExecutionClient().readPendingExecution();
     }
@@ -1810,76 +1529,10 @@
         await executeWorkflowPlan(executionPlan, 'panel');
     }
 
-    async function generatePitchArtifacts() {
-        updateWorkflowPanelStatus('Generando pitchpersonality.md y future-improvement.md...');
-        runtime()?.speak('Estoy generando los artefactos de pitch y preparando el recorrido de mejoras.', { mode: 'tour' });
-
-        return requireApiClient().generatePitchArtifacts({
-            ...getPageContext(),
-            workflowDescription: options.workflowDescription || ''
-        });
-    }
-
-    function startImprovementTour(result) {
-        const tour = result?.tour;
-        if (!tour || !Array.isArray(tour.stops) || tour.stops.length === 0) {
-            runtime()?.speak('Genere los archivos, pero todavia no hay un recorrido visual para esta pagina.', { mode: 'tour' });
-            return;
-        }
-
-        runtime()?.startTour(tour);
-    }
-
     async function deleteWorkflowFromPanel(workflowId) {
         updateWorkflowPanelStatus(`Borrando ${workflowId}...`);
         await requireApiClient().deleteWorkflow(workflowId);
         updateWorkflowPanelStatus(`Workflow ${workflowId} borrado.`);
-    }
-
-    function renderImprovementPanel(suggestions) {
-        const list = document.getElementById('improvement-panel-list');
-        const empty = document.getElementById('improvement-panel-empty');
-        if (!list || !empty) return;
-
-        list.replaceChildren();
-
-        if (!suggestions.length) {
-            empty.hidden = false;
-            updateImprovementPanelStatus('No hay sugerencias disponibles para esta pagina.');
-            return;
-        }
-
-        empty.hidden = true;
-        updateImprovementPanelStatus(`${suggestions.length} sugerencia(s) disponibles para esta pagina.`);
-
-        suggestions.forEach((suggestion) => {
-            const item = document.createElement('article');
-            item.className = 'improvement-item';
-            const priority = `${suggestion.priority || 'media'}`.toLowerCase();
-            setElementHtml(item, `
-                <div class="improvement-item-header">
-                    <div>
-                        <div class="improvement-item-eyebrow">${suggestion.area || 'Momento de la experiencia'}</div>
-                        <h4 class="improvement-item-title">${suggestion.title || 'Sugerencia de mejora'}</h4>
-                    </div>
-                    <div class="improvement-item-pill" data-priority="${priority}">Prioridad ${suggestion.priority || 'media'}</div>
-                </div>
-                <div class="improvement-item-meta">
-                    <div>${suggestion.summary || ''}</div>
-                    <div class="improvement-item-quote">
-                        <span class="improvement-item-quote-label">Lo que una persona podria decir</span>
-                        ${suggestion.evidence || 'Sin evidencia disponible.'}
-                    </div>
-                    <div class="improvement-item-recommendation">
-                        <span class="improvement-item-recommendation-label">Que conviene mejorar</span>
-                        ${suggestion.opportunity || 'Sin oportunidad descrita.'}
-                    </div>
-                    <div><strong>Origen:</strong> ${suggestion.source || 'Plugin'}</div>
-                </div>
-                <div class="improvement-item-target">Anclado a: ${suggestion.selector || 'pagina actual'}</div>
-            `);
-            list.appendChild(item);
-        });
     }
 
     function renderWorkflowPanel(workflows) {
@@ -1956,77 +1609,6 @@
         return workflowPanelEntries.find((workflow) => workflow.id === workflowId) || null;
     }
 
-    async function loadImprovementPanel(force = false) {
-        if (improvementPanelLoaded && !force) {
-            return;
-        }
-
-        improvementPanelLoaded = true;
-        setImprovementPanelLoadingState(true);
-        updateImprovementPanelStatus('Preparando feedback visible y oportunidades de mejora de esta pagina...');
-
-        try {
-            const suggestions = getMockFeedbackSuggestions();
-            renderImprovementPanel(suggestions);
-            updateImprovementPanelStatus(`${suggestions.length} comentario(s) listos para revisar en la pagina.`);
-        } catch (error) {
-            improvementPanelLoaded = false;
-            updateImprovementPanelStatus(error.message || 'No se pudo cargar el panel de mejoras.');
-            const list = document.getElementById('improvement-panel-list');
-            const empty = document.getElementById('improvement-panel-empty');
-            if (list) list.replaceChildren();
-            if (empty) {
-                empty.hidden = false;
-                empty.textContent = 'No fue posible cargar las sugerencias de mejora de esta pagina.';
-            }
-        } finally {
-            setImprovementPanelLoadingState(false);
-        }
-    }
-
-    async function runPitchGeneration() {
-        const button = document.getElementById('improvement-run-pitch');
-        const iconButton = document.getElementById('pitch-generate');
-
-        if (button) {
-            button.disabled = true;
-            button.textContent = 'Generando...';
-        }
-        if (iconButton) {
-            iconButton.disabled = true;
-        }
-
-        try {
-            const result = await generatePitchArtifacts();
-            improvementPanelLoaded = false;
-            openChatPanel();
-            const fileLines = (result.files || []).map((file) => `- ${file.name}: ${file.path}`);
-            appendAgentMessage(
-                'assistant',
-                `Genere artefactos de pitch para esta pagina usando ${result.workflowCount || 0} workflow(s).\n${fileLines.join('\n')}`,
-                'pitch generated',
-                false
-            );
-            updateWorkflowPanelStatus(`Pitch generado en ${result.outputDir}`);
-            updateImprovementPanelStatus('Artefactos regenerados. Mantener oprimido muestra el panel actualizado.');
-            startImprovementTour(result);
-        } catch (error) {
-            openChatPanel();
-            appendAgentMessage('assistant', error.message || 'No se pudieron generar los archivos de pitch.', null, false);
-            updateWorkflowPanelStatus(error.message || 'No se pudieron generar los archivos de pitch.');
-            updateImprovementPanelStatus(error.message || 'No se pudieron regenerar las sugerencias.');
-        } finally {
-            if (button) {
-                button.disabled = false;
-                button.textContent = 'Generar pitch';
-            }
-            if (iconButton) {
-                iconButton.disabled = false;
-            }
-        }
-    }
-
-
     async function startWorkflow() {
         return requireLearningClient().startWorkflow();
     }
@@ -2045,7 +1627,6 @@
 
     function bindControlsDelegated() {
         requireTrainerShell().bindControls();
-        updateFeedbackOverlayButton();
     }
 
     window.TrainerPlugin = {
@@ -2180,9 +1761,7 @@
             }
 
             workflowPanelLoaded = false;
-            improvementPanelLoaded = false;
             closeWorkflowPanel();
-            closeImprovementPanel();
             hideWorkflowOverlay();
             setExecutionStopButtonVisible(Boolean(executionState.running));
             updateConsoleExpandedState();
@@ -2215,10 +1794,6 @@
             openWorkflowPanel();
             loadWorkflowPanel(true);
         },
-        openImprovementPanel() {
-            openImprovementPanel();
-            loadImprovementPanel(true);
-        },
         showWorkflowOverlayById(workflowId) {
             const workflow = getWorkflowEntryById(workflowId);
             if (workflow) {
@@ -2227,25 +1802,6 @@
         },
         hideWorkflowOverlay() {
             hideWorkflowOverlay();
-        },
-        showFeedbackOverlay() {
-            showFeedbackOverlay();
-        },
-        hideFeedbackOverlay() {
-            hideFeedbackOverlay();
-        },
-        toggleFeedbackOverlay() {
-            toggleFeedbackOverlay();
-            return feedbackOverlayVisible;
-        },
-        getImprovementPanelData() {
-            const suggestions = getMockFeedbackSuggestions();
-            return {
-                title: 'Feedback visible sobre la pagina',
-                status: `${suggestions.length} comentario(s) listos para revisar en la pagina.`,
-                suggestions,
-                footnote: 'Esta capa resume fricciones y oportunidades de claridad detectadas para la experiencia actual. Mas adelante la conectaremos con feedback real y señales observadas en produccion.'
-            };
         }
     };
 })();
