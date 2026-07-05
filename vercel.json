@@ -19,10 +19,6 @@
       "destination": "/api?path=:path*"
     },
     {
-      "source": "/phone-mic/:path*",
-      "destination": "/api?path=phone-mic/:path*"
-    },
-    {
       "source": "/examples/medical-demo",
       "destination": "/index.html"
     },

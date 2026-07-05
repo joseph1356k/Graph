@@ -14,8 +14,6 @@ const WorkflowCatalog = require('../src/application/use-cases/WorkflowCatalog');
 const WorkflowLearner = require('../src/application/use-cases/WorkflowLearner');
 const WorkflowExecutor = require('../src/application/use-cases/WorkflowExecutor');
 const AgentChat = require('../src/application/use-cases/AgentChat');
-const GeneratePitchArtifacts = require('../src/application/use-cases/GeneratePitchArtifacts');
-const ConversationInsights = require('../src/application/use-cases/ConversationInsights');
 const SurfaceProfileService = require('../src/application/use-cases/SurfaceProfileService');
 const LearningSessionService = require('../src/application/use-cases/LearningSessionService');
 const ExecutionIntelligenceService = require('../src/application/use-cases/ExecutionIntelligenceService');
@@ -82,15 +80,6 @@ const catalogService = new WorkflowCatalog(repository, catalogWriter);
 const workflowLearner = new WorkflowLearner(repository, llmProvider, catalogWriter, catalogService);
 const workflowExecutor = new WorkflowExecutor(catalogService, playwrightRunner, llmProvider);
 const agentChat = new AgentChat(llmProvider, catalogService, workflowExecutor);
-const generatePitchArtifacts = new GeneratePitchArtifacts(
-  catalogService,
-  llmProvider,
-  resolveGeneratedRoot('pitch-personalities')
-);
-const conversationInsights = new ConversationInsights(
-  llmProvider,
-  resolveGeneratedRoot('conversation-insights')
-);
 const surfaceProfileService = new SurfaceProfileService(repository, llmProvider);
 const learningSessionService = new LearningSessionService(workflowLearner);
 const getGraphVisualization = new GetGraphVisualization(repository);
@@ -296,7 +285,6 @@ function isMiracleMedicalProxyRequest(req) {
   '/api/workflow',
   '/api/workflows',
   '/api/agent',
-  '/api/pitch',
   '/api/surface-profile',
   '/api/tree',
   '/api/file',
@@ -706,9 +694,6 @@ app.post('/api/providers/api-keys/revoke', async (req, res) => {
 registerLearningRoutes(app, { learningSessionService });
 registerWorkflowRoutes(app, { catalogService, workflowExecutor, noteFieldMatcher, usageDashboardService });
 registerContextRoutes(app, {
-  generatePitchArtifacts,
-  conversationInsights,
-  catalogService,
   surfaceProfileService
 });
 registerExecutionIntelligenceRoutes(app, { catalogService, executionIntelligenceService });

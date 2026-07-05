@@ -24,28 +24,6 @@ const PRICING_CATALOG = [
   },
   {
     provider: 'openai',
-    apiFamily: 'realtime_audio',
-    model: 'gpt-realtime-2',
-    modality: 'audio',
-    inputPer1MUsd: 32,
-    cachedInputPer1MUsd: 0.4,
-    outputPer1MUsd: 64,
-    sourceUrl: PRICING_SOURCE_URL,
-    sourceCapturedAt: PRICING_CAPTURED_AT
-  },
-  {
-    provider: 'openai',
-    apiFamily: 'realtime_text',
-    model: 'gpt-realtime-2',
-    modality: 'text',
-    inputPer1MUsd: 4,
-    cachedInputPer1MUsd: 0.4,
-    outputPer1MUsd: 24,
-    sourceUrl: PRICING_SOURCE_URL,
-    sourceCapturedAt: PRICING_CAPTURED_AT
-  },
-  {
-    provider: 'openai',
     apiFamily: 'responses',
     model: 'gpt-4.1-mini',
     inputPer1MUsd: 0.4,
@@ -76,9 +54,7 @@ const PRICING_CATALOG = [
   }
 ];
 
-const MODEL_ALIASES = {
-  'gpt-realtime': 'gpt-realtime-2'
-};
+const MODEL_ALIASES = {};
 
 function roundCurrency(value) {
   return Math.round((Number(value) || 0) * 1000000) / 1000000;

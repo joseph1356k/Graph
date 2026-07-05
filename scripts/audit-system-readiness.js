@@ -86,7 +86,7 @@ function auditStaticConfiguration() {
 
   const publicBaseUrl = envValue('PUBLIC_BASE_URL');
   addCheck('Public URL', publicBaseUrl ? 'PASS' : 'WARN',
-    publicBaseUrl ? 'PUBLIC_BASE_URL is configured.' : 'PUBLIC_BASE_URL is missing; phone QR links are local-only.');
+    publicBaseUrl ? 'PUBLIC_BASE_URL is configured.' : 'PUBLIC_BASE_URL is missing; public absolute URLs are local-only.');
 
   const allowedOrigins = envValue('ALLOWED_ORIGINS');
   addCheck('CORS allowlist', allowedOrigins ? 'PASS' : 'WARN',

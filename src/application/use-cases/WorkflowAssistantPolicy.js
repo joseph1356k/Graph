@@ -1,7 +1,3 @@
-const EXECUTE_WORKFLOW_FUNCTION_NAME = 'execute_workflow_on_page';
-const VOICE_WORKFLOW_SUMMARY_BUDGET = 36000;
-const VOICE_MAX_WORKFLOWS = 50;
-
 function isDemoAutopilotContext(context = {}) {
   return `${context.demoMode || ''}`.trim().toLowerCase() === 'autopilot';
 }
@@ -38,72 +34,6 @@ function summarizeWorkflow(workflow = {}) {
     variables: Array.isArray(workflow.variables)
       ? workflow.variables.map((variable) => summarizeWorkflowVariable(variable))
       : []
-  };
-}
-
-function truncateText(value = '', maxLength = 240) {
-  const text = `${value || ''}`.replace(/\s+/g, ' ').trim();
-  if (text.length <= maxLength) {
-    return text;
-  }
-  return `${text.slice(0, Math.max(0, maxLength - 3))}...`;
-}
-
-function summarizeWorkflowVariableForVoice(variable = {}) {
-  const allowedOptions = Array.isArray(variable.allowedOptions)
-    ? variable.allowedOptions
-      .map((option) => ({
-        value: truncateText(option?.value || '', 60),
-        label: truncateText(option?.label || option?.text || option?.value || '', 60)
-      }))
-      .filter((option) => option.value || option.label)
-      .slice(0, 6)
-    : [];
-
-  return {
-    name: truncateText(variable.name || '', 120),
-    kind: truncateText(variable.kind || '', 80),
-    actionType: truncateText(variable.actionType || '', 80),
-    label: truncateText(variable.fieldLabel || variable.prompt || variable.selector || variable.name || '', 180),
-    defaultValue: truncateText(variable.defaultValue || '', 120),
-    prompt: truncateText(variable.prompt || '', 180),
-    allowedOptions
-  };
-}
-
-function summarizeWorkflowForVoice(workflow = {}) {
-  return {
-    id: truncateText(workflow.id || '', 180),
-    description: truncateText(workflow.description || '', 500),
-    summary: truncateText(workflow.summary || '', 500),
-    executionGuide: truncateText(workflow.executionGuide || '', 800),
-    sourcePathname: truncateText(workflow.sourcePathname || '', 300),
-    variables: Array.isArray(workflow.variables)
-      ? workflow.variables.slice(0, 12).map((variable) => summarizeWorkflowVariableForVoice(variable))
-      : []
-  };
-}
-
-function buildVoiceWorkflowCatalog(workflows = [], options = {}) {
-  const source = Array.isArray(workflows) ? workflows : [];
-  const maxCharacters = Number(options.maxCharacters) || VOICE_WORKFLOW_SUMMARY_BUDGET;
-  const maxWorkflows = Number(options.maxWorkflows) || VOICE_MAX_WORKFLOWS;
-  const summaries = [];
-
-  for (const workflow of source.slice(0, maxWorkflows)) {
-    const summary = summarizeWorkflowForVoice(workflow);
-    const candidate = JSON.stringify([...summaries, summary]);
-    if (candidate.length > maxCharacters) {
-      break;
-    }
-    summaries.push(summary);
-  }
-
-  return {
-    summaries,
-    includedCount: summaries.length,
-    omittedCount: Math.max(0, source.length - summaries.length),
-    characterCount: JSON.stringify(summaries).length
   };
 }
 
@@ -185,59 +115,10 @@ function buildChatDecisionPrompt(context = {}, workflows = []) {
   ].join(' ');
 }
 
-function buildVoiceExecutionPrompt(context = {}, workflows = []) {
-  const voiceCatalog = buildVoiceWorkflowCatalog(workflows);
-  return [
-    buildSharedBehaviorPrompt(context, workflows, {
-      workflowSummaries: voiceCatalog.summaries
-    }),
-    voiceCatalog.omittedCount > 0
-      ? `El catalogo de voz incluye ${voiceCatalog.includedCount} de ${workflows.length} flujos para respetar el limite del proveedor. Usa exclusivamente los flujos incluidos.`
-      : '',
-    'Si tienes suficiente información para actuar, no narres lo que vas a hacer: llama a la función de inmediato.',
-    'Antes de registrar nombres, documentos, teléfonos, dosis o fechas, léelos de vuelta al usuario para confirmarlos.',
-    'Tras una llamada a función exitosa, confirma brevemente el resultado en lenguaje natural.',
-    'Usa exactamente los ids de flujo y los nombres de variables proporcionados al llamar a la función.'
-  ].join(' ');
-}
-
-function buildVoiceFunctionDefinitions() {
-  return [
-    {
-      name: EXECUTE_WORKFLOW_FUNCTION_NAME,
-      description: [
-        'Ejecuta uno de los flujos disponibles de la página directamente en la página actual del navegador del usuario.',
-        'Llámala en cuanto sepas qué flujo ejecutar y tengas suficientes valores reales proporcionados por el usuario.',
-        'No expliques la llamada a la función al usuario antes de invocarla.'
-      ].join(' '),
-      parameters: {
-        type: 'object',
-        properties: {
-          workflowId: {
-            type: 'string',
-            description: 'El id exacto del flujo, tomado del catálogo de flujos de la página.'
-          },
-          variables: {
-            type: 'object',
-            description: 'Mapa de nombres exactos de variables a sus valores para el flujo seleccionado.'
-          }
-        },
-        required: ['workflowId']
-      }
-    }
-  ];
-}
-
 module.exports = {
-  EXECUTE_WORKFLOW_FUNCTION_NAME,
   isDemoAutopilotContext,
   summarizeWorkflowVariable,
   summarizeWorkflow,
-  summarizeWorkflowVariableForVoice,
-  summarizeWorkflowForVoice,
-  buildVoiceWorkflowCatalog,
   buildSharedBehaviorPrompt,
-  buildChatDecisionPrompt,
-  buildVoiceExecutionPrompt,
-  buildVoiceFunctionDefinitions
+  buildChatDecisionPrompt
 };

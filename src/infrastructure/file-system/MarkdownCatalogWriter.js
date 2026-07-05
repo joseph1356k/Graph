@@ -6,16 +6,6 @@ class MarkdownCatalogWriter {
     this.filePath = filePath || path.join(process.cwd(), 'WORKFLOWS.md');
   }
 
-  formatCliExample(workflowId, variables) {
-    const parts = [`node index.js "run ${workflowId}"`];
-
-    for (const variable of variables) {
-      parts.push(`--${variable.name}="..."`);
-    }
-
-    return parts.join(' ');
-  }
-
   renderWorkflowCatalog(workflows) {
     const lines = ['# Registered Workflows', ''];
 
@@ -25,7 +15,6 @@ class MarkdownCatalogWriter {
       lines.push(`- Purpose: ${workflow.summary || workflow.description || 'No summary available.'}`);
       lines.push(`- Status: ${workflow.status || 'unknown'}`);
       lines.push(`- Context notes: ${Array.isArray(workflow.contextNotes) ? workflow.contextNotes.length : 0}`);
-      lines.push(`- CLI: \`${this.formatCliExample(workflow.id, workflow.variables)}\``);
       lines.push('');
       lines.push('### Execution Guide');
       lines.push('');
