@@ -13,7 +13,6 @@ class MiracleContext:
     adrs_root: Path
     knowledge_root: Path
     product_workspace_root: Path
-    openclaw_workspace_root: Path
 
     @classmethod
     def from_workspace(cls, workspace_root: Path) -> "MiracleContext":
@@ -29,13 +28,11 @@ class MiracleContext:
             adrs_root=root / "docs" / "adrs",
             knowledge_root=product_workspace_root / "knowledge",
             product_workspace_root=product_workspace_root,
-            openclaw_workspace_root=workspaces_root / "openclaw" / "agent",
         )
 
     def ensure_layout(self) -> None:
         for path in (
             self.product_workspace_root,
-            self.openclaw_workspace_root,
             self.memory_root,
             self.memory_root / "notes",
             self.memory_root / "decisions",

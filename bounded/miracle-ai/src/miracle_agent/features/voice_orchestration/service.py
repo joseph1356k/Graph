@@ -4,8 +4,6 @@ from dataclasses import replace
 
 from ...config import MiracleSettings
 from ...context import MiracleContext
-from ...integrations.openclaw.agent_adapter import OpenclawAgentAdapter, OpenclawAgentProtocolError
-from ...integrations.openclaw.client import OpenclawClientError, OpenclawGatewayClient
 from ...integrations.product_llm.note_orchestrator_adapter import ProductLLMAdapterError, ProductLLMOrchestratorAdapter
 from ...integrations.product_llm.models import ProductLLMOrchestratorInput, VoiceTranscriptSegment
 from .contracts import (
@@ -29,22 +27,14 @@ class VoiceOrchestrationService:
         context: MiracleContext,
         *,
         adapter: ProductLLMOrchestratorAdapter | None = None,
-        openclaw_agent_adapter: OpenclawAgentAdapter | None = None,
     ) -> None:
         self._settings = settings
         self._context = context
         self._adapter = adapter or ProductLLMOrchestratorAdapter(settings.product_llm)
-        self._openclaw_agent_adapter = openclaw_agent_adapter or self._build_openclaw_agent_adapter(settings)
 
     @classmethod
     def from_settings(cls, settings: MiracleSettings, context: MiracleContext) -> "VoiceOrchestrationService":
         return cls(settings, context)
-
-    @staticmethod
-    def _build_openclaw_agent_adapter(settings: MiracleSettings) -> OpenclawAgentAdapter | None:
-        if not settings.openclaw.is_configured:
-            return None
-        return OpenclawAgentAdapter(OpenclawGatewayClient(settings.openclaw), settings.openclaw)
 
     def status(self) -> dict[str, object]:
         provider = self._settings.product_llm.provider
@@ -59,15 +49,13 @@ class VoiceOrchestrationService:
             "provider": provider,
             "configured": self._settings.product_llm.is_configured,
             "scratchpad_heading": self._settings.product_llm.scratchpad_heading,
-            "execution_enabled": self._openclaw_agent_adapter is not None,
+            "execution_enabled": False,
             "model": self._settings.product_llm.model,
-            "openclaw_execution_ready": self._openclaw_agent_adapter is not None,
         }
 
     def apply_settings(self, settings: MiracleSettings) -> None:
         self._settings = settings
         self._adapter = ProductLLMOrchestratorAdapter(settings.product_llm)
-        self._openclaw_agent_adapter = self._build_openclaw_agent_adapter(settings)
 
     def orchestrate_event(self, event: VoiceOrchestratorEvent) -> VoiceOrchestratorResponse:
         if not event.voice_session_id.strip():
@@ -169,28 +157,6 @@ class VoiceOrchestrationService:
 
         for item in tasks:
             task = item.to_dict() if hasattr(item, "to_dict") else dict(item)
-            mode = str(task.get("mode", "planned_only")).strip().lower()
-            if mode == "execute_if_enabled" and self._openclaw_agent_adapter is not None:
-                summary = _agent_task_summary(task)
-                try:
-                    result = self._openclaw_agent_adapter.execute_task(
-                        intent=str(task.get("intent", "prepare_openclaw_task")),
-                        summary=summary,
-                        note_path=note_path,
-                        note_title=note_title,
-                        voice_session_id=voice_session_id,
-                        previous_response_id=response_id,
-                    )
-                    task["status"] = "executed"
-                    task["result_summary"] = result.summary
-                    response_id = result.response_id or response_id
-                except (OpenclawClientError, OpenclawAgentProtocolError) as exc:
-                    task["status"] = "execution_failed"
-                    task["error"] = str(exc)
-                    pending_tasks.append(task)
-                resolved_tasks.append(task)
-                continue
-
             task["status"] = "planned"
             pending_tasks.append(task)
             resolved_tasks.append(task)
@@ -300,15 +266,3 @@ def _replace_active_note_session_block(
     if not base_trimmed:
         return f"{clean_next}\n", clean_next
     return f"{base_trimmed}\n\n{clean_next}\n", clean_next
-
-
-def _agent_task_summary(task: dict[str, object]) -> str:
-    payload = task.get("payload")
-    if isinstance(payload, dict):
-        summary = payload.get("summary")
-        if isinstance(summary, str) and summary.strip():
-            return summary.strip()
-    intent = task.get("intent")
-    if isinstance(intent, str) and intent.strip():
-        return intent.strip()
-    return "Execute the requested task."

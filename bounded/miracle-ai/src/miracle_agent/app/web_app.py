@@ -3,12 +3,9 @@ from __future__ import annotations
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
-from starlette.routing import Route
 
 from ..config import MiracleSettings
 from ..context import MiracleContext
-from ..features.chat.api import create_chat_routes
-from ..features.chat.service import ContextualChatBackend
 from ..features.notes.api import create_notes_routes
 from ..features.notes.service import NotesWorkspaceService
 from ..features.runtime.api import create_runtime_routes
@@ -17,29 +14,23 @@ from ..features.voice.service import VoiceStreamingService
 from ..features.voice_orchestration.api import create_voice_orchestration_routes
 from ..features.voice_orchestration.service import VoiceOrchestrationService
 from ..integrations.product_llm.setup import ProductLLMSetupService
-from ..integrations.openclaw.setup import OpenclawSetupService
 
 
 def create_notes_app(
     settings: MiracleSettings,
     context: MiracleContext,
     *,
-    chat_backend: ContextualChatBackend | None = None,
-    setup_service: OpenclawSetupService | None = None,
     voice_service: VoiceStreamingService | None = None,
     voice_orchestration_service: VoiceOrchestrationService | None = None,
 ) -> Starlette:
     notes_service = NotesWorkspaceService(context)
-    backend = chat_backend or ContextualChatBackend.from_settings(settings)
-    onboarding = setup_service or OpenclawSetupService(settings, context)
     voice = voice_service or VoiceStreamingService.from_settings(settings)
     voice_orchestrator = voice_orchestration_service or VoiceOrchestrationService.from_settings(settings, context)
     product_llm_setup = ProductLLMSetupService(settings, context)
 
     routes = [
         *create_notes_routes(notes_service),
-        *create_chat_routes(backend),
-        *create_runtime_routes(context, backend, onboarding, voice_orchestrator, product_llm_setup),
+        *create_runtime_routes(context, voice_orchestrator, product_llm_setup),
         *create_voice_routes(voice),
         *create_voice_orchestration_routes(voice_orchestrator),
     ]

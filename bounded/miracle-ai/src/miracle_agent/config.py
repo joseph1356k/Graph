@@ -7,13 +7,11 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from .integrations.product_llm.config import ProductLLMSettings
-from .integrations.openclaw.config import OpenclawSettings
 
 
 @dataclass(frozen=True)
 class MiracleSettings:
     workspace_root: Path
-    openclaw: OpenclawSettings
     product_llm: ProductLLMSettings = field(default_factory=ProductLLMSettings)
     deepgram_api_key: str | None = None
     cors_allow_origins: tuple[str, ...] = field(default_factory=tuple)
@@ -50,7 +48,6 @@ class MiracleSettings:
         default_model = "nova-3" if voice_stt_provider == "deepgram" else "gpt-4o-mini-transcribe"
         return cls(
             workspace_root=root,
-            openclaw=OpenclawSettings.from_env(),
             product_llm=ProductLLMSettings.from_env(),
             deepgram_api_key=deepgram_api_key,
             cors_allow_origins=cors_allow_origins,
