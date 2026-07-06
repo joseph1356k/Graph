@@ -727,6 +727,25 @@
                 details
             };
 
+            // Mirror to console so the entry is captured by the developer-workspace
+            // log overlays (admin-workspace.js in the EMR, dev-logs.js in the SPA),
+            // which patch console.* — this is the single source for execution/autofill
+            // logging across the extension, the EMR test surface, and the web app.
+            try {
+                const consoleMethod = level === 'error'
+                    ? console.error
+                    : level === 'warn'
+                        ? console.warn
+                        : console.info;
+                if (details && typeof details === 'object' && Object.keys(details).length > 0) {
+                    consoleMethod.call(console, `[graph:execution] ${message}`, details);
+                } else {
+                    consoleMethod.call(console, `[graph:execution] ${message}`);
+                }
+            } catch (error) {
+                // Ignore.
+            }
+
             try {
                 document.dispatchEvent(new CustomEvent('graph-trainer-extension-log', { detail }));
             } catch (error) {
@@ -1945,6 +1964,17 @@
                     return;
                 }
                 const matches = Array.isArray(result?.matches) ? result.matches : [];
+                emitExtensionLog('info', 'Note field matches received.', {
+                    workflowId: plan.workflowId || '',
+                    requestedFields: fields.length,
+                    matchCount: matches.length,
+                    readyToSubmit: Boolean(result?.readyToSubmit),
+                    matches: matches.map((match) => ({
+                        stepOrder: match?.stepOrder,
+                        value: match?.value,
+                        confidence: match?.confidence
+                    }))
+                });
                 let anyApplied = false;
                 const undoBatch = [];
                 let appliedCount = 0;
