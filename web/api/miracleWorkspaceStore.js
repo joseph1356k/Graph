@@ -121,7 +121,6 @@ class MiracleWorkspaceStore {
     this.knowledgeRoot = path.join(this.workspaceRoot, 'knowledge');
     this.stateRoot = options.stateRoot || path.join(writableRoot, 'generated', 'miracle');
     this.sessionPath = path.join(this.stateRoot, 'session.json');
-    this.productLlmPath = path.join(this.stateRoot, 'product-llm.json');
     ensureDir(this.knowledgeRoot);
     ensureDir(this.stateRoot);
   }
@@ -280,95 +279,6 @@ class MiracleWorkspaceStore {
     };
   }
 
-  getProductLlmStatus() {
-    return this.readJson(this.productLlmPath, {
-      providers: [
-        {
-          id: 'azure-foundry',
-          label: 'Azure Foundry',
-          requires_api_key: true,
-          requires_base_url: true,
-          requires_model: true,
-          default_base_url: '',
-          default_model: 'gpt-4.1-mini',
-          recommended: true
-        },
-        {
-          id: 'openai',
-          label: 'OpenAI',
-          requires_api_key: true,
-          requires_base_url: false,
-          requires_model: true,
-          default_base_url: 'https://api.openai.com/v1',
-          default_model: 'gpt-4.1-mini',
-          recommended: false
-        },
-        {
-          id: 'openrouter',
-          label: 'OpenRouter',
-          requires_api_key: true,
-          requires_base_url: false,
-          requires_model: true,
-          default_base_url: 'https://openrouter.ai/api/v1',
-          default_model: 'openai/gpt-4o',
-          recommended: false
-        }
-      ],
-      current_setup: {
-        provider: '',
-        label: '',
-        base_url: '',
-        model: '',
-      },
-      status: {
-        provider: 'heuristic',
-        configured: false,
-        model: ''
-      }
-    });
-  }
-
-  saveProductLlmSetup(payload = {}) {
-    const current = this.getProductLlmStatus();
-    const providerId = `${payload.provider || ''}`.trim();
-    const provider = current.providers.find((item) => item.id === providerId);
-    if (!provider) {
-      const error = new Error('Provider de hoja en blanco no soportado.');
-      error.statusCode = 400;
-      throw error;
-    }
-
-    const isSameProvider = providerId === current.current_setup?.provider;
-    const apiKey = `${payload.api_key || ''}`.trim() || (isSameProvider ? `${current.secrets?.api_key || ''}`.trim() : '');
-    const baseUrl = `${payload.base_url || (isSameProvider ? current.current_setup?.base_url : '') || provider.default_base_url || ''}`.trim();
-    const model = `${payload.model || (isSameProvider ? current.current_setup?.model : '') || provider.default_model || ''}`.trim();
-
-    if (provider.requires_api_key && !apiKey) {
-      const error = new Error('La API key es obligatoria para este provider.');
-      error.statusCode = 400;
-      throw error;
-    }
-
-    const nextPayload = {
-      ...current,
-      current_setup: {
-        provider: provider.id,
-        label: provider.label,
-        base_url: baseUrl,
-        model
-      },
-      status: {
-        provider: provider.id,
-        configured: Boolean(apiKey),
-        model
-      },
-      secrets: {
-        api_key: apiKey
-      }
-    };
-    this.writeJson(this.productLlmPath, nextPayload);
-    return { ok: true, setup: nextPayload };
-  }
 }
 
 module.exports = MiracleWorkspaceStore;

@@ -3,6 +3,11 @@ node_modules/
 /.pnp
 .pnp.js
 
+# Python
+__pycache__/
+*.pyc
+.venv/
+
 # Testing
 coverage/
 # Production
@@ -12,9 +17,10 @@ out/
 /public/
 !web/public/
 !web/public/usage-dashboard.html
-generated/chrome-extension/
-generated/pitch-personalities/
+generated/
 scratch/
+# Runtime-generated workflow catalog
+/WORKFLOWS.md
 # Misc
 .DS_Store
 *.pem
@@ -34,11 +40,5 @@ yarn-error.log*
 .vscode/
 *.swp
 *.swo
-# Local downloaded page artifacts
-/Servicio a domicilio o recoge en una de nuestras tiendas.html
-/Servicio a domicilio o recoge en una de nuestras tiendas_files/
-/Demo de carros/
-/wallpaper home.png
 .vercel
-generated/usage/
 .env*
