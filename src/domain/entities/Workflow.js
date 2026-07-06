@@ -32,16 +32,6 @@ class Workflow {
     return this.steps.length;
   }
 
-  get executableSteps() {
-    return this.steps.filter(step => step.isExecutable());
-  }
-
-  addStep(stepData) {
-    const step = new Step({ ...stepData, stepOrder: this.steps.length + 1 });
-    this.steps.push(step);
-    return step;
-  }
-
   inferVariables() {
     const variableMap = new Map();
 

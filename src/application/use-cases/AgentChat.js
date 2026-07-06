@@ -395,20 +395,7 @@ class AgentChat {
       };
     }
 
-    const executionMode = `${options.executionMode || 'browser'}`.trim().toLowerCase();
     const variables = decision.variables || {};
-
-    if (executionMode === 'server') {
-      await this.executor.executeById(decision.workflowId, variables, workflowAccess);
-
-      return {
-        reply: decision.reply || 'Voy a encargarme de esto ahora mismo.',
-        workflowId: decision.workflowId,
-        executed: true,
-        variables,
-        executionPlan: null
-      };
-    }
 
     const executionPlan = await this.executor.getExecutionPlanById(
       decision.workflowId,

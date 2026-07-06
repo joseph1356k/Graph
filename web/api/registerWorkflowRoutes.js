@@ -99,22 +99,6 @@ function registerWorkflowRoutes(app, deps = {}) {
     }
   });
 
-  app.post('/api/workflows/:id/execute', async (req, res) => {
-    try {
-      const workflowId = (req.params.id || '').trim();
-      const workflow = await catalogService.getWorkflowById(workflowId, req.workflowAccess || null);
-      if (!workflow) {
-        return res.status(404).json({ error: 'Workflow not found' });
-      }
-
-      await workflowExecutor.executeById(workflowId, req.body?.variables || {}, req.workflowAccess || null);
-      res.json({ executed: true, workflowId });
-    } catch (err) {
-      console.error(`[Workflows] Execute Error: ${err.message}`);
-      res.status(statusForError(err)).json({ error: publicErrorMessage(err) });
-    }
-  });
-
   app.post('/api/workflows/:id/plan', async (req, res) => {
     try {
       const workflowId = (req.params.id || '').trim();

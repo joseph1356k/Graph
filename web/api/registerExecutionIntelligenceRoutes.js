@@ -1,3 +1,5 @@
+const { statusForError, publicErrorMessage } = require('./httpErrors');
+
 function registerExecutionIntelligenceRoutes(app, deps = {}) {
   const catalogService = deps.catalogService;
   const executionIntelligenceService = deps.executionIntelligenceService;
@@ -27,4 +29,3 @@ function registerExecutionIntelligenceRoutes(app, deps = {}) {
 }
 
 module.exports = registerExecutionIntelligenceRoutes;
-const { statusForError, publicErrorMessage } = require('./httpErrors');

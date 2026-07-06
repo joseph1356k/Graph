@@ -5,7 +5,6 @@ const path = require('path');
 
 const Neo4jDriver = require('../src/infrastructure/Neo4jDriver');
 const LLMProvider = require('../src/infrastructure/LLMProvider');
-const PlaywrightRunner = require('../src/infrastructure/PlaywrightRunner');
 const Neo4jWorkflowRepository = require('../src/infrastructure/repositories/Neo4jWorkflowRepository');
 const MarkdownCatalogWriter = require('../src/infrastructure/file-system/MarkdownCatalogWriter');
 const UsageLedgerStore = require('../src/infrastructure/file-system/UsageLedgerStore');
@@ -70,7 +69,6 @@ function resolveGeneratedRoot(...segments) {
 
 const db = new Neo4jDriver();
 const llmProvider = new LLMProvider();
-const playwrightRunner = new PlaywrightRunner();
 const repository = new Neo4jWorkflowRepository(db);
 const catalogWriter = new MarkdownCatalogWriter();
 const usageLedgerStore = new UsageLedgerStore(resolveGeneratedRoot('usage', 'ai-usage-events.jsonl'));
@@ -78,7 +76,7 @@ const usageDashboardService = new UsageDashboardService(usageLedgerStore);
 
 const catalogService = new WorkflowCatalog(repository, catalogWriter);
 const workflowLearner = new WorkflowLearner(repository, llmProvider, catalogWriter, catalogService);
-const workflowExecutor = new WorkflowExecutor(catalogService, playwrightRunner, llmProvider);
+const workflowExecutor = new WorkflowExecutor(catalogService);
 const agentChat = new AgentChat(llmProvider, catalogService, workflowExecutor);
 const surfaceProfileService = new SurfaceProfileService(repository, llmProvider);
 const learningSessionService = new LearningSessionService(workflowLearner);

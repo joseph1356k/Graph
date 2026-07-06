@@ -56,15 +56,6 @@ class Step {
     
     this.stepOrder = Number.isFinite(data.stepOrder) ? data.stepOrder : Number(data.stepOrder);
   }
-
-  isExecutable() {
-    if (!this.actionType) return false;
-    if (this.actionType === 'navigation') return Boolean(this.url);
-    if (this.actionType === 'click') return Boolean(this.selector);
-    if (this.actionType === 'input') return Boolean(this.selector);
-    if (this.actionType === 'select') return Boolean(this.selector);
-    return false;
-  }
 }
 
 module.exports = Step;
