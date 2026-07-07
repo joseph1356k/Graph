@@ -268,7 +268,7 @@
     function apiClient() {
         return window.GraphPluginApi?.createClient?.({
             baseUrl: pluginHost()?.apiBaseUrl || options.apiBaseUrl || '',
-            miracleBaseUrl: options.miracleBaseUrl || DEFAULTS.miracleBaseUrl,
+            miracleBaseUrl: options.miracleBaseUrl || pluginHost()?.apiBaseUrl || options.apiBaseUrl || DEFAULTS.miracleBaseUrl,
             fetchImpl: pluginHost()?.fetchImpl || null
         }) || null;
     }
@@ -1023,24 +1023,46 @@
                 noteLength: `${miracleNoteState.noteContent || ''}`.length
             }
         });
-
-        const response = await requireApiClient().sendMiracleOrchestratorEvent({
-            voice_session_id: miracleNoteState.voiceSessionId,
-            note_path: null,
-            note_title: miracleNoteState.noteTitle,
-            note_content: miracleNoteState.noteContent,
-            tab_id: window.location.href,
-            event_id: `graph_evt_${miracleNoteState.eventSequence}`,
-            sequence: miracleNoteState.eventSequence,
-            segment: {
-                segment_id: segmentId,
-                kind: 'final',
-                transcript: trimmedTranscript,
-                language: language || null
-            }
+        lifecycleLog('voice', 'Miracle note segment submitted for organization.', {
+            sessionId: miracleNoteState.voiceSessionId,
+            segmentId,
+            transcriptLength: trimmedTranscript.length,
+            noteLength: `${miracleNoteState.noteContent || ''}`.length
         });
 
+        let response;
+        try {
+            response = await requireApiClient().sendMiracleOrchestratorEvent({
+                voice_session_id: miracleNoteState.voiceSessionId,
+                note_path: null,
+                note_title: miracleNoteState.noteTitle,
+                note_content: miracleNoteState.noteContent,
+                tab_id: window.location.href,
+                event_id: `graph_evt_${miracleNoteState.eventSequence}`,
+                sequence: miracleNoteState.eventSequence,
+                segment: {
+                    segment_id: segmentId,
+                    kind: 'final',
+                    transcript: trimmedTranscript,
+                    language: language || null
+                }
+            });
+        } catch (error) {
+            lifecycleLog('voice', 'Miracle note organization failed.', {
+                sessionId: miracleNoteState.voiceSessionId,
+                segmentId,
+                message: error?.message || 'Unknown organization error'
+            });
+            throw error;
+        }
+
         updateMiracleNoteContent(response?.resolved_note_content || '');
+        lifecycleLog('voice', 'Miracle note organization completed.', {
+            sessionId: miracleNoteState.voiceSessionId,
+            segmentId,
+            resolvedNoteLength: `${response?.resolved_note_content || ''}`.length,
+            noteLength: `${miracleNoteState.noteContent || ''}`.length
+        });
         recordUsageEvent({
             sourceRepo: 'miracle',
             eventType: 'miracle_note_resolved',
@@ -1092,14 +1114,38 @@
             throw new Error('El motor de dictado compartido (MiracleDeepgramDictation) no esta cargado.');
         }
         miracleDictationInstance = engine.create({
-            createStreamSession: () => requireApiClient().createMiracleStreamSession(),
+            createStreamSession: async () => {
+                lifecycleLog('voice', 'Creating Miracle voice stream session.', {
+                    appId: options.appId || '',
+                    apiBaseUrl: pluginHost()?.apiBaseUrl || options.apiBaseUrl || '',
+                    miracleBaseUrl: options.miracleBaseUrl || pluginHost()?.apiBaseUrl || options.apiBaseUrl || ''
+                });
+                try {
+                    const session = await requireApiClient().createMiracleStreamSession();
+                    lifecycleLog('voice', 'Miracle voice stream session created.', {
+                        model: session?.model || session?.stream?.model || '',
+                        hasWebsocketUrl: Boolean(session?.websocket_url || session?.websocketUrl)
+                    });
+                    return session;
+                } catch (error) {
+                    lifecycleLog('voice', 'Miracle voice stream session failed.', {
+                        message: error?.message || 'Unknown stream-session error'
+                    });
+                    throw error;
+                }
+            },
             onDebug: (event, details) => {
+                lifecycleLog('voice', `Miracle dictation debug: ${event}`, details || {});
                 if (event === 'deepgram.session.created' && details && details.model) {
                     miracleNoteState.streamModel = details.model;
                 }
             },
-            onError: (message) => syncMiracleNotePanel(message),
+            onError: (message) => {
+                lifecycleLog('voice', 'Miracle dictation error.', { message });
+                syncMiracleNotePanel(message);
+            },
             onUnexpectedClose: () => {
+                lifecycleLog('voice', 'Miracle dictation stream closed unexpectedly.', {});
                 miracleNoteState.active = false;
                 miracleNoteState.busy = false;
                 syncMiracleNotePanel('El stream de Miracle se cerro antes de tiempo.');
@@ -1129,6 +1175,10 @@
         syncMiracleNotePanel('Preparando dictado con Miracle...');
         runtime()?.speak('Preparando dictado.', { mode: 'organizing' });
         try {
+            lifecycleLog('voice', 'Starting Miracle note dictation.', {
+                appId: options.appId || '',
+                page: window.location.pathname
+            });
             if (!miracleNoteState.voiceSessionId) {
                 miracleNoteState.voiceSessionId = crypto.randomUUID();
             }
@@ -1153,6 +1203,11 @@
             miracleNoteState.active = true;
             syncMiracleNotePanel('Dictando hacia Miracle...');
             runtime()?.speak('Escuchando.', { mode: 'listening' });
+        } catch (error) {
+            lifecycleLog('voice', 'Miracle note dictation failed to start.', {
+                message: error?.message || 'Unknown dictation start error'
+            });
+            throw error;
         } finally {
             miracleNoteState.busy = false;
             syncMiracleNotePanel(miracleNoteState.active ? 'Dictando hacia Miracle...' : 'Lista para dictado con Miracle.');

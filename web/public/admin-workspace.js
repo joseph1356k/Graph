@@ -65,13 +65,21 @@
             const reason = event.reason;
             appendLogEntry('error', `unhandledrejection: ${reason instanceof Error ? `${reason.name}: ${reason.message}` : serializeArg(reason)}`);
         });
+        document.addEventListener('graph-trainer-extension-log', (event) => {
+            const detail = event?.detail || {};
+            const level = ['error', 'warn', 'info'].includes(detail.level) ? detail.level : 'info';
+            const scope = detail.scope ? `[${detail.scope}] ` : '';
+            const details = detail.details ? ` ${serializeArg(detail.details)}` : '';
+            appendLogEntry(level, `${scope}${detail.message || 'Plugin event'}${details}`);
+        });
 
         const originalFetch = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
         if (originalFetch) {
             window.fetch = async (input, init = {}) => {
                 const method = `${init.method || (input && typeof input === 'object' ? input.method : '') || 'GET'}`.toUpperCase();
                 const url = typeof input === 'string' ? input : (input && input.url) || `${input}`;
-                const isVoiceFlow = /\/api\/(voice|medical|clinical)\b/.test(url);
+                const isVoiceFlow = /\/api\/(voice|medical|clinical|usage)\b/.test(url)
+                    || /\/api\/workflows\/[^/?#]+\/note-field-matches\b/.test(url);
                 const startedAt = Date.now();
                 try {
                     const response = await originalFetch(input, init);
@@ -157,7 +165,7 @@
             try { window.WebSocket = WrappedWebSocket; } catch (error) { /* ignore */ }
         }
 
-        appendLogEntry('info', 'Captura de logs activa (consola, errores, fetch /api/voice·medical·clinical y WebSocket Deepgram).');
+        appendLogEntry('info', 'Captura de logs activa (consola, errores, fetch /api/voice·medical·clinical·usage·note-field-matches y WebSocket Deepgram).');
     }
 
     installLogCapture();

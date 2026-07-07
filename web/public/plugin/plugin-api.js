@@ -50,7 +50,7 @@
 
     function createClient(config) {
         const baseUrl = normalizeBaseUrl(config?.baseUrl || '');
-        const miracleBaseUrl = normalizeBaseUrl(config?.miracleBaseUrl || '');
+        const miracleBaseUrl = normalizeBaseUrl(config?.miracleBaseUrl || config?.baseUrl || '');
         const fetchImpl = typeof config?.fetchImpl === 'function'
             ? config.fetchImpl
             : fetch;
@@ -180,18 +180,12 @@
                 }, fetchImpl);
             },
             createMiracleStreamSession() {
-                if (!miracleBaseUrl) {
-                    return Promise.reject(new Error('El motor medico Miracle no esta configurado en Vercel. Render no se usa como fallback.'));
-                }
                 return createJsonRequest(miracleBaseUrl, '/api/voice/stream-session', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 }, fetchImpl);
             },
             sendMiracleOrchestratorEvent(payload) {
-                if (!miracleBaseUrl) {
-                    return Promise.reject(new Error('El motor medico Miracle no esta configurado en Vercel. Render no se usa como fallback.'));
-                }
                 return createJsonRequest(miracleBaseUrl, '/api/voice/orchestrator/events', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

@@ -1,7 +1,7 @@
 (function () {
     // Standalone developer log viewer. Self-mounts a floating "Logs" button.
-    // Captures console, uncaught errors, fetch (with body for /api/voice·medical·clinical)
-    // and WebSocket lifecycle (with Deepgram frame + audio-send instrumentation).
+    // Captures console, uncaught errors, fetch for voice/medical/clinical/usage
+    // and note-field-matches, plus WebSocket lifecycle with Deepgram frames.
     if (window.__miracleDevLogsInstalled) return;
     window.__miracleDevLogsInstalled = true;
 
@@ -62,13 +62,21 @@
             const reason = event.reason;
             append('error', `unhandledrejection: ${reason instanceof Error ? `${reason.name}: ${reason.message}` : serializeArg(reason)}`);
         });
+        document.addEventListener('graph-trainer-extension-log', (event) => {
+            const detail = event?.detail || {};
+            const level = ['error', 'warn', 'info'].includes(detail.level) ? detail.level : 'info';
+            const scope = detail.scope ? `[${detail.scope}] ` : '';
+            const details = detail.details ? ` ${serializeArg(detail.details)}` : '';
+            append(level, `${scope}${detail.message || 'Plugin event'}${details}`);
+        });
 
         const originalFetch = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
         if (originalFetch) {
             window.fetch = async (input, init = {}) => {
                 const method = `${init.method || (input && typeof input === 'object' ? input.method : '') || 'GET'}`.toUpperCase();
                 const url = typeof input === 'string' ? input : (input && input.url) || `${input}`;
-                const isVoiceFlow = /\/api\/(voice|medical|clinical)\b/.test(url);
+                const isVoiceFlow = /\/api\/(voice|medical|clinical|usage)\b/.test(url)
+                    || /\/api\/workflows\/[^/?#]+\/note-field-matches\b/.test(url);
                 const startedAt = Date.now();
                 try {
                     const response = await originalFetch(input, init);
@@ -154,7 +162,7 @@
             try { window.WebSocket = WrappedWebSocket; } catch (error) { /* ignore */ }
         }
 
-        append('info', 'Dev logs activos (consola, errores, fetch /api/voice·medical·clinical y WebSocket Deepgram).');
+        append('info', 'Dev logs activos (consola, errores, fetch /api/voice·medical·clinical·usage·note-field-matches y WebSocket Deepgram).');
     }
 
     function copyLogs() {

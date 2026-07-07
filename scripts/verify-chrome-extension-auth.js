@@ -41,7 +41,7 @@ async function verifyBackground() {
   const fetchCalls = [];
   const chrome = {
     storage: {
-      sync: createStorageArea({ backendUrl: 'https://miracle-zeta.vercel.app' }),
+      sync: createStorageArea({ backendUrl: 'https://graph-five-orpin.vercel.app' }),
       local: createStorageArea()
     },
     runtime: {
@@ -75,7 +75,7 @@ async function verifyBackground() {
           headers: { 'content-type': 'application/json' }
         });
       }
-      if (`${url}`.startsWith('https://miracle-zeta.vercel.app/api/')) {
+      if (`${url}`.startsWith('https://graph-five-orpin.vercel.app/api/')) {
         return new Response(JSON.stringify({ ok: true }), {
           status: 200,
           headers: { 'content-type': 'application/json' }
@@ -98,7 +98,7 @@ async function verifyBackground() {
   // route requires a real account or tolerates an anonymous/local-dev caller.
   const unauthenticatedFetch = await sendMessage(listener, {
     type: 'graph:api-fetch',
-    request: { url: 'https://miracle-zeta.vercel.app/api/agent/chat', method: 'POST' }
+    request: { url: 'https://graph-five-orpin.vercel.app/api/agent/chat', method: 'POST' }
   });
   assert.strictEqual(unauthenticatedFetch.status, 200);
 
@@ -119,7 +119,7 @@ async function verifyBackground() {
 
   const authenticatedFetch = await sendMessage(listener, {
     type: 'graph:api-fetch',
-    request: { url: 'https://miracle-zeta.vercel.app/api/workflows', method: 'GET' }
+    request: { url: 'https://graph-five-orpin.vercel.app/api/workflows', method: 'GET' }
   });
   assert.strictEqual(authenticatedFetch.status, 200);
   const lastCall = fetchCalls.at(-1);
@@ -169,15 +169,15 @@ async function verifyExtensionHost() {
   vm.runInContext(fs.readFileSync(path.join(root, 'web', 'public', 'plugin', 'plugin-host.js'), 'utf8'), context);
   const host = windowObject.GraphPluginHost.createHost({
     appId: 'test',
-    apiBaseUrl: 'https://miracle-zeta.vercel.app'
+    apiBaseUrl: 'https://graph-five-orpin.vercel.app'
   });
   assert.strictEqual(host.platform, 'chrome-extension');
-  const response = await host.fetchImpl('https://miracle-zeta.vercel.app/api/workflows', {
+  const response = await host.fetchImpl('https://graph-five-orpin.vercel.app/api/workflows', {
     headers: { 'Content-Type': 'application/json' }
   });
   assert.strictEqual(response.status, 503);
   assert.strictEqual(sentMessage.type, 'graph:api-fetch');
-  assert.strictEqual(sentMessage.request.url, 'https://miracle-zeta.vercel.app/api/workflows');
+  assert.strictEqual(sentMessage.request.url, 'https://graph-five-orpin.vercel.app/api/workflows');
   assert.match(await response.text(), /Workflow storage is unavailable/);
 }
 
@@ -185,13 +185,13 @@ async function verifyMiracleMedicalProxyDemoAccess() {
   const previousEnv = {
     VERCEL: process.env.VERCEL,
     NODE_ENV: process.env.NODE_ENV,
-    MIRACLE_MEDICAL_ENGINE_URL: process.env.MIRACLE_MEDICAL_ENGINE_URL
+    MIRACLE_RUNTIME_URL: process.env.MIRACLE_RUNTIME_URL
   };
   const previousFetch = global.fetch;
 
   process.env.VERCEL = '1';
   process.env.NODE_ENV = 'production';
-  process.env.MIRACLE_MEDICAL_ENGINE_URL = 'https://miracle-engine.test';
+  process.env.MIRACLE_RUNTIME_URL = 'https://miracle-engine.test';
 
   global.fetch = async (url, init = {}) => {
     const target = `${url || ''}`;

@@ -64,19 +64,19 @@ async function auditNeo4j() {
   }
 }
 
-async function auditMiracleSidecar() {
-  const baseUrl = envValue('MIRACLE_MEDICAL_ENGINE_URL').replace(/\/+$/, '');
+async function auditMiracleRuntime() {
+  const baseUrl = envValue('MIRACLE_RUNTIME_URL').replace(/\/+$/, '');
   if (!baseUrl) {
-    addCheck('Miracle sidecar', 'WARN', 'MIRACLE_MEDICAL_ENGINE_URL is not configured.');
+    addCheck('Miracle runtime', 'WARN', 'MIRACLE_RUNTIME_URL is not configured.');
     return;
   }
   try {
     const response = await fetch(`${baseUrl}/api/setup/status`, {
       signal: AbortSignal.timeout(2000)
     });
-    addCheck('Miracle sidecar', response.ok ? 'PASS' : 'FAIL', `Setup endpoint returned HTTP ${response.status}.`);
+    addCheck('Miracle runtime', response.ok ? 'PASS' : 'FAIL', `Setup endpoint returned HTTP ${response.status}.`);
   } catch (error) {
-    addCheck('Miracle sidecar', 'FAIL', 'The configured sidecar is unreachable.');
+    addCheck('Miracle runtime', 'FAIL', 'The configured runtime is unreachable.');
   }
 }
 
@@ -101,7 +101,7 @@ async function main() {
   auditStaticConfiguration();
   await Promise.all([
     auditNeo4j(),
-    auditMiracleSidecar()
+    auditMiracleRuntime()
   ]);
 
   const rank = { FAIL: 0, WARN: 1, PASS: 2 };
