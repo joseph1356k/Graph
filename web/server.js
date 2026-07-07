@@ -245,6 +245,7 @@ app.use('/api/medical', costlyLimiter);
 app.use('/api/workflows/:id/note-field-matches', costlyLimiter);
 app.use('/api/clinical/diagnosis-suggestions', costlyLimiter);
 app.use('/api/v1/pipeline', costlyLimiter);
+app.use('/api/v1/autofill/match', costlyLimiter);
 function isMiracleMedicalProxyRequest(req) {
   const method = `${req.method || ''}`.toUpperCase();
   const path = `${req.originalUrl || req.path || req.url || ''}`.split('?')[0];
@@ -701,7 +702,13 @@ registerMedicalRoutes(app, {
   callMiracleRuntime
 });
 registerUsageRoutes(app, { usageDashboardService });
-registerPublicApiRoutes(app, { callMiracleRuntime, noteFieldMatcher });
+registerPublicApiRoutes(app, {
+  callMiracleRuntime,
+  noteFieldMatcher,
+  learningSessionService,
+  catalogService,
+  workflowExecutor
+});
 
 app.post('/api/agent/chat', costlyLimiter, async (req, res) => {
   try {

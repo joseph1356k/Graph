@@ -1,117 +1,247 @@
 # Miracle Backend API (v1)
 
-Backend central que expone las funcionalidades de Miracle a las aplicaciones
-cliente (extensión Chrome, app de Windows, web app). Una sola central de
-exposición bajo `/api/v1`.
+Backend central para aplicaciones cliente: web apps, extension Chrome, Windows,
+Android o scripts internos. Todo el contrato publico vive bajo `/api/v1` y se
+autentica con una API key permanente enviada como `X-API-Key` o
+`Authorization: Bearer <key>`.
 
-## Autenticación
+## Descubrimiento
 
-Todas las rutas `/api/v1/*` se autentican con una **API key permanente** por
-cliente (`MIRACLE_API_KEYS`), enviada como `X-API-Key` o `Authorization:
-Bearer`. Es el único método: no hay fallback al token de sesión del dashboard.
+`GET /api/v1`
 
-```
-X-API-Key: <TU_API_KEY>
-```
+Devuelve el manifiesto de capacidades: pipeline, transcripcion, autofill,
+learning y workflows.
 
-Si falta o es inválida, la API responde `401`.
+## Transcripcion y nota
 
----
+`POST /api/v1/transcription/session`
 
-## `GET /api/v1`
+Devuelve credenciales de Deepgram para que el cliente abra el WebSocket de audio
+en tiempo real.
 
-Manifiesto de capacidades y etapas disponibles. Útil para descubrimiento.
+`POST /api/v1/pipeline`
 
----
-
-## `POST /api/v1/pipeline` — el llamado único
-
-Un solo llamado que corre **solo las etapas que actives**. El backend procesa
-únicamente lo pedido.
-
-### Request
+Ejecuta las etapas activadas por `stages`.
 
 ```json
 {
-  "session_id": "opcional-uuid",
-  "transcript": "texto crudo de la transcripción",
+  "session_id": "optional-session",
+  "transcript": "texto final de Deepgram",
   "language": "es",
   "sequence": 1,
-  "note": { "content": "nota actual (markdown)", "title": "Nota" },
-  "fields": [ /* campos detectados por el cliente (para autofill) */ ],
+  "note": { "content": "", "title": "Nota" },
+  "fields": [],
   "stages": { "transcription": true, "note": true, "autofill": false }
 }
 ```
 
-`stages` controla qué procesa el backend (todos opcionales):
+Etapas:
 
-| Etapa | Default | Qué hace |
-|---|---|---|
-| `transcription` | `true` | Devuelve la transcripción cruda recibida. |
-| `note` | `true` | Organiza la transcripción en una nota estructurada (Product-LLM). |
-| `autofill` | `false` | Mapea la nota a los `fields` detectados por el cliente. Se activa solo si envías `fields`. |
+| Stage | Default | Funcion |
+| --- | --- | --- |
+| `transcription` | `true` | Devuelve el texto recibido. |
+| `note` | `true` | Organiza el transcript en una nota clinica estructurada. |
+| `autofill` | `false` | Mapea la nota contra los campos detectados por el cliente. |
 
-Ejemplos de uso:
-- Solo transcripción: `{"stages":{"transcription":true,"note":false,"autofill":false}}`
-- Transcripción + nota: `{"stages":{"note":true}}` (default)
-- Todo: `{"stages":{"note":true,"autofill":true}, "fields":[...]}`
+## Autofill directo
 
-### Response
+`POST /api/v1/autofill/match`
 
-Contiene **solo las claves de las etapas activadas**:
+Usalo cuando ya tienes una nota organizada y una lista de campos detectados en
+la UI.
 
 ```json
 {
-  "session_id": "…",
-  "stages": { "transcription": true, "note": true, "autofill": false },
-  "transcription": { "text": "…" },
+  "session_id": "encounter-123",
+  "page_url": "https://cliente.example/emr",
+  "note_content": "## Historia\nPaciente con dolor de rodilla derecha...",
+  "fields": [
+    {
+      "stepOrder": 1,
+      "actionType": "input",
+      "selector": "#chief-complaint",
+      "label": "Chief complaint",
+      "controlType": "text",
+      "currentValue": ""
+    },
+    {
+      "stepOrder": 2,
+      "actionType": "select",
+      "selector": "#laterality",
+      "label": "Laterality",
+      "controlType": "select",
+      "allowedOptions": [
+        { "value": "right", "label": "Right" },
+        { "value": "left", "label": "Left" }
+      ]
+    }
+  ],
+  "already_fulfilled": []
+}
+```
+
+Respuesta:
+
+```json
+{
+  "autofill": {
+    "matches": [
+      {
+        "stepOrder": 1,
+        "value": "Dolor de rodilla derecha",
+        "confidence": 0.91,
+        "evidence": "dolor de rodilla derecha"
+      }
+    ],
+    "ready_to_submit": false,
+    "readyToSubmit": false,
+    "submit_reason": "",
+    "usage": null
+  }
+}
+```
+
+El cliente ejecuta el llenado. El backend solo decide que valor corresponde a
+cada campo.
+
+## Entrenamiento de workflows
+
+El cliente entrena workflows enviando la interaccion de UI como pasos
+estructurados. El backend persiste el mapa en Neo4j usando los servicios
+existentes de learning.
+
+### Iniciar sesion
+
+`POST /api/v1/learning/sessions`
+
+```json
+{
+  "description": "Autofill intake note in Acme EMR",
+  "app_id": "acme-emr",
+  "source_url": "https://cliente.example/emr/intake",
+  "source_origin": "https://cliente.example",
+  "source_pathname": "/emr/intake",
+  "source_title": "Intake",
+  "context": {
+    "surface": "expanded-emr",
+    "specialty": "orthopedics"
+  }
+}
+```
+
+Respuesta:
+
+```json
+{
+  "session": {
+    "id": "wf_1783450000000",
+    "workflow_id": "wf_1783450000000",
+    "recording": true
+  }
+}
+```
+
+### Registrar pasos
+
+`POST /api/v1/learning/sessions/:id/steps`
+
+```json
+{
+  "actionType": "input",
+  "selector": "#chief-complaint",
+  "label": "Chief complaint",
+  "controlType": "text",
+  "value": "Dolor de rodilla derecha",
+  "semanticTarget": "chief complaint",
+  "surfaceSection": "intake"
+}
+```
+
+Campos esperados por paso:
+
+| Campo | Uso |
+| --- | --- |
+| `actionType` | `input`, `select`, `click` o `navigation`. |
+| `selector` | Selector estable que el cliente pueda volver a usar. |
+| `label` | Texto visible o nombre semantico del campo. |
+| `controlType` | Tipo de control: `text`, `textarea`, `select`, `checkbox`, etc. |
+| `value` | Valor observado durante entrenamiento, si aplica. |
+| `allowedOptions` | Opciones para selects o controles enumerados. |
+| `semanticTarget` | Intencion clinica o funcional del campo. |
+| `surfaceSection` | Seccion visual donde vive el campo. |
+
+### Contexto opcional
+
+`POST /api/v1/learning/sessions/:id/context-notes`
+
+```json
+{
   "note": {
-    "content": "## Identificacion\n- Nombre: …",
-    "backend_status": "product-llm",
-    "usage": { "model": "gpt-4.1-mini", "total_tokens": 1110 }
-  },
-  "autofill": { "matches": [ … ], "readyToSubmit": false }
+    "role": "clinical_context",
+    "transcript": "este workflow llena motivo de consulta, lateralidad y plan",
+    "mode": "training"
+  }
 }
 ```
 
-Estados posibles por etapa cuando no se procesa: `skipped` (`no_transcript`,
-`no_fields`, `no_note_content`), `unavailable` (`runtime_not_configured`,
-`not_configured`) o `error`.
+### Finalizar
 
-### Streaming de dictado
+`POST /api/v1/learning/sessions/:id/finish`
 
-Para dictado en tiempo real, el cliente reutiliza el mismo `session_id` y va
-incrementando `sequence` en cada segmento final; el backend acumula la nota
-sobre el `note.content` que le envíes.
+Devuelve `workflow_id`, `summary` y el workflow guardado cuando esta disponible.
 
----
+## Workflows y ejecucion
 
-## `POST /api/v1/transcription/session` — transcripción cruda en streaming
+`GET /api/v1/workflows`
 
-Devuelve credenciales para conectar el streaming de transcripción cruda
-(Deepgram) en tiempo real. Necesario porque la transcripción es un flujo
-bidireccional que no cabe en un request/response único.
+Lista workflows privados del cliente API key y workflows globales.
 
-### Response
+`GET /api/v1/workflows/:id`
+
+Lee un workflow especifico.
+
+`POST /api/v1/workflows/:id/plan`
+
+Devuelve un plan ejecutable para que el cliente llene la UI localmente.
 
 ```json
 {
-  "provider": "deepgram",
-  "access_token": "…",
-  "auth_scheme": "bearer",
-  "websocket_url": "wss://api.deepgram.com/v1/listen?…",
-  "model": "nova-3",
-  "language": "es",
-  "timeslice_ms": 250
+  "variables": {
+    "input_1": "Dolor de rodilla derecha"
+  },
+  "execution_intent": {
+    "source": "autofill",
+    "encounter_id": "enc-123"
+  }
 }
 ```
 
----
+Respuesta:
 
-## Roadmap
+```json
+{
+  "execution_plan": {
+    "workflowId": "wf_1783450000000",
+    "steps": [
+      {
+        "stepOrder": 1,
+        "actionType": "input",
+        "selector": "#chief-complaint"
+      }
+    ]
+  }
+}
+```
 
-- **Autofill:** la etapa ya existe y se activa con `fields`; se completará al
-  refactorizar la capa de detección de campos del cliente.
-- **Pipeline en streaming (SSE/WS):** fusionar audio-in → transcripción cruda +
-  nota + autofill en un único flujo en tiempo real (hoy la transcripción cruda
-  usa `transcription/session` + Deepgram directo).
+## Responsabilidad del cliente
+
+El cliente debe:
+
+1. Detectar campos visibles y accionables de su UI.
+2. Enviar labels, selectors, opciones y valores actuales al backend.
+3. Entrenar workflows con las acciones humanas observadas.
+4. Pedir matches de autofill o planes de workflow.
+5. Ejecutar el llenado localmente, respetando validaciones de la app destino.
+
+El backend no toma control remoto del dispositivo del cliente; entrega decisiones
+y planes estructurados.

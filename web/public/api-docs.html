@@ -181,6 +181,7 @@
             </div>
             <div class="doc-actions">
                 <span id="copy-hint" class="copy-hint"></span>
+                <a class="button" href="/autofill-api-docs.html">Autofill API</a>
                 <button type="button" class="button primary" id="copy-page">Copiar toda la página</button>
             </div>
         </div>
@@ -188,8 +189,8 @@
         <main id="doc-content">
             <p>Guía para conectar <strong>cualquier app cliente</strong> (extensión de
             Chrome, app de Windows, web, scripts) al backend de Miracle y usar sus
-            funcionalidades: transcripción de voz, organización de la nota médica y
-            (pronto) autofill. Todo se consume vía HTTPS bajo <code>/api/v1</code>.</p>
+            funcionalidades: transcripción de voz, organización de la nota médica,
+            autofill y entrenamiento de workflows. Todo se consume vía HTTPS bajo <code>/api/v1</code>.</p>
 
             <h2>1. URL base</h2>
             <pre><code>__BASE__</code></pre>
@@ -254,7 +255,7 @@
             <ul>
                 <li><strong>Solo transcripción cruda:</strong> <code>"stages": { "transcription": true, "note": false, "autofill": false }</code></li>
                 <li><strong>Transcripción + nota</strong> (default): <code>"stages": { "note": true }</code></li>
-                <li><strong>Todo</strong> (cuando llegue autofill): <code>"stages": { "note": true, "autofill": true }</code> + <code>"fields": [...]</code></li>
+                <li><strong>Todo</strong>: <code>"stages": { "note": true, "autofill": true }</code> + <code>"fields": [...]</code></li>
             </ul>
 
             <h3>Ejemplo en JavaScript (fetch)</h3>
@@ -312,14 +313,14 @@ console.log(data.note.content);</code></pre>
                     <tr><td><code>429</code></td><td>Límite de tasa (20/min en <code>/pipeline</code>).</td><td>Reintenta con backoff.</td></tr>
                     <tr><td><code>503</code></td><td>El motor de nota no está disponible en ese entorno.</td><td>Avisa al dueño del backend.</td></tr>
                     <tr><td><code>note.status: "skipped"</code></td><td>Faltó <code>transcript</code>.</td><td>Envía <code>transcript</code>.</td></tr>
-                    <tr><td><code>autofill.status: "skipped"</code></td><td>Falta <code>fields</code> (o autofill aún no activo).</td><td>Envía <code>fields</code> cuando esté disponible.</td></tr>
+                    <tr><td><code>autofill.status: "skipped"</code></td><td>Falta <code>fields</code> o <code>note.content</code>.</td><td>Envía la nota y los campos detectados por el cliente.</td></tr>
                 </tbody>
             </table>
 
             <h2>7. Estado actual</h2>
             <ul>
                 <li>✅ <strong>Transcripción cruda</strong> (streaming) y <strong>nota organizada</strong>: listas.</li>
-                <li>🟡 <strong>Autofill</strong>: la etapa ya existe; se activa enviando <code>fields</code>.</li>
+                <li>✅ <strong>Autofill</strong>: expuesto por <code>/api/v1/pipeline</code> y <code>/api/v1/autofill/match</code>.</li>
                 <li>🔜 <strong>Pipeline unificado en streaming</strong> (un solo canal audio→crudo→nota→autofill).</li>
             </ul>
         </main>

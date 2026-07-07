@@ -1,164 +1,118 @@
-# Arquitectura de las APIs (`/api/v1`) en el repositorio
+# Arquitectura de la API publica (`/api/v1`)
 
-Este documento explica **cómo está construida** la capa de exposición de APIs
-dentro del repo: dónde vive cada pieza, cómo fluye una petición y cómo
-extenderla. Para el uso desde un cliente, ver [API_GUIDE.md](./API_GUIDE.md).
+`/api/v1` es la unica superficie publica para aplicaciones cliente. Las rutas
+internas (`/api/workflow`, `/api/step`, `/api/workflows`, `/api/voice`, etc.)
+siguen existiendo para dashboard/demo, pero los clientes externos deben consumir
+el contrato versionado.
 
----
-
-## 1. Principio
-
-El backend es el **cerebro lógico**; las apps cliente son consumidoras. Una
-capacidad se implementa **una vez** en el backend y se expone por una **única
-central de APIs versionada** (`/api/v1`). Los clientes nunca hablan con los
-servicios internos directamente: pasan siempre por el contrato `/api/v1`.
-
-```
-Cliente (extensión / Windows / web)
-        │  HTTPS  Authorization: Bearer <token>
-        ▼
-/api/v1  ── registerPublicApiRoutes.js  (la central de exposición)
-        │
-        ├── transcription  → runtime Python (Deepgram token)
-        ├── note           → runtime Python (voice_orchestration + Product-LLM)
-        └── autofill       → NoteFieldMatcher (LLM)  [opcional]
+```txt
+Cliente externo
+  -> /api/v1 + X-API-Key
+  -> web/api/registerPublicApiRoutes.js
+  -> servicios existentes
 ```
 
----
-
-## 2. Dónde vive cada pieza
+## Componentes
 
 | Pieza | Archivo | Rol |
-|---|---|---|
-| Central de exposición | `web/api/registerPublicApiRoutes.js` | Define `/api/v1`, `/api/v1/pipeline`, `/api/v1/transcription/session`. |
-| Composition root | `web/server.js` | Importa y registra la central; aplica auth + rate limit. |
-| Auth | `web/api/requireAuth.js` | `requireAccountAuth` valida el token (sesion local-admin o guest local). |
-| Motor de nota (backend real) | `bounded/miracle-ai/` (Python) | `voice_orchestration` + `integrations/product_llm` organizan la nota. |
-| Autofill | `src/application/use-cases/NoteFieldMatcher.js` | Mapea la nota a los campos del cliente vía LLM. |
-| Proxy al runtime Python | `web/server.js` → `callMiracleRuntime()` | Reenvía al runtime Python con el token interno. |
+| --- | --- | --- |
+| Fachada publica | `web/api/registerPublicApiRoutes.js` | Define discovery, transcription, pipeline, autofill, learning y workflows. |
+| Composition root | `web/server.js` | Aplica auth/rate limit e inyecta servicios. |
+| Auth publica | `web/api/requireAuth.js` | `requireApiKey` valida `MIRACLE_API_KEYS`. |
+| Nota/transcripcion | `bounded/miracle-ai/` + `callMiracleRuntime()` | Deepgram y Product-LLM. |
+| Autofill | `src/application/use-cases/NoteFieldMatcher.js` | Mapea nota a campos detectados. |
+| Learning | `src/application/use-cases/LearningSessionService.js` | Inicia sesiones y registra pasos. |
+| Workflows | `WorkflowCatalog` + `WorkflowExecutor` | Lista workflows y genera planes client-side. |
 
----
+## Endpoints publicos
 
-## 3. El endpoint unificado: `/api/v1/pipeline`
-
-Un solo handler orquesta las etapas. La clave del diseño: **las flags
-`stages` deciden qué se ejecuta**, así el backend solo procesa (y solo cobra en
-LLM) lo que el cliente realmente pide.
-
-```
+```txt
+GET  /api/v1
+POST /api/v1/transcription/session
 POST /api/v1/pipeline
-        │
-        ├─ stages.transcription → devuelve el transcript recibido (eco)
-        │
-        ├─ stages.note → callMiracleRuntime(req, '/api/voice/orchestrator/events')
-        │                 → runtime Python → Product-LLM → resolved_note_content
-        │
-        └─ stages.autofill → noteFieldMatcher.match({ noteContent, fields })
-                             (solo si el cliente envía `fields`)
+POST /api/v1/autofill/match
+
+POST /api/v1/learning/sessions
+POST /api/v1/learning/sessions/:id/steps
+POST /api/v1/learning/sessions/:id/context-notes
+POST /api/v1/learning/sessions/:id/finish
+
+GET  /api/v1/workflows
+GET  /api/v1/workflows/:id
+POST /api/v1/workflows/:id/plan
 ```
 
-La respuesta contiene **solo** las claves de las etapas activadas. Cada etapa
-falla de forma aislada (`status: skipped | unavailable | error`) sin tumbar el
-resto.
+## Auth y ownership
 
-### Estado (sesiones)
-
-El endpoint es **stateless desde el backend**: el cliente envía la `note.content`
-actual y (opcionalmente) reutiliza `session_id` + `sequence`. El runtime Python
-acumula la nota sobre lo que se le envía; no hay estado propio en `/api/v1`.
-
----
-
-## 4. Cableado en `server.js`
-
-Tres puntos, todos en `web/server.js`:
+`/api/v1` usa solo API key permanente. No hay fallback al login del dashboard.
+Cuando una key valida entra, `requireApiKey` crea:
 
 ```js
-// 1) import
-const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
-
-// 2) rate limit en la etapa costosa (gasta LLM)
-app.use('/api/v1/pipeline', costlyLimiter);
-
-// 3) auth: /api/v1 exige cuenta real
-[ ..., '/api/providers', '/api/v1' ].forEach((routePrefix) => {
-  app.use(routePrefix, requireAccountAuth, attachWorkflowAccess);
-});
-
-// 4) registro (callMiracleRuntime y noteFieldMatcher ya existen en el server)
-registerPublicApiRoutes(app, { callMiracleRuntime, noteFieldMatcher });
+req.user.id = `api-client:${label}`;
+req.workflowAccess = {
+  ownerId: req.user.id,
+  includeGlobal: true,
+  canManageGlobalWorkflows: false
+};
 ```
 
-`registerPublicApiRoutes` recibe por **inyección de dependencias** lo que
-necesita (`callMiracleRuntime`, `noteFieldMatcher`), sin acoplarse a cómo se
-construyen.
+Esto hace que cada cliente API key vea sus workflows privados y los globales,
+sin poder mutar workflows globales.
 
----
+## Flujo de autofill
 
-## 5. Autenticación
+```txt
+nota organizada + fields detectados por cliente
+  -> POST /api/v1/autofill/match
+  -> NoteFieldMatcher
+  -> matches por stepOrder
+  -> cliente llena su UI localmente
+```
 
-`/api/v1` usa `requireApiKey` (en `requireAuth.js`): **solo API key**, sin
-fallback de token de sesión.
+Tambien puede correr dentro de `POST /api/v1/pipeline` activando
+`stages.autofill`.
 
-- **API key permanente** — cadena secreta en la env var `MIRACLE_API_KEYS`
-  (`label:key,label2:key2`), enviada por el cliente como `X-API-Key` o
-  `Authorization: Bearer`. No expira. `verifyApiKey()` compara en tiempo
-  constante; si no matchea (o falta), responde `401`.
+## Flujo de entrenamiento
 
-El login del dashboard (`/api/auth/local-admin/login`, token de sesión) sigue
-existiendo **solo para las páginas del dashboard** (zonas de prueba), separado
-de la API pública. El sistema aún no tiene usuarios reales.
+```txt
+POST /learning/sessions
+  -> LearningSessionService.startSession()
 
-### Secretos por env (no en el código)
+POST /learning/sessions/:id/steps
+  -> WorkflowLearner.recordStep()
+  -> Neo4jWorkflowRepository.addStep()
 
-Para no exponer credenciales en el repo (público), estos valores se leen
-**exclusivamente** de variables de entorno. Ya **no hay fallbacks hardcodeados**:
+POST /learning/sessions/:id/finish
+  -> WorkflowLearner.finishSession()
+  -> workflow persistido en Neo4j
+```
 
-| Env var | Para qué | Si falta |
-|---|---|---|
-| `MIRACLE_API_KEYS` | API keys permanentes de los clientes. | `/api/v1` responde `401` a todo. |
-| `LOCAL_ADMIN_PASSWORD` | Clave del login de dashboard. | El login admin queda deshabilitado. |
-| `LOCAL_ADMIN_USERS` | Usuarios admin permitidos (coma-separados). | El login admin queda deshabilitado. |
-| `LOCAL_ADMIN_SECRET` | Secreto HMAC que firma los tokens de sesión admin. | Se firma con un secreto aleatorio por proceso (las sesiones no persisten entre reinicios). |
+El cliente no necesita conocer Neo4j. Solo envia contexto de superficie, pasos y
+campos detectados.
 
-> Estas variables deben estar configuradas en Vercel. Sin `LOCAL_ADMIN_PASSWORD`
-> y `LOCAL_ADMIN_USERS`, el login del dashboard rechaza cualquier intento.
+## Flujo de ejecucion
 
----
+```txt
+GET /workflows
+POST /workflows/:id/plan
+  -> WorkflowExecutor.getExecutionPlanById()
+  -> plan client-side
+  -> cliente ejecuta selectors/actions en su entorno
+```
 
-## 6. Por qué la transcripción cruda va aparte
+La ejecucion server-side se mantiene fuera de la API publica. El backend entrega
+planes y decisiones; la app cliente controla su DOM, WebView o UI nativa.
 
-La transcripción en vivo es un **flujo bidireccional en tiempo real** (audio →
-parciales/finales), que no cabe en un request/response único. Por eso hoy:
+## Rate limits
 
-- `/api/v1/transcription/session` entrega credenciales de streaming (Deepgram).
-- El cliente abre el WebSocket a Deepgram y, por cada final, llama a
-  `/api/v1/pipeline` para la nota.
+Los endpoints que pueden gastar LLM tienen `costlyLimiter`:
 
-La implementación de referencia del cliente es el **motor único**
-`web/public/shared/deepgram-dictation.js` (usado por la SPA y el asistente
-flotante).
+- `/api/v1/pipeline`
+- `/api/v1/autofill/match`
 
----
+## Compatibilidad
 
-## 7. Cómo extender
-
-- **Autofill completo:** ya está la etapa; al refactorizar la capa de detección
-  de campos del cliente, el cliente enviará `fields` y la etapa se activa sin
-  cambiar el contrato.
-- **Pipeline en streaming (SSE/WS):** añadir un endpoint que ingiera audio en el
-  backend y reemita `transcription.partial → note.updated → autofill.matches` en
-  un solo canal. Reutilizaría `callMiracleRuntime` + `noteFieldMatcher`.
-- **API keys por cliente:** un middleware de auth alterno para `/api/v1` que
-  valide claves emitidas por cliente, sin depender del token de sesión del
-  dashboard.
-- **Nueva capacidad:** se agrega como etapa/endpoint dentro de
-  `registerPublicApiRoutes.js`, inyectando su caso de uso desde `server.js`.
-
----
-
-## 8. Contrato y compatibilidad
-
-- Todo va bajo `/api/v1`. Cambios incompatibles → `/api/v2` (no romper clientes).
-- Agregar una etapa nueva a `stages` es retrocompatible (default desactivada).
-- Referencia de uso: [API_GUIDE.md](./API_GUIDE.md).
+- Cambios incompatibles deben ir a `/api/v2`.
+- Agregar campos opcionales a request/response es compatible.
+- El contrato publico acepta snake_case y camelCase en puntos criticos para
+  facilitar clientes web/nativos.
