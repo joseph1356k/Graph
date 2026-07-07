@@ -1934,7 +1934,8 @@
                             pendingFieldCount: fields.length,
                             noteLength: noteContent.length,
                             matchCount: Array.isArray(result?.matches) ? result.matches.length : 0,
-                            readyToSubmit: Boolean(result?.readyToSubmit)
+                            readyToSubmit: Boolean(result?.readyToSubmit),
+                            submitReason: result?.submitReason || ''
                         }
                     });
                 } catch (error) {
@@ -1969,12 +1970,20 @@
                     requestedFields: fields.length,
                     matchCount: matches.length,
                     readyToSubmit: Boolean(result?.readyToSubmit),
+                    submitReason: result?.submitReason || '',
                     matches: matches.map((match) => ({
                         stepOrder: match?.stepOrder,
                         value: match?.value,
                         confidence: match?.confidence
                     }))
                 });
+                if (!matches.length && result?.submitReason) {
+                    emitExtensionLog('warn', 'Dynamic note fill produced no matches.', {
+                        workflowId: plan.workflowId || '',
+                        requestedFields: fields.length,
+                        submitReason: result.submitReason
+                    });
+                }
                 let anyApplied = false;
                 const undoBatch = [];
                 let appliedCount = 0;
