@@ -410,7 +410,6 @@
     }
 
     function bindEvents() {
-        bindCollapsible('miracle-stt-card', 'miracle-stt-toggle');
         bindCollapsible('miracle-product-card', 'miracle-product-toggle');
         bindCollapsible('graph-provider-card', 'graph-provider-toggle');
 
