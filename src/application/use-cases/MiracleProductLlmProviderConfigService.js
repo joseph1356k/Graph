@@ -9,6 +9,7 @@ const PROVIDERS = {
     requiresBaseUrl: false,
     requiresModel: true,
     defaultModel: 'gpt-4.1-mini',
+    modelOptions: ['gpt-4.1-mini', 'gpt-4.1', 'gpt-4o', 'gpt-4o-mini'],
     defaultBaseUrl: 'https://api.openai.com'
   },
   disabled: {
@@ -19,6 +20,7 @@ const PROVIDERS = {
     requiresBaseUrl: false,
     requiresModel: false,
     defaultModel: '',
+    modelOptions: [],
     defaultBaseUrl: ''
   }
 };
@@ -56,6 +58,7 @@ class MiracleProductLlmProviderConfigService {
         requires_base_url: spec.requiresBaseUrl,
         requires_model: spec.requiresModel,
         default_model: spec.defaultModel,
+        model_options: spec.modelOptions || [],
         default_base_url: spec.defaultBaseUrl,
         recommended: spec.id === 'openai'
       })),

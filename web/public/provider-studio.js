@@ -125,13 +125,41 @@
         return (providers || []).find((item) => item.id === select.value) || null;
     }
 
+    function renderModelOptions(select, provider, currentModel = '') {
+        if (!select) return;
+        const selectedModel = `${currentModel || select.value || provider?.default_model || ''}`.trim();
+        const options = Array.from(new Set([
+            ...(Array.isArray(provider?.model_options) ? provider.model_options : []),
+            provider?.default_model || '',
+            selectedModel
+        ].map((value) => `${value || ''}`.trim()).filter(Boolean)));
+
+        select.innerHTML = '';
+        if (!options.length) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'Sin modelo';
+            select.appendChild(option);
+            select.value = '';
+            return;
+        }
+
+        options.forEach((model) => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = model === provider?.default_model ? `${model} (recomendado)` : model;
+            select.appendChild(option);
+        });
+        select.value = options.includes(selectedModel) ? selectedModel : options[0];
+    }
+
     function syncGraphFields() {
         const provider = currentProvider(state.graph?.providers, dom.graphSelect);
         dom.graphApiKeyField.classList.toggle('is-hidden', !provider?.requires_api_key);
         dom.graphBaseUrlField.classList.toggle('is-hidden', !provider?.requires_base_url);
         dom.graphModelField.classList.toggle('is-hidden', !provider?.requires_model);
-        if (provider && !dom.graphModel.value) {
-            dom.graphModel.value = provider.default_model || '';
+        if (provider) {
+            renderModelOptions(dom.graphModel, provider);
         }
         if (provider && !dom.graphBaseUrl.value) {
             dom.graphBaseUrl.value = provider.default_base_url || '';
@@ -143,8 +171,8 @@
         dom.miracleProductApiKeyField.classList.toggle('is-hidden', !provider?.requires_api_key);
         dom.miracleProductBaseUrlField.classList.toggle('is-hidden', !provider?.requires_base_url);
         dom.miracleProductModelField.classList.toggle('is-hidden', !provider?.requires_model);
-        if (provider && !dom.miracleProductModel.value) {
-            dom.miracleProductModel.value = provider.default_model || '';
+        if (provider) {
+            renderModelOptions(dom.miracleProductModel, provider);
         }
         if (provider && !dom.miracleProductBaseUrl.value) {
             dom.miracleProductBaseUrl.value = provider.default_base_url || '';
@@ -156,8 +184,8 @@
         dom.miracleSttApiKeyField.classList.toggle('is-hidden', !provider?.requires_api_key);
         dom.miracleSttModelField.classList.toggle('is-hidden', !provider?.requires_model);
         dom.miracleSttLanguageField.classList.toggle('is-hidden', provider?.id === 'disabled');
-        if (provider && !dom.miracleSttModel.value) {
-            dom.miracleSttModel.value = provider.default_model || '';
+        if (provider) {
+            renderModelOptions(dom.miracleSttModel, provider);
         }
         if (provider && !dom.miracleSttLanguage.value) {
             dom.miracleSttLanguage.value = provider.default_language || 'es';
@@ -184,8 +212,8 @@
             dom.graphSelect.value = current.provider;
         }
         dom.graphBaseUrl.value = current.base_url || '';
-        dom.graphModel.value = current.model || '';
         dom.graphApiKey.value = '';
+        renderModelOptions(dom.graphModel, currentProvider(payload.providers, dom.graphSelect), current.model || '');
         syncGraphFields();
         dom.graphCurrent.textContent = current.provider
             ? `Actual: ${current.label || current.provider} - ${current.model || 'sin modelo'} - ${current.source || 'runtime actual'}`
@@ -215,8 +243,8 @@
         }
         const provider = currentProvider(payload.providers, dom.miracleProductSelect);
         dom.miracleProductBaseUrl.value = current.base_url || provider?.default_base_url || '';
-        dom.miracleProductModel.value = current.model || provider?.default_model || '';
         dom.miracleProductApiKey.value = '';
+        renderModelOptions(dom.miracleProductModel, provider, current.model || provider?.default_model || '');
         syncMiracleProductFields();
         dom.miracleProductCurrent.textContent = current.provider
             ? `Actual: ${current.label || current.provider} - ${current.model || 'sin modelo'}`
@@ -247,9 +275,9 @@
             dom.miracleSttSelect.value = current.provider;
         }
         const provider = currentProvider(payload.providers, dom.miracleSttSelect);
-        dom.miracleSttModel.value = current.model || provider?.default_model || '';
         dom.miracleSttLanguage.value = current.language || provider?.default_language || 'es';
         dom.miracleSttApiKey.value = '';
+        renderModelOptions(dom.miracleSttModel, provider, current.model || provider?.default_model || '');
         syncMiracleSttFields();
 
         const vercelReady = payload?.vercel?.write_enabled;
@@ -413,7 +441,10 @@
         bindCollapsible('miracle-product-card', 'miracle-product-toggle');
         bindCollapsible('graph-provider-card', 'graph-provider-toggle');
 
-        dom.graphSelect.addEventListener('change', syncGraphFields);
+        dom.graphSelect.addEventListener('change', () => {
+            dom.graphModel.value = '';
+            syncGraphFields();
+        });
         dom.graphRefresh.addEventListener('click', () => {
             refreshAll().catch((error) => setMessage(dom.graphMessage, error.message, 'error'));
         });
@@ -421,7 +452,10 @@
             submitGraph(event).catch((error) => setMessage(dom.graphMessage, error.message, 'error'));
         });
 
-        dom.miracleProductSelect.addEventListener('change', syncMiracleProductFields);
+        dom.miracleProductSelect.addEventListener('change', () => {
+            dom.miracleProductModel.value = '';
+            syncMiracleProductFields();
+        });
         dom.miracleProductRefresh.addEventListener('click', () => {
             refreshAll().catch((error) => setMessage(dom.miracleProductMessage, error.message, 'error'));
         });
@@ -429,7 +463,10 @@
             submitMiracleProduct(event).catch((error) => setMessage(dom.miracleProductMessage, error.message, 'error'));
         });
 
-        dom.miracleSttSelect.addEventListener('change', syncMiracleSttFields);
+        dom.miracleSttSelect.addEventListener('change', () => {
+            dom.miracleSttModel.value = '';
+            syncMiracleSttFields();
+        });
         dom.miracleSttRefresh.addEventListener('click', () => {
             refreshAll().catch((error) => setMessage(dom.miracleSttMessage, error.message, 'error'));
         });

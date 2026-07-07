@@ -14,6 +14,7 @@ class MiracleSttProviderConfigService {
         requiresApiKey: true,
         requiresModel: true,
         defaultModel: 'nova-3',
+        modelOptions: ['nova-3', 'nova-2'],
         defaultLanguage: 'es',
         recommended: true
       },
@@ -24,6 +25,7 @@ class MiracleSttProviderConfigService {
         requiresApiKey: false,
         requiresModel: false,
         defaultModel: '',
+        modelOptions: [],
         defaultLanguage: 'es',
         recommended: false
       }
@@ -45,6 +47,7 @@ class MiracleSttProviderConfigService {
         requires_api_key: provider.requiresApiKey,
         requires_model: provider.requiresModel,
         default_model: provider.defaultModel,
+        model_options: provider.modelOptions || [],
         default_language: provider.defaultLanguage,
         recommended: provider.recommended
       })),
