@@ -2119,7 +2119,8 @@
             }
             if (notePanelEditor && nextState.content !== undefined) {
                 const isUserEditing = document.activeElement === notePanelEditor;
-                if (!isUserEditing) {
+                const forceContentUpdate = Boolean(nextState.forceContentUpdate);
+                if (!isUserEditing || forceContentUpdate) {
                     const content = `${nextState.content || ''}`;
                     setElementHtml(notePanelEditor, content.trim() ? renderMarkdown(content) : '');
                     notePanelEditor.scrollTop = notePanelEditor.scrollHeight;

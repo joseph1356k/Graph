@@ -870,11 +870,12 @@
         return requireTrainerShell().setExecutionStopButtonVisible(active);
     }
 
-    function syncMiracleNotePanel(statusText = null) {
+    function syncMiracleNotePanel(statusText = null, options = {}) {
         runtime()?.setNotePanelState?.({
             visible: miracleNoteState.visible,
             title: miracleNoteState.noteTitle,
             content: miracleNoteState.noteContent,
+            forceContentUpdate: Boolean(options.forceContentUpdate),
             status: statusText !== null ? statusText : undefined,
             recording: miracleNoteState.active,
             busy: miracleNoteState.busy,
@@ -1075,7 +1076,9 @@
                 }
             });
         }
-        syncMiracleNotePanel(miracleNoteState.noteContent ? 'Miracle organizo la nota.' : 'Segmento enviado a Miracle.');
+        syncMiracleNotePanel(miracleNoteState.noteContent ? 'Miracle organizo la nota.' : 'Segmento enviado a Miracle.', {
+            forceContentUpdate: true
+        });
         dispatchMiracleNoteToDynamicFill(miracleNoteState.noteContent);
     }
 
