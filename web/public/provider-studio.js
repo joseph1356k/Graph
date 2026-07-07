@@ -164,6 +164,18 @@
         }
     }
 
+    function formatSummary(current, { includeLanguage = false } = {}) {
+        if (!current || !current.provider || current.provider === 'disabled') {
+            return 'Deshabilitado';
+        }
+        const configured = Boolean(current.configured);
+        const bits = [current.label || current.provider];
+        if (current.model) bits.push(current.model);
+        if (includeLanguage && current.language) bits.push(current.language);
+        bits.push(configured ? 'API key OK' : 'API key faltante');
+        return bits.join(' · ');
+    }
+
     function renderGraph(payload) {
         state.graph = payload;
         renderOptions(dom.graphSelect, payload.providers || []);
@@ -178,8 +190,9 @@
         dom.graphCurrent.textContent = current.provider
             ? `Actual: ${current.label || current.provider} - ${current.model || 'sin modelo'} - ${current.source || 'runtime actual'}`
             : 'Sin provider explicito en Graph. Se usa el fallback actual del servidor.';
-        dom.graphMetric.textContent = current.model || current.label || current.provider || 'No configurado';
-        setPill(dom.graphPill, current.configured ? 'Configurado' : 'Sin credenciales', current.configured ? 'ready' : 'warning');
+        const graphConfigured = Boolean(current.configured);
+        dom.graphMetric.textContent = formatSummary(current);
+        setPill(dom.graphPill, graphConfigured ? 'Configurado' : 'Sin credenciales', graphConfigured ? 'ready' : 'danger');
         const vercelReady = payload?.vercel?.write_enabled;
         const redeployMode = payload?.vercel?.deploy_hook_configured ? 'deploy hook' : 'redeploy API/manual';
         if (!vercelReady) {
@@ -208,8 +221,11 @@
         dom.miracleProductCurrent.textContent = current.provider
             ? `Actual: ${current.label || current.provider} - ${current.model || 'sin modelo'}`
             : 'Actual: fallback heuristico de Miracle.';
-        dom.miracleProductMetric.textContent = current.model || current.label || current.provider || 'Heuristico';
-        setPill(dom.miracleProductPill, payload.status?.configured ? 'Configurado' : 'Fallback', payload.status?.configured ? 'ready' : 'warning');
+        const productConfigured = Boolean(payload.status?.configured);
+        dom.miracleProductMetric.textContent = current.provider
+            ? formatSummary({ ...current, configured: productConfigured })
+            : 'Fallback heuristico (sin API key)';
+        setPill(dom.miracleProductPill, productConfigured ? 'Configurado' : 'Fallback', productConfigured ? 'ready' : 'danger');
         const vercelReady = payload?.vercel?.write_enabled;
         const redeployMode = payload?.vercel?.deploy_hook_configured ? 'deploy hook' : 'redeploy API/manual';
         if (!vercelReady) {
@@ -241,11 +257,12 @@
         dom.miracleSttCurrent.textContent = current.provider
             ? `Actual: ${current.label || current.provider} - ${current.model || 'sin modelo'} - ${current.language || 'sin idioma'} - ${vercelReady ? 'Vercel listo' : 'falta token de Vercel'}`
             : 'STT sin configuracion actual.';
-        dom.miracleSttMetric.textContent = current.model || current.label || current.provider || 'Deshabilitado';
+        const sttConfigured = Boolean(current.configured);
+        dom.miracleSttMetric.textContent = formatSummary(current, { includeLanguage: true });
         setPill(
             dom.miracleSttPill,
-            current.configured ? 'Configurado' : 'Sin credenciales',
-            current.configured ? 'ready' : 'warning'
+            sttConfigured ? 'Configurado' : 'Sin credenciales',
+            sttConfigured ? 'ready' : 'danger'
         );
         if (!vercelReady) {
             setMessage(
@@ -382,7 +399,21 @@
         }
     }
 
+    function bindCollapsible(cardId, toggleId) {
+        const card = document.getElementById(cardId);
+        const toggle = document.getElementById(toggleId);
+        if (!card || !toggle) return;
+        toggle.addEventListener('click', () => {
+            const collapsed = card.classList.toggle('is-collapsed');
+            toggle.setAttribute('aria-expanded', String(!collapsed));
+        });
+    }
+
     function bindEvents() {
+        bindCollapsible('miracle-stt-card', 'miracle-stt-toggle');
+        bindCollapsible('miracle-product-card', 'miracle-product-toggle');
+        bindCollapsible('graph-provider-card', 'graph-provider-toggle');
+
         dom.graphSelect.addEventListener('change', syncGraphFields);
         dom.graphRefresh.addEventListener('click', () => {
             refreshAll().catch((error) => setMessage(dom.graphMessage, error.message, 'error'));

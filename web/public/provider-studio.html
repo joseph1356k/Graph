@@ -49,8 +49,8 @@
 
         <section id="provider-studio-grid" class="studio-content is-hidden">
             <section class="studio-board">
-                <section class="studio-card">
-                    <div class="studio-card-head">
+                <section class="studio-card is-collapsed" id="miracle-stt-card">
+                    <button type="button" class="studio-card-head" id="miracle-stt-toggle" aria-expanded="false" aria-controls="miracle-stt-body">
                         <div>
                             <p class="studio-kicker">Miracle</p>
                             <h2>STT</h2>
@@ -58,38 +58,41 @@
                         <div class="studio-status-meta">
                             <strong id="miracle-stt-metric">Cargando</strong>
                             <span id="miracle-stt-pill" class="status-pill">Cargando</span>
+                            <svg class="studio-card-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>
                         </div>
+                    </button>
+                    <div class="studio-card-body" id="miracle-stt-body">
+                        <p id="miracle-stt-current" class="studio-current">Leyendo estado actual...</p>
+                        <form id="miracle-stt-form" class="studio-form">
+                            <div class="studio-form-grid">
+                                <label class="field">
+                                    <span>Provider</span>
+                                    <select id="miracle-stt-select"></select>
+                                </label>
+                                <label class="field" id="miracle-stt-model-field">
+                                    <span>Modelo</span>
+                                    <input id="miracle-stt-model" type="text" placeholder="nova-3">
+                                </label>
+                                <label class="field" id="miracle-stt-language-field">
+                                    <span>Idioma</span>
+                                    <input id="miracle-stt-language" type="text" placeholder="es">
+                                </label>
+                                <label class="field field-editor field-span-2" id="miracle-stt-api-key-field">
+                                    <span>API key</span>
+                                    <input id="miracle-stt-api-key" type="password" autocomplete="off" placeholder="Clave de Deepgram">
+                                </label>
+                            </div>
+                            <div class="studio-actions">
+                                <button type="button" class="button ghost" id="miracle-stt-refresh">Releer</button>
+                                <button type="submit" class="button primary" id="miracle-stt-submit">Guardar STT</button>
+                            </div>
+                        </form>
+                        <p id="miracle-stt-message" class="form-message"></p>
                     </div>
-                    <p id="miracle-stt-current" class="studio-current">Leyendo estado actual...</p>
-                    <form id="miracle-stt-form" class="studio-form">
-                        <div class="studio-form-grid">
-                            <label class="field">
-                                <span>Provider</span>
-                                <select id="miracle-stt-select"></select>
-                            </label>
-                            <label class="field" id="miracle-stt-model-field">
-                                <span>Modelo</span>
-                                <input id="miracle-stt-model" type="text" placeholder="nova-3">
-                            </label>
-                            <label class="field" id="miracle-stt-language-field">
-                                <span>Idioma</span>
-                                <input id="miracle-stt-language" type="text" placeholder="es">
-                            </label>
-                            <label class="field field-editor field-span-2" id="miracle-stt-api-key-field">
-                                <span>API key</span>
-                                <input id="miracle-stt-api-key" type="password" autocomplete="off" placeholder="Clave de Deepgram">
-                            </label>
-                        </div>
-                        <div class="studio-actions">
-                            <button type="button" class="button ghost" id="miracle-stt-refresh">Releer</button>
-                            <button type="submit" class="button primary" id="miracle-stt-submit">Guardar STT</button>
-                        </div>
-                    </form>
-                    <p id="miracle-stt-message" class="form-message"></p>
                 </section>
 
-                <section class="studio-card">
-                    <div class="studio-card-head">
+                <section class="studio-card is-collapsed" id="miracle-product-card">
+                    <button type="button" class="studio-card-head" id="miracle-product-toggle" aria-expanded="false" aria-controls="miracle-product-body">
                         <div>
                             <p class="studio-kicker">Miracle</p>
                             <h2>Hoja en blanco</h2>
@@ -97,38 +100,41 @@
                         <div class="studio-status-meta">
                             <strong id="miracle-product-metric">Cargando</strong>
                             <span id="miracle-product-pill" class="status-pill">Cargando</span>
+                            <svg class="studio-card-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>
                         </div>
+                    </button>
+                    <div class="studio-card-body" id="miracle-product-body">
+                        <p id="miracle-product-current" class="studio-current">Leyendo estado actual...</p>
+                        <form id="miracle-product-form" class="studio-form">
+                            <div class="studio-form-grid">
+                                <label class="field">
+                                    <span>Provider</span>
+                                    <select id="miracle-product-select"></select>
+                                </label>
+                                <label class="field field-editor is-hidden" id="miracle-product-base-url-field">
+                                    <span>Base URL</span>
+                                    <input id="miracle-product-base-url" type="url" placeholder="https://.../openai/v1">
+                                </label>
+                                <label class="field is-hidden" id="miracle-product-model-field">
+                                    <span>Modelo</span>
+                                    <input id="miracle-product-model" type="text" placeholder="grok-4.1">
+                                </label>
+                                <label class="field field-editor is-hidden field-span-2" id="miracle-product-api-key-field">
+                                    <span>API key</span>
+                                    <input id="miracle-product-api-key" type="password" autocomplete="off" placeholder="Clave del product LLM">
+                                </label>
+                            </div>
+                            <div class="studio-actions">
+                                <button type="button" class="button ghost" id="miracle-product-refresh">Releer</button>
+                                <button type="submit" class="button primary" id="miracle-product-submit">Guardar Product LLM</button>
+                            </div>
+                        </form>
+                        <p id="miracle-product-message" class="form-message"></p>
                     </div>
-                    <p id="miracle-product-current" class="studio-current">Leyendo estado actual...</p>
-                    <form id="miracle-product-form" class="studio-form">
-                        <div class="studio-form-grid">
-                            <label class="field">
-                                <span>Provider</span>
-                                <select id="miracle-product-select"></select>
-                            </label>
-                            <label class="field field-editor is-hidden" id="miracle-product-base-url-field">
-                                <span>Base URL</span>
-                                <input id="miracle-product-base-url" type="url" placeholder="https://.../openai/v1">
-                            </label>
-                            <label class="field is-hidden" id="miracle-product-model-field">
-                                <span>Modelo</span>
-                                <input id="miracle-product-model" type="text" placeholder="grok-4.1">
-                            </label>
-                            <label class="field field-editor is-hidden field-span-2" id="miracle-product-api-key-field">
-                                <span>API key</span>
-                                <input id="miracle-product-api-key" type="password" autocomplete="off" placeholder="Clave del product LLM">
-                            </label>
-                        </div>
-                        <div class="studio-actions">
-                            <button type="button" class="button ghost" id="miracle-product-refresh">Releer</button>
-                            <button type="submit" class="button primary" id="miracle-product-submit">Guardar Product LLM</button>
-                        </div>
-                    </form>
-                    <p id="miracle-product-message" class="form-message"></p>
                 </section>
 
-                <section class="studio-card">
-                    <div class="studio-card-head">
+                <section class="studio-card is-collapsed" id="graph-provider-card">
+                    <button type="button" class="studio-card-head" id="graph-provider-toggle" aria-expanded="false" aria-controls="graph-provider-body">
                         <div>
                             <p class="studio-kicker">Graph</p>
                             <h2>Field Matching Provider</h2>
@@ -136,34 +142,37 @@
                         <div class="studio-status-meta">
                             <strong id="graph-provider-metric">Cargando</strong>
                             <span id="graph-provider-pill" class="status-pill">Cargando</span>
+                            <svg class="studio-card-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>
                         </div>
+                    </button>
+                    <div class="studio-card-body" id="graph-provider-body">
+                        <p id="graph-provider-current" class="studio-current">Leyendo estado actual...</p>
+                        <form id="graph-provider-form" class="studio-form">
+                            <div class="studio-form-grid">
+                                <label class="field">
+                                    <span>Provider</span>
+                                    <select id="graph-provider-select"></select>
+                                </label>
+                                <label class="field" id="graph-provider-model-field">
+                                    <span>Modelo</span>
+                                    <input id="graph-provider-model" type="text" placeholder="grok-4.1">
+                                </label>
+                                <label class="field field-editor field-span-2" id="graph-provider-base-url-field">
+                                    <span>Base URL</span>
+                                    <input id="graph-provider-base-url" type="url" placeholder="https://.../openai/v1">
+                                </label>
+                                <label class="field field-editor field-span-2" id="graph-provider-api-key-field">
+                                    <span>API key</span>
+                                    <input id="graph-provider-api-key" type="password" autocomplete="off" placeholder="Pega la clave del provider">
+                                </label>
+                            </div>
+                            <div class="studio-actions">
+                                <button type="button" class="button ghost" id="graph-provider-refresh">Releer</button>
+                                <button type="submit" class="button primary" id="graph-provider-submit">Guardar Graph</button>
+                            </div>
+                        </form>
+                        <p id="graph-provider-message" class="form-message"></p>
                     </div>
-                    <p id="graph-provider-current" class="studio-current">Leyendo estado actual...</p>
-                    <form id="graph-provider-form" class="studio-form">
-                        <div class="studio-form-grid">
-                            <label class="field">
-                                <span>Provider</span>
-                                <select id="graph-provider-select"></select>
-                            </label>
-                            <label class="field" id="graph-provider-model-field">
-                                <span>Modelo</span>
-                                <input id="graph-provider-model" type="text" placeholder="grok-4.1">
-                            </label>
-                            <label class="field field-editor field-span-2" id="graph-provider-base-url-field">
-                                <span>Base URL</span>
-                                <input id="graph-provider-base-url" type="url" placeholder="https://.../openai/v1">
-                            </label>
-                            <label class="field field-editor field-span-2" id="graph-provider-api-key-field">
-                                <span>API key</span>
-                                <input id="graph-provider-api-key" type="password" autocomplete="off" placeholder="Pega la clave del provider">
-                            </label>
-                        </div>
-                        <div class="studio-actions">
-                            <button type="button" class="button ghost" id="graph-provider-refresh">Releer</button>
-                            <button type="submit" class="button primary" id="graph-provider-submit">Guardar Graph</button>
-                        </div>
-                    </form>
-                    <p id="graph-provider-message" class="form-message"></p>
                 </section>
 
                 <section class="studio-card">
@@ -229,7 +238,7 @@
 
     <script src="/auth-gate.js"></script>
     <script src="/admin-workspace.js"></script>
-    <script src="/provider-studio.js?v=2"></script>
+    <script src="/provider-studio.js?v=3"></script>
     <script>
       (function () {
         const els = {
