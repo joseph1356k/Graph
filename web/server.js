@@ -6,6 +6,10 @@ const path = require('path');
 const Neo4jDriver = require('../src/infrastructure/Neo4jDriver');
 const LLMProvider = require('../src/infrastructure/LLMProvider');
 const Neo4jWorkflowRepository = require('../src/infrastructure/repositories/Neo4jWorkflowRepository');
+// Clinical module (stateful, Supabase-backed) — isolated behind /api/clinical.
+const SupabaseRestClient = require('../src/infrastructure/SupabaseRestClient');
+const SupabaseClinicalTemplateRepository = require('../src/infrastructure/repositories/SupabaseClinicalTemplateRepository');
+const SupabaseClinicalEncounterRepository = require('../src/infrastructure/repositories/SupabaseClinicalEncounterRepository');
 const MarkdownCatalogWriter = require('../src/infrastructure/file-system/MarkdownCatalogWriter');
 const UsageLedgerStore = require('../src/infrastructure/file-system/UsageLedgerStore');
 
@@ -19,6 +23,11 @@ const ExecutionIntelligenceService = require('../src/application/use-cases/Execu
 const NoteFieldMatcher = require('../src/application/use-cases/NoteFieldMatcher');
 const ClinicalDiagnosisSuggestionService = require('../src/application/use-cases/ClinicalDiagnosisSuggestionService');
 const ClinicalRawTranscriptionService = require('../src/application/use-cases/ClinicalRawTranscriptionService');
+const ClinicalTemplateService = require('../src/application/use-cases/ClinicalTemplateService');
+const ClinicalEncounterService = require('../src/application/use-cases/ClinicalEncounterService');
+const ClinicalNotePromptBuilder = require('../src/application/use-cases/ClinicalNotePromptBuilder');
+const ClinicalNoteValidationService = require('../src/application/use-cases/ClinicalNoteValidationService');
+const ClinicalNoteGeneratorService = require('../src/application/use-cases/ClinicalNoteGeneratorService');
 const UsageDashboardService = require('../src/application/use-cases/UsageDashboardService');
 const GraphProviderConfigService = require('../src/application/use-cases/GraphProviderConfigService');
 const MiracleProductLlmProviderConfigService = require('../src/application/use-cases/MiracleProductLlmProviderConfigService');
@@ -32,6 +41,7 @@ const registerClinicalRoutes = require('./api/registerClinicalRoutes');
 const registerMedicalRoutes = require('./api/registerMedicalRoutes');
 const registerUsageRoutes = require('./api/registerUsageRoutes');
 const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
+const requireClinicalAuth = require('./api/requireClinicalAuth');
 const MiracleWorkspaceStore = require('./api/miracleWorkspaceStore');
 const rateLimit = require('express-rate-limit');
 const {
@@ -85,6 +95,21 @@ const executionIntelligenceService = new ExecutionIntelligenceService(llmProvide
 const noteFieldMatcher = new NoteFieldMatcher(llmProvider);
 const diagnosisSuggestionService = new ClinicalDiagnosisSuggestionService(llmProvider);
 const rawTranscriptionService = new ClinicalRawTranscriptionService();
+// Clinical module wiring: reuses the shared LLMProvider (engine capability, not
+// duplicated); persistence is isolated in the Supabase REST client + repos.
+const supabaseRestClient = new SupabaseRestClient();
+const clinicalTemplateRepository = new SupabaseClinicalTemplateRepository(supabaseRestClient);
+const clinicalEncounterRepository = new SupabaseClinicalEncounterRepository(supabaseRestClient);
+const clinicalTemplateService = new ClinicalTemplateService(clinicalTemplateRepository);
+const clinicalEncounterService = new ClinicalEncounterService(clinicalEncounterRepository, clinicalTemplateService);
+const clinicalNoteValidationService = new ClinicalNoteValidationService();
+const clinicalNoteGeneratorService = new ClinicalNoteGeneratorService({
+  encounterService: clinicalEncounterService,
+  encounterRepository: clinicalEncounterRepository,
+  llmProvider,
+  promptBuilder: new ClinicalNotePromptBuilder(),
+  validationService: clinicalNoteValidationService
+});
 const graphProviderConfigService = new GraphProviderConfigService(llmProvider);
 const miracleProductLlmProviderConfigService = new MiracleProductLlmProviderConfigService();
 const miracleSttProviderConfigService = new MiracleSttProviderConfigService();
@@ -244,6 +269,7 @@ app.use('/api/voice/orchestrator/events', costlyLimiter);
 app.use('/api/medical', costlyLimiter);
 app.use('/api/workflows/:id/note-field-matches', costlyLimiter);
 app.use('/api/clinical/diagnosis-suggestions', costlyLimiter);
+app.use('/api/clinical/encounters/:encounterId/generate-note', costlyLimiter);
 app.use('/api/v1/pipeline', costlyLimiter);
 app.use('/api/v1/autofill/match', costlyLimiter);
 function isMiracleMedicalProxyRequest(req) {
@@ -253,9 +279,13 @@ function isMiracleMedicalProxyRequest(req) {
     && (path === '/api/voice/stream-session' || path === '/api/voice/orchestrator/events');
 }
 
+// Local/session auth for stateless surfaces. NOTE: /api/clinical is intentionally
+// scoped to only the pre-existing diagnosis-suggestions endpoint; the stateful
+// clinical routes (templates/encounters) use Supabase auth (requireClinicalAuth)
+// and must NOT go through this local auth.
 [
   '/api/voice',
-  '/api/clinical',
+  '/api/clinical/diagnosis-suggestions',
   '/api/usage'
 ].forEach((routePrefix) => {
   app.use(routePrefix, (req, res, next) => {
@@ -276,6 +306,15 @@ function isMiracleMedicalProxyRequest(req) {
     }
     return requireAuth(req, res, () => attachWorkflowAccess(req, res, next));
   });
+});
+
+// Stateful clinical module: Supabase Bearer auth, isolated from the surfaces
+// above and from /api/v1. Sets req.clinicalUser (never req.user).
+[
+  '/api/clinical/templates',
+  '/api/clinical/encounters'
+].forEach((routePrefix) => {
+  app.use(routePrefix, requireClinicalAuth);
 });
 [
   '/api/status',
@@ -696,7 +735,13 @@ registerContextRoutes(app, {
   surfaceProfileService
 });
 registerExecutionIntelligenceRoutes(app, { catalogService, executionIntelligenceService });
-registerClinicalRoutes(app, { diagnosisSuggestionService });
+registerClinicalRoutes(app, {
+  diagnosisSuggestionService,
+  templateService: clinicalTemplateService,
+  encounterService: clinicalEncounterService,
+  noteGeneratorService: clinicalNoteGeneratorService,
+  noteValidationService: clinicalNoteValidationService
+});
 registerMedicalRoutes(app, {
   rawTranscriptionService,
   callMiracleRuntime
