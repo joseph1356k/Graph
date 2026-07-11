@@ -4,6 +4,7 @@ from typing import Protocol
 
 from ...config import MiracleSettings
 from ...integrations.deepgram.streaming import DeepgramStreamingAdapter
+from ...integrations.soniox.streaming import SonioxStreamingAdapter
 from .contracts import VoiceStreamSession
 
 
@@ -33,6 +34,8 @@ class VoiceStreamingService:
         provider: VoiceStreamingProvider | None = None
         if settings.voice_stt_provider == "deepgram":
             provider = DeepgramStreamingAdapter(settings)
+        elif settings.voice_stt_provider == "soniox":
+            provider = SonioxStreamingAdapter(settings)
         return cls(settings, provider=provider)
 
     def create_stream_session(self) -> VoiceStreamSession:
@@ -46,6 +49,8 @@ class VoiceStreamingService:
     def _missing_provider_message(self) -> str:
         if self._settings.voice_stt_provider == "deepgram":
             return "Deepgram streaming is not configured"
+        if self._settings.voice_stt_provider == "soniox":
+            return "Soniox streaming is not configured"
         if self._settings.voice_stt_provider == "disabled":
             return "Voice streaming is disabled"
         return f"Voice streaming provider '{self._settings.voice_stt_provider}' is not supported"

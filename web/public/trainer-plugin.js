@@ -1098,7 +1098,14 @@
                 }
             });
         }
-        syncMiracleNotePanel(miracleNoteState.noteContent ? 'Miracle organizo la nota.' : 'Segmento enviado a Miracle.', {
+        // When the Product LLM is unavailable (e.g. OpenAI quota/429), the backend
+        // degrades to a heuristic consolidation so the note still fills — surface
+        // that so the unstructured result isn't mistaken for a bug.
+        const degraded = `${response?.backend_status || ''}`.startsWith('heuristic-fallback');
+        const organizedMessage = degraded
+            ? 'Nota sin estructurar: el Product LLM no esta disponible (revisa cuota/API key).'
+            : 'Miracle organizo la nota.';
+        syncMiracleNotePanel(miracleNoteState.noteContent ? organizedMessage : 'Segmento enviado a Miracle.', {
             forceContentUpdate: true
         });
         dispatchMiracleNoteToDynamicFill(miracleNoteState.noteContent);

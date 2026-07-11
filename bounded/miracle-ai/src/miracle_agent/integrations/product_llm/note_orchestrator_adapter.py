@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from typing import Protocol
 
 from .client import OpenAICompatibleProductLLMClient, ProductLLMClientError
@@ -34,11 +35,24 @@ class ProductLLMOrchestratorAdapter:
     ) -> None:
         self._settings = settings
         self._planner = planner or self._planner_from_settings(settings)
+        # Whether the primary planner is the remote LLM (vs. already heuristic).
+        # Only in that case do we degrade to heuristic on a provider failure.
+        self._uses_remote_llm = isinstance(self._planner, _OpenAICompatiblePlanner)
 
     def orchestrate(self, request: ProductLLMOrchestratorInput) -> ProductLLMOrchestratorOutput:
         try:
             return self._planner.orchestrate(request)
         except ProductLLMClientError as exc:
+            # If the remote LLM is unavailable (quota/429, 5xx, timeout), degrade
+            # gracefully to the heuristic planner so dictation still fills the note
+            # instead of failing outright. The note is unstructured until the LLM
+            # recovers; backend_status makes the degraded mode visible.
+            if self._uses_remote_llm:
+                fallback = _HeuristicPlanner(self._settings).orchestrate(request)
+                return replace(
+                    fallback,
+                    backend_status=f"heuristic-fallback:{exc.status_code}",
+                )
             raise ProductLLMAdapterError(str(exc), status_code=exc.status_code) from exc
 
     def _planner_from_settings(self, settings: ProductLLMSettings) -> ProductLLMPlanner:

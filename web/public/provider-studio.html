@@ -30,10 +30,10 @@
                             <strong id="provider-studio-overall-status">Sincronizando</strong>
                         </div>
                     </div>
-                    <div class="studio-topbar-pill studio-context-pill">
-                        <strong>Finanzas</strong>
-                        <svg class="studio-topbar-caret" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>
-                    </div>
+                    <button type="button" class="studio-topbar-pill studio-context-pill" id="provider-studio-extension-download" title="Descarga la extensión de Chrome empaquetada en tiempo real">
+                        <strong id="provider-studio-extension-label">Generar extensión</strong>
+                        <svg class="studio-topbar-caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v7m0 0 3-3m-3 3L5 6m-2 7h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
                 </div>
             </div>
             <div class="studio-hero-copy">
@@ -129,6 +129,42 @@
                                     </div>
                                 </form>
                                 <p id="miracle-stt-message" class="form-message"></p>
+                            </div>
+                        </section>
+
+                        <section class="studio-provider-group" id="miracle-medical-card">
+                            <div class="studio-subhead">
+                                <h3>Vocabulario médico</h3>
+                                <div class="studio-status-meta">
+                                    <span id="miracle-medical-pill" class="status-pill">Cargando</span>
+                                </div>
+                            </div>
+                            <div id="miracle-medical-body">
+                                <p class="studio-current">Especializa Soniox (stt-rt-v5) para medicina: el mismo modelo se enfoca con un vocabulario por especialidad más los términos propios que agregues.</p>
+                                <form id="miracle-medical-form" class="studio-form">
+                                    <div class="studio-form-grid">
+                                        <label class="field">
+                                            <span>Modo médico</span>
+                                            <select id="miracle-medical-enabled">
+                                                <option value="general">Desactivado (general)</option>
+                                                <option value="medical">Activado (médico)</option>
+                                            </select>
+                                        </label>
+                                        <label class="field" id="miracle-medical-specialty-field">
+                                            <span>Especialidad</span>
+                                            <select id="miracle-medical-specialty"></select>
+                                        </label>
+                                        <label class="field field-editor field-span-2">
+                                            <span>Vocabulario propio (una palabra o término por línea)</span>
+                                            <textarea id="miracle-medical-custom-terms" rows="10" spellcheck="false" placeholder="Metformina&#10;HbA1c&#10;insulinorresistencia&#10;nombre de fármaco propio"></textarea>
+                                        </label>
+                                    </div>
+                                    <div class="studio-actions">
+                                        <button type="button" class="button ghost" id="miracle-medical-refresh">Releer</button>
+                                        <button type="submit" class="button primary" id="miracle-medical-submit">Guardar vocabulario</button>
+                                    </div>
+                                </form>
+                                <p id="miracle-medical-message" class="form-message"></p>
                             </div>
                         </section>
                     </div>

@@ -1,18 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 
+const { EXTENSION_DIR_NAME, collectExtensionFiles, buildReadme } = require('./lib/chrome-extension-bundle');
+
 const repoRoot = path.resolve(__dirname, '..');
-const sourceRoot = path.join(repoRoot, 'chrome-extension-src', 'graph-trainer');
-const runtimeRoot = path.join(repoRoot, 'web', 'public');
-const outputRoot = path.join(repoRoot, 'generated', 'chrome-extension', 'graph-trainer');
+const outputRoot = path.join(repoRoot, 'generated', 'chrome-extension', EXTENSION_DIR_NAME);
 
 function ensureDir(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
-}
-
-function copyFile(from, to) {
-  ensureDir(path.dirname(to));
-  fs.copyFileSync(from, to);
 }
 
 function removeDir(dirPath) {
@@ -21,44 +16,22 @@ function removeDir(dirPath) {
   }
 }
 
-function copyDirectoryContents(fromDir, toDir) {
-  ensureDir(toDir);
-  for (const entry of fs.readdirSync(fromDir, { withFileTypes: true })) {
-    const from = path.join(fromDir, entry.name);
-    const to = path.join(toDir, entry.name);
-    if (entry.isDirectory()) {
-      copyDirectoryContents(from, to);
-    } else {
-      copyFile(from, to);
-    }
-  }
-}
-
 function build() {
   removeDir(outputRoot);
   ensureDir(outputRoot);
 
-  copyDirectoryContents(sourceRoot, outputRoot);
+  // archivePath entries are rooted at EXTENSION_DIR_NAME; strip that prefix so
+  // the on-disk layout matches the previous behaviour (files land directly in
+  // generated/chrome-extension/graph-trainer/...).
+  const prefix = `${EXTENSION_DIR_NAME}/`;
+  for (const { absPath, archivePath } of collectExtensionFiles()) {
+    const relative = archivePath.startsWith(prefix) ? archivePath.slice(prefix.length) : archivePath;
+    const destination = path.join(outputRoot, relative);
+    ensureDir(path.dirname(destination));
+    fs.copyFileSync(absPath, destination);
+  }
 
-  copyFile(path.join(runtimeRoot, 'page-state.js'), path.join(outputRoot, 'assets', 'page-state.js'));
-  copyFile(path.join(runtimeRoot, 'recorder.js'), path.join(outputRoot, 'assets', 'recorder.js'));
-  copyFile(path.join(runtimeRoot, 'assistant-runtime.js'), path.join(outputRoot, 'assets', 'assistant-runtime.js'));
-  copyFile(path.join(runtimeRoot, 'shared', 'deepgram-dictation.js'), path.join(outputRoot, 'assets', 'shared', 'deepgram-dictation.js'));
-  copyFile(path.join(runtimeRoot, 'trainer-plugin.js'), path.join(outputRoot, 'assets', 'trainer-plugin.js'));
-  copyDirectoryContents(path.join(runtimeRoot, 'plugin'), path.join(outputRoot, 'assets', 'plugin'));
-
-  const readme = [
-    '# Miracle Chrome Extension',
-    '',
-    '1. Open `chrome://extensions`.',
-    '2. Enable Developer mode.',
-    '3. Click "Load unpacked".',
-    `4. Select this folder: ${outputRoot}`,
-    '5. Open the Miracle popup and confirm the backend URL.',
-    '6. Reload the target webpage.'
-  ].join('\n');
-
-  fs.writeFileSync(path.join(outputRoot, 'README.txt'), readme);
+  fs.writeFileSync(path.join(outputRoot, 'README.txt'), buildReadme(outputRoot));
   console.log(`Chrome extension generated at: ${outputRoot}`);
 }
 

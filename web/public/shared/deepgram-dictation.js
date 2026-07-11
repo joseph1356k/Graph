@@ -52,6 +52,20 @@
     return typeof transcript === "string" ? transcript.trim() : "";
   }
 
+  // Soniox authenticates + configures over the first JSON frame (auth_scheme
+  // "message") instead of a WebSocket subprotocol like Deepgram, so the client
+  // opens a plain socket and sends session.start_message on open.
+  function isSonioxSession(session) {
+    return Boolean(session && (session.provider === "soniox" || session.auth_scheme === "message"));
+  }
+
+  // Soniox marks segment boundaries with control tokens: "<end>" (automatic
+  // endpoint detection) and "<fin>" (manual finalize completed). They are not
+  // spoken text and must not be rendered.
+  function isSonioxBoundaryToken(text) {
+    return text === "<end>" || text === "<fin>";
+  }
+
   function createDictation(options) {
     options = options || {};
     const createStreamSession = options.createStreamSession;
@@ -74,6 +88,10 @@
       socket: null,
       streamSession: null,
       timesliceMs: 250,
+      provider: "deepgram",
+      // Soniox streams token-by-token; we accumulate confirmed (is_final) text here
+      // until an <end>/<fin> boundary token flushes it as one final segment.
+      sonioxFinalBuffer: "",
     };
 
     function resetFinalizeQuietTimer() {
@@ -122,6 +140,8 @@
       state.mediaRecorder = null;
       state.mediaRecorderStopped = null;
       state.streamSession = null;
+      state.provider = "deepgram";
+      state.sonioxFinalBuffer = "";
       state.isRecording = false;
       releaseMicrophone();
       void closeSocket();
@@ -145,6 +165,62 @@
       return state.mediaStream;
     }
 
+    function flushSonioxSegment() {
+      const transcript = state.sonioxFinalBuffer.trim();
+      state.sonioxFinalBuffer = "";
+      if (!transcript) {
+        return;
+      }
+      state.finalSegmentCount += 1;
+      onFinalTranscript({
+        segmentId: `seg_${state.finalSegmentCount}`,
+        transcript,
+        language: (state.streamSession && state.streamSession.language) || null,
+      });
+    }
+
+    function handleSonioxMessage(payload) {
+      if (payload.error_code || payload.error_message) {
+        onDebug("soniox.socket.error_payload", {
+          errorCode: Number(payload.error_code) || 0,
+          errorMessage: `${payload.error_message || ""}`.slice(0, 180),
+        });
+        onError(`Soniox: ${payload.error_message || `error ${payload.error_code}`}`);
+        return;
+      }
+      const tokens = Array.isArray(payload.tokens) ? payload.tokens : [];
+      let nonFinalText = "";
+      let sawBoundary = false;
+      for (const token of tokens) {
+        const text = token && typeof token.text === "string" ? token.text : "";
+        if (!text) {
+          continue;
+        }
+        if (token.is_final) {
+          if (isSonioxBoundaryToken(text)) {
+            sawBoundary = true;
+            continue;
+          }
+          state.sonioxFinalBuffer += text;
+        } else {
+          nonFinalText += text;
+        }
+      }
+      const provisional = `${state.sonioxFinalBuffer}${nonFinalText}`.trim();
+      onDebug("soniox.socket.message", {
+        tokenCount: tokens.length,
+        boundary: sawBoundary,
+        transcriptLength: provisional.length,
+        transcriptPreview: provisional.slice(0, 180),
+      });
+      if (provisional) {
+        onPartialTranscript(provisional);
+      }
+      if (sawBoundary) {
+        flushSonioxSegment();
+      }
+    }
+
     function handleSocketMessage(event) {
       let payload;
       try {
@@ -154,6 +230,10 @@
         return;
       }
       if (!payload || typeof payload !== "object") {
+        return;
+      }
+      if (state.provider === "soniox") {
+        handleSonioxMessage(payload);
         return;
       }
       const transcript = readDeepgramTranscript(payload);
@@ -212,9 +292,12 @@
     async function openDeepgramSocket() {
       const session = await createStreamSession();
       state.streamSession = session;
+      state.provider = (session && session.provider) || "deepgram";
+      state.sonioxFinalBuffer = "";
       state.timesliceMs = Number(session && session.timeslice_ms) || 250;
+      const soniox = isSonioxSession(session);
       onDebug("deepgram.session.created", {
-        provider: (session && session.provider) || "",
+        provider: state.provider,
         model: (session && session.model) || "",
         language: (session && session.language) || "",
         endpointingMs: Number(session && session.endpointing_ms) || 0,
@@ -224,12 +307,26 @@
       return await new Promise((resolve, reject) => {
         const authScheme =
           typeof session.auth_scheme === "string" && session.auth_scheme.trim() ? session.auth_scheme : "bearer";
-        const socket = new WebSocket(session.websocket_url, [authScheme, session.access_token]);
+        // Deepgram authenticates via the subprotocol tuple; Soniox opens a plain
+        // socket and sends its config (with the temporary api_key) as the first frame.
+        const socket = soniox
+          ? new WebSocket(session.websocket_url)
+          : new WebSocket(session.websocket_url, [authScheme, session.access_token]);
         state.socket = socket;
         socket.addEventListener("message", handleSocketMessage);
         socket.addEventListener(
           "open",
           () => {
+            if (soniox) {
+              const startMessage =
+                session.start_message && typeof session.start_message === "object" ? session.start_message : null;
+              if (!startMessage) {
+                onDebug("soniox.socket.missing_start_message", {});
+                reject(new Error("Soniox no devolvio la configuracion inicial del stream."));
+                return;
+              }
+              socket.send(JSON.stringify(startMessage));
+            }
             onDebug("deepgram.socket.open", { model: (state.streamSession && state.streamSession.model) || "" });
             resolve(socket);
           },
@@ -279,6 +376,31 @@
       recorder.start(state.timesliceMs);
     }
 
+    // Deepgram uses the "Finalize" control message; Soniox uses lowercase
+    // "finalize" and then expects an empty frame to end the stream.
+    function sendFinalizeSignal() {
+      if (!state.socket || state.socket.readyState !== WebSocket.OPEN) {
+        return;
+      }
+      if (state.provider === "soniox") {
+        state.socket.send(JSON.stringify({ type: "finalize" }));
+      } else {
+        state.socket.send(JSON.stringify({ type: "Finalize" }));
+      }
+    }
+
+    function endSonioxStream() {
+      if (state.provider !== "soniox") {
+        return;
+      }
+      // Emit whatever confirmed text is still buffered (no trailing <fin>/<end>),
+      // then signal end-of-stream to Soniox with an empty frame.
+      flushSonioxSegment();
+      if (state.socket && state.socket.readyState === WebSocket.OPEN) {
+        state.socket.send(new ArrayBuffer(0));
+      }
+    }
+
     async function start() {
       state.finalSegmentCount = 0;
       // Acquire (and settle) the mic before opening the socket so it is not idle
@@ -298,15 +420,18 @@
           await state.mediaRecorderStopped;
         }
         if (state.socket && state.socket.readyState === WebSocket.OPEN) {
-          onDebug("deepgram.socket.finalize_sent", {});
-          state.socket.send(JSON.stringify({ type: "Finalize" }));
+          onDebug("deepgram.socket.finalize_sent", { provider: state.provider });
+          sendFinalizeSignal();
           await attachFinalizeWatcher();
+          endSonioxStream();
         }
         await closeSocket();
       } finally {
         state.mediaRecorder = null;
         state.mediaRecorderStopped = null;
         state.streamSession = null;
+        state.provider = "deepgram";
+        state.sonioxFinalBuffer = "";
         state.isRecording = false;
         releaseMicrophone();
       }
@@ -317,7 +442,8 @@
         state.mediaRecorder.stop();
       }
       if (state.socket && state.socket.readyState === WebSocket.OPEN) {
-        state.socket.send(JSON.stringify({ type: "Finalize" }));
+        sendFinalizeSignal();
+        endSonioxStream();
       }
       releaseMicrophone();
       void closeSocket();

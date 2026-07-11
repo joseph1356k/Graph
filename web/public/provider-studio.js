@@ -13,6 +13,9 @@
         access: document.getElementById('provider-studio-access'),
         grid: document.getElementById('provider-studio-grid'),
 
+        extensionDownload: document.getElementById('provider-studio-extension-download'),
+        extensionLabel: document.getElementById('provider-studio-extension-label'),
+
         graphPill: document.getElementById('graph-provider-pill'),
         graphMetric: document.getElementById('graph-provider-metric'),
         graphCurrent: document.getElementById('graph-provider-current'),
@@ -57,6 +60,17 @@
         miracleSttRefresh: document.getElementById('miracle-stt-refresh'),
         miracleSttSubmit: document.getElementById('miracle-stt-submit'),
         miracleSttMessage: document.getElementById('miracle-stt-message'),
+
+        medicalCard: document.getElementById('miracle-medical-card'),
+        medicalPill: document.getElementById('miracle-medical-pill'),
+        medicalForm: document.getElementById('miracle-medical-form'),
+        medicalEnabled: document.getElementById('miracle-medical-enabled'),
+        medicalSpecialtyField: document.getElementById('miracle-medical-specialty-field'),
+        medicalSpecialty: document.getElementById('miracle-medical-specialty'),
+        medicalCustomTerms: document.getElementById('miracle-medical-custom-terms'),
+        medicalRefresh: document.getElementById('miracle-medical-refresh'),
+        medicalSubmit: document.getElementById('miracle-medical-submit'),
+        medicalMessage: document.getElementById('miracle-medical-message'),
     };
 
     async function authenticatedFetch(url, init = {}) {
@@ -184,6 +198,9 @@
         dom.miracleSttApiKeyField.classList.toggle('is-hidden', !provider?.requires_api_key);
         dom.miracleSttModelField.classList.toggle('is-hidden', !provider?.requires_model);
         dom.miracleSttLanguageField.classList.toggle('is-hidden', provider?.id === 'disabled');
+        if (dom.miracleSttApiKey && provider?.requires_api_key) {
+            dom.miracleSttApiKey.placeholder = `Clave de ${provider.label || provider.id}`;
+        }
         if (provider) {
             renderModelOptions(dom.miracleSttModel, provider);
         }
@@ -279,6 +296,7 @@
         dom.miracleSttApiKey.value = '';
         renderModelOptions(dom.miracleSttModel, provider, current.model || provider?.default_model || '');
         syncMiracleSttFields();
+        renderMedical(payload.medical || {});
 
         const vercelReady = payload?.vercel?.write_enabled;
         const redeployMode = payload?.vercel?.deploy_hook_configured ? 'deploy hook' : 'redeploy API/manual';
@@ -301,6 +319,67 @@
         } else if (dom.miracleSttMessage.dataset.tone === 'warning') {
             setMessage(dom.miracleSttMessage, '');
         }
+    }
+
+    function syncMedicalFields() {
+        const enabled = dom.medicalEnabled.value === 'medical';
+        dom.medicalSpecialtyField.classList.toggle('is-hidden', !enabled);
+        if (dom.medicalCustomTerms) {
+            dom.medicalCustomTerms.disabled = !enabled;
+        }
+    }
+
+    function renderMedical(medical) {
+        // The medical vocabulary only affects Soniox (context field). Hide the
+        // panel for other providers so it isn't mistaken as global STT config.
+        const provider = currentProvider(state.miracleStt?.providers, dom.miracleSttSelect);
+        const appliesToSoniox = (medical.applies_to || ['soniox']).includes(provider?.id);
+        if (dom.medicalCard) {
+            dom.medicalCard.classList.toggle('is-hidden', !appliesToSoniox);
+        }
+
+        const specialties = Array.isArray(medical.specialties) ? medical.specialties : [];
+        dom.medicalSpecialty.innerHTML = '';
+        specialties.forEach((item) => {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.textContent = item.label;
+            dom.medicalSpecialty.appendChild(option);
+        });
+        dom.medicalEnabled.value = medical.enabled ? 'medical' : 'general';
+        if (medical.specialty && specialties.some((item) => item.id === medical.specialty)) {
+            dom.medicalSpecialty.value = medical.specialty;
+        }
+        dom.medicalCustomTerms.value = `${medical.custom_terms || ''}`;
+        syncMedicalFields();
+
+        const enabled = Boolean(medical.enabled);
+        setPill(
+            dom.medicalPill,
+            enabled ? 'Médico activo' : 'General',
+            enabled ? 'ready' : 'neutral'
+        );
+    }
+
+    async function submitMedical(event) {
+        event.preventDefault();
+        setMessage(dom.medicalMessage, 'Guardando vocabulario…', 'info');
+        const body = {
+            domain: dom.medicalEnabled.value === 'medical' ? 'medical' : 'general',
+            specialty: dom.medicalSpecialty.value || 'general',
+            custom_terms: dom.medicalCustomTerms.value || ''
+        };
+        const payload = await fetchJson('/api/providers/miracle-stt/medical', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const summary = payload?.summary || {};
+        const bits = [summary.enabled ? `Médico (${summary.specialty})` : 'General', `${summary.custom_terms_count || 0} términos`];
+        if (summary.custom_terms_dropped) {
+            bits.push(`${summary.custom_terms_dropped} recortados por límite`);
+        }
+        setMessage(dom.medicalMessage, `Guardado: ${bits.join(' · ')}. Aplica un redeploy.`, 'success');
     }
 
     async function loadAccount() {
@@ -437,9 +516,57 @@
         });
     }
 
+    async function downloadExtension() {
+        const button = dom.extensionDownload;
+        const label = dom.extensionLabel;
+        if (!button || button.disabled) {
+            return;
+        }
+        const originalLabel = label ? label.textContent : '';
+        button.disabled = true;
+        if (label) {
+            label.textContent = 'Generando…';
+        }
+        try {
+            const response = await authenticatedFetch('/api/providers/chrome-extension/download', { method: 'GET' });
+            if (!response.ok) {
+                let message = `No fue posible generar la extensión (HTTP ${response.status}).`;
+                try {
+                    const payload = await response.json();
+                    if (payload && payload.error) {
+                        message = payload.error;
+                    }
+                } catch (_) { /* respuesta no-JSON */ }
+                throw new Error(message);
+            }
+            const blob = await response.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = objectUrl;
+            anchor.download = 'miracle-chrome-extension.zip';
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+            URL.revokeObjectURL(objectUrl);
+        } finally {
+            button.disabled = false;
+            if (label) {
+                label.textContent = originalLabel || 'Generar extensión';
+            }
+        }
+    }
+
     function bindEvents() {
         bindCollapsible('miracle-product-card', 'miracle-product-toggle');
         bindCollapsible('graph-provider-card', 'graph-provider-toggle');
+
+        if (dom.extensionDownload) {
+            dom.extensionDownload.addEventListener('click', () => {
+                downloadExtension().catch((error) => {
+                    window.alert(error.message || 'No fue posible generar la extensión.');
+                });
+            });
+        }
 
         dom.graphSelect.addEventListener('change', () => {
             dom.graphModel.value = '';
@@ -466,7 +593,22 @@
         dom.miracleSttSelect.addEventListener('change', () => {
             dom.miracleSttModel.value = '';
             syncMiracleSttFields();
+            renderMedical(state.miracleStt?.medical || {});
         });
+
+        if (dom.medicalEnabled) {
+            dom.medicalEnabled.addEventListener('change', syncMedicalFields);
+        }
+        if (dom.medicalRefresh) {
+            dom.medicalRefresh.addEventListener('click', () => {
+                refreshAll().catch((error) => setMessage(dom.medicalMessage, error.message, 'error'));
+            });
+        }
+        if (dom.medicalForm) {
+            dom.medicalForm.addEventListener('submit', (event) => {
+                submitMedical(event).catch((error) => setMessage(dom.medicalMessage, error.message, 'error'));
+            });
+        }
         dom.miracleSttRefresh.addEventListener('click', () => {
             refreshAll().catch((error) => setMessage(dom.miracleSttMessage, error.message, 'error'));
         });
