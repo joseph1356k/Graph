@@ -149,6 +149,7 @@ class UsageDashboardService {
       unpricedEventCount: 0
     };
     const byDayMap = new Map();
+    const byHourMap = new Map();
     const byModelMap = new Map();
 
     for (const event of events) {
@@ -179,6 +180,22 @@ class UsageDashboardService {
       dayBucket.estimatedCostUsd += estimatedCost;
       dayBucket.eventCount += 1;
       byDayMap.set(dayKey, dayBucket);
+
+      const hourKey = `${event.occurredAt || ''}`.slice(0, 13) || 'unknown';
+      const hourBucket = byHourMap.get(hourKey) || {
+        hour: hourKey,
+        inputTokens: 0,
+        outputTokens: 0,
+        deepgramMinutes: 0,
+        estimatedCostUsd: 0,
+        eventCount: 0
+      };
+      hourBucket.inputTokens += normalizeNumber(event.inputTokens);
+      hourBucket.outputTokens += normalizeNumber(event.outputTokens);
+      hourBucket.deepgramMinutes += normalizeNumber(event.deepgramMinutes);
+      hourBucket.estimatedCostUsd += estimatedCost;
+      hourBucket.eventCount += 1;
+      byHourMap.set(hourKey, hourBucket);
 
       const modelKey = [
         event.sourceRepo || '',
@@ -220,6 +237,13 @@ class UsageDashboardService {
           estimatedCostUsd: roundCurrency(bucket.estimatedCostUsd)
         }))
         .sort((left, right) => `${right.date}`.localeCompare(`${left.date}`)),
+      byHour: Array.from(byHourMap.values())
+        .map((bucket) => ({
+          ...bucket,
+          deepgramMinutes: roundCurrency(bucket.deepgramMinutes),
+          estimatedCostUsd: roundCurrency(bucket.estimatedCostUsd)
+        }))
+        .sort((left, right) => `${left.hour}`.localeCompare(`${right.hour}`)),
       byModel: Array.from(byModelMap.values())
         .map((bucket) => ({
           ...bucket,

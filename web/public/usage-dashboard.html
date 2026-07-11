@@ -3,369 +3,598 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Uso IA | Graph</title>
+  <title>Uso de tokens | Miracle</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/provider-studio.css">
   <style>
-    :root {
-      --bg: #f4efe6;
-      --panel: #fffdf8;
-      --ink: #1b1a17;
-      --muted: #6d675d;
-      --line: #ddd3c1;
-      --accent: #b84d2d;
-      --accent-soft: #f5d7c7;
-      --ok: #1f7a53;
+    .usage-shell {
+      width: min(1100px, calc(100vw - 96px));
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Georgia, "Times New Roman", serif;
-      background:
-        radial-gradient(circle at top left, #fff4df 0, transparent 30%),
-        linear-gradient(180deg, #f7f1e8 0%, var(--bg) 100%);
-      color: var(--ink);
+
+    .usage-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
     }
-    main {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 32px 20px 60px;
+
+    .usage-back-icon {
+      width: 17px;
+      height: 17px;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
-    h1 {
-      margin: 0 0 10px;
-      font-size: clamp(2rem, 3vw, 3.5rem);
-    }
-    p { color: var(--muted); }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 14px;
-      margin: 28px 0;
-    }
-    .card, .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      box-shadow: 0 14px 40px rgba(54, 39, 23, 0.08);
-    }
-    .card { padding: 20px; }
-    .label {
-      font-size: 0.82rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-    }
-    .value {
-      font-size: 2rem;
-      margin-top: 8px;
-    }
-    .panel {
-      padding: 18px;
-      margin-top: 18px;
-      overflow: hidden;
-    }
-    .panel h2 {
-      margin: 0 0 14px;
-    }
-    .model-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 14px;
-    }
-    .model-card {
-      padding: 18px;
-      background: linear-gradient(180deg, rgba(255, 250, 242, 0.98), rgba(255, 253, 248, 0.92));
-      border: 1px solid var(--line);
-      border-radius: 18px;
-    }
-    .model-card h3 {
-      margin: 0 0 6px;
-      font-size: 1.05rem;
-    }
-    .model-meta {
+
+    .usage-range-pills {
       display: flex;
+      align-items: center;
       gap: 8px;
       flex-wrap: wrap;
-      margin-bottom: 12px;
     }
-    .model-stat {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding-top: 8px;
-      margin-top: 8px;
-      border-top: 1px solid rgba(221, 211, 193, 0.8);
-      font-size: 0.92rem;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.95rem;
-    }
-    th, td {
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--line);
-      text-align: left;
-      vertical-align: top;
-    }
-    th {
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
+
+    .usage-range-pill {
+      height: 36px;
+      padding: 0 16px;
+      border: 1px solid var(--line-soft);
+      border-radius: 999px;
       color: var(--muted);
-    }
-    .toolbar {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-      margin-top: 18px;
-    }
-    input, button {
-      font: inherit;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      padding: 10px 14px;
-      background: #fff;
-    }
-    button {
-      background: var(--accent);
-      color: #fff;
-      border: none;
+      background: var(--control);
+      font-size: 0.82rem;
+      font-weight: 600;
       cursor: pointer;
+      transition: border-color 140ms ease, color 140ms ease, background-color 140ms ease;
     }
-    .pill {
-      display: inline-flex;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent);
+
+    .usage-range-pill:hover {
+      color: var(--ink);
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    .usage-range-pill.is-active {
+      color: #050505;
+      background: #f1f1ee;
+      border-color: #f1f1ee;
+    }
+
+    .usage-hero-stat {
+      display: grid;
+      gap: 4px;
+      padding-top: 6px;
+    }
+
+    .usage-hero-stat strong {
+      font-size: clamp(3rem, 6vw, 4.4rem);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .usage-hero-stat span {
+      color: var(--dim);
+      font-size: 0.88rem;
+    }
+
+    .usage-hero-substats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .usage-substat {
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .usage-substat span {
+      display: block;
+      color: var(--dim);
+      font-size: 0.74rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .usage-substat strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .usage-chart-wrap {
+      display: grid;
+      gap: 8px;
+    }
+
+    .usage-chart {
+      height: 140px;
+      padding: 4px 2px 0;
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      position: relative;
+    }
+
+    .usage-chart-empty {
+      width: 100%;
+      align-self: center;
+      text-align: center;
+      color: var(--dim);
       font-size: 0.85rem;
     }
-    .ok { color: var(--ok); }
-    pre {
+
+    .usage-bar {
+      flex: 1 1 0;
+      min-width: 2px;
+      height: 3px;
+      border-radius: 3px 3px 1px 1px;
+      background: rgba(244, 244, 242, 0.22);
+      cursor: pointer;
+      transition: background-color 120ms ease, transform 120ms ease;
+      transform-origin: bottom;
+    }
+
+    .usage-bar:hover,
+    .usage-bar.is-active {
+      background: #f4f4f2;
+      transform: scaleX(1.05);
+    }
+
+    .usage-chart-axis {
+      display: flex;
+      justify-content: space-between;
+      color: var(--dim);
+      font-size: 0.68rem;
+    }
+
+    .usage-tooltip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      transform: translateX(-50%);
+      padding: 6px 10px;
+      border: 1px solid var(--line-soft);
+      border-radius: 8px;
+      background: #111;
+      color: var(--ink);
+      font-size: 0.74rem;
+      font-weight: 600;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 100ms ease;
+      z-index: 2;
+    }
+
+    .usage-tooltip.is-visible {
+      opacity: 1;
+    }
+
+    .usage-breakdown-board {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .usage-breakdown-card {
+      display: grid;
+      gap: 10px;
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .usage-breakdown-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .usage-breakdown-head h3 {
       margin: 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .usage-breakdown-head strong {
+      font-size: 1.05rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .usage-breakdown-meter {
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .usage-breakdown-meter i {
+      display: block;
+      height: 100%;
+      background: #f4f4f2;
+      border-radius: 999px;
+    }
+
+    .usage-breakdown-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--dim);
+      font-size: 0.76rem;
+    }
+
+    .usage-empty {
+      padding: 24px;
+      text-align: center;
+      color: var(--dim);
+      font-size: 0.9rem;
+    }
+
+    .usage-detail-toggle {
+      justify-self: start;
+    }
+
+    .usage-detail-table {
+      width: 100%;
+      border-collapse: collapse;
       font-size: 0.82rem;
-      white-space: pre-wrap;
+    }
+
+    .usage-detail-table th,
+    .usage-detail-table td {
+      padding: 9px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      text-align: left;
       color: var(--muted);
+    }
+
+    .usage-detail-table th {
+      color: var(--dim);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+
+    @media (max-width: 640px) {
+      .usage-hero-substats {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-<main>
-  <h1>Uso central de IA</h1>
-  <p>Tokens input/output de OpenAI, minutos de Deepgram y trazas del llenado automático desde la nota flotante.</p>
+  <main class="studio-shell usage-shell">
+    <header class="studio-hero">
+      <div class="studio-topbar">
+        <div class="studio-topbar-pill studio-account-pill">
+          <svg class="studio-topbar-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 20V7l5-3 5 3v13M14 10h6v10M7 9h2m-2 4h2m-2 4h2m8-3h2m-2 3h2M2 20h20"/>
+          </svg>
+          <div class="studio-topbar-copy">
+            <span class="studio-topbar-label">Sesion</span>
+            <strong id="usage-account-email">Cargando...</strong>
+          </div>
+        </div>
+        <div class="studio-topbar-right">
+          <a class="studio-topbar-pill studio-context-pill usage-back" href="/provider-studio.html">
+            <svg class="usage-back-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m10 19-7-7 7-7M3 12h18"/></svg>
+            <strong>Provider Studio</strong>
+          </a>
+        </div>
+      </div>
+      <div class="studio-hero-copy">
+        <div class="studio-hero-mark" aria-hidden="true">
+          <svg viewBox="0 0 60 54"><path d="M30 3 57 51H3Z"/></svg>
+        </div>
+        <h1>Uso de tokens</h1>
+      </div>
+    </header>
 
-  <div class="toolbar">
-    <label>Desde <input id="fromDate" type="date"></label>
-    <label>Hasta <input id="toDate" type="date"></label>
-    <button id="reloadBtn" type="button">Recargar</button>
-  </div>
+    <section class="studio-content">
+      <section class="studio-card">
+        <div class="usage-range-pills" id="usage-range-pills" role="group" aria-label="Rango de tiempo">
+          <button type="button" class="usage-range-pill" data-hours="1">1 h</button>
+          <button type="button" class="usage-range-pill" data-hours="6">6 h</button>
+          <button type="button" class="usage-range-pill is-active" data-hours="24">24 h</button>
+          <button type="button" class="usage-range-pill" data-hours="72">72 h</button>
+          <button type="button" class="button ghost" id="usage-reload" style="margin-left: auto;">Recargar</button>
+        </div>
 
-  <section class="grid" id="summaryCards"></section>
+        <div class="usage-hero-stat">
+          <strong id="usage-total-tokens">0</strong>
+          <span id="usage-window-label">Tokens usados en las ultimas 24 horas</span>
+        </div>
 
-  <section class="panel">
-    <h2>Modelos usados</h2>
-    <div class="model-grid" id="modelHighlights"></div>
-  </section>
+        <div class="usage-hero-substats">
+          <div class="usage-substat">
+            <span>Entrada</span>
+            <strong id="usage-input-tokens">0</strong>
+          </div>
+          <div class="usage-substat">
+            <span>Salida</span>
+            <strong id="usage-output-tokens">0</strong>
+          </div>
+          <div class="usage-substat">
+            <span>Costo estimado</span>
+            <strong id="usage-cost">$0.00</strong>
+          </div>
+        </div>
 
-  <section class="panel">
-    <h2>Por modelo / evento</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Fuente</th>
-          <th>Proveedor</th>
-          <th>Modelo</th>
-          <th>Evento</th>
-          <th>Input</th>
-          <th>Output</th>
-          <th>Minutos</th>
-          <th>Costo</th>
-        </tr>
-      </thead>
-      <tbody id="byModelBody"></tbody>
-    </table>
-  </section>
+        <div class="usage-chart-wrap">
+          <div class="usage-chart" id="usage-chart">
+            <div class="usage-tooltip" id="usage-tooltip"></div>
+          </div>
+          <div class="usage-chart-axis" id="usage-chart-axis"></div>
+        </div>
+      </section>
 
-  <section class="panel">
-    <h2>Eventos recientes</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Evento</th>
-          <th>Modelo</th>
-          <th>Input</th>
-          <th>Output</th>
-          <th>Minutos</th>
-          <th>Estado</th>
-          <th>Detalle</th>
-        </tr>
-      </thead>
-      <tbody id="recentEventsBody"></tbody>
-    </table>
-  </section>
-</main>
-<script src="auth-gate.js"></script>
-<script>
-(function () {
-  function formatNumber(value, decimals) {
-    return Number(value || 0).toLocaleString('en-US', {
-      minimumFractionDigits: decimals || 0,
-      maximumFractionDigits: decimals || 0
-    });
-  }
+      <section class="studio-card">
+        <div class="studio-card-head" style="cursor: default;">
+          <div>
+            <h2>Consumo por origen</h2>
+          </div>
+        </div>
+        <div class="usage-breakdown-board" id="usage-breakdown-board">
+          <p class="usage-empty">Cargando...</p>
+        </div>
+      </section>
 
-  function formatCurrency(value) {
-    return `$${formatNumber(value, 4)}`;
-  }
+      <section class="studio-card">
+        <button type="button" class="button ghost usage-detail-toggle" id="usage-detail-toggle">Ver eventos recientes</button>
+        <div class="is-hidden" id="usage-detail-wrap" style="overflow-x: auto;">
+          <table class="usage-detail-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Evento</th>
+                <th>Modelo</th>
+                <th>Entrada</th>
+                <th>Salida</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="usage-detail-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
 
-  function buildQuery() {
-    const params = new URLSearchParams();
-    const from = document.getElementById('fromDate').value;
-    const to = document.getElementById('toDate').value;
-    if (from) params.set('from', `${from}T00:00:00.000Z`);
-    if (to) params.set('to', `${to}T23:59:59.999Z`);
-    return params.toString();
-  }
-
-  async function authenticatedFetch(url) {
-    if (window.MiracleAuth && typeof window.MiracleAuth.whenAuthenticated === 'function') {
-      try { await window.MiracleAuth.whenAuthenticated(); } catch (error) {}
-    }
-    const headers = {};
-    const token = window.MiracleAuth && typeof window.MiracleAuth.getAccessToken === 'function'
-      ? window.MiracleAuth.getAccessToken()
-      : '';
-    if (token) headers.Authorization = `Bearer ${token}`;
-    return fetch(url, { headers });
-  }
-
-  function renderSummary(summary) {
-    const cards = [
-      ['Input tokens', formatNumber(summary.totals.inputTokens)],
-      ['Output tokens', formatNumber(summary.totals.outputTokens)],
-      ['Minutos Deepgram', formatNumber(summary.totals.deepgramMinutes, 2)],
-      ['Costo OpenAI conocido', formatCurrency(summary.totals.estimatedCostUsd)],
-      ['Eventos con precio', formatNumber(summary.totals.pricedEventCount)],
-      ['Eventos sin precio oficial', formatNumber(summary.totals.unpricedEventCount)]
-    ];
-    document.getElementById('summaryCards').innerHTML = cards.map(function (item) {
-      return `
-        <article class="card">
-          <div class="label">${item[0]}</div>
-          <div class="value">${item[1]}</div>
-        </article>
-      `;
-    }).join('');
-  }
-
-  function aggregateModelHighlights(summary) {
-    const buckets = new Map();
-    (summary.byModel || []).forEach(function (row) {
-      const key = [
-        row.sourceRepo || '',
-        row.provider || '',
-        row.apiFamily || '',
-        row.model || 'sin-modelo'
-      ].join('|');
-      const bucket = buckets.get(key) || {
-        sourceRepo: row.sourceRepo || '',
-        provider: row.provider || '',
-        apiFamily: row.apiFamily || '',
-        model: row.model || '',
-        inputTokens: 0,
-        outputTokens: 0,
-        deepgramMinutes: 0,
-        estimatedCostUsd: 0,
-        eventCount: 0
+  <script src="/auth-gate.js"></script>
+  <script>
+    (function () {
+      const SOURCE_LABELS = {
+        dynamic_fill_note_field_match_usage: 'Graph · Dynamic fill (autofill)',
+        api_v1_pipeline_autofill_usage: 'Graph · Pipeline API (autofill)',
+        api_v1_autofill_match_usage: 'Graph · API publica (autofill)',
+        api_v1_pipeline_note_usage: 'Miracle · Organizador LLM (pipeline)',
+        medical_notes_organized_usage: 'Miracle · Organizador LLM (medical API)'
       };
-      bucket.inputTokens += Number(row.inputTokens || 0);
-      bucket.outputTokens += Number(row.outputTokens || 0);
-      bucket.deepgramMinutes += Number(row.deepgramMinutes || 0);
-      bucket.estimatedCostUsd += Number(row.estimatedCostUsd || 0);
-      bucket.eventCount += Number(row.eventCount || 0);
-      buckets.set(key, bucket);
-    });
-    return Array.from(buckets.values()).sort(function (left, right) {
-      const leftVolume = Number(left.inputTokens || 0) + Number(left.outputTokens || 0) + Math.round(Number(left.deepgramMinutes || 0) * 1000);
-      const rightVolume = Number(right.inputTokens || 0) + Number(right.outputTokens || 0) + Math.round(Number(right.deepgramMinutes || 0) * 1000);
-      return rightVolume - leftVolume;
-    });
-  }
 
-  function renderModelHighlights(summary) {
-    const rows = aggregateModelHighlights(summary);
-    document.getElementById('modelHighlights').innerHTML = rows.length
-      ? rows.map(function (row) {
+      const dom = {
+        accountEmail: document.getElementById('usage-account-email'),
+        rangePills: document.getElementById('usage-range-pills'),
+        reload: document.getElementById('usage-reload'),
+        total: document.getElementById('usage-total-tokens'),
+        windowLabel: document.getElementById('usage-window-label'),
+        input: document.getElementById('usage-input-tokens'),
+        output: document.getElementById('usage-output-tokens'),
+        cost: document.getElementById('usage-cost'),
+        chart: document.getElementById('usage-chart'),
+        chartAxis: document.getElementById('usage-chart-axis'),
+        tooltip: document.getElementById('usage-tooltip'),
+        breakdownBoard: document.getElementById('usage-breakdown-board'),
+        detailToggle: document.getElementById('usage-detail-toggle'),
+        detailWrap: document.getElementById('usage-detail-wrap'),
+        detailBody: document.getElementById('usage-detail-body')
+      };
+
+      const state = { hours: 24 };
+
+      function formatNumber(value) {
+        return Number(value || 0).toLocaleString('es-CO');
+      }
+
+      function formatCurrency(value) {
+        return `$${Number(value || 0).toFixed(4)}`;
+      }
+
+      function friendlySourceLabel(row) {
+        const key = row.eventType || '';
+        if (SOURCE_LABELS[key]) return SOURCE_LABELS[key];
+        const provider = row.provider || 'sin proveedor';
+        const model = row.model || row.apiFamily || 'sin modelo';
+        return `${provider} · ${model}`;
+      }
+
+      async function authenticatedFetch(url) {
+        if (window.MiracleAuth && typeof window.MiracleAuth.whenAuthenticated === 'function') {
+          try { await window.MiracleAuth.whenAuthenticated(); } catch (error) {}
+        }
+        const headers = {};
+        const token = window.MiracleAuth && typeof window.MiracleAuth.getAccessToken === 'function'
+          ? window.MiracleAuth.getAccessToken()
+          : '';
+        if (token) headers.Authorization = `Bearer ${token}`;
+        return fetch(url, { headers });
+      }
+
+      async function loadAccount() {
+        try {
+          const response = await authenticatedFetch('/api/account/me');
+          const payload = await response.json();
+          dom.accountEmail.textContent = payload?.user?.email || 'Cuenta activa';
+        } catch (error) {
+          dom.accountEmail.textContent = 'Cuenta activa';
+        }
+      }
+
+      function hourKeyAt(date) {
+        return date.toISOString().slice(0, 13);
+      }
+
+      function hourLabel(point) {
+        return point.offsetHours === 0 ? 'ahora' : `-${point.offsetHours}h`;
+      }
+
+      function buildHourSeries(summary, hours) {
+        const byHour = new Map((summary.byHour || []).map((row) => [row.hour, row]));
+        const now = new Date();
+        const series = [];
+        for (let i = hours - 1; i >= 0; i -= 1) {
+          const bucketDate = new Date(now.getTime() - i * 60 * 60 * 1000);
+          const key = hourKeyAt(bucketDate);
+          const row = byHour.get(key);
+          series.push({
+            hour: key,
+            offsetHours: i,
+            inputTokens: row ? Number(row.inputTokens) || 0 : 0,
+            outputTokens: row ? Number(row.outputTokens) || 0 : 0
+          });
+        }
+        return series;
+      }
+
+      function renderChart(series) {
+        dom.chart.querySelectorAll('.usage-bar').forEach((el) => el.remove());
+        dom.chartAxis.innerHTML = '';
+
+        const totals = series.map((point) => point.inputTokens + point.outputTokens);
+        const max = Math.max(1, ...totals);
+        const hasData = totals.some((value) => value > 0);
+
+        if (!hasData) {
+          const empty = document.createElement('div');
+          empty.className = 'usage-chart-empty';
+          empty.textContent = 'Sin consumo registrado en este rango.';
+          dom.chart.appendChild(empty);
+        }
+
+        series.forEach((point) => {
+          const total = point.inputTokens + point.outputTokens;
+          const bar = document.createElement('div');
+          bar.className = 'usage-bar';
+          bar.style.height = `${Math.max(3, (total / max) * 100)}%`;
+          bar.addEventListener('mouseenter', () => showTooltip(bar, point, total));
+          bar.addEventListener('mouseleave', hideTooltip);
+          dom.chart.appendChild(bar);
+        });
+
+        const step = Math.max(1, Math.floor(series.length / 6));
+        series.forEach((point, index) => {
+          if (index % step !== 0 && index !== series.length - 1) return;
+          const label = document.createElement('span');
+          label.textContent = hourLabel(point);
+          dom.chartAxis.appendChild(label);
+        });
+      }
+
+      function showTooltip(bar, point, total) {
+        dom.tooltip.textContent = `${hourLabel(point)} · ${formatNumber(total)} tokens`;
+        const barRect = bar.getBoundingClientRect();
+        const chartRect = dom.chart.getBoundingClientRect();
+        dom.tooltip.style.left = `${barRect.left - chartRect.left + barRect.width / 2}px`;
+        dom.tooltip.classList.add('is-visible');
+      }
+
+      function hideTooltip() {
+        dom.tooltip.classList.remove('is-visible');
+      }
+
+      function renderBreakdown(summary) {
+        const rows = (summary.byModel || [])
+          .map((row) => ({ ...row, totalTokens: Number(row.inputTokens || 0) + Number(row.outputTokens || 0) }))
+          .filter((row) => row.totalTokens > 0 || row.deepgramMinutes > 0)
+          .sort((left, right) => right.totalTokens - left.totalTokens);
+
+        if (!rows.length) {
+          dom.breakdownBoard.innerHTML = '<p class="usage-empty">Sin consumo registrado en este rango.</p>';
+          return;
+        }
+
+        const max = Math.max(1, ...rows.map((row) => row.totalTokens));
+        dom.breakdownBoard.innerHTML = rows.map((row) => {
+          const width = Math.max(4, Math.round((row.totalTokens / max) * 100));
           return `
-            <article class="model-card">
-              <div class="label">${row.sourceRepo || 'sin fuente'}</div>
-              <h3>${row.model || 'Sin modelo reportado'}</h3>
-              <div class="model-meta">
-                <span class="pill">${row.provider || '-'}</span>
-                <span class="pill">${row.apiFamily || '-'}</span>
+            <article class="usage-breakdown-card">
+              <div class="usage-breakdown-head">
+                <h3>${friendlySourceLabel(row)}</h3>
+                <strong>${formatNumber(row.totalTokens)}</strong>
               </div>
-              <div class="model-stat"><span>Input</span><strong>${formatNumber(row.inputTokens)}</strong></div>
-              <div class="model-stat"><span>Output</span><strong>${formatNumber(row.outputTokens)}</strong></div>
-              <div class="model-stat"><span>Minutos audio</span><strong>${formatNumber(row.deepgramMinutes, 2)}</strong></div>
-              <div class="model-stat"><span>Costo conocido</span><strong>${formatCurrency(row.estimatedCostUsd)}</strong></div>
+              <div class="usage-breakdown-meter"><i style="width:${width}%"></i></div>
+              <div class="usage-breakdown-meta">
+                <span>${formatNumber(row.inputTokens)} entrada</span>
+                <span>${formatNumber(row.outputTokens)} salida</span>
+                <span>${row.eventCount} eventos</span>
+                <span>${formatCurrency(row.estimatedCostUsd)}</span>
+              </div>
             </article>
           `;
-        }).join('')
-      : '<p>No hay modelos registrados en este rango todavia.</p>';
-  }
+        }).join('');
+      }
 
-  function renderByModel(summary) {
-    document.getElementById('byModelBody').innerHTML = summary.byModel.map(function (row) {
-      return `
-        <tr>
-          <td>${row.sourceRepo || '-'}</td>
-          <td>${row.provider || '-'}</td>
-          <td>${row.model || '-'}</td>
-          <td><span class="pill">${row.eventType || '-'}</span></td>
-          <td>${formatNumber(row.inputTokens)}</td>
-          <td>${formatNumber(row.outputTokens)}</td>
-          <td>${formatNumber(row.deepgramMinutes, 2)}</td>
-          <td>${formatCurrency(row.estimatedCostUsd)}</td>
-        </tr>
-      `;
-    }).join('');
-  }
+      function renderDetail(summary) {
+        dom.detailBody.innerHTML = (summary.recentEvents || []).slice(0, 50).map((row) => `
+          <tr>
+            <td>${row.occurredAt || '-'}</td>
+            <td>${friendlySourceLabel(row)}</td>
+            <td>${row.model || '-'}</td>
+            <td>${formatNumber(row.inputTokens)}</td>
+            <td>${formatNumber(row.outputTokens)}</td>
+            <td>${row.status || '-'}</td>
+          </tr>
+        `).join('') || '<tr><td colspan="6">Sin eventos recientes.</td></tr>';
+      }
 
-  function renderRecent(summary) {
-    document.getElementById('recentEventsBody').innerHTML = summary.recentEvents.map(function (row) {
-      const statusClass = row.status === 'applied' || row.status === 'ok' ? 'ok' : '';
-      return `
-        <tr>
-          <td>${row.occurredAt || '-'}</td>
-          <td>${row.eventType || '-'}</td>
-          <td>${row.model || '-'}</td>
-          <td>${formatNumber(row.inputTokens)}</td>
-          <td>${formatNumber(row.outputTokens)}</td>
-          <td>${formatNumber(row.deepgramMinutes, 2)}</td>
-          <td class="${statusClass}">${row.status || '-'}</td>
-          <td><pre>${JSON.stringify(row.metadata || {}, null, 2)}</pre></td>
-        </tr>
-      `;
-    }).join('');
-  }
+      function renderSummary(summary, hours) {
+        const totalTokens = Number(summary.totals.inputTokens || 0) + Number(summary.totals.outputTokens || 0);
+        dom.total.textContent = formatNumber(totalTokens);
+        dom.windowLabel.textContent = `Tokens usados en las ultimas ${hours} horas`;
+        dom.input.textContent = formatNumber(summary.totals.inputTokens);
+        dom.output.textContent = formatNumber(summary.totals.outputTokens);
+        dom.cost.textContent = formatCurrency(summary.totals.estimatedCostUsd);
+        renderChart(buildHourSeries(summary, hours));
+        renderBreakdown(summary);
+        renderDetail(summary);
+      }
 
-  async function load() {
-    const query = buildQuery();
-    const response = await authenticatedFetch(`/api/usage/summary${query ? `?${query}` : ''}`);
-    const summary = await response.json();
-    renderSummary(summary);
-    renderModelHighlights(summary);
-    renderByModel(summary);
-    renderRecent(summary);
-  }
+      async function load() {
+        const hours = state.hours;
+        const from = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+        const response = await authenticatedFetch(`/api/usage/summary?from=${encodeURIComponent(from)}`);
+        const summary = await response.json();
+        renderSummary(summary, hours);
+      }
 
-  document.getElementById('reloadBtn').addEventListener('click', function () {
-    load().catch(function (error) { console.error(error); });
-  });
+      dom.rangePills.addEventListener('click', (event) => {
+        const button = event.target.closest('.usage-range-pill');
+        if (!button) return;
+        state.hours = Number(button.dataset.hours) || 24;
+        dom.rangePills.querySelectorAll('.usage-range-pill').forEach((el) => el.classList.toggle('is-active', el === button));
+        load().catch((error) => console.error(error));
+      });
 
-  load().catch(function (error) { console.error(error); });
-})();
-</script>
+      dom.reload.addEventListener('click', () => {
+        load().catch((error) => console.error(error));
+      });
+
+      dom.detailToggle.addEventListener('click', () => {
+        const hidden = dom.detailWrap.classList.toggle('is-hidden');
+        dom.detailToggle.textContent = hidden ? 'Ver eventos recientes' : 'Ocultar eventos recientes';
+      });
+
+      loadAccount();
+      load().catch((error) => console.error(error));
+    })();
+  </script>
 </body>
 </html>

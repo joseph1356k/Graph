@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const { statusForError, publicErrorMessage } = require('./httpErrors');
+const createUsageRecorder = require('./recordUsageBestEffort');
 
 // Public, versioned API surface for client apps (Chrome extension, Windows app,
 // web app). This layer keeps external contracts stable while delegating to the
@@ -37,9 +38,28 @@ function registerPublicApiRoutes(app, deps = {}) {
   const learningSessionService = deps.learningSessionService || null;
   const catalogService = deps.catalogService || null;
   const workflowExecutor = deps.workflowExecutor || null;
+  const usageDashboardService = deps.usageDashboardService || null;
 
   if (!app || typeof callMiracleRuntime !== 'function') {
     throw new Error('registerPublicApiRoutes requires app and callMiracleRuntime');
+  }
+
+  const recordUsageBestEffort = createUsageRecorder(usageDashboardService);
+
+  function recordPassthroughUsage(usage, event) {
+    if (!usage || typeof usage !== 'object') {
+      return;
+    }
+    recordUsageBestEffort({
+      sourceRepo: 'graph',
+      provider: usage.provider || 'miracle',
+      apiFamily: usage.api_family || usage.apiFamily || 'chat_completions',
+      model: usage.model || '',
+      inputTokens: Number(usage.input_tokens ?? usage.inputTokens) || 0,
+      outputTokens: Number(usage.output_tokens ?? usage.outputTokens) || 0,
+      status: 'ok',
+      ...event
+    }, event.eventType);
   }
 
   function workflowAccess(req) {
@@ -162,6 +182,11 @@ function registerPublicApiRoutes(app, deps = {}) {
             backend_status: payload.backend_status || '',
             usage: payload.usage || null,
           };
+          recordPassthroughUsage(payload.usage, {
+            eventType: 'api_v1_pipeline_note_usage',
+            sessionId,
+            feature: 'pipeline_note'
+          });
         } catch (error) {
           if (error.code === 'MIRACLE_RUNTIME_NOT_CONFIGURED') {
             result.note = { status: 'unavailable', reason: 'runtime_not_configured' };
@@ -197,6 +222,26 @@ function registerPublicApiRoutes(app, deps = {}) {
             submit_reason: matched.submitReason || '',
             usage: matched.usage || null,
           };
+          if (matched.usage) {
+            recordUsageBestEffort({
+              sourceRepo: 'graph',
+              eventType: 'api_v1_pipeline_autofill_usage',
+              provider: matched.usage.provider || 'openai',
+              apiFamily: matched.usage.apiFamily || 'chat_completions',
+              model: matched.usage.model || '',
+              inputTokens: Number(matched.usage.inputTokens) || 0,
+              outputTokens: Number(matched.usage.outputTokens) || 0,
+              sessionId,
+              feature: 'pipeline_autofill',
+              status: 'ok',
+              metadata: {
+                fieldCount: fields.length,
+                matchCount: Array.isArray(matched.matches) ? matched.matches.length : 0,
+                readyToSubmit: Boolean(matched.readyToSubmit),
+                totalTokens: Number(matched.usage.totalTokens) || 0
+              }
+            }, 'api v1 pipeline autofill usage');
+          }
         } catch (error) {
           result.autofill = { status: 'error', error: error.message || 'autofill_failed' };
         }
@@ -213,13 +258,34 @@ function registerPublicApiRoutes(app, deps = {}) {
     try {
       const body = req.body || {};
       const noteContent = body.note_content || body.noteContent || body.note?.content || '';
+      const sessionId = body.session_id || body.voiceSessionId || '';
       const matched = await noteFieldMatcher.match({
         noteContent,
         fields: pickArray(body.fields),
         alreadyFulfilled: pickArray(body.already_fulfilled, pickArray(body.alreadyFulfilled)),
         pageUrl: body.page_url || body.pageUrl || '',
-        voiceSessionId: body.session_id || body.voiceSessionId || ''
+        voiceSessionId: sessionId
       });
+      if (matched.usage) {
+        recordUsageBestEffort({
+          sourceRepo: 'graph',
+          eventType: 'api_v1_autofill_match_usage',
+          provider: matched.usage.provider || 'openai',
+          apiFamily: matched.usage.apiFamily || 'chat_completions',
+          model: matched.usage.model || '',
+          inputTokens: Number(matched.usage.inputTokens) || 0,
+          outputTokens: Number(matched.usage.outputTokens) || 0,
+          sessionId,
+          feature: 'autofill_match',
+          status: 'ok',
+          metadata: {
+            fieldCount: pickArray(body.fields).length,
+            matchCount: Array.isArray(matched.matches) ? matched.matches.length : 0,
+            readyToSubmit: Boolean(matched.readyToSubmit),
+            totalTokens: Number(matched.usage.totalTokens) || 0
+          }
+        }, 'api v1 autofill match usage');
+      }
       return res.json({
         autofill: {
           matches: matched.matches || [],

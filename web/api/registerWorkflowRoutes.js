@@ -1,5 +1,6 @@
 const WorkflowBranchLearning = require('../../src/application/use-cases/WorkflowBranchLearning');
 const { statusForError, publicErrorMessage } = require('./httpErrors');
+const createUsageRecorder = require('./recordUsageBestEffort');
 
 function registerWorkflowRoutes(app, deps = {}) {
   const catalogService = deps.catalogService;
@@ -14,16 +15,7 @@ function registerWorkflowRoutes(app, deps = {}) {
   const workflowBranchLearning = deps.workflowBranchLearning
     || new WorkflowBranchLearning(catalogService.repository, catalogService);
 
-  function recordUsageBestEffort(payload, contextLabel) {
-    if (!usageDashboardService) {
-      return;
-    }
-    try {
-      usageDashboardService.recordEvent(payload);
-    } catch (error) {
-      console.warn(`[Usage] Skipping ${contextLabel}: ${error.message}`);
-    }
-  }
+  const recordUsageBestEffort = createUsageRecorder(usageDashboardService);
 
   function buildPermissions(req) {
     return {
