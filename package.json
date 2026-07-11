@@ -10,7 +10,10 @@
     "audit:readiness": "node scripts/audit-system-readiness.js",
     "test:clinical-assistant": "node scripts/verify-clinical-assistant-features.js",
     "test:chrome-extension": "node scripts/verify-chrome-extension-auth.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test:clinical-workflow": "node scripts/verify-clinical-workflow.js",
+    "test:templates-catalog": "node scripts/verify-institutional-catalog.js",
+    "test:clinical": "node scripts/verify-institutional-catalog.js && node scripts/verify-clinical-workflow.js",
+    "test": "node scripts/verify-institutional-catalog.js && node scripts/verify-clinical-workflow.js"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +25,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
+    "jose": "^6.2.3",
     "neo4j-driver": "^6.0.1",
     "playwright": "^1.59.1"
   }
