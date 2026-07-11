@@ -696,6 +696,19 @@ app.post('/api/providers/miracle-stt/configure', async (req, res) => {
   }
 });
 
+app.post('/api/providers/miracle-stt/medical', async (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar el vocabulario médico.' });
+  }
+  try {
+    return res.json(await miracleSttProviderConfigService.configureMedical(req.body || {}));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      error: error.message || 'No fue posible actualizar el vocabulario médico.'
+    });
+  }
+});
+
 app.get('/api/providers/chrome-extension/download', (req, res) => {
   if (!req.workflowAccess?.canManageGlobalWorkflows) {
     return res.status(403).json({ error: 'No autorizado para generar la extension.' });

@@ -9,6 +9,17 @@ from dotenv import load_dotenv
 from .integrations.product_llm.config import ProductLLMSettings
 
 
+def _parse_custom_terms_env(raw: str) -> tuple[str, ...]:
+    """Custom STT vocabulary env value: one term per line (commas also split)."""
+    terms: list[str] = []
+    for line in (raw or "").replace("\r", "\n").split("\n"):
+        for chunk in line.split(","):
+            term = chunk.strip()
+            if term:
+                terms.append(term)
+    return tuple(terms)
+
+
 @dataclass(frozen=True)
 class MiracleSettings:
     workspace_root: Path
@@ -24,6 +35,10 @@ class MiracleSettings:
     deepgram_stream_token_ttl_seconds: int = 30
     soniox_stream_endpoint_delay_ms: int = 2000
     soniox_stream_token_ttl_seconds: int = 60
+    # Medical specialization for Soniox (context/vocabulary). "general" | "medical".
+    voice_stt_domain: str = "general"
+    voice_stt_specialty: str = "general"
+    voice_stt_custom_terms: tuple[str, ...] = field(default_factory=tuple)
 
     @classmethod
     def from_env(cls, workspace_root: Path | None = None, *, override: bool = False) -> "MiracleSettings":
@@ -83,4 +98,7 @@ class MiracleSettings:
                 10,
                 min(3600, int(os.getenv("MIRACLE_SONIOX_TOKEN_TTL_SECONDS", "60"))),
             ),
+            voice_stt_domain=os.getenv("MIRACLE_STT_DOMAIN", "general").strip().lower() or "general",
+            voice_stt_specialty=os.getenv("MIRACLE_STT_SPECIALTY", "general").strip().lower() or "general",
+            voice_stt_custom_terms=_parse_custom_terms_env(os.getenv("MIRACLE_STT_CUSTOM_TERMS", "")),
         )

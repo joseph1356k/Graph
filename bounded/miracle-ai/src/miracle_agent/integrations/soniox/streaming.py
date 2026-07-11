@@ -6,6 +6,7 @@ from urllib import request
 
 from ...config import MiracleSettings
 from ...features.voice.contracts import VoiceStreamSession
+from .context import build_soniox_context
 
 SONIOX_WEBSOCKET_URL = "wss://stt-rt.soniox.com/transcribe-websocket"
 SONIOX_TEMPORARY_KEY_URL = "https://api.soniox.com/v1/auth/temporary-api-key"
@@ -130,6 +131,16 @@ def _build_soniox_start_message(
     normalized_language = (language or "").strip()
     if normalized_language:
         message["language_hints"] = [normalized_language]
+
+    # Medical specialization: same v5 model/call, steered by a `context` block
+    # built from the configured domain/specialty and custom vocabulary.
+    context = build_soniox_context(
+        domain=settings.voice_stt_domain,
+        specialty=settings.voice_stt_specialty,
+        custom_terms=list(settings.voice_stt_custom_terms),
+    )
+    if context:
+        message["context"] = context
     return message
 
 
