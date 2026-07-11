@@ -13,6 +13,9 @@
         access: document.getElementById('provider-studio-access'),
         grid: document.getElementById('provider-studio-grid'),
 
+        extensionDownload: document.getElementById('provider-studio-extension-download'),
+        extensionLabel: document.getElementById('provider-studio-extension-label'),
+
         graphPill: document.getElementById('graph-provider-pill'),
         graphMetric: document.getElementById('graph-provider-metric'),
         graphCurrent: document.getElementById('graph-provider-current'),
@@ -184,6 +187,9 @@
         dom.miracleSttApiKeyField.classList.toggle('is-hidden', !provider?.requires_api_key);
         dom.miracleSttModelField.classList.toggle('is-hidden', !provider?.requires_model);
         dom.miracleSttLanguageField.classList.toggle('is-hidden', provider?.id === 'disabled');
+        if (dom.miracleSttApiKey && provider?.requires_api_key) {
+            dom.miracleSttApiKey.placeholder = `Clave de ${provider.label || provider.id}`;
+        }
         if (provider) {
             renderModelOptions(dom.miracleSttModel, provider);
         }
@@ -437,9 +443,57 @@
         });
     }
 
+    async function downloadExtension() {
+        const button = dom.extensionDownload;
+        const label = dom.extensionLabel;
+        if (!button || button.disabled) {
+            return;
+        }
+        const originalLabel = label ? label.textContent : '';
+        button.disabled = true;
+        if (label) {
+            label.textContent = 'Generando…';
+        }
+        try {
+            const response = await authenticatedFetch('/api/providers/chrome-extension/download', { method: 'GET' });
+            if (!response.ok) {
+                let message = `No fue posible generar la extensión (HTTP ${response.status}).`;
+                try {
+                    const payload = await response.json();
+                    if (payload && payload.error) {
+                        message = payload.error;
+                    }
+                } catch (_) { /* respuesta no-JSON */ }
+                throw new Error(message);
+            }
+            const blob = await response.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = objectUrl;
+            anchor.download = 'miracle-chrome-extension.zip';
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+            URL.revokeObjectURL(objectUrl);
+        } finally {
+            button.disabled = false;
+            if (label) {
+                label.textContent = originalLabel || 'Generar extensión';
+            }
+        }
+    }
+
     function bindEvents() {
         bindCollapsible('miracle-product-card', 'miracle-product-toggle');
         bindCollapsible('graph-provider-card', 'graph-provider-toggle');
+
+        if (dom.extensionDownload) {
+            dom.extensionDownload.addEventListener('click', () => {
+                downloadExtension().catch((error) => {
+                    window.alert(error.message || 'No fue posible generar la extensión.');
+                });
+            });
+        }
 
         dom.graphSelect.addEventListener('change', () => {
             dom.graphModel.value = '';

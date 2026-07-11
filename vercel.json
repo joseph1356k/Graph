@@ -5,6 +5,9 @@
   "buildCommand": "npm run build:vercel",
   "outputDirectory": "public",
   "functions": {
+    "api/index.js": {
+      "includeFiles": "{chrome-extension-src,web/public}/**"
+    },
     "api/miracle_runtime.py": {
       "includeFiles": "bounded/miracle-ai/**"
     }

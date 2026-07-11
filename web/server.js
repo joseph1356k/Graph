@@ -696,6 +696,43 @@ app.post('/api/providers/miracle-stt/configure', async (req, res) => {
   }
 });
 
+app.get('/api/providers/chrome-extension/download', (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para generar la extension.' });
+  }
+  try {
+    const archiver = require('archiver');
+    const {
+      EXTENSION_DIR_NAME,
+      collectExtensionFiles,
+      buildReadme
+    } = require('../scripts/lib/chrome-extension-bundle');
+
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    archive.on('error', (error) => {
+      if (!res.headersSent) {
+        res.status(500).json({ error: error.message || 'No fue posible generar la extension.' });
+      } else {
+        res.destroy(error);
+      }
+    });
+
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="miracle-chrome-extension.zip"');
+    archive.pipe(res);
+
+    for (const { absPath, archivePath } of collectExtensionFiles()) {
+      archive.file(absPath, { name: archivePath });
+    }
+    archive.append(buildReadme(EXTENSION_DIR_NAME), { name: `${EXTENSION_DIR_NAME}/README.txt` });
+    archive.finalize();
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      error: error.message || 'No fue posible generar la extension.'
+    });
+  }
+});
+
 app.get('/api/providers/api-keys/status', (req, res) => {
   if (!req.workflowAccess?.canManageGlobalWorkflows) {
     return res.status(403).json({ error: 'No autorizado para administrar API keys.' });

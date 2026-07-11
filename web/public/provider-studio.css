@@ -109,6 +109,27 @@ select {
     justify-content: space-between;
 }
 
+/* The context pill doubles as the "Generar extensión" action button. */
+button.studio-context-pill {
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+button.studio-context-pill:hover:not(:disabled) {
+    background: rgba(3, 3, 3, 0.82);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+button.studio-context-pill:disabled {
+    cursor: progress;
+    opacity: 0.7;
+}
+
 .studio-topbar-copy {
     min-width: 0;
     display: grid;

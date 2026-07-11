@@ -14,6 +14,7 @@ class MiracleSettings:
     workspace_root: Path
     product_llm: ProductLLMSettings = field(default_factory=ProductLLMSettings)
     deepgram_api_key: str | None = None
+    soniox_api_key: str | None = None
     cors_allow_origins: tuple[str, ...] = field(default_factory=tuple)
     voice_stt_provider: str = "disabled"
     voice_transcription_model: str = "gpt-4o-mini-transcribe"
@@ -21,12 +22,15 @@ class MiracleSettings:
     voice_stream_timeslice_ms: int = 250
     deepgram_stream_endpointing_ms: int = 300
     deepgram_stream_token_ttl_seconds: int = 30
+    soniox_stream_endpoint_delay_ms: int = 2000
+    soniox_stream_token_ttl_seconds: int = 60
 
     @classmethod
     def from_env(cls, workspace_root: Path | None = None, *, override: bool = False) -> "MiracleSettings":
         root = (workspace_root or Path.cwd()).resolve()
         load_dotenv(root / ".env", override=override)
         deepgram_api_key = os.getenv("DEEPGRAM_API_KEY")
+        soniox_api_key = os.getenv("SONIOX_API_KEY")
         default_cors_origins = (
             "https://graph-1-hap6.onrender.com",
             "http://localhost:3000",
@@ -43,13 +47,24 @@ class MiracleSettings:
             )
             if origin
         ) or default_cors_origins
-        default_provider = "deepgram" if deepgram_api_key else "disabled"
+        if deepgram_api_key:
+            default_provider = "deepgram"
+        elif soniox_api_key:
+            default_provider = "soniox"
+        else:
+            default_provider = "disabled"
         voice_stt_provider = os.getenv("MIRACLE_STT_PROVIDER", default_provider).strip().lower()
-        default_model = "nova-3" if voice_stt_provider == "deepgram" else "gpt-4o-mini-transcribe"
+        if voice_stt_provider == "deepgram":
+            default_model = "nova-3"
+        elif voice_stt_provider == "soniox":
+            default_model = "stt-rt-v5"
+        else:
+            default_model = "gpt-4o-mini-transcribe"
         return cls(
             workspace_root=root,
             product_llm=ProductLLMSettings.from_env(),
             deepgram_api_key=deepgram_api_key,
+            soniox_api_key=soniox_api_key,
             cors_allow_origins=cors_allow_origins,
             voice_stt_provider=voice_stt_provider,
             voice_transcription_model=os.getenv("MIRACLE_STT_MODEL", default_model).strip(),
@@ -59,5 +74,13 @@ class MiracleSettings:
             deepgram_stream_token_ttl_seconds=max(
                 1,
                 min(3600, int(os.getenv("MIRACLE_DEEPGRAM_TOKEN_TTL_SECONDS", "30"))),
+            ),
+            soniox_stream_endpoint_delay_ms=max(
+                500,
+                min(3000, int(os.getenv("MIRACLE_SONIOX_ENDPOINT_DELAY_MS", "2000"))),
+            ),
+            soniox_stream_token_ttl_seconds=max(
+                10,
+                min(3600, int(os.getenv("MIRACLE_SONIOX_TOKEN_TTL_SECONDS", "60"))),
             ),
         )
