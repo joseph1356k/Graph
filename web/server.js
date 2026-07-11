@@ -28,6 +28,9 @@ const ClinicalEncounterService = require('../src/application/use-cases/ClinicalE
 const ClinicalNotePromptBuilder = require('../src/application/use-cases/ClinicalNotePromptBuilder');
 const ClinicalNoteValidationService = require('../src/application/use-cases/ClinicalNoteValidationService');
 const ClinicalNoteGeneratorService = require('../src/application/use-cases/ClinicalNoteGeneratorService');
+const ClinicalAssistantPromptBuilder = require('../src/application/use-cases/ClinicalAssistantPromptBuilder');
+const ClinicalAssistantValidationService = require('../src/application/use-cases/ClinicalAssistantValidationService');
+const ClinicalAssistantService = require('../src/application/use-cases/ClinicalAssistantService');
 const UsageDashboardService = require('../src/application/use-cases/UsageDashboardService');
 const GraphProviderConfigService = require('../src/application/use-cases/GraphProviderConfigService');
 const MiracleProductLlmProviderConfigService = require('../src/application/use-cases/MiracleProductLlmProviderConfigService');
@@ -109,6 +112,13 @@ const clinicalNoteGeneratorService = new ClinicalNoteGeneratorService({
   llmProvider,
   promptBuilder: new ClinicalNotePromptBuilder(),
   validationService: clinicalNoteValidationService
+});
+const clinicalAssistantService = new ClinicalAssistantService({
+  encounterService: clinicalEncounterService,
+  llmProvider,
+  promptBuilder: new ClinicalAssistantPromptBuilder(),
+  validationService: new ClinicalAssistantValidationService(),
+  noteValidationService: clinicalNoteValidationService
 });
 const graphProviderConfigService = new GraphProviderConfigService(llmProvider);
 const miracleProductLlmProviderConfigService = new MiracleProductLlmProviderConfigService();
@@ -270,6 +280,8 @@ app.use('/api/medical', costlyLimiter);
 app.use('/api/workflows/:id/note-field-matches', costlyLimiter);
 app.use('/api/clinical/diagnosis-suggestions', costlyLimiter);
 app.use('/api/clinical/encounters/:encounterId/generate-note', costlyLimiter);
+app.use('/api/clinical/encounters/:encounterId/diagnostic-suggestions', costlyLimiter);
+app.use('/api/clinical/assistant', costlyLimiter);
 app.use('/api/v1/pipeline', costlyLimiter);
 app.use('/api/v1/autofill/match', costlyLimiter);
 function isMiracleMedicalProxyRequest(req) {
@@ -310,9 +322,11 @@ function isMiracleMedicalProxyRequest(req) {
 
 // Stateful clinical module: Supabase Bearer auth, isolated from the surfaces
 // above and from /api/v1. Sets req.clinicalUser (never req.user).
+// '/api/clinical/encounters' also covers the nested diagnostic-suggestions route.
 [
   '/api/clinical/templates',
-  '/api/clinical/encounters'
+  '/api/clinical/encounters',
+  '/api/clinical/assistant'
 ].forEach((routePrefix) => {
   app.use(routePrefix, requireClinicalAuth);
 });
@@ -740,7 +754,8 @@ registerClinicalRoutes(app, {
   templateService: clinicalTemplateService,
   encounterService: clinicalEncounterService,
   noteGeneratorService: clinicalNoteGeneratorService,
-  noteValidationService: clinicalNoteValidationService
+  noteValidationService: clinicalNoteValidationService,
+  assistantService: clinicalAssistantService
 });
 registerMedicalRoutes(app, {
   rawTranscriptionService,

@@ -12,8 +12,9 @@
     "test:chrome-extension": "node scripts/verify-chrome-extension-auth.js",
     "test:clinical-workflow": "node scripts/verify-clinical-workflow.js",
     "test:templates-catalog": "node scripts/verify-institutional-catalog.js",
-    "test:clinical": "node scripts/verify-institutional-catalog.js && node scripts/verify-clinical-workflow.js",
-    "test": "node scripts/verify-institutional-catalog.js && node scripts/verify-clinical-workflow.js"
+    "test:clinical-assistant-api": "node scripts/verify-clinical-assistant.js",
+    "test:clinical": "node scripts/verify-institutional-catalog.js && node scripts/verify-clinical-workflow.js && node scripts/verify-clinical-assistant.js",
+    "test": "node scripts/verify-institutional-catalog.js && node scripts/verify-clinical-workflow.js && node scripts/verify-clinical-assistant.js"
   },
   "keywords": [],
   "author": "",

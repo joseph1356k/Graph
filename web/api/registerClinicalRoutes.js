@@ -105,6 +105,12 @@ function registerClinicalRoutes(app, deps = {}) {
     });
   }
 
+  // The contextual clinical assistant is its own optional group, so callers
+  // exercising only diagnosis-suggestions or only the engine keep working.
+  if (deps.assistantService) {
+    registerClinicalAssistantRoutes(app, { assistantService: deps.assistantService });
+  }
+
   // ---- Sugerencias diagnósticas (endpoint previo, contrato sin cambios) ----
 
   app.post('/api/clinical/diagnosis-suggestions', async (req, res) => {
@@ -271,6 +277,50 @@ function registerClinicalEngineRoutes(app, deps) {
       });
     } catch (error) {
       respondClinicalError(res, error, '[Clinical Encounters] save note:');
+    }
+  });
+}
+
+// ---- Asistente clínico contextual (chat, sugerencias diagnósticas, ajuste de nota) ----
+function registerClinicalAssistantRoutes(app, deps) {
+  const { assistantService } = deps;
+
+  app.post('/api/clinical/assistant/chat', async (req, res) => {
+    try {
+      const result = await assistantService.chat({
+        message: req.body?.message,
+        encounterId: req.body?.encounter_id,
+        specialty: req.body?.specialty,
+        screenContext: req.body?.screen_context,
+        history: req.body?.history
+      }, { doctorId: resolveDoctorId(req) });
+      res.json(result);
+    } catch (error) {
+      respondClinicalError(res, error, '[Clinical Assistant] chat:');
+    }
+  });
+
+  app.post('/api/clinical/assistant/note-adjustment', async (req, res) => {
+    try {
+      const result = await assistantService.adjustNote({
+        encounterId: req.body?.encounter_id,
+        instruction: req.body?.instruction,
+        sectionKey: req.body?.section_key
+      }, { doctorId: resolveDoctorId(req) });
+      res.json(result);
+    } catch (error) {
+      respondClinicalError(res, error, '[Clinical Assistant] note-adjustment:');
+    }
+  });
+
+  app.post('/api/clinical/encounters/:encounterId/diagnostic-suggestions', async (req, res) => {
+    try {
+      const result = await assistantService.suggestForEncounter(req.params.encounterId, {
+        doctorId: resolveDoctorId(req)
+      });
+      res.json(result);
+    } catch (error) {
+      respondClinicalError(res, error, '[Clinical Assistant] diagnostic-suggestions:');
     }
   });
 }

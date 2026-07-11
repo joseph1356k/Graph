@@ -61,6 +61,8 @@ Los endpoints clínicos responden errores con envelope estable:
 | `LLM_NOT_CONFIGURED` | 503 | No hay proveedor LLM configurado |
 | `NOTE_GENERATION_FAILED` | 502 | El LLM falló o devolvió algo irreparable |
 | `NOTE_JSON_INVALID` | 400 | Nota editada con estructura/keys que no coinciden con el snapshot |
+| `ASSISTANT_INVALID` | 400 | Mensaje/instrucción del asistente vacíos o demasiado largos |
+| `ASSISTANT_FAILED` | 502 | El asistente no pudo generar respuesta (fallo LLM) |
 | `UNAUTHORIZED` | 401/403 | Sin permiso para editar/archivar la plantilla (403) |
 | `SUPABASE_NOT_CONFIGURED` | 503 | Falta `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` en el servidor |
 | `INTERNAL_ERROR` | 500 | Error no clasificado (sin detalles internos) |
@@ -321,6 +323,36 @@ PUT /api/clinical/encounters/:encounter_id/note
 { "encounter_id": "0b3f...", "status": "completed", "note_json": { ... } }
 ```
 
+## Asistente clínico contextual (11–13)
+
+Tres endpoints adicionales bajo la misma auth Supabase Bearer, con rate limit reforzado (gastan LLM). Contrato completo, payload de `screen_context`, garantías anti-invención y ejemplos en **[docs/clinical-assistant.md](clinical-assistant.md)**.
+
+### 11. Chat clínico
+
+```http
+POST /api/clinical/assistant/chat
+```
+
+`{ message, encounter_id?, specialty?, screen_context?, history? }` → `{ answer, mode:"clinical_chat", specialty, used_context, safety_notice, suggested_actions }`. Sin `encounter_id` responde en modo general (no finge conocer un paciente); con `encounter_id` usa transcript + note_json + especialidad del snapshot.
+
+### 12. Sugerencias diagnósticas por encounter
+
+```http
+POST /api/clinical/encounters/:encounter_id/diagnostic-suggestions
+```
+
+Sin body → `{ suggestions:[{title,type,confidence,rationale,supporting_evidence,against_or_uncertain,red_flags_to_check,suggested_next_questions}], safety_notice }`. Máx 5, tentativas, con evidencia literal verificada contra transcript/nota; sin material clínico → `suggestions: []`. (El legacy `POST /api/clinical/diagnosis-suggestions` por contenido suelto sigue igual.)
+
+### 13. Ajuste de nota (propuesta, no persiste)
+
+```http
+POST /api/clinical/assistant/note-adjustment
+```
+
+`{ encounter_id, instruction, section_key? }` → `{ proposed_note_json, changed_sections, explanation, requires_physician_review:true }`. Valida contra `template_snapshot` (merge con la nota original si el modelo responde parcial); el médico guarda con el endpoint 10.
+
+Errores adicionales: `ASSISTANT_INVALID` (400), `ASSISTANT_FAILED` (502).
+
 ## Flujo completo (curl)
 
 ```bash
@@ -370,8 +402,10 @@ curl -s -X PUT "$BASE/api/clinical/encounters/$ENC/note" -H "$AUTH" -H "$JSON" -
 ## Tests
 
 ```bash
-npm test                      # = npm run test:clinical-workflow
+npm test                              # catálogo (8) + workflow (19) + asistente (15)
 npm run test:clinical-workflow
+npm run test:templates-catalog
+npm run test:clinical-assistant-api
 ```
 
-Suite en [scripts/verify-clinical-workflow.js](../scripts/verify-clinical-workflow.js): levanta las rutas reales de Express con un Supabase fake en memoria y un LLM fake (17 casos obligatorios + extras de ownership).
+Suites con rutas reales de Express + Supabase fake en memoria + LLM fake: [scripts/verify-clinical-workflow.js](../scripts/verify-clinical-workflow.js) (flujo plantillas→encounter→nota) y [scripts/verify-clinical-assistant.js](../scripts/verify-clinical-assistant.js) (asistente contextual).
