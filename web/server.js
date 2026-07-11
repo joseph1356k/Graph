@@ -809,7 +809,8 @@ registerClinicalRoutes(app, {
 });
 registerMedicalRoutes(app, {
   rawTranscriptionService,
-  callMiracleRuntime
+  callMiracleRuntime,
+  usageDashboardService
 });
 registerUsageRoutes(app, { usageDashboardService });
 registerPublicApiRoutes(app, {
@@ -817,7 +818,8 @@ registerPublicApiRoutes(app, {
   noteFieldMatcher,
   learningSessionService,
   catalogService,
-  workflowExecutor
+  workflowExecutor,
+  usageDashboardService
 });
 
 app.post('/api/agent/chat', costlyLimiter, async (req, res) => {
