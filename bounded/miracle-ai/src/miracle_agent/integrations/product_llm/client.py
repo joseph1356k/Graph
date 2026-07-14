@@ -19,10 +19,20 @@ class OpenAICompatibleProductLLMClient:
         self._settings = settings
 
     def call_responses_api(self, payload: dict[str, object]) -> dict[str, object]:
+        return self._post_json("/v1/responses", payload)
+
+    def call_chat_completions(self, payload: dict[str, object]) -> dict[str, object]:
+        # Google Gemini (and other OpenAI-compatible providers) expose Chat
+        # Completions rather than the Responses API. The base URL already points
+        # at the OpenAI-compatible root (e.g. .../v1beta/openai), so we only
+        # append /chat/completions here.
+        return self._post_json("/chat/completions", payload)
+
+    def _post_json(self, path: str, payload: dict[str, object]) -> dict[str, object]:
         if not self._settings.base_url:
             raise ProductLLMClientError("Miracle product LLM no tiene base URL configurada.", status_code=503)
         request = Request(
-            f"{self._settings.base_url.rstrip('/')}/v1/responses",
+            f"{self._settings.base_url.rstrip('/')}{path}",
             data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
             headers=self._headers(),
             method="POST",
