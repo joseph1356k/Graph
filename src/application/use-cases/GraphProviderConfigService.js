@@ -34,6 +34,17 @@ const PROVIDERS = {
     modelOptions: ['gpt-4.1-mini', 'gpt-4.1', 'gpt-4o', 'gpt-4o-mini'],
     defaultBaseUrl: 'https://api.openai.com/v1'
   },
+  google: {
+    id: 'google',
+    label: 'Google Gemini',
+    description: 'Gemini via la capa compatible con OpenAI de Google. Soporta salidas estructuradas (json_schema) para matching fiable.',
+    requiresApiKey: true,
+    requiresBaseUrl: false,
+    requiresModel: true,
+    defaultModel: 'gemini-3.5-flash',
+    modelOptions: ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-pro'],
+    defaultBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai'
+  },
   disabled: {
     id: 'disabled',
     label: 'Deshabilitado',

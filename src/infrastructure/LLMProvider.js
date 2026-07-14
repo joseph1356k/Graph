@@ -66,6 +66,18 @@ class LLMProvider {
         this.configSource = 'graph-env';
         return;
       }
+
+      if (graphProvider === 'google') {
+        // Google Gemini via its OpenAI-compatible layer: same Chat Completions
+        // shape (Bearer auth, /chat/completions) and it honors `response_format`
+        // json_schema, so structured field matching keeps the same reliability.
+        this.provider = 'google';
+        this.apiKey = graphApiKey;
+        this.baseUrl = graphBaseUrl || 'https://generativelanguage.googleapis.com/v1beta/openai';
+        this.model = graphModel || 'gemini-3.5-flash';
+        this.configSource = 'graph-env';
+        return;
+      }
     }
 
     this.azureFoundryApiKey = (process.env.AZURE_FOUNDRY_API_KEY || '').trim();

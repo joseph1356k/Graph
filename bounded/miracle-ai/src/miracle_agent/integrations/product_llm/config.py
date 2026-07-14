@@ -33,11 +33,18 @@ class ProductLLMSettings:
         api_key = _env_str("MIRACLE_PRODUCT_LLM_API_KEY")
         default_provider = "openai" if base_url and api_key else "heuristic"
         provider = (_env_str("MIRACLE_PRODUCT_LLM_PROVIDER", default_provider) or default_provider).lower()
-        if provider not in {"heuristic", "openai", "disabled"}:
+        if provider not in {"heuristic", "openai", "google", "disabled"}:
             provider = "heuristic"
         if provider == "openai" and not base_url:
             base_url = "https://api.openai.com"
-        default_model = "gpt-4.1-mini" if provider == "openai" else None
+        if provider == "google" and not base_url:
+            base_url = "https://generativelanguage.googleapis.com/v1beta/openai"
+        if provider == "openai":
+            default_model = "gpt-4.1-mini"
+        elif provider == "google":
+            default_model = "gemini-3.5-flash"
+        else:
+            default_model = None
 
         raw_max_tokens = _env_str("MIRACLE_PRODUCT_LLM_MAX_OUTPUT_TOKENS", "500")
         max_output_tokens = int(raw_max_tokens) if raw_max_tokens is not None else None

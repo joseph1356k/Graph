@@ -12,6 +12,17 @@ const PROVIDERS = {
     modelOptions: ['gpt-4.1-mini', 'gpt-4.1', 'gpt-4o', 'gpt-4o-mini'],
     defaultBaseUrl: 'https://api.openai.com'
   },
+  google: {
+    id: 'google',
+    label: 'Google Gemini',
+    description: 'Gemini via la capa compatible con OpenAI (Chat Completions + salida estructurada json_schema) para estructurar notas.',
+    requiresApiKey: true,
+    requiresBaseUrl: false,
+    requiresModel: true,
+    defaultModel: 'gemini-3.5-flash',
+    modelOptions: ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-pro'],
+    defaultBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai'
+  },
   disabled: {
     id: 'disabled',
     label: 'Deshabilitado',
@@ -36,7 +47,9 @@ class MiracleProductLlmProviderConfigService {
     const configured = Boolean(baseUrl && apiKey);
     const defaultProvider = configured ? 'openai' : 'heuristic';
     const providerId = `${process.env.MIRACLE_PRODUCT_LLM_PROVIDER || defaultProvider}`.trim().toLowerCase();
-    const provider = providerId === 'openai' ? 'openai' : (providerId === 'disabled' ? 'disabled' : 'heuristic');
+    const provider = (providerId === 'openai' || providerId === 'google')
+      ? providerId
+      : (providerId === 'disabled' ? 'disabled' : 'heuristic');
     const currentSpec = PROVIDERS[provider] || PROVIDERS.disabled;
 
     const currentSetup = provider === 'heuristic'
@@ -66,7 +79,7 @@ class MiracleProductLlmProviderConfigService {
       status: {
         provider,
         configured,
-        model: `${process.env.MIRACLE_PRODUCT_LLM_MODEL || (provider === 'openai' ? PROVIDERS.openai.defaultModel : '') || ''}`.trim(),
+        model: `${process.env.MIRACLE_PRODUCT_LLM_MODEL || (PROVIDERS[provider] ? PROVIDERS[provider].defaultModel : '') || ''}`.trim(),
         base_url: baseUrl,
         execution_enabled: (`${process.env.MIRACLE_VOICE_AGENT_EXECUTION_ENABLED || 'false'}`.trim().toLowerCase() === 'true'),
         storage: 'vercel-env',
