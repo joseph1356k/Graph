@@ -1,6 +1,6 @@
 const { clinicalError } = require('./ClinicalErrors');
 
-// Business rules for clinical encounters: consent, template snapshots,
+// Business rules for clinical encounters: template snapshots,
 // transcript intake and status transitions. Note generation lives in
 // ClinicalNoteGeneratorService.
 const CONSULTATION_TYPES = ['presencial', 'telemedicina', 'audio_upload'];
@@ -45,10 +45,6 @@ class ClinicalEncounterService {
   }
 
   async createEncounter(payload = {}, { doctorId = null } = {}) {
-    if (payload.consent !== true) {
-      throw clinicalError('CONSENT_REQUIRED', 'Se requiere el consentimiento del paciente para crear la consulta.');
-    }
-
     const consultationType = `${payload.consultation_type || ''}`.trim();
     if (!CONSULTATION_TYPES.includes(consultationType)) {
       throw clinicalError('ENCOUNTER_INVALID', `consultation_type debe ser uno de: ${CONSULTATION_TYPES.join(', ')}.`);
@@ -76,7 +72,6 @@ class ClinicalEncounterService {
       doctor_id: doctorId,
       patient_id: patientIdRaw || null,
       consultation_type: consultationType,
-      consent: true,
       template_id: template.id,
       template_snapshot: ClinicalEncounterService.buildTemplateSnapshot(template),
       status: 'created',

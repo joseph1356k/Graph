@@ -54,7 +54,6 @@ function encounterResponse(encounter) {
     patient_id: encounter.patient_id,
     doctor_id: encounter.doctor_id,
     consultation_type: encounter.consultation_type,
-    consent: encounter.consent,
     template_id: encounter.template_id,
     template_snapshot: encounter.template_snapshot,
     status: encounter.status,
