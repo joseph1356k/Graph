@@ -339,8 +339,7 @@ async function main() {
     const encounterCreated = await call('POST', '/api/clinical/encounters', {
       patient_id: null,
       consultation_type: 'presencial',
-      template_id: initialTemplateId,
-      consent: true
+      template_id: initialTemplateId
     });
     const encounterId = encounterCreated.body?.encounter_id;
     await check('crea encounter con template_id', () => {
@@ -350,15 +349,14 @@ async function main() {
       assert.strictEqual(encounterCreated.body.template.template_id, initialTemplateId);
     });
 
-    // 9. Rechaza encounter sin consent.
-    const noConsent = await call('POST', '/api/clinical/encounters', {
+    // 9. Inicia consultas sin un paso de consentimiento.
+    const secondEncounter = await call('POST', '/api/clinical/encounters', {
       consultation_type: 'presencial',
-      template_id: initialTemplateId,
-      consent: false
+      template_id: initialTemplateId
     });
-    await check('rechaza encounter sin consent', () => {
-      assert.strictEqual(noConsent.status, 400);
-      assert.strictEqual(noConsent.body.error.code, 'CONSENT_REQUIRED');
+    await check('inicia otra consulta sin consentimiento', () => {
+      assert.strictEqual(secondEncounter.status, 201);
+      assert.ok(secondEncounter.body.encounter_id);
     });
 
     // 10. Guarda template_snapshot al crear encounter.

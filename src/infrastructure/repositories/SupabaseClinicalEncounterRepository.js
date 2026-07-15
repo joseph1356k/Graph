@@ -6,7 +6,6 @@ const SELECT_COLUMNS = [
   'doctor_id',
   'patient_id',
   'consultation_type',
-  'consent',
   'template_id',
   'template_snapshot',
   'status',
@@ -25,7 +24,6 @@ function toDomain(row) {
     doctor_id: row.doctor_id || null,
     patient_id: row.patient_id || null,
     consultation_type: `${row.consultation_type || ''}`,
-    consent: Boolean(row.consent),
     template_id: row.template_id || null,
     template_snapshot: row.template_snapshot && typeof row.template_snapshot === 'object'
       ? row.template_snapshot
@@ -51,7 +49,6 @@ class SupabaseClinicalEncounterRepository {
       doctor_id: encounter.doctor_id || null,
       patient_id: encounter.patient_id || null,
       consultation_type: encounter.consultation_type,
-      consent: Boolean(encounter.consent),
       template_id: encounter.template_id || null,
       template_snapshot: encounter.template_snapshot,
       status: encounter.status || 'created',
