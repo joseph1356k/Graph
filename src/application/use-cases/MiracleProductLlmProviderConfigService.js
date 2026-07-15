@@ -10,7 +10,8 @@ const PROVIDERS = {
     requiresModel: true,
     defaultModel: 'gpt-4.1-mini',
     modelOptions: ['gpt-4.1-mini', 'gpt-4.1', 'gpt-4o', 'gpt-4o-mini'],
-    defaultBaseUrl: 'https://api.openai.com'
+    defaultBaseUrl: 'https://api.openai.com',
+    apiKeyEnv: 'MIRACLE_PRODUCT_LLM_OPENAI_API_KEY'
   },
   google: {
     id: 'google',
@@ -21,7 +22,8 @@ const PROVIDERS = {
     requiresModel: true,
     defaultModel: 'gemini-3.5-flash',
     modelOptions: ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-pro'],
-    defaultBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai'
+    defaultBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    apiKeyEnv: 'MIRACLE_PRODUCT_LLM_GOOGLE_API_KEY'
   },
   disabled: {
     id: 'disabled',
@@ -32,13 +34,32 @@ const PROVIDERS = {
     requiresModel: false,
     defaultModel: '',
     modelOptions: [],
-    defaultBaseUrl: ''
+    defaultBaseUrl: '',
+    apiKeyEnv: null
   }
 };
 
 class MiracleProductLlmProviderConfigService {
   constructor(options = {}) {
     this.vercelEnvService = options.vercelEnvService || new VercelProjectEnvService(options);
+  }
+
+  // Per-provider key, remembered even after switching away and back. Falls
+  // back to the legacy shared MIRACLE_PRODUCT_LLM_API_KEY only for the
+  // provider that is currently active (pre-migration deployments only ever
+  // wrote that one).
+  static storedApiKeyFor(spec, activeProviderId) {
+    if (!spec.apiKeyEnv) {
+      return '';
+    }
+    const dedicated = `${process.env[spec.apiKeyEnv] || ''}`.trim();
+    if (dedicated) {
+      return dedicated;
+    }
+    if (spec.id === activeProviderId) {
+      return `${process.env.MIRACLE_PRODUCT_LLM_API_KEY || ''}`.trim();
+    }
+    return '';
   }
 
   status() {
@@ -73,7 +94,8 @@ class MiracleProductLlmProviderConfigService {
         default_model: spec.defaultModel,
         model_options: spec.modelOptions || [],
         default_base_url: spec.defaultBaseUrl,
-        recommended: spec.id === 'openai'
+        recommended: spec.id === 'openai',
+        stored_api_key: MiracleProductLlmProviderConfigService.storedApiKeyFor(spec, provider)
       })),
       current_setup: currentSetup,
       status: {
@@ -104,13 +126,14 @@ class MiracleProductLlmProviderConfigService {
     const requestedModel = `${payload.model || ''}`.trim();
     const requestedBaseUrl = `${payload.base_url || ''}`.trim();
 
-    const currentApiKey = `${process.env.MIRACLE_PRODUCT_LLM_API_KEY || ''}`.trim();
+    const currentProviderId = `${process.env.MIRACLE_PRODUCT_LLM_PROVIDER || ''}`.trim().toLowerCase();
     const currentModel = `${process.env.MIRACLE_PRODUCT_LLM_MODEL || ''}`.trim();
     const currentBaseUrl = `${process.env.MIRACLE_PRODUCT_LLM_BASE_URL || ''}`.trim();
+    const storedApiKey = MiracleProductLlmProviderConfigService.storedApiKeyFor(spec, currentProviderId);
 
-    const apiKey = requestedApiKey || currentApiKey;
-    const model = requestedModel || currentModel || spec.defaultModel || '';
-    const baseUrl = requestedBaseUrl || currentBaseUrl || spec.defaultBaseUrl || '';
+    const apiKey = requestedApiKey || storedApiKey;
+    const model = requestedModel || (currentProviderId === providerId ? currentModel : '') || spec.defaultModel || '';
+    const baseUrl = requestedBaseUrl || (currentProviderId === providerId ? currentBaseUrl : '') || spec.defaultBaseUrl || '';
 
     if (spec.requiresApiKey && !apiKey) {
       const error = new Error('La API key del Product LLM es obligatoria.');
@@ -132,8 +155,15 @@ class MiracleProductLlmProviderConfigService {
       this.vercelEnvService.upsertProjectEnv('MIRACLE_PRODUCT_LLM_PROVIDER', providerId, { secret: false }),
       this.vercelEnvService.upsertProjectEnv('MIRACLE_PRODUCT_LLM_MODEL', providerId === 'disabled' ? '' : model, { secret: false }),
       this.vercelEnvService.upsertProjectEnv('MIRACLE_PRODUCT_LLM_BASE_URL', providerId === 'disabled' ? '' : baseUrl, { secret: false }),
+      // Legacy shared var: still what config.py reads at runtime for whichever
+      // provider is active.
       this.vercelEnvService.upsertProjectEnv('MIRACLE_PRODUCT_LLM_API_KEY', providerId === 'disabled' ? '' : apiKey, { secret: true })
     ];
+    if (spec.apiKeyEnv && apiKey) {
+      // Dedicated per-provider slot so the key survives switching providers
+      // and back (this is what Provider Studio prefills from).
+      writes.push(this.vercelEnvService.upsertProjectEnv(spec.apiKeyEnv, apiKey, { secret: true }));
+    }
 
     await Promise.all(writes);
     const deployment = await this.vercelEnvService.triggerRedeploy();
