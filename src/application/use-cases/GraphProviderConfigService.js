@@ -10,7 +10,8 @@ const PROVIDERS = {
     requiresModel: true,
     defaultModel: 'grok-4.1',
     modelOptions: ['gpt-4.1-mini', 'DeepSeek-V4-Flash', 'grok-4.1'],
-    defaultBaseUrl: ''
+    defaultBaseUrl: '',
+    apiKeyEnv: 'GRAPH_LLM_AZURE_FOUNDRY_API_KEY'
   },
   openrouter: {
     id: 'openrouter',
@@ -21,7 +22,8 @@ const PROVIDERS = {
     requiresModel: true,
     defaultModel: 'openai/gpt-4o',
     modelOptions: ['openai/gpt-4o', 'openai/gpt-4o-mini', 'openai/gpt-4.1-mini'],
-    defaultBaseUrl: 'https://openrouter.ai/api/v1'
+    defaultBaseUrl: 'https://openrouter.ai/api/v1',
+    apiKeyEnv: 'GRAPH_LLM_OPENROUTER_API_KEY'
   },
   openai: {
     id: 'openai',
@@ -32,7 +34,8 @@ const PROVIDERS = {
     requiresModel: true,
     defaultModel: 'gpt-4.1-mini',
     modelOptions: ['gpt-4.1-mini', 'gpt-4.1', 'gpt-4o', 'gpt-4o-mini'],
-    defaultBaseUrl: 'https://api.openai.com/v1'
+    defaultBaseUrl: 'https://api.openai.com/v1',
+    apiKeyEnv: 'GRAPH_LLM_OPENAI_API_KEY'
   },
   google: {
     id: 'google',
@@ -43,7 +46,8 @@ const PROVIDERS = {
     requiresModel: true,
     defaultModel: 'gemini-3.5-flash',
     modelOptions: ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-pro'],
-    defaultBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai'
+    defaultBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    apiKeyEnv: 'GRAPH_LLM_GOOGLE_API_KEY'
   },
   disabled: {
     id: 'disabled',
@@ -54,7 +58,8 @@ const PROVIDERS = {
     requiresModel: false,
     defaultModel: '',
     modelOptions: [],
-    defaultBaseUrl: ''
+    defaultBaseUrl: '',
+    apiKeyEnv: null
   }
 };
 
@@ -62,6 +67,23 @@ class GraphProviderConfigService {
   constructor(llmProvider, options = {}) {
     this.llmProvider = llmProvider;
     this.vercelEnvService = options.vercelEnvService || new VercelProjectEnvService(options);
+  }
+
+  // Per-provider key, remembered even after switching away and back. Falls
+  // back to the legacy shared GRAPH_LLM_API_KEY only for the provider that is
+  // currently active (pre-migration deployments only ever wrote that one).
+  static storedApiKeyFor(spec, activeProviderId) {
+    if (!spec.apiKeyEnv) {
+      return '';
+    }
+    const dedicated = `${process.env[spec.apiKeyEnv] || ''}`.trim();
+    if (dedicated) {
+      return dedicated;
+    }
+    if (spec.id === activeProviderId) {
+      return `${process.env.GRAPH_LLM_API_KEY || ''}`.trim();
+    }
+    return '';
   }
 
   status() {
@@ -80,7 +102,8 @@ class GraphProviderConfigService {
         default_model: spec.defaultModel,
         model_options: spec.modelOptions || [],
         default_base_url: spec.defaultBaseUrl,
-        recommended: spec.id === 'azure-foundry'
+        recommended: spec.id === 'azure-foundry',
+        stored_api_key: GraphProviderConfigService.storedApiKeyFor(spec, provider)
       })),
       current_setup: {
         provider,
@@ -118,7 +141,8 @@ class GraphProviderConfigService {
     const requestedApiKey = `${payload.api_key || ''}`.trim();
     const requestedModel = `${payload.model || ''}`.trim();
     const requestedBaseUrl = `${payload.base_url || ''}`.trim();
-    const apiKey = requestedApiKey || (sameProvider ? `${this.llmProvider?.apiKey || ''}`.trim() : '');
+    const storedApiKey = GraphProviderConfigService.storedApiKeyFor(spec, this.llmProvider?.provider || 'disabled');
+    const apiKey = requestedApiKey || storedApiKey;
     const model = requestedModel || (sameProvider ? `${this.llmProvider?.model || ''}`.trim() : '') || spec.defaultModel || '';
     const baseUrl = requestedBaseUrl || (sameProvider ? `${this.llmProvider?.baseUrl || ''}`.trim() : '') || spec.defaultBaseUrl || '';
 
@@ -142,8 +166,15 @@ class GraphProviderConfigService {
       this.vercelEnvService.upsertProjectEnv('GRAPH_LLM_PROVIDER', providerId, { secret: false }),
       this.vercelEnvService.upsertProjectEnv('GRAPH_LLM_MODEL', providerId === 'disabled' ? '' : model, { secret: false }),
       this.vercelEnvService.upsertProjectEnv('GRAPH_LLM_BASE_URL', providerId === 'disabled' ? '' : baseUrl, { secret: false }),
+      // Legacy shared var: still what LLMProvider.js reads at runtime for
+      // whichever provider is active.
       this.vercelEnvService.upsertProjectEnv('GRAPH_LLM_API_KEY', providerId === 'disabled' ? '' : apiKey, { secret: true })
     ];
+    if (spec.apiKeyEnv && apiKey) {
+      // Dedicated per-provider slot so the key survives switching providers
+      // and back (this is what Provider Studio prefills from).
+      envWrites.push(this.vercelEnvService.upsertProjectEnv(spec.apiKeyEnv, apiKey, { secret: true }));
+    }
 
     await Promise.all(envWrites);
     const deployment = await this.vercelEnvService.triggerRedeploy();

@@ -454,6 +454,50 @@ button.studio-context-pill:disabled {
     transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
 }
 
+.field-key-row {
+    position: relative;
+    display: flex;
+}
+
+.field-key-row input {
+    padding-right: 44px;
+}
+
+.field-key-toggle {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    right: 5px;
+    width: 36px;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 140ms ease, background-color 140ms ease;
+}
+
+.field-key-toggle:hover {
+    color: var(--ink);
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.field-key-toggle[aria-pressed="true"] {
+    color: var(--ink);
+}
+
+.field-key-toggle-icon {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 .field textarea {
     height: auto;
     min-height: 160px;

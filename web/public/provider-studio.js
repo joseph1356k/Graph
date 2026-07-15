@@ -27,6 +27,7 @@
         graphModel: document.getElementById('graph-provider-model'),
         graphApiKeyField: document.getElementById('graph-provider-api-key-field'),
         graphApiKey: document.getElementById('graph-provider-api-key'),
+        graphApiKeyToggle: document.getElementById('graph-provider-api-key-toggle'),
         graphRefresh: document.getElementById('graph-provider-refresh'),
         graphSubmit: document.getElementById('graph-provider-submit'),
         graphMessage: document.getElementById('graph-provider-message'),
@@ -42,6 +43,7 @@
         miracleProductModel: document.getElementById('miracle-product-model'),
         miracleProductApiKeyField: document.getElementById('miracle-product-api-key-field'),
         miracleProductApiKey: document.getElementById('miracle-product-api-key'),
+        miracleProductApiKeyToggle: document.getElementById('miracle-product-api-key-toggle'),
         miracleProductRefresh: document.getElementById('miracle-product-refresh'),
         miracleProductSubmit: document.getElementById('miracle-product-submit'),
         miracleProductMessage: document.getElementById('miracle-product-message'),
@@ -57,6 +59,7 @@
         miracleSttLanguage: document.getElementById('miracle-stt-language'),
         miracleSttApiKeyField: document.getElementById('miracle-stt-api-key-field'),
         miracleSttApiKey: document.getElementById('miracle-stt-api-key'),
+        miracleSttApiKeyToggle: document.getElementById('miracle-stt-api-key-toggle'),
         miracleSttRefresh: document.getElementById('miracle-stt-refresh'),
         miracleSttSubmit: document.getElementById('miracle-stt-submit'),
         miracleSttMessage: document.getElementById('miracle-stt-message'),
@@ -167,11 +170,25 @@
         select.value = options.includes(selectedModel) ? selectedModel : options[0];
     }
 
+    // Prefills a password field with the key already stored for that specific
+    // provider (kept server-side per provider, not overwritten when the user
+    // switches to a different provider and back).
+    function applyStoredApiKey(input, provider) {
+        if (!input) return;
+        input.value = provider?.stored_api_key || '';
+        input.type = 'password';
+        const toggle = input.parentElement?.querySelector('.field-key-toggle');
+        if (toggle) {
+            toggle.setAttribute('aria-pressed', 'false');
+        }
+    }
+
     function syncGraphFields() {
         const provider = currentProvider(state.graph?.providers, dom.graphSelect);
         dom.graphApiKeyField.classList.toggle('is-hidden', !provider?.requires_api_key);
         dom.graphBaseUrlField.classList.toggle('is-hidden', !provider?.requires_base_url);
         dom.graphModelField.classList.toggle('is-hidden', !provider?.requires_model);
+        applyStoredApiKey(dom.graphApiKey, provider);
         if (provider) {
             renderModelOptions(dom.graphModel, provider);
         }
@@ -185,6 +202,7 @@
         dom.miracleProductApiKeyField.classList.toggle('is-hidden', !provider?.requires_api_key);
         dom.miracleProductBaseUrlField.classList.toggle('is-hidden', !provider?.requires_base_url);
         dom.miracleProductModelField.classList.toggle('is-hidden', !provider?.requires_model);
+        applyStoredApiKey(dom.miracleProductApiKey, provider);
         if (provider) {
             renderModelOptions(dom.miracleProductModel, provider);
         }
@@ -198,6 +216,7 @@
         dom.miracleSttApiKeyField.classList.toggle('is-hidden', !provider?.requires_api_key);
         dom.miracleSttModelField.classList.toggle('is-hidden', !provider?.requires_model);
         dom.miracleSttLanguageField.classList.toggle('is-hidden', provider?.id === 'disabled');
+        applyStoredApiKey(dom.miracleSttApiKey, provider);
         if (dom.miracleSttApiKey && provider?.requires_api_key) {
             dom.miracleSttApiKey.placeholder = `Clave de ${provider.label || provider.id}`;
         }
@@ -229,7 +248,6 @@
             dom.graphSelect.value = current.provider;
         }
         dom.graphBaseUrl.value = current.base_url || '';
-        dom.graphApiKey.value = '';
         renderModelOptions(dom.graphModel, currentProvider(payload.providers, dom.graphSelect), current.model || '');
         syncGraphFields();
         dom.graphCurrent.textContent = current.provider
@@ -260,7 +278,6 @@
         }
         const provider = currentProvider(payload.providers, dom.miracleProductSelect);
         dom.miracleProductBaseUrl.value = current.base_url || provider?.default_base_url || '';
-        dom.miracleProductApiKey.value = '';
         renderModelOptions(dom.miracleProductModel, provider, current.model || provider?.default_model || '');
         syncMiracleProductFields();
         dom.miracleProductCurrent.textContent = current.provider
@@ -293,7 +310,6 @@
         }
         const provider = currentProvider(payload.providers, dom.miracleSttSelect);
         dom.miracleSttLanguage.value = current.language || provider?.default_language || 'es';
-        dom.miracleSttApiKey.value = '';
         renderModelOptions(dom.miracleSttModel, provider, current.model || provider?.default_model || '');
         syncMiracleSttFields();
         renderMedical(payload.medical || {});
@@ -556,9 +572,23 @@
         }
     }
 
+    function bindApiKeyToggle(toggle, input) {
+        if (!toggle || !input) return;
+        toggle.addEventListener('click', () => {
+            const revealed = input.type === 'text';
+            input.type = revealed ? 'password' : 'text';
+            toggle.setAttribute('aria-pressed', revealed ? 'false' : 'true');
+            toggle.setAttribute('aria-label', revealed ? 'Mostrar API key' : 'Ocultar API key');
+        });
+    }
+
     function bindEvents() {
         bindCollapsible('miracle-product-card', 'miracle-product-toggle');
         bindCollapsible('graph-provider-card', 'graph-provider-toggle');
+
+        bindApiKeyToggle(dom.graphApiKeyToggle, dom.graphApiKey);
+        bindApiKeyToggle(dom.miracleProductApiKeyToggle, dom.miracleProductApiKey);
+        bindApiKeyToggle(dom.miracleSttApiKeyToggle, dom.miracleSttApiKey);
 
         if (dom.extensionDownload) {
             dom.extensionDownload.addEventListener('click', () => {

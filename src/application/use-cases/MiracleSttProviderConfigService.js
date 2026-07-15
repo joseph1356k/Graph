@@ -94,7 +94,8 @@ class MiracleSttProviderConfigService {
         default_model: provider.defaultModel,
         model_options: provider.modelOptions || [],
         default_language: provider.defaultLanguage,
-        recommended: provider.recommended
+        recommended: provider.recommended,
+        stored_api_key: provider.apiKeyEnv ? `${process.env[provider.apiKeyEnv] || ''}`.trim() : ''
       })),
       current_setup: {
         provider: spec.id,
