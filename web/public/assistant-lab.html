@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Asistente | Miracle</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/provider-studio.css">
+  <style>
+    .assistant-shell {
+      width: min(720px, calc(100vw - 48px));
+      height: min(760px, calc(100vh - 48px));
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .assistant-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--ink);
+      padding: 20px 24px 0;
+    }
+
+    .assistant-back-icon {
+      width: 17px;
+      height: 17px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .assistant-header {
+      padding: 12px 24px 16px;
+    }
+
+    .assistant-header h1 {
+      margin: 6px 0 4px;
+      font-size: 1.7rem;
+      letter-spacing: -0.03em;
+    }
+
+    .assistant-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .assistant-log {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .assistant-msg {
+      max-width: 85%;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .assistant-msg.user {
+      align-self: flex-end;
+      background: var(--accent, #3a6ff0);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .assistant-msg.assistant {
+      align-self: flex-start;
+      background: var(--control);
+      border: 1px solid var(--line-soft);
+      border-bottom-left-radius: 4px;
+    }
+
+    .assistant-msg.system {
+      align-self: center;
+      color: var(--muted);
+      font-size: 0.78rem;
+      background: transparent;
+      border: 1px dashed var(--line-soft);
+    }
+
+    .assistant-msg.error {
+      align-self: flex-start;
+      color: #ff8a8a;
+      background: rgba(255, 90, 90, 0.08);
+      border: 1px solid rgba(255, 90, 90, 0.25);
+    }
+
+    .assistant-composer {
+      display: flex;
+      gap: 10px;
+      padding: 16px 24px 24px;
+      border-top: 1px solid var(--line-soft);
+    }
+
+    .assistant-composer textarea {
+      flex: 1;
+      resize: none;
+      height: 46px;
+      max-height: 140px;
+      padding: 12px 15px;
+      border: 1px solid var(--line-soft);
+      border-radius: 10px;
+      background-color: var(--control);
+      color: var(--ink);
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .assistant-safety {
+      padding: 0 24px 10px;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <main class="assistant-shell">
+    <a class="assistant-back" href="/provider-studio.html">
+      <svg class="assistant-back-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m11 5-7 7 7 7M4 12h16"/></svg>
+      Provider Studio
+    </a>
+    <header class="assistant-header">
+      <p class="studio-kicker" style="display:inline-flex;min-height:24px;padding:0 10px;border-radius:999px;background:rgba(177,193,232,0.08);color:#b7c3e4;font-size:0.7rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;">Miracle</p>
+      <h1>Asistente</h1>
+      <p>Chat de prueba contra el provider configurado en la tarjeta "Asistente" de Provider Studio. Modo general (sin datos de un paciente).</p>
+    </header>
+    <div id="assistantLog" class="assistant-log"></div>
+    <p id="assistantSafety" class="assistant-safety"></p>
+    <form id="assistantComposer" class="assistant-composer">
+      <textarea id="assistantInput" placeholder="Escribe una pregunta médica..." autocomplete="off"></textarea>
+      <button type="submit" class="button primary" id="assistantSend">Enviar</button>
+    </form>
+  </main>
+
+  <script src="/auth-gate.js"></script>
+  <script>
+    (function () {
+      const log = document.getElementById('assistantLog');
+      const safety = document.getElementById('assistantSafety');
+      const form = document.getElementById('assistantComposer');
+      const input = document.getElementById('assistantInput');
+      const sendButton = document.getElementById('assistantSend');
+      const history = [];
+
+      async function authenticatedFetch(url, init = {}) {
+        if (window.MiracleAuth && typeof window.MiracleAuth.whenAuthenticated === 'function') {
+          try { await window.MiracleAuth.whenAuthenticated(); } catch (error) {}
+        }
+        const token = window.MiracleAuth && typeof window.MiracleAuth.getAccessToken === 'function'
+          ? window.MiracleAuth.getAccessToken()
+          : '';
+        const headers = Object.assign({ 'Content-Type': 'application/json' }, init.headers || {});
+        if (token) headers.Authorization = 'Bearer ' + token;
+        const response = await fetch(url, Object.assign({}, init, { headers }));
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(payload.error || ('HTTP ' + response.status));
+        }
+        return payload;
+      }
+
+      function appendMessage(role, text) {
+        const bubble = document.createElement('div');
+        bubble.className = 'assistant-msg ' + role;
+        bubble.textContent = text;
+        log.appendChild(bubble);
+        log.scrollTop = log.scrollHeight;
+        return bubble;
+      }
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const message = input.value.trim();
+        if (!message) return;
+
+        appendMessage('user', message);
+        history.push({ role: 'user', content: message });
+        input.value = '';
+        input.style.height = '';
+        input.disabled = true;
+        sendButton.disabled = true;
+        const pending = appendMessage('system', 'Pensando...');
+
+        try {
+          const result = await authenticatedFetch('/api/providers/assistant/test-chat', {
+            method: 'POST',
+            body: JSON.stringify({ message, history: history.slice(-8) })
+          });
+          pending.remove();
+          appendMessage('assistant', result.answer || '(sin respuesta)');
+          history.push({ role: 'assistant', content: result.answer || '' });
+          if (result.safety_notice) {
+            safety.textContent = result.safety_notice;
+          }
+        } catch (error) {
+          pending.remove();
+          appendMessage('error', error.message || 'No fue posible obtener respuesta del asistente.');
+        } finally {
+          input.disabled = false;
+          sendButton.disabled = false;
+          input.focus();
+        }
+      });
+
+      input.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+          form.requestSubmit();
+        }
+      });
+
+      input.addEventListener('input', () => {
+        input.style.height = '';
+        input.style.height = Math.min(140, input.scrollHeight) + 'px';
+      });
+
+      appendMessage('system', 'Escribe una pregunta médica general para probar el asistente configurado.');
+    })();
+  </script>
+</body>
+</html>

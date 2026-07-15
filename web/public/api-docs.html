@@ -301,6 +301,24 @@ console.log(data.note.content);</code></pre>
             implementación de referencia está en
             <code>web/public/shared/deepgram-dictation.js</code>.</p></blockquote>
 
+            <h2>4b. Asistente clínico (chat)</h2>
+            <p>Chat con el asistente clínico de Miracle. Solo modo general (preguntas médicas
+            sin datos de un paciente específico — tu API key no tiene una sesión de médico
+            asociada, así que no hay <code>encounter_id</code>).</p>
+            <pre><code>curl -sX POST __BASE__/api/v1/assistant/chat \
+  -H "X-API-Key: &lt;TU_API_KEY&gt;" -H "Content-Type: application/json" \
+  -d '{"message": "Dosis habitual de amoxicilina en adultos"}'</code></pre>
+            <p>Respuesta:</p>
+            <pre><code>{
+  "answer": "…",
+  "specialty": "medicina_general",
+  "safety_notice": "Apoyo clínico para revisión médica. No reemplaza el criterio profesional.",
+  "usage": { "provider": "…", "model": "…", "input_tokens": 0, "output_tokens": 0, "total_tokens": 0 }
+}</code></pre>
+            <p>Opcional: <code>specialty</code> (string) y <code>history</code>
+            (array <code>[{role, content}]</code> con <code>role</code> solo
+            <code>user</code>/<code>assistant</code>, últimos 8 recomendados).</p>
+
             <h2>5. Descubrir capacidades</h2>
             <pre><code>curl -s __BASE__/api/v1 -H "X-API-Key: &lt;TU_API_KEY&gt;"</code></pre>
             <p>Devuelve el manifiesto con las etapas y endpoints disponibles.</p>
@@ -321,6 +339,7 @@ console.log(data.note.content);</code></pre>
             <ul>
                 <li>✅ <strong>Transcripción cruda</strong> (streaming) y <strong>nota organizada</strong>: listas.</li>
                 <li>✅ <strong>Autofill</strong>: expuesto por <code>/api/v1/pipeline</code> y <code>/api/v1/autofill/match</code>.</li>
+                <li>✅ <strong>Asistente clínico</strong>: <code>/api/v1/assistant/chat</code>, modo general.</li>
                 <li>🔜 <strong>Pipeline unificado en streaming</strong> (un solo canal audio→crudo→nota→autofill).</li>
             </ul>
         </main>

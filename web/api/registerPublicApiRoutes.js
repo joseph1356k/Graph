@@ -39,6 +39,7 @@ function registerPublicApiRoutes(app, deps = {}) {
   const catalogService = deps.catalogService || null;
   const workflowExecutor = deps.workflowExecutor || null;
   const usageDashboardService = deps.usageDashboardService || null;
+  const assistantService = deps.assistantService || null;
 
   if (!app || typeof callMiracleRuntime !== 'function') {
     throw new Error('registerPublicApiRoutes requires app and callMiracleRuntime');
@@ -118,6 +119,11 @@ function registerPublicApiRoutes(app, deps = {}) {
         available: Boolean(noteFieldMatcher),
         endpoint: 'POST /api/v1/autofill/match',
         description: 'Mapea una nota organizada contra los campos detectados por el cliente.',
+      },
+      assistant: {
+        available: Boolean(assistantService),
+        endpoint: 'POST /api/v1/assistant/chat',
+        description: 'Chat con el asistente clinico de Miracle (preguntas medicas generales, sin contexto de un paciente especifico).',
       },
     });
   });
@@ -297,6 +303,51 @@ function registerPublicApiRoutes(app, deps = {}) {
       });
     } catch (error) {
       return publicError(res, error, 'autofill_match_failed');
+    }
+  });
+
+  // Clinical assistant chat, general mode only (no encounter_id — public API
+  // clients authenticate with a permanent key, not a doctor's Supabase
+  // session, so there is no ownership to check against). Same engine as the
+  // Supabase-gated /api/clinical/assistant/chat and the Provider Studio test
+  // surface: one prompt, one validation pass, one provider config.
+  app.post('/api/v1/assistant/chat', async (req, res) => {
+    if (!assistantService) {
+      return res.status(503).json({ error: 'Assistant not configured.' });
+    }
+    try {
+      const body = req.body || {};
+      const result = await assistantService.chat({
+        message: body.message,
+        specialty: body.specialty,
+        history: pickArray(body.history)
+      }, {});
+      if (result.usage) {
+        recordUsageBestEffort({
+          sourceRepo: 'graph',
+          eventType: 'api_v1_assistant_chat_usage',
+          provider: result.usage.provider || '',
+          apiFamily: result.usage.api_family || 'chat_completions',
+          model: result.usage.model || '',
+          inputTokens: Number(result.usage.input_tokens) || 0,
+          outputTokens: Number(result.usage.output_tokens) || 0,
+          feature: 'assistant_chat',
+          status: 'ok',
+          metadata: {
+            totalTokens: Number(result.usage.total_tokens) || 0
+          }
+        }, 'api v1 assistant chat usage');
+      }
+      return res.json({
+        answer: result.answer,
+        specialty: result.specialty,
+        safety_notice: result.safety_notice,
+        usage: result.usage || null
+      });
+    } catch (error) {
+      return res.status(error.statusCode || 502).json({
+        error: error.message || 'assistant_chat_failed'
+      });
     }
   });
 

@@ -35,6 +35,7 @@ const UsageDashboardService = require('../src/application/use-cases/UsageDashboa
 const GraphProviderConfigService = require('../src/application/use-cases/GraphProviderConfigService');
 const MiracleProductLlmProviderConfigService = require('../src/application/use-cases/MiracleProductLlmProviderConfigService');
 const MiracleSttProviderConfigService = require('../src/application/use-cases/MiracleSttProviderConfigService');
+const MiracleAssistantProviderConfigService = require('../src/application/use-cases/MiracleAssistantProviderConfigService');
 const ApiKeyService = require('../src/application/use-cases/ApiKeyService');
 const registerLearningRoutes = require('./api/registerLearningRoutes');
 const registerWorkflowRoutes = require('./api/registerWorkflowRoutes');
@@ -82,6 +83,10 @@ function resolveGeneratedRoot(...segments) {
 
 const db = new Neo4jDriver();
 const llmProvider = new LLMProvider();
+// Independent provider for the clinical assistant chat (Provider Studio card
+// "Asistente"): its own MIRACLE_ASSISTANT_LLM_* env vars, decoupled from
+// Graph's field-matching provider above.
+const assistantLlmProvider = new LLMProvider('MIRACLE_ASSISTANT');
 const repository = new Neo4jWorkflowRepository(db);
 const catalogWriter = new MarkdownCatalogWriter();
 const usageLedgerStore = new UsageLedgerStore(resolveGeneratedRoot('usage', 'ai-usage-events.jsonl'));
@@ -98,8 +103,10 @@ const executionIntelligenceService = new ExecutionIntelligenceService(llmProvide
 const noteFieldMatcher = new NoteFieldMatcher(llmProvider);
 const diagnosisSuggestionService = new ClinicalDiagnosisSuggestionService(llmProvider);
 const rawTranscriptionService = new ClinicalRawTranscriptionService();
-// Clinical module wiring: reuses the shared LLMProvider (engine capability, not
-// duplicated); persistence is isolated in the Supabase REST client + repos.
+// Clinical module wiring: note generation reuses the shared Graph LLMProvider
+// (engine capability, not duplicated); the assistant chat gets its own
+// (assistantLlmProvider, above). Persistence is isolated in the Supabase REST
+// client + repos.
 const supabaseRestClient = new SupabaseRestClient();
 const clinicalTemplateRepository = new SupabaseClinicalTemplateRepository(supabaseRestClient);
 const clinicalEncounterRepository = new SupabaseClinicalEncounterRepository(supabaseRestClient);
@@ -115,7 +122,7 @@ const clinicalNoteGeneratorService = new ClinicalNoteGeneratorService({
 });
 const clinicalAssistantService = new ClinicalAssistantService({
   encounterService: clinicalEncounterService,
-  llmProvider,
+  llmProvider: assistantLlmProvider,
   promptBuilder: new ClinicalAssistantPromptBuilder(),
   validationService: new ClinicalAssistantValidationService(),
   noteValidationService: clinicalNoteValidationService
@@ -123,6 +130,7 @@ const clinicalAssistantService = new ClinicalAssistantService({
 const graphProviderConfigService = new GraphProviderConfigService(llmProvider);
 const miracleProductLlmProviderConfigService = new MiracleProductLlmProviderConfigService();
 const miracleSttProviderConfigService = new MiracleSttProviderConfigService();
+const miracleAssistantProviderConfigService = new MiracleAssistantProviderConfigService(assistantLlmProvider);
 const apiKeyService = new ApiKeyService();
 const miracleWorkspaceStore = new MiracleWorkspaceStore();
 
@@ -690,6 +698,48 @@ app.post('/api/providers/graph/configure', async (req, res) => {
   }
 });
 
+app.get('/api/providers/assistant/status', (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar providers.' });
+  }
+  return res.json(miracleAssistantProviderConfigService.status());
+});
+
+app.post('/api/providers/assistant/configure', async (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar providers.' });
+  }
+  try {
+    return res.json(await miracleAssistantProviderConfigService.configure(req.body || {}));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      error: error.message || 'No fue posible actualizar el provider del Asistente.'
+    });
+  }
+});
+
+// Admin-only test surface for the "Probar asistente" button in Provider
+// Studio: same ClinicalAssistantService.chat() as the real Supabase-gated
+// route, general mode only (no encounter_id/doctor ownership — this is just
+// for verifying the configured provider answers).
+app.post('/api/providers/assistant/test-chat', async (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para probar el asistente.' });
+  }
+  try {
+    const result = await clinicalAssistantService.chat({
+      message: req.body?.message,
+      specialty: req.body?.specialty,
+      history: req.body?.history
+    }, {});
+    return res.json(result);
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      error: error.message || 'No fue posible generar la respuesta del asistente.'
+    });
+  }
+});
+
 app.get('/api/providers/miracle-stt/status', (req, res) => {
   if (!req.workflowAccess?.canManageGlobalWorkflows) {
     return res.status(403).json({ error: 'No autorizado para administrar providers.' });
@@ -819,7 +869,8 @@ registerPublicApiRoutes(app, {
   learningSessionService,
   catalogService,
   workflowExecutor,
-  usageDashboardService
+  usageDashboardService,
+  assistantService: clinicalAssistantService
 });
 
 app.post('/api/agent/chat', costlyLimiter, async (req, res) => {

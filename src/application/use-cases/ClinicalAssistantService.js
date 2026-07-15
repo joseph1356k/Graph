@@ -66,14 +66,24 @@ class ClinicalAssistantService {
         message: cleanMessage,
         history: clinicalContext.history
       });
-      const rawAnswer = await this.llmProvider.chat(messages);
+      const { content: rawAnswer, usage } = await this.llmProvider.chatWithUsage(messages);
       return {
         answer: this.validationService.sanitizeAnswer(rawAnswer),
         mode: 'clinical_chat',
         specialty: clinicalContext.specialty,
         used_context: usedContext,
         safety_notice: ClinicalAssistantValidationService.SAFETY_NOTICE_CHAT,
-        suggested_actions: []
+        suggested_actions: [],
+        usage: usage
+          ? {
+              provider: this.llmProvider.provider || '',
+              api_family: 'chat_completions',
+              model: this.llmProvider.model || '',
+              input_tokens: Number(usage.prompt_tokens) || 0,
+              output_tokens: Number(usage.completion_tokens) || 0,
+              total_tokens: Number(usage.total_tokens) || 0
+            }
+          : null
       };
     } catch (error) {
       if (isClinicalError(error)) {

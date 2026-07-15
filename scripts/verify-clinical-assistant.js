@@ -76,9 +76,16 @@ function createFakeLlm() {
   return {
     state,
     hasApiKey: () => true,
+    provider: 'test',
+    model: 'test',
     async chat(messages) {
       state.calls.push({ kind: 'chat', messages });
       return state.chatHandler ? state.chatHandler(messages) : 'Respuesta clínica prudente del asistente.';
+    },
+    async chatWithUsage(messages) {
+      state.calls.push({ kind: 'chat', messages });
+      const content = state.chatHandler ? state.chatHandler(messages) : 'Respuesta clínica prudente del asistente.';
+      return { content, usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 }, model: 'test', provider: 'test' };
     },
     async chatExpectingJson(messages) {
       state.calls.push({ kind: 'json', messages });
