@@ -1,7 +1,13 @@
 const axios = require('axios');
 
 class LLMProvider {
-  constructor() {
+  // envPrefix picks which *_LLM_PROVIDER/_API_KEY/_BASE_URL/_MODEL env vars this
+  // instance reads (e.g. "GRAPH" -> GRAPH_LLM_*, "MIRACLE_ASSISTANT" ->
+  // MIRACLE_ASSISTANT_LLM_*). This lets independent features (Graph field
+  // matching, the clinical assistant) run on different providers without
+  // duplicating the Chat Completions client.
+  constructor(envPrefix = 'GRAPH') {
+    this.envPrefix = envPrefix;
     this.reloadFromEnv();
   }
 
@@ -28,56 +34,68 @@ class LLMProvider {
     this.model = '';
     this.configSource = 'none';
 
-    const graphProvider = (process.env.GRAPH_LLM_PROVIDER || '').trim().toLowerCase();
-    const graphApiKey = (process.env.GRAPH_LLM_API_KEY || '').trim();
-    const graphBaseUrl = (process.env.GRAPH_LLM_BASE_URL || '').trim().replace(/\/+$/, '');
-    const graphModel = (process.env.GRAPH_LLM_MODEL || '').trim();
+    const prefix = this.envPrefix;
+    const explicitProvider = (process.env[`${prefix}_LLM_PROVIDER`] || '').trim().toLowerCase();
+    const explicitApiKey = (process.env[`${prefix}_LLM_API_KEY`] || '').trim();
+    const explicitBaseUrl = (process.env[`${prefix}_LLM_BASE_URL`] || '').trim().replace(/\/+$/, '');
+    const explicitModel = (process.env[`${prefix}_LLM_MODEL`] || '').trim();
+    const envSource = `${prefix.toLowerCase()}-env`;
 
-    if (graphProvider === 'disabled') {
+    if (explicitProvider === 'disabled') {
       this.provider = 'disabled';
-      this.configSource = 'graph-env';
+      this.configSource = envSource;
       return;
     }
 
-    if (graphProvider && graphApiKey) {
-      if (graphProvider === 'azure-foundry') {
+    if (explicitProvider && explicitApiKey) {
+      if (explicitProvider === 'azure-foundry') {
         this.provider = 'azure-foundry';
-        this.apiKey = graphApiKey;
-        this.baseUrl = graphBaseUrl;
-        this.model = this.normalizeAzureFoundryModel(graphModel);
-        this.configSource = 'graph-env';
+        this.apiKey = explicitApiKey;
+        this.baseUrl = explicitBaseUrl;
+        this.model = this.normalizeAzureFoundryModel(explicitModel);
+        this.configSource = envSource;
         return;
       }
 
-      if (graphProvider === 'openrouter') {
+      if (explicitProvider === 'openrouter') {
         this.provider = 'openrouter';
-        this.apiKey = graphApiKey;
-        this.baseUrl = graphBaseUrl || 'https://openrouter.ai/api/v1';
-        this.model = graphModel || 'openai/gpt-4o';
-        this.configSource = 'graph-env';
+        this.apiKey = explicitApiKey;
+        this.baseUrl = explicitBaseUrl || 'https://openrouter.ai/api/v1';
+        this.model = explicitModel || 'openai/gpt-4o';
+        this.configSource = envSource;
         return;
       }
 
-      if (graphProvider === 'openai') {
+      if (explicitProvider === 'openai') {
         this.provider = 'openai';
-        this.apiKey = graphApiKey;
-        this.baseUrl = graphBaseUrl || 'https://api.openai.com/v1';
-        this.model = graphModel || 'gpt-4o';
-        this.configSource = 'graph-env';
+        this.apiKey = explicitApiKey;
+        this.baseUrl = explicitBaseUrl || 'https://api.openai.com/v1';
+        this.model = explicitModel || 'gpt-4o';
+        this.configSource = envSource;
         return;
       }
 
-      if (graphProvider === 'google') {
+      if (explicitProvider === 'google') {
         // Google Gemini via its OpenAI-compatible layer: same Chat Completions
         // shape (Bearer auth, /chat/completions) and it honors `response_format`
         // json_schema, so structured field matching keeps the same reliability.
         this.provider = 'google';
-        this.apiKey = graphApiKey;
-        this.baseUrl = graphBaseUrl || 'https://generativelanguage.googleapis.com/v1beta/openai';
-        this.model = graphModel || 'gemini-3.5-flash';
-        this.configSource = 'graph-env';
+        this.apiKey = explicitApiKey;
+        this.baseUrl = explicitBaseUrl || 'https://generativelanguage.googleapis.com/v1beta/openai';
+        this.model = explicitModel || 'gemini-3.5-flash';
+        this.configSource = envSource;
         return;
       }
+    }
+
+    // Legacy global-env discovery (AZURE_FOUNDRY_*, OPENROUTER_API_KEY,
+    // OPENAI_API_KEY) only applies to the original Graph instance, which is
+    // what predates the *_LLM_* env convention. Other instances (e.g. the
+    // clinical assistant) simply stay unconfigured until explicitly set.
+    if (prefix !== 'GRAPH') {
+      this.provider = null;
+      this.configSource = 'none';
+      return;
     }
 
     this.azureFoundryApiKey = (process.env.AZURE_FOUNDRY_API_KEY || '').trim();

@@ -32,6 +32,22 @@
         graphSubmit: document.getElementById('graph-provider-submit'),
         graphMessage: document.getElementById('graph-provider-message'),
 
+        assistantPill: document.getElementById('assistant-provider-pill'),
+        assistantMetric: document.getElementById('assistant-provider-metric'),
+        assistantCurrent: document.getElementById('assistant-provider-current'),
+        assistantForm: document.getElementById('assistant-provider-form'),
+        assistantSelect: document.getElementById('assistant-provider-select'),
+        assistantBaseUrlField: document.getElementById('assistant-provider-base-url-field'),
+        assistantBaseUrl: document.getElementById('assistant-provider-base-url'),
+        assistantModelField: document.getElementById('assistant-provider-model-field'),
+        assistantModel: document.getElementById('assistant-provider-model'),
+        assistantApiKeyField: document.getElementById('assistant-provider-api-key-field'),
+        assistantApiKey: document.getElementById('assistant-provider-api-key'),
+        assistantApiKeyToggle: document.getElementById('assistant-provider-api-key-toggle'),
+        assistantRefresh: document.getElementById('assistant-provider-refresh'),
+        assistantSubmit: document.getElementById('assistant-provider-submit'),
+        assistantMessage: document.getElementById('assistant-provider-message'),
+
         miracleProductPill: document.getElementById('miracle-product-pill'),
         miracleProductMetric: document.getElementById('miracle-product-metric'),
         miracleProductCurrent: document.getElementById('miracle-product-current'),
@@ -197,6 +213,20 @@
         }
     }
 
+    function syncAssistantFields() {
+        const provider = currentProvider(state.assistant?.providers, dom.assistantSelect);
+        dom.assistantApiKeyField.classList.toggle('is-hidden', !provider?.requires_api_key);
+        dom.assistantBaseUrlField.classList.toggle('is-hidden', !provider?.requires_base_url);
+        dom.assistantModelField.classList.toggle('is-hidden', !provider?.requires_model);
+        applyStoredApiKey(dom.assistantApiKey, provider);
+        if (provider) {
+            renderModelOptions(dom.assistantModel, provider);
+        }
+        if (provider && !dom.assistantBaseUrl.value) {
+            dom.assistantBaseUrl.value = provider.default_base_url || '';
+        }
+    }
+
     function syncMiracleProductFields() {
         const provider = currentProvider(state.miracleProduct?.providers, dom.miracleProductSelect);
         dom.miracleProductApiKeyField.classList.toggle('is-hidden', !provider?.requires_api_key);
@@ -266,6 +296,35 @@
             );
         } else if (dom.graphMessage.dataset.tone === 'warning') {
             setMessage(dom.graphMessage, '');
+        }
+    }
+
+    function renderAssistant(payload) {
+        state.assistant = payload;
+        renderOptions(dom.assistantSelect, payload.providers || []);
+        const current = payload.current_setup || payload.status || {};
+        if (current.provider) {
+            dom.assistantSelect.value = current.provider;
+        }
+        dom.assistantBaseUrl.value = current.base_url || '';
+        renderModelOptions(dom.assistantModel, currentProvider(payload.providers, dom.assistantSelect), current.model || '');
+        syncAssistantFields();
+        dom.assistantCurrent.textContent = current.provider
+            ? `Actual: ${current.label || current.provider} - ${current.model || 'sin modelo'} - ${current.source || 'runtime actual'}`
+            : 'Sin provider explicito para el asistente. Chat clinico deshabilitado.';
+        const assistantConfigured = Boolean(current.configured);
+        dom.assistantMetric.textContent = formatSummary(current);
+        setPill(dom.assistantPill, assistantConfigured ? 'Configurado' : 'Sin credenciales', assistantConfigured ? 'ready' : 'danger');
+        const vercelReady = payload?.vercel?.write_enabled;
+        const redeployMode = payload?.vercel?.deploy_hook_configured ? 'deploy hook' : 'redeploy API/manual';
+        if (!vercelReady) {
+            setMessage(
+                dom.assistantMessage,
+                `Falta GRAPH_VERCEL_API_TOKEN en el servidor para guardar secretos en Vercel. Estrategia de deploy: ${redeployMode}.`,
+                'warning'
+            );
+        } else if (dom.assistantMessage.dataset.tone === 'warning') {
+            setMessage(dom.assistantMessage, '');
         }
     }
 
@@ -424,15 +483,46 @@
         }
 
         renderAccessState(true, '');
-        const [graph, miracleProduct, miracleStt] = await Promise.all([
+        const [graph, assistant, miracleProduct, miracleStt] = await Promise.all([
             fetchJson('/api/providers/graph/status'),
+            fetchJson('/api/providers/assistant/status'),
             fetchJson('/api/product-llm/status'),
             fetchJson('/api/providers/miracle-stt/status')
         ]);
         renderGraph(graph);
+        renderAssistant(assistant);
         renderMiracleProduct(miracleProduct);
         renderMiracleStt(miracleStt);
         dom.overallStatus.textContent = 'Listo';
+    }
+
+    async function submitAssistant(event) {
+        event.preventDefault();
+        const provider = currentProvider(state.assistant?.providers, dom.assistantSelect);
+        if (!provider) return;
+        dom.assistantSubmit.disabled = true;
+        setMessage(dom.assistantMessage, 'Guardando configuracion del Asistente en Vercel...');
+        try {
+            const payload = await fetchJson('/api/providers/assistant/configure', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    provider: provider.id,
+                    base_url: dom.assistantBaseUrl.value,
+                    model: dom.assistantModel.value,
+                    api_key: dom.assistantApiKey.value
+                })
+            });
+            await refreshAll();
+            const deploymentMessage = payload?.deployment?.triggered
+                ? ' Vercel ya empezo el redeploy.'
+                : ` ${payload?.deployment?.message || 'Recuerda redeployar para aplicar el cambio.'}`;
+            setMessage(dom.assistantMessage, `Asistente actualizado.${deploymentMessage}`, 'success');
+        } catch (error) {
+            setMessage(dom.assistantMessage, error.message || 'No fue posible guardar el Asistente.', 'error');
+        } finally {
+            dom.assistantSubmit.disabled = false;
+        }
     }
 
     async function submitGraph(event) {
@@ -585,8 +675,10 @@
     function bindEvents() {
         bindCollapsible('miracle-product-card', 'miracle-product-toggle');
         bindCollapsible('graph-provider-card', 'graph-provider-toggle');
+        bindCollapsible('assistant-provider-card', 'assistant-provider-toggle');
 
         bindApiKeyToggle(dom.graphApiKeyToggle, dom.graphApiKey);
+        bindApiKeyToggle(dom.assistantApiKeyToggle, dom.assistantApiKey);
         bindApiKeyToggle(dom.miracleProductApiKeyToggle, dom.miracleProductApiKey);
         bindApiKeyToggle(dom.miracleSttApiKeyToggle, dom.miracleSttApiKey);
 
@@ -607,6 +699,17 @@
         });
         dom.graphForm.addEventListener('submit', (event) => {
             submitGraph(event).catch((error) => setMessage(dom.graphMessage, error.message, 'error'));
+        });
+
+        dom.assistantSelect.addEventListener('change', () => {
+            dom.assistantModel.value = '';
+            syncAssistantFields();
+        });
+        dom.assistantRefresh.addEventListener('click', () => {
+            refreshAll().catch((error) => setMessage(dom.assistantMessage, error.message, 'error'));
+        });
+        dom.assistantForm.addEventListener('submit', (event) => {
+            submitAssistant(event).catch((error) => setMessage(dom.assistantMessage, error.message, 'error'));
         });
 
         dom.miracleProductSelect.addEventListener('change', () => {

@@ -10,10 +10,23 @@ Backend del panel de asistente flotante y de la caja "Pídale a Miracle un ajust
 |---|---|
 | [ClinicalAssistantPromptBuilder](../src/application/use-cases/ClinicalAssistantPromptBuilder.js) | System prompt del asistente (reutilizable, no vive en rutas) + prompts de chat/diagnóstico/ajuste |
 | [ClinicalAssistantContextBuilder](../src/application/use-cases/ClinicalAssistantContextBuilder.js) | Arma el contexto clínico: encounter, especialidad, transcript, note_json, screen_context, history (sanitizados) |
-| [ClinicalAssistantService](../src/application/use-cases/ClinicalAssistantService.js) | Orquesta los 3 casos de uso; reutiliza el LLMProvider compartido y `getOwnedEncounter` (ownership) |
+| [ClinicalAssistantService](../src/application/use-cases/ClinicalAssistantService.js) | Orquesta los 3 casos de uso; usa su propio `LLMProvider('MIRACLE_ASSISTANT')` (ver abajo) y `getOwnedEncounter` (ownership) |
 | [ClinicalAssistantValidationService](../src/application/use-cases/ClinicalAssistantValidationService.js) | Valida salidas: evidencia literal, degradación de lenguaje definitivo, límites |
+| [MiracleAssistantProviderConfigService](../src/application/use-cases/MiracleAssistantProviderConfigService.js) | Provider Studio: catálogo + guardado en Vercel env del provider del asistente (independiente de Graph) |
 
 Auth: los 3 endpoints van detrás de `requireClinicalAuth` (Bearer token de Supabase → `req.clinicalUser`), igual que el resto del módulo clínico. Rate limit reforzado (gastan créditos LLM).
+
+## Provider independiente (Provider Studio)
+
+El asistente tiene su **propio** provider LLM, desacoplado del de Graph (field matching). `LLMProvider` (`src/infrastructure/LLMProvider.js`) acepta un `envPrefix` en el constructor — Graph usa `new LLMProvider()` (default `'GRAPH'`, lee `GRAPH_LLM_*`), el asistente usa `new LLMProvider('MIRACLE_ASSISTANT')` (lee `MIRACLE_ASSISTANT_LLM_*`). Cambiar uno no afecta al otro.
+
+- Tarjeta **"Asistente"** en Provider Studio (`/provider-studio.html`), mismo patrón que Graph/STT/Product LLM: `GET/POST /api/providers/assistant/status` y `/configure` (admin-gated, igual que los demás providers).
+- Providers soportados: `azure-foundry`, `openrouter`, `openai`, `google`, `disabled`. Cada uno guarda su API key en una env var dedicada (`MIRACLE_ASSISTANT_LLM_<PROVIDER>_API_KEY`) además de la legada compartida `MIRACLE_ASSISTANT_LLM_API_KEY` que lee el runtime — así la key se recuerda al cambiar de provider y volver.
+- **Superficie de prueba**: botón "Probar asistente" en Provider Studio → `/assistant-lab.html`, un chat simple contra `POST /api/providers/assistant/test-chat` (admin-gated, modo general — sin `encounter_id`). Usa el mismo `ClinicalAssistantService.chat()` que la ruta real; sirve para confirmar que el provider configurado responde antes de exponerlo a médicos.
+
+## API pública (`/api/v1`)
+
+`POST /api/v1/assistant/chat` — autenticado con API key permanente (`X-API-Key` o `Authorization: Bearer`, ver `MIRACLE_API_KEYS`), para que frontends externos consuman el asistente. Solo **modo general** (sin `encounter_id`/ownership — un cliente de API no tiene sesión de médico de Supabase). Body: `{ message, specialty?, history? }`. Respuesta: `{ answer, specialty, safety_notice, usage }`. Registra consumo de tokens en el dashboard de uso (`feature: "assistant_chat"`), igual que `/api/v1/autofill/match` y `/api/v1/pipeline`.
 
 ## 1. Chat clínico contextual
 
