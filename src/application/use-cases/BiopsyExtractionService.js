@@ -17,6 +17,7 @@ const MAX_BASE64_CHARS = 7_000_000;
 const MAX_SECTION_CHARS = 4_000;
 const MAX_SECTIONS = 40;
 const MAX_WARNINGS = 12;
+const MAX_LABEL_CHARS = 120;
 
 const SYSTEM = `Eres un asistente que TRANSCRIBE y ORGANIZA una hoja de trabajo de laboratorio escrita a mano por un profesional (bacteriología, patología o laboratorio clínico) mientras analiza una muestra al microscopio.
 
@@ -31,6 +32,23 @@ Reglas:
 - NO inventes ni completes datos clínicos que no estén en la hoja. Si una sección no tiene información en la hoja, deja "content" como cadena vacía "".
 - Usa "warnings" para señalar texto ilegible o dudoso (p. ej. "El recuento de leucocitos es poco legible"). Si no hay dudas, devuelve [].
 - No incluyas datos de otras secciones dentro de una que no corresponde.`;
+
+// Modo dinámico: sin plantilla fija. La IA DISEÑA la estructura del informe a
+// partir de lo que realmente contiene la hoja, y luego la rellena.
+const SYSTEM_DYNAMIC = `Eres un asistente que TRANSCRIBE y ORGANIZA una hoja de trabajo de laboratorio escrita a mano por un profesional (bacteriología, patología o laboratorio clínico) mientras analiza una muestra.
+
+A diferencia del modo con plantilla fija, aquí TÚ DISEÑAS la estructura del informe a partir de lo que realmente contiene la hoja: identifica el tipo de estudio (p. ej. histopatología/biopsia, microbiología con cultivo y antibiograma, baciloscopia, uroanálisis, coprológico/parasitológico, etc.) y crea las secciones (casillas) que mejor representen su contenido.
+
+Responde ÚNICAMENTE con un objeto JSON válido, sin texto antes ni después, con esta forma exacta:
+{"template_name": string, "sections": [{"key": string, "label": string, "content": string}], "warnings": [string]}
+
+Reglas:
+- "template_name": título corto y claro del informe según el tipo de estudio (p. ej. "Informe de histopatología", "Urocultivo y antibiograma").
+- "sections": entre 3 y 10 secciones, en orden lógico. "key" es un identificador corto en minúsculas con guiones bajos (p. ej. "datos_muestra"); "label" es el título legible de la casilla.
+- Crea SOLO las secciones que tengan sentido para esta hoja. Empieza por los datos de la muestra y cierra con el diagnóstico, la interpretación o las observaciones cuando apliquen.
+- "content": transcribe fielmente lo escrito para esa sección. Conserva términos técnicos, nombres de microorganismos, medidas, recuentos y notación de cruces (+, ++, +++). Corrige solo abreviaturas obvias.
+- NO inventes ni completes datos clínicos que no estén en la hoja. Si una sección queda sin información, deja "content" como cadena vacía "".
+- Usa "warnings" para señalar texto ilegible o dudoso. Si no hay dudas, devuelve [].`;
 
 function extractionError(code, message, statusCode = 400) {
   const error = new Error(message);
@@ -78,6 +96,33 @@ function alignSections(template, modelValue) {
     label: section.label,
     content: byKey.get(section.key) ?? ''
   }));
+}
+
+// Modo dinámico: la IA define key + label + content. Saneamos claves (slug
+// único), etiquetas y contenido, sin plantilla contra la cual alinear.
+function sanitizeDynamicSections(modelValue) {
+  const list = modelValue && Array.isArray(modelValue.sections) ? modelValue.sections : [];
+  const out = [];
+  const usedKeys = new Set();
+  for (let index = 0; index < list.length && out.length < MAX_SECTIONS; index += 1) {
+    const item = list[index];
+    if (!item || typeof item !== 'object') continue;
+    const label = `${item.label ?? ''}`.trim().slice(0, MAX_LABEL_CHARS) || `Sección ${index + 1}`;
+    let key = `${item.key ?? ''}`.trim().toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40);
+    if (!key) key = `seccion_${index + 1}`;
+    let uniqueKey = key;
+    let suffix = 2;
+    while (usedKeys.has(uniqueKey)) {
+      uniqueKey = `${key}_${suffix}`;
+      suffix += 1;
+    }
+    usedKeys.add(uniqueKey);
+    const content = typeof item.content === 'string' ? item.content.trim().slice(0, MAX_SECTION_CHARS) : '';
+    out.push({ key: uniqueKey, label, content });
+  }
+  return out;
 }
 
 function sanitizeWarnings(modelValue) {
@@ -157,18 +202,53 @@ ${guide}`;
     ];
   }
 
-  // extract({ image, template: { name, sections } }) -> { template, sections, warnings, usage }
-  async extract({ image, mediaType = '', template } = {}) {
-    const templateName = `${template?.name ?? ''}`.trim() || 'Informe de laboratorio';
-    const sections = parseTemplateSections(template?.sections);
-    if (!sections.length) {
-      throw extractionError('BIOPSY_TEMPLATE_EMPTY', 'La plantilla no tiene secciones.', 400);
+  buildDynamicMessages(imageDataUrl) {
+    const userText = 'Lee la hoja de la foto, identifica el tipo de estudio de laboratorio y diseña el informe con las secciones que mejor representen su contenido, transcribiendo lo escrito. No inventes datos.';
+    return [
+      { role: 'system', content: SYSTEM_DYNAMIC },
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: userText },
+          { type: 'image_url', image_url: { url: imageDataUrl } }
+        ]
+      }
+    ];
+  }
+
+  usageSummary(usage) {
+    if (!usage) return null;
+    return {
+      provider: this.llmProvider.provider || '',
+      api_family: 'chat_completions',
+      model: this.llmProvider.model || '',
+      input_tokens: Number(usage.prompt_tokens) || 0,
+      output_tokens: Number(usage.completion_tokens) || 0,
+      total_tokens: Number(usage.total_tokens) || 0
+    };
+  }
+
+  // extract({ image, template: { name, sections }, mode }) -> { template, sections, warnings, usage }
+  // mode 'dynamic': la IA diseña la plantilla desde la foto (sin `template`).
+  async extract({ image, mediaType = '', template, mode = '' } = {}) {
+    const dynamic = `${mode || ''}`.trim().toLowerCase() === 'dynamic';
+
+    let sections = [];
+    let templateName = `${template?.name ?? ''}`.trim();
+    if (!dynamic) {
+      sections = parseTemplateSections(template?.sections);
+      if (!sections.length) {
+        throw extractionError('BIOPSY_TEMPLATE_EMPTY', 'La plantilla no tiene secciones.', 400);
+      }
+      templateName = templateName || 'Informe de laboratorio';
     }
 
     const { dataUrl } = BiopsyExtractionService.normalizeImage(image, mediaType);
     this.requireLlm();
 
-    const messages = this.buildMessages({ name: templateName, sections }, dataUrl);
+    const messages = dynamic
+      ? this.buildDynamicMessages(dataUrl)
+      : this.buildMessages({ name: templateName, sections }, dataUrl);
 
     let content;
     let usage;
@@ -190,20 +270,25 @@ ${guide}`;
       throw extractionError('BIOPSY_PARSE_FAILED', 'La IA no devolvió un resultado interpretable. Intenta de nuevo.', 502);
     }
 
+    if (dynamic) {
+      const outSections = sanitizeDynamicSections(parsed);
+      if (!outSections.length) {
+        throw extractionError('BIOPSY_DYNAMIC_EMPTY', 'La IA no pudo estructurar la hoja. Intenta con una foto más nítida.', 502);
+      }
+      const name = `${parsed?.template_name ?? ''}`.trim().slice(0, MAX_LABEL_CHARS) || 'Informe de laboratorio';
+      return {
+        template: { name },
+        sections: outSections,
+        warnings: sanitizeWarnings(parsed),
+        usage: this.usageSummary(usage)
+      };
+    }
+
     return {
       template: { name: templateName },
       sections: alignSections(sections, parsed),
       warnings: sanitizeWarnings(parsed),
-      usage: usage
-        ? {
-            provider: this.llmProvider.provider || '',
-            api_family: 'chat_completions',
-            model: this.llmProvider.model || '',
-            input_tokens: Number(usage.prompt_tokens) || 0,
-            output_tokens: Number(usage.completion_tokens) || 0,
-            total_tokens: Number(usage.total_tokens) || 0
-          }
-        : null
+      usage: this.usageSummary(usage)
     };
   }
 }

@@ -782,7 +782,8 @@ app.post('/api/providers/biopsy/test-extract', async (req, res) => {
     const result = await biopsyExtractionService.extract({
       image: req.body?.image,
       mediaType: req.body?.media_type,
-      template: req.body?.template
+      template: req.body?.template,
+      mode: req.body?.mode
     });
     return res.json(result);
   } catch (error) {

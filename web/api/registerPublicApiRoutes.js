@@ -370,7 +370,8 @@ function registerPublicApiRoutes(app, deps = {}) {
       const result = await biopsyService.extract({
         image: body.image,
         mediaType: body.media_type,
-        template: body.template
+        template: body.template,
+        mode: body.mode
       });
       if (result.usage) {
         recordUsageBestEffort({
