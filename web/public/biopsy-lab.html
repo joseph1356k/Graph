@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Biopsia | Miracle</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/provider-studio.css">
+  <style>
+    .biopsy-shell {
+      width: min(760px, calc(100vw - 48px));
+      max-height: calc(100vh - 48px);
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      overflow: hidden;
+    }
+    .biopsy-back {
+      display: inline-flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--ink); padding: 20px 24px 0;
+    }
+    .biopsy-back-icon {
+      width: 17px; height: 17px; fill: none; stroke: currentColor;
+      stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .biopsy-header { padding: 12px 24px 8px; }
+    .biopsy-header h1 { margin: 6px 0 4px; font-size: 1.7rem; letter-spacing: -0.03em; }
+    .biopsy-header p { margin: 0; color: var(--muted); font-size: 0.85rem; }
+    .biopsy-body { overflow-y: auto; padding: 8px 24px 24px; }
+    .biopsy-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 14px; }
+    .biopsy-controls .field { flex: 1; min-width: 220px; }
+    .biopsy-preview {
+      margin: 6px 0 14px; max-height: 220px; border-radius: 12px;
+      border: 1px solid var(--line-soft); object-fit: contain; display: none;
+    }
+    .biopsy-section {
+      border: 1px solid var(--line-soft); border-radius: 12px;
+      padding: 12px 14px; margin-bottom: 10px; background: var(--control);
+    }
+    .biopsy-section h3 { margin: 0 0 6px; font-size: 0.82rem; letter-spacing: 0.02em; color: var(--muted); text-transform: uppercase; }
+    .biopsy-section p { margin: 0; white-space: pre-wrap; font-size: 0.92rem; line-height: 1.5; }
+    .biopsy-section p:empty::before { content: '(vacío)'; color: var(--muted); font-style: italic; }
+    .biopsy-warnings {
+      border: 1px solid rgba(255, 176, 32, 0.35); background: rgba(255, 176, 32, 0.08);
+      border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.85rem;
+    }
+    .biopsy-warnings ul { margin: 6px 0 0; padding-left: 18px; }
+    .biopsy-message { padding: 0 0 10px; font-size: 0.85rem; }
+    .biopsy-message.error { color: #ff8a8a; }
+    .biopsy-message.success { color: #7ed3a2; }
+  </style>
+</head>
+<body>
+  <main class="biopsy-shell">
+    <a class="biopsy-back" href="/provider-studio.html">
+      <svg class="biopsy-back-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m11 5-7 7 7 7M4 12h16"/></svg>
+      Provider Studio
+    </a>
+    <header class="biopsy-header">
+      <p class="studio-kicker" style="display:inline-flex;min-height:24px;padding:0 10px;border-radius:999px;background:rgba(177,193,232,0.08);color:#b7c3e4;font-size:0.7rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;">Miracle</p>
+      <h1>Biopsia</h1>
+      <p>Prueba de lectura de foto contra el provider de visión configurado en la tarjeta "Biopsia". Sube la foto de una hoja de laboratorio y elige la plantilla; la IA transcribe las casillas.</p>
+    </header>
+    <div class="biopsy-body">
+      <div class="biopsy-controls">
+        <label class="field">
+          <span>Plantilla</span>
+          <select id="biopsyTemplate"></select>
+        </label>
+        <label class="field">
+          <span>Foto de la hoja</span>
+          <input id="biopsyFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+        </label>
+        <button type="button" class="button primary" id="biopsyRun" disabled>Leer hoja</button>
+      </div>
+      <img id="biopsyPreview" class="biopsy-preview" alt="Vista previa de la hoja">
+      <p id="biopsyMessage" class="biopsy-message"></p>
+      <div id="biopsyWarnings"></div>
+      <div id="biopsyResult"></div>
+    </div>
+  </main>
+
+  <script src="/auth-gate.js"></script>
+  <script>
+    (function () {
+      // Las 5 plantillas institucionales de bacteriología (espejo del seed de
+      // Supabase supabase/migrations/..._seed_bacteriology_templates.sql en el
+      // cliente). Solo para esta superficie de prueba: en producción el cliente
+      // envía las secciones de su propia plantilla.
+      const TEMPLATES = [
+        { name: 'Informe de histopatología / biopsia', sections: [
+          { key: 'datos_muestra', label: 'Datos de la muestra', order: 1, instruction: 'Transcribe tipo de espécimen, sitio anatómico, lateralidad, procedimiento de obtención y fecha si aparecen en la hoja.' },
+          { key: 'descripcion_macroscopica', label: 'Descripción macroscópica', order: 2, instruction: 'Transcribe la descripción macroscópica: tamaño, peso, color, consistencia, cortes y lesiones descritas.' },
+          { key: 'descripcion_microscopica', label: 'Descripción microscópica', order: 3, instruction: 'Transcribe los hallazgos microscópicos: arquitectura, tipo celular, atipia, invasión y estado de los márgenes.' },
+          { key: 'diagnostico_histopatologico', label: 'Diagnóstico histopatológico', order: 4, instruction: 'Transcribe el diagnóstico anatomopatológico tal como está escrito. No lo reinterpretes.' },
+          { key: 'estudios_complementarios', label: 'Estudios complementarios / IHQ', order: 5, instruction: 'Transcribe inmunohistoquímica, tinciones especiales u otros estudios y sus resultados si aparecen.' },
+          { key: 'comentarios', label: 'Comentarios y correlación clínica', order: 6, instruction: 'Transcribe comentarios, notas o recomendaciones de correlación clínica.' }
+        ] },
+        { name: 'Microbiología: directo, cultivo y antibiograma', sections: [
+          { key: 'datos_muestra', label: 'Datos de la muestra', order: 1, instruction: 'Transcribe tipo de muestra, sitio, método y fecha/hora de recolección.' },
+          { key: 'examen_directo', label: 'Examen directo', order: 2, instruction: 'Transcribe hallazgos del examen directo: Gram, KOH, tinciones, células, leucocitos y microorganismos observados.' },
+          { key: 'cultivo', label: 'Cultivo', order: 3, instruction: 'Transcribe medios, condiciones y tiempo de incubación, y el crecimiento observado (colonias, recuento en UFC).' },
+          { key: 'identificacion', label: 'Identificación del microorganismo', order: 4, instruction: 'Transcribe el o los microorganismos identificados tal como aparecen.' },
+          { key: 'antibiograma', label: 'Antibiograma', order: 5, instruction: 'Transcribe cada antimicrobiano con su resultado (sensible, intermedio o resistente) y la CMI si aparece.' },
+          { key: 'observaciones', label: 'Observaciones e interpretación', order: 6, instruction: 'Transcribe observaciones, alertas de resistencia (BLEE, MRSA, etc.) u otras notas.' }
+        ] },
+        { name: 'Baciloscopia seriada (BK)', sections: [
+          { key: 'datos_muestra', label: 'Datos de la muestra', order: 1, instruction: 'Transcribe el tipo de muestra (esputo, etc.), el número de muestras seriadas y las fechas.' },
+          { key: 'resultado_por_muestra', label: 'Resultado por muestra', order: 2, instruction: 'Transcribe el resultado de cada muestra con su escala de cruces (negativo, +, ++, +++). Una línea por muestra.' },
+          { key: 'interpretacion', label: 'Interpretación', order: 3, instruction: 'Transcribe la interpretación o conclusión (positivo/negativo) y las observaciones.' }
+        ] },
+        { name: 'Uroanálisis con sedimento', sections: [
+          { key: 'datos_muestra', label: 'Datos de la muestra', order: 1, instruction: 'Transcribe el tipo de muestra de orina y la hora si aparece.' },
+          { key: 'examen_fisico_quimico', label: 'Examen físico-químico', order: 2, instruction: 'Transcribe aspecto, color, densidad, pH y los resultados de la tira reactiva.' },
+          { key: 'sedimento', label: 'Sedimento urinario', order: 3, instruction: 'Transcribe el recuento del sedimento por campo: leucocitos, eritrocitos, células epiteliales, cilindros, cristales, bacterias, levaduras y moco.' },
+          { key: 'observaciones', label: 'Observaciones', order: 4, instruction: 'Transcribe observaciones o notas del examinador.' }
+        ] },
+        { name: 'Coprológico / parasitológico', sections: [
+          { key: 'datos_muestra', label: 'Datos de la muestra', order: 1, instruction: 'Transcribe el tipo de muestra y el método (directo, concentración) si aparece.' },
+          { key: 'examen_macroscopico', label: 'Examen macroscópico', order: 2, instruction: 'Transcribe consistencia, color y presencia de moco, sangre o restos.' },
+          { key: 'examen_microscopico', label: 'Examen microscópico', order: 3, instruction: 'Transcribe los hallazgos: parásitos, quistes, trofozoítos, huevos, leucocitos, eritrocitos, flora y levaduras.' },
+          { key: 'observaciones', label: 'Observaciones', order: 4, instruction: 'Transcribe observaciones o recomendaciones.' }
+        ] }
+      ];
+      const MAX_BYTES = 5 * 1024 * 1024;
+
+      const templateSelect = document.getElementById('biopsyTemplate');
+      const fileInput = document.getElementById('biopsyFile');
+      const runButton = document.getElementById('biopsyRun');
+      const preview = document.getElementById('biopsyPreview');
+      const message = document.getElementById('biopsyMessage');
+      const warningsBox = document.getElementById('biopsyWarnings');
+      const resultBox = document.getElementById('biopsyResult');
+      let imageDataUrl = null;
+
+      TEMPLATES.forEach((tpl, index) => {
+        const option = document.createElement('option');
+        option.value = String(index);
+        option.textContent = tpl.name;
+        templateSelect.appendChild(option);
+      });
+
+      function setMessage(text, tone) {
+        message.textContent = text || '';
+        message.className = 'biopsy-message' + (tone ? ' ' + tone : '');
+      }
+
+      async function authenticatedFetch(url, init = {}) {
+        if (window.MiracleAuth && typeof window.MiracleAuth.whenAuthenticated === 'function') {
+          try { await window.MiracleAuth.whenAuthenticated(); } catch (error) {}
+        }
+        const token = window.MiracleAuth && typeof window.MiracleAuth.getAccessToken === 'function'
+          ? window.MiracleAuth.getAccessToken()
+          : '';
+        const headers = Object.assign({ 'Content-Type': 'application/json' }, init.headers || {});
+        if (token) headers.Authorization = 'Bearer ' + token;
+        const response = await fetch(url, Object.assign({}, init, { headers }));
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(payload.error || ('HTTP ' + response.status));
+        }
+        return payload;
+      }
+
+      fileInput.addEventListener('change', () => {
+        const file = fileInput.files && fileInput.files[0];
+        imageDataUrl = null;
+        preview.style.display = 'none';
+        resultBox.innerHTML = '';
+        warningsBox.innerHTML = '';
+        if (!file) { runButton.disabled = true; return; }
+        if (file.size > MAX_BYTES) {
+          setMessage('La imagen supera 5 MB. Usa una foto más liviana.', 'error');
+          runButton.disabled = true;
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          imageDataUrl = String(reader.result || '');
+          preview.src = imageDataUrl;
+          preview.style.display = 'block';
+          runButton.disabled = false;
+          setMessage('');
+        };
+        reader.onerror = () => setMessage('No fue posible leer la imagen.', 'error');
+        reader.readAsDataURL(file);
+      });
+
+      runButton.addEventListener('click', async () => {
+        if (!imageDataUrl) return;
+        const template = TEMPLATES[Number(templateSelect.value) || 0];
+        runButton.disabled = true;
+        resultBox.innerHTML = '';
+        warningsBox.innerHTML = '';
+        setMessage('Leyendo la hoja con la IA...');
+        try {
+          const result = await authenticatedFetch('/api/providers/biopsy/test-extract', {
+            method: 'POST',
+            body: JSON.stringify({ image: imageDataUrl, template })
+          });
+          const usage = result.usage
+            ? ` · ${result.usage.model || ''} (${result.usage.total_tokens || 0} tokens)`
+            : '';
+          setMessage('Listo.' + usage, 'success');
+          if (Array.isArray(result.warnings) && result.warnings.length) {
+            warningsBox.innerHTML = '<div class="biopsy-warnings"><strong>Revisar:</strong><ul>' +
+              result.warnings.map((w) => '<li></li>').join('') + '</ul></div>';
+            const items = warningsBox.querySelectorAll('li');
+            result.warnings.forEach((w, i) => { if (items[i]) items[i].textContent = w; });
+          }
+          (result.sections || []).forEach((section) => {
+            const card = document.createElement('div');
+            card.className = 'biopsy-section';
+            const title = document.createElement('h3');
+            title.textContent = section.label || section.key;
+            const body = document.createElement('p');
+            body.textContent = section.content || '';
+            card.appendChild(title);
+            card.appendChild(body);
+            resultBox.appendChild(card);
+          });
+        } catch (error) {
+          setMessage(error.message || 'No fue posible leer la hoja.', 'error');
+        } finally {
+          runButton.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

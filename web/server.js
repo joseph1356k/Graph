@@ -36,6 +36,8 @@ const GraphProviderConfigService = require('../src/application/use-cases/GraphPr
 const MiracleProductLlmProviderConfigService = require('../src/application/use-cases/MiracleProductLlmProviderConfigService');
 const MiracleSttProviderConfigService = require('../src/application/use-cases/MiracleSttProviderConfigService');
 const MiracleAssistantProviderConfigService = require('../src/application/use-cases/MiracleAssistantProviderConfigService');
+const BiopsyPhotoProviderConfigService = require('../src/application/use-cases/BiopsyPhotoProviderConfigService');
+const BiopsyExtractionService = require('../src/application/use-cases/BiopsyExtractionService');
 const ApiKeyService = require('../src/application/use-cases/ApiKeyService');
 const registerLearningRoutes = require('./api/registerLearningRoutes');
 const registerWorkflowRoutes = require('./api/registerWorkflowRoutes');
@@ -87,6 +89,10 @@ const llmProvider = new LLMProvider();
 // "Asistente"): its own MIRACLE_ASSISTANT_LLM_* env vars, decoupled from
 // Graph's field-matching provider above.
 const assistantLlmProvider = new LLMProvider('MIRACLE_ASSISTANT');
+// Independent provider for the lab/biopsy photo reader (Provider Studio card
+// "Biopsia"): its own MIRACLE_BIOPSY_LLM_* env vars, a vision-capable model
+// decoupled from the assistant and field-matching providers above.
+const biopsyLlmProvider = new LLMProvider('MIRACLE_BIOPSY');
 const repository = new Neo4jWorkflowRepository(db);
 const catalogWriter = new MarkdownCatalogWriter();
 const usageLedgerStore = new UsageLedgerStore(resolveGeneratedRoot('usage', 'ai-usage-events.jsonl'));
@@ -131,6 +137,8 @@ const graphProviderConfigService = new GraphProviderConfigService(llmProvider);
 const miracleProductLlmProviderConfigService = new MiracleProductLlmProviderConfigService();
 const miracleSttProviderConfigService = new MiracleSttProviderConfigService();
 const miracleAssistantProviderConfigService = new MiracleAssistantProviderConfigService(assistantLlmProvider);
+const biopsyExtractionService = new BiopsyExtractionService({ llmProvider: biopsyLlmProvider });
+const miracleBiopsyProviderConfigService = new BiopsyPhotoProviderConfigService(biopsyLlmProvider);
 const apiKeyService = new ApiKeyService();
 const miracleWorkspaceStore = new MiracleWorkspaceStore();
 
@@ -292,6 +300,8 @@ app.use('/api/clinical/encounters/:encounterId/diagnostic-suggestions', costlyLi
 app.use('/api/clinical/assistant', costlyLimiter);
 app.use('/api/v1/pipeline', costlyLimiter);
 app.use('/api/v1/autofill/match', costlyLimiter);
+app.use('/api/v1/biopsy/extract', costlyLimiter);
+app.use('/api/providers/biopsy/test-extract', costlyLimiter);
 function isMiracleMedicalProxyRequest(req) {
   const method = `${req.method || ''}`.toUpperCase();
   const path = `${req.originalUrl || req.path || req.url || ''}`.split('?')[0];
@@ -740,6 +750,48 @@ app.post('/api/providers/assistant/test-chat', async (req, res) => {
   }
 });
 
+app.get('/api/providers/biopsy/status', (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar providers.' });
+  }
+  return res.json(miracleBiopsyProviderConfigService.status());
+});
+
+app.post('/api/providers/biopsy/configure', async (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar providers.' });
+  }
+  try {
+    return res.json(await miracleBiopsyProviderConfigService.configure(req.body || {}));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      error: error.message || 'No fue posible actualizar el provider de Biopsia.'
+    });
+  }
+});
+
+// Admin-only test surface for the "Probar biopsia" button in Provider Studio:
+// same BiopsyExtractionService.extract() as the real /api/v1/biopsy/extract
+// route, verifying the configured vision provider reads a photo into the
+// template sections.
+app.post('/api/providers/biopsy/test-extract', async (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para probar la biopsia.' });
+  }
+  try {
+    const result = await biopsyExtractionService.extract({
+      image: req.body?.image,
+      mediaType: req.body?.media_type,
+      template: req.body?.template
+    });
+    return res.json(result);
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      error: error.message || 'No fue posible leer la hoja de laboratorio.'
+    });
+  }
+});
+
 app.get('/api/providers/miracle-stt/status', (req, res) => {
   if (!req.workflowAccess?.canManageGlobalWorkflows) {
     return res.status(403).json({ error: 'No autorizado para administrar providers.' });
@@ -870,7 +922,8 @@ registerPublicApiRoutes(app, {
   catalogService,
   workflowExecutor,
   usageDashboardService,
-  assistantService: clinicalAssistantService
+  assistantService: clinicalAssistantService,
+  biopsyService: biopsyExtractionService
 });
 
 app.post('/api/agent/chat', costlyLimiter, async (req, res) => {

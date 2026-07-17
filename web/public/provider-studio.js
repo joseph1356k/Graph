@@ -48,6 +48,22 @@
         assistantSubmit: document.getElementById('assistant-provider-submit'),
         assistantMessage: document.getElementById('assistant-provider-message'),
 
+        biopsyPill: document.getElementById('biopsy-provider-pill'),
+        biopsyMetric: document.getElementById('biopsy-provider-metric'),
+        biopsyCurrent: document.getElementById('biopsy-provider-current'),
+        biopsyForm: document.getElementById('biopsy-provider-form'),
+        biopsySelect: document.getElementById('biopsy-provider-select'),
+        biopsyBaseUrlField: document.getElementById('biopsy-provider-base-url-field'),
+        biopsyBaseUrl: document.getElementById('biopsy-provider-base-url'),
+        biopsyModelField: document.getElementById('biopsy-provider-model-field'),
+        biopsyModel: document.getElementById('biopsy-provider-model'),
+        biopsyApiKeyField: document.getElementById('biopsy-provider-api-key-field'),
+        biopsyApiKey: document.getElementById('biopsy-provider-api-key'),
+        biopsyApiKeyToggle: document.getElementById('biopsy-provider-api-key-toggle'),
+        biopsyRefresh: document.getElementById('biopsy-provider-refresh'),
+        biopsySubmit: document.getElementById('biopsy-provider-submit'),
+        biopsyMessage: document.getElementById('biopsy-provider-message'),
+
         miracleProductPill: document.getElementById('miracle-product-pill'),
         miracleProductMetric: document.getElementById('miracle-product-metric'),
         miracleProductCurrent: document.getElementById('miracle-product-current'),
@@ -227,6 +243,20 @@
         }
     }
 
+    function syncBiopsyFields() {
+        const provider = currentProvider(state.biopsy?.providers, dom.biopsySelect);
+        dom.biopsyApiKeyField.classList.toggle('is-hidden', !provider?.requires_api_key);
+        dom.biopsyBaseUrlField.classList.toggle('is-hidden', !provider?.requires_base_url);
+        dom.biopsyModelField.classList.toggle('is-hidden', !provider?.requires_model);
+        applyStoredApiKey(dom.biopsyApiKey, provider);
+        if (provider) {
+            renderModelOptions(dom.biopsyModel, provider);
+        }
+        if (provider && !dom.biopsyBaseUrl.value) {
+            dom.biopsyBaseUrl.value = provider.default_base_url || '';
+        }
+    }
+
     function syncMiracleProductFields() {
         const provider = currentProvider(state.miracleProduct?.providers, dom.miracleProductSelect);
         dom.miracleProductApiKeyField.classList.toggle('is-hidden', !provider?.requires_api_key);
@@ -325,6 +355,35 @@
             );
         } else if (dom.assistantMessage.dataset.tone === 'warning') {
             setMessage(dom.assistantMessage, '');
+        }
+    }
+
+    function renderBiopsy(payload) {
+        state.biopsy = payload;
+        renderOptions(dom.biopsySelect, payload.providers || []);
+        const current = payload.current_setup || payload.status || {};
+        if (current.provider) {
+            dom.biopsySelect.value = current.provider;
+        }
+        dom.biopsyBaseUrl.value = current.base_url || '';
+        renderModelOptions(dom.biopsyModel, currentProvider(payload.providers, dom.biopsySelect), current.model || '');
+        syncBiopsyFields();
+        dom.biopsyCurrent.textContent = current.provider
+            ? `Actual: ${current.label || current.provider} - ${current.model || 'sin modelo'} - ${current.source || 'runtime actual'}`
+            : 'Sin provider explicito para biopsia. Lectura de fotos deshabilitada.';
+        const biopsyConfigured = Boolean(current.configured);
+        dom.biopsyMetric.textContent = formatSummary(current);
+        setPill(dom.biopsyPill, biopsyConfigured ? 'Configurado' : 'Sin credenciales', biopsyConfigured ? 'ready' : 'danger');
+        const vercelReady = payload?.vercel?.write_enabled;
+        const redeployMode = payload?.vercel?.deploy_hook_configured ? 'deploy hook' : 'redeploy API/manual';
+        if (!vercelReady) {
+            setMessage(
+                dom.biopsyMessage,
+                `Falta GRAPH_VERCEL_API_TOKEN en el servidor para guardar secretos en Vercel. Estrategia de deploy: ${redeployMode}.`,
+                'warning'
+            );
+        } else if (dom.biopsyMessage.dataset.tone === 'warning') {
+            setMessage(dom.biopsyMessage, '');
         }
     }
 
@@ -483,14 +542,16 @@
         }
 
         renderAccessState(true, '');
-        const [graph, assistant, miracleProduct, miracleStt] = await Promise.all([
+        const [graph, assistant, biopsy, miracleProduct, miracleStt] = await Promise.all([
             fetchJson('/api/providers/graph/status'),
             fetchJson('/api/providers/assistant/status'),
+            fetchJson('/api/providers/biopsy/status'),
             fetchJson('/api/product-llm/status'),
             fetchJson('/api/providers/miracle-stt/status')
         ]);
         renderGraph(graph);
         renderAssistant(assistant);
+        renderBiopsy(biopsy);
         renderMiracleProduct(miracleProduct);
         renderMiracleStt(miracleStt);
         dom.overallStatus.textContent = 'Listo';
@@ -522,6 +583,35 @@
             setMessage(dom.assistantMessage, error.message || 'No fue posible guardar el Asistente.', 'error');
         } finally {
             dom.assistantSubmit.disabled = false;
+        }
+    }
+
+    async function submitBiopsy(event) {
+        event.preventDefault();
+        const provider = currentProvider(state.biopsy?.providers, dom.biopsySelect);
+        if (!provider) return;
+        dom.biopsySubmit.disabled = true;
+        setMessage(dom.biopsyMessage, 'Guardando configuracion de Biopsia en Vercel...');
+        try {
+            const payload = await fetchJson('/api/providers/biopsy/configure', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    provider: provider.id,
+                    base_url: dom.biopsyBaseUrl.value,
+                    model: dom.biopsyModel.value,
+                    api_key: dom.biopsyApiKey.value
+                })
+            });
+            await refreshAll();
+            const deploymentMessage = payload?.deployment?.triggered
+                ? ' Vercel ya empezo el redeploy.'
+                : ` ${payload?.deployment?.message || 'Recuerda redeployar para aplicar el cambio.'}`;
+            setMessage(dom.biopsyMessage, `Biopsia actualizada.${deploymentMessage}`, 'success');
+        } catch (error) {
+            setMessage(dom.biopsyMessage, error.message || 'No fue posible guardar Biopsia.', 'error');
+        } finally {
+            dom.biopsySubmit.disabled = false;
         }
     }
 
@@ -676,9 +766,11 @@
         bindCollapsible('miracle-product-card', 'miracle-product-toggle');
         bindCollapsible('graph-provider-card', 'graph-provider-toggle');
         bindCollapsible('assistant-provider-card', 'assistant-provider-toggle');
+        bindCollapsible('biopsy-provider-card', 'biopsy-provider-toggle');
 
         bindApiKeyToggle(dom.graphApiKeyToggle, dom.graphApiKey);
         bindApiKeyToggle(dom.assistantApiKeyToggle, dom.assistantApiKey);
+        bindApiKeyToggle(dom.biopsyApiKeyToggle, dom.biopsyApiKey);
         bindApiKeyToggle(dom.miracleProductApiKeyToggle, dom.miracleProductApiKey);
         bindApiKeyToggle(dom.miracleSttApiKeyToggle, dom.miracleSttApiKey);
 
@@ -710,6 +802,17 @@
         });
         dom.assistantForm.addEventListener('submit', (event) => {
             submitAssistant(event).catch((error) => setMessage(dom.assistantMessage, error.message, 'error'));
+        });
+
+        dom.biopsySelect.addEventListener('change', () => {
+            dom.biopsyModel.value = '';
+            syncBiopsyFields();
+        });
+        dom.biopsyRefresh.addEventListener('click', () => {
+            refreshAll().catch((error) => setMessage(dom.biopsyMessage, error.message, 'error'));
+        });
+        dom.biopsyForm.addEventListener('submit', (event) => {
+            submitBiopsy(event).catch((error) => setMessage(dom.biopsyMessage, error.message, 'error'));
         });
 
         dom.miracleProductSelect.addEventListener('change', () => {

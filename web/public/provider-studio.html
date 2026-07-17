@@ -274,6 +274,53 @@
                     </div>
                 </section>
 
+                <section class="studio-card is-collapsed" id="biopsy-provider-card">
+                    <button type="button" class="studio-card-head" id="biopsy-provider-toggle" aria-expanded="false" aria-controls="biopsy-provider-body">
+                        <div>
+                            <p class="studio-kicker">Miracle</p>
+                            <h2>Biopsia</h2>
+                        </div>
+                        <div class="studio-status-meta">
+                            <strong id="biopsy-provider-metric">Cargando</strong>
+                            <span id="biopsy-provider-pill" class="status-pill">Cargando</span>
+                            <svg class="studio-card-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>
+                        </div>
+                    </button>
+                    <div class="studio-card-body" id="biopsy-provider-body">
+                        <p id="biopsy-provider-current" class="studio-current">Leyendo estado actual...</p>
+                        <form id="biopsy-provider-form" class="studio-form">
+                            <div class="studio-form-grid">
+                                <label class="field">
+                                    <span>Provider</span>
+                                    <select id="biopsy-provider-select"></select>
+                                </label>
+                                <label class="field" id="biopsy-provider-model-field">
+                                    <span>Modelo</span>
+                                    <select id="biopsy-provider-model"></select>
+                                </label>
+                                <label class="field field-editor field-span-2" id="biopsy-provider-base-url-field">
+                                    <span>Base URL</span>
+                                    <input id="biopsy-provider-base-url" type="url" placeholder="https://.../openai/v1">
+                                </label>
+                                <label class="field field-editor field-span-2" id="biopsy-provider-api-key-field">
+                                    <span>API key</span>
+                                    <div class="field-key-row">
+                                        <input id="biopsy-provider-api-key" type="password" autocomplete="off" placeholder="Pega la clave del provider">
+                                        <button type="button" class="field-key-toggle" id="biopsy-provider-api-key-toggle" aria-label="Mostrar API key" aria-pressed="false">
+                                            <svg class="field-key-toggle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        </button>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="studio-actions">
+                                <button type="button" class="button ghost" id="biopsy-provider-refresh">Releer</button>
+                                <button type="submit" class="button primary" id="biopsy-provider-submit">Guardar Biopsia</button>
+                            </div>
+                        </form>
+                        <p id="biopsy-provider-message" class="form-message"></p>
+                    </div>
+                </section>
+
             </section>
 
             <section class="studio-section studio-api-keys-section">
@@ -333,6 +380,11 @@
                     <a class="studio-link" href="/assistant-lab.html">
                         <svg class="studio-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H7l-3 3V4Z"/><path d="M8 9h8M8 12h5"/></svg>
                         <span>Probar asistente</span>
+                        <svg class="studio-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
+                    </a>
+                    <a class="studio-link" href="/biopsy-lab.html">
+                        <svg class="studio-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H7l-3 3V4Z"/><path d="M8 9h8M8 12h5"/></svg>
+                        <span>Probar biopsia</span>
                         <svg class="studio-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
                     </a>
                     <a class="studio-link" href="/visualize.html">Abrir Workflow Graph</a>

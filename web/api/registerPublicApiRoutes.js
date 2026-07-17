@@ -40,6 +40,7 @@ function registerPublicApiRoutes(app, deps = {}) {
   const workflowExecutor = deps.workflowExecutor || null;
   const usageDashboardService = deps.usageDashboardService || null;
   const assistantService = deps.assistantService || null;
+  const biopsyService = deps.biopsyService || null;
 
   if (!app || typeof callMiracleRuntime !== 'function') {
     throw new Error('registerPublicApiRoutes requires app and callMiracleRuntime');
@@ -124,6 +125,11 @@ function registerPublicApiRoutes(app, deps = {}) {
         available: Boolean(assistantService),
         endpoint: 'POST /api/v1/assistant/chat',
         description: 'Chat con el asistente clinico de Miracle (preguntas medicas generales, sin contexto de un paciente especifico).',
+      },
+      biopsy: {
+        available: Boolean(biopsyService),
+        endpoint: 'POST /api/v1/biopsy/extract',
+        description: 'Lee la foto de una hoja de laboratorio manuscrita (bacteriologia/patologia) y la transcribe a las secciones de la plantilla enviada.',
       },
     });
   });
@@ -347,6 +353,51 @@ function registerPublicApiRoutes(app, deps = {}) {
     } catch (error) {
       return res.status(error.statusCode || 502).json({
         error: error.message || 'assistant_chat_failed'
+      });
+    }
+  });
+
+  // Lab/biopsy photo extraction. Clients (e.g. the bacteriology "Laboratorio"
+  // module) POST the photo of a hand-written worksheet plus the template
+  // sections; one vision call transcribes it into { key, content }. Stateless:
+  // the client owns persistence and the resulting note is plain data.
+  app.post('/api/v1/biopsy/extract', async (req, res) => {
+    if (!biopsyService) {
+      return res.status(503).json({ error: 'Biopsy extraction not configured.' });
+    }
+    try {
+      const body = req.body || {};
+      const result = await biopsyService.extract({
+        image: body.image,
+        mediaType: body.media_type,
+        template: body.template
+      });
+      if (result.usage) {
+        recordUsageBestEffort({
+          sourceRepo: 'graph',
+          eventType: 'api_v1_biopsy_extract_usage',
+          provider: result.usage.provider || '',
+          apiFamily: result.usage.api_family || 'chat_completions',
+          model: result.usage.model || '',
+          inputTokens: Number(result.usage.input_tokens) || 0,
+          outputTokens: Number(result.usage.output_tokens) || 0,
+          feature: 'biopsy_extract',
+          status: 'ok',
+          metadata: {
+            totalTokens: Number(result.usage.total_tokens) || 0,
+            sections: Array.isArray(result.sections) ? result.sections.length : 0
+          }
+        }, 'api v1 biopsy extract usage');
+      }
+      return res.json({
+        template: result.template,
+        sections: result.sections,
+        warnings: result.warnings,
+        usage: result.usage || null
+      });
+    } catch (error) {
+      return res.status(error.statusCode || 502).json({
+        error: error.message || 'biopsy_extract_failed'
       });
     }
   });
