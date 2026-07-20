@@ -79,24 +79,28 @@ select {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
+    gap: 12px;
+}
+
+.studio-topbar-solo {
+    justify-content: flex-end;
 }
 
 .studio-topbar-right {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 10px;
 }
 
 .studio-topbar-pill {
-    height: 60px;
-    padding: 0 22px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 18px;
-    background: rgba(3, 3, 3, 0.68);
+    height: 42px;
+    padding: 0 16px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+    background: rgba(3, 3, 3, 0.6);
     display: flex;
     align-items: center;
-    gap: 13px;
+    gap: 10px;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.015);
 }
 
@@ -105,24 +109,34 @@ select {
 }
 
 .studio-context-pill {
-    width: 208px;
     justify-content: space-between;
+}
+
+.studio-topbar-icon {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 /* The context pill doubles as the "Generar extensión" action button. */
 button.studio-context-pill {
-    color: #fff;
+    color: var(--muted);
     font: inherit;
     cursor: pointer;
     text-align: left;
-    transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
     -webkit-appearance: none;
     appearance: none;
 }
 
 button.studio-context-pill:hover:not(:disabled) {
+    color: #fff;
     background: rgba(3, 3, 3, 0.82);
-    border-color: rgba(255, 255, 255, 0.5);
+    border-color: rgba(255, 255, 255, 0.4);
 }
 
 button.studio-context-pill:disabled {
@@ -138,8 +152,6 @@ button.studio-context-pill:disabled {
 }
 
 .studio-topbar-label,
-.studio-account-pill #provider-studio-account-role,
-.studio-account-pill .studio-topbar-label,
 .studio-overall-pill {
     display: none;
 }
@@ -147,29 +159,19 @@ button.studio-context-pill:disabled {
 .studio-topbar-copy strong,
 .studio-context-pill strong {
     overflow: hidden;
-    font-size: 0.98rem;
+    font-size: 0.8rem;
     font-weight: 600;
     line-height: 1.2;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.studio-topbar-icon {
-    width: 23px;
-    height: 23px;
-    fill: none;
-    stroke: #fff;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-}
-
 .studio-topbar-caret {
-    width: 17px;
-    height: 17px;
+    width: 14px;
+    height: 14px;
     margin-left: auto;
     fill: none;
-    stroke: #fff;
+    stroke: currentColor;
     stroke-width: 1.8;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -727,26 +729,27 @@ a.button:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 34px;
+    gap: 22px;
+    flex-wrap: wrap;
 }
 
 .studio-link {
-    width: 268px;
-    height: 62px;
-    padding: 0 23px;
+    width: 236px;
+    height: 54px;
+    padding: 0 20px;
     position: relative;
     display: grid;
-    grid-template-columns: 26px 1fr 28px;
+    grid-template-columns: 20px 1fr 22px;
     align-items: center;
     gap: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.76);
+    border: 1px solid var(--line);
     border-radius: 999px;
     color: var(--ink);
     background: rgba(7, 7, 7, 0.78);
     text-decoration: none;
-    font-size: 0.94rem;
+    font-size: 0.88rem;
     font-weight: 600;
-    box-shadow: 0 0 16px rgba(255, 255, 255, 0.13), inset 0 0 18px rgba(255, 255, 255, 0.025);
+    box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.015);
     transition: border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
 }
 
@@ -761,6 +764,8 @@ a.button:hover {
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.82);
     filter: blur(7px);
+    opacity: 0;
+    transition: opacity 140ms ease;
 }
 
 .studio-link::before {
@@ -774,13 +779,18 @@ a.button:hover {
 .studio-link:hover {
     transform: translateY(-2px);
     border-color: #fff;
-    box-shadow: 0 0 24px rgba(255, 255, 255, 0.2), inset 0 0 18px rgba(255, 255, 255, 0.04);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.16), inset 0 0 18px rgba(255, 255, 255, 0.04);
+}
+
+.studio-link:hover::before,
+.studio-link:hover::after {
+    opacity: 1;
 }
 
 .studio-link-icon,
 .studio-link-arrow {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     fill: none;
     stroke: #fff;
     stroke-width: 1.5;
@@ -789,8 +799,8 @@ a.button:hover {
 }
 
 .studio-link-arrow {
-    width: 27px;
-    height: 27px;
+    width: 22px;
+    height: 22px;
 }
 
 .studio-links .studio-link:nth-child(3) {
@@ -815,23 +825,17 @@ a.button:hover {
         gap: 34px;
     }
 
-    .studio-topbar {
-        align-items: stretch;
-    }
-
     .studio-account-pill {
         width: min(68%, 302px);
     }
 
     .studio-context-pill {
-        width: auto;
         min-width: 136px;
     }
 
     .studio-topbar-pill {
-        height: 52px;
-        padding: 0 15px;
-        border-radius: 14px;
+        height: 40px;
+        padding: 0 14px;
     }
 
     .studio-hero-copy {

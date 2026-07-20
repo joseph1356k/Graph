@@ -10,31 +10,18 @@
 <body>
     <main class="studio-shell">
         <header class="studio-hero">
-            <div class="studio-topbar">
-                <div class="studio-topbar-pill studio-account-pill">
-                    <svg class="studio-topbar-icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M4 20V7l5-3 5 3v13M14 10h6v10M7 9h2m-2 4h2m-2 4h2m8-3h2m-2 3h2M2 20h20"/>
-                    </svg>
+            <div class="studio-topbar studio-topbar-solo">
+                <div class="studio-topbar-pill studio-overall-pill">
+                    <span class="studio-topbar-status-dot" aria-hidden="true"></span>
                     <div class="studio-topbar-copy">
-                        <span class="studio-topbar-label">Sesion</span>
-                        <strong id="provider-studio-account-email">Cargando...</strong>
-                        <span id="provider-studio-account-role">Verificando permisos</span>
+                        <span class="studio-topbar-label">Estado general</span>
+                        <strong id="provider-studio-overall-status">Sincronizando</strong>
                     </div>
-                    <svg class="studio-topbar-caret" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>
                 </div>
-                <div class="studio-topbar-right">
-                    <div class="studio-topbar-pill studio-overall-pill">
-                        <span class="studio-topbar-status-dot" aria-hidden="true"></span>
-                        <div class="studio-topbar-copy">
-                            <span class="studio-topbar-label">Estado general</span>
-                            <strong id="provider-studio-overall-status">Sincronizando</strong>
-                        </div>
-                    </div>
-                    <button type="button" class="studio-topbar-pill studio-context-pill" id="provider-studio-extension-download" title="Descarga la extensión de Chrome empaquetada en tiempo real">
-                        <strong id="provider-studio-extension-label">Generar extensión</strong>
-                        <svg class="studio-topbar-caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v7m0 0 3-3m-3 3L5 6m-2 7h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </button>
-                </div>
+                <button type="button" class="studio-topbar-pill studio-context-pill" id="provider-studio-extension-download" title="Descarga la extensión de Chrome empaquetada en tiempo real">
+                    <strong id="provider-studio-extension-label">Generar extensión</strong>
+                    <svg class="studio-topbar-caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v7m0 0 3-3m-3 3L5 6m-2 7h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
             </div>
             <div class="studio-hero-copy">
                 <div class="studio-hero-mark" aria-hidden="true">

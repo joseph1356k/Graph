@@ -7,8 +7,6 @@
     };
 
     const dom = {
-        accountEmail: document.getElementById('provider-studio-account-email'),
-        accountRole: document.getElementById('provider-studio-account-role'),
         overallStatus: document.getElementById('provider-studio-overall-status'),
         access: document.getElementById('provider-studio-access'),
         grid: document.getElementById('provider-studio-grid'),
@@ -519,10 +517,6 @@
     async function loadAccount() {
         const payload = await fetchJson('/api/account/me');
         state.account = payload;
-        dom.accountEmail.textContent = payload?.user?.email || 'Cuenta activa';
-        dom.accountRole.textContent = payload?.permissions?.canManageGlobalWorkflows
-            ? 'Admin con permiso para providers globales'
-            : 'Sesion autenticada sin permiso de administracion';
         return payload;
     }
 

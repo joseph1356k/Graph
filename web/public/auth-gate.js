@@ -340,7 +340,7 @@
         const usernameInput = document.createElement('input');
         usernameInput.id = 'miracle-auth-username';
         usernameInput.name = 'username';
-        usernameInput.type = 'email';
+        usernameInput.type = 'text';
         usernameInput.autocomplete = 'username';
         usernameInput.autocapitalize = 'none';
         usernameInput.spellcheck = false;
