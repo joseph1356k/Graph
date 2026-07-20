@@ -39,6 +39,7 @@ const MiracleAssistantProviderConfigService = require('../src/application/use-ca
 const BiopsyPhotoProviderConfigService = require('../src/application/use-cases/BiopsyPhotoProviderConfigService');
 const BiopsyExtractionService = require('../src/application/use-cases/BiopsyExtractionService');
 const ApiKeyService = require('../src/application/use-cases/ApiKeyService');
+const AndroidPanelService = require('../src/application/use-cases/AndroidPanelService');
 const registerLearningRoutes = require('./api/registerLearningRoutes');
 const registerWorkflowRoutes = require('./api/registerWorkflowRoutes');
 const registerContextRoutes = require('./api/registerContextRoutes');
@@ -47,6 +48,7 @@ const registerClinicalRoutes = require('./api/registerClinicalRoutes');
 const registerMedicalRoutes = require('./api/registerMedicalRoutes');
 const registerUsageRoutes = require('./api/registerUsageRoutes');
 const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
+const registerAndroidPanelRoutes = require('./api/registerAndroidPanelRoutes');
 const requireClinicalAuth = require('./api/requireClinicalAuth');
 const MiracleWorkspaceStore = require('./api/miracleWorkspaceStore');
 const rateLimit = require('express-rate-limit');
@@ -140,6 +142,9 @@ const miracleAssistantProviderConfigService = new MiracleAssistantProviderConfig
 const biopsyExtractionService = new BiopsyExtractionService({ llmProvider: biopsyLlmProvider });
 const miracleBiopsyProviderConfigService = new BiopsyPhotoProviderConfigService(biopsyLlmProvider);
 const apiKeyService = new ApiKeyService();
+// Android panel (Provider Studio): telemetry + distributed client config,
+// same Supabase project/service-role client as the clinical module.
+const androidPanelService = new AndroidPanelService(supabaseRestClient);
 const miracleWorkspaceStore = new MiracleWorkspaceStore();
 
 app.use(bodyParser.json({ limit: '16mb' }));
@@ -367,7 +372,8 @@ function isMiracleMedicalProxyRequest(req) {
   '/api/medical',
   '/api/account',
   '/api/visualize',
-  '/api/providers'
+  '/api/providers',
+  '/api/android'
 ].forEach((routePrefix) => {
   app.use(routePrefix, requireAccountAuth, attachWorkflowAccess);
 });
@@ -916,6 +922,7 @@ registerMedicalRoutes(app, {
   usageDashboardService
 });
 registerUsageRoutes(app, { usageDashboardService });
+registerAndroidPanelRoutes(app, { androidPanelService });
 registerPublicApiRoutes(app, {
   callMiracleRuntime,
   noteFieldMatcher,

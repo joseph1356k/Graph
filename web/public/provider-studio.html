@@ -48,6 +48,13 @@
         <section id="provider-studio-access" class="studio-access is-hidden" aria-live="polite"></section>
 
         <section id="provider-studio-grid" class="studio-content is-hidden">
+            <nav class="studio-surface-tabs" id="studio-surface-tabs" role="tablist" aria-label="Superficies">
+                <button type="button" class="studio-surface-tab is-active" role="tab" aria-selected="true" data-surface="web">Web App</button>
+                <button type="button" class="studio-surface-tab" role="tab" aria-selected="false" data-surface="windows">Windows App</button>
+                <button type="button" class="studio-surface-tab" role="tab" aria-selected="false" data-surface="android">Android App</button>
+            </nav>
+
+            <div class="studio-surface-panel" data-surface-panel="web">
             <section class="studio-board">
                 <section class="studio-card is-collapsed" id="miracle-product-card">
                     <button type="button" class="studio-card-head" id="miracle-product-toggle" aria-expanded="false" aria-controls="miracle-product-body">
@@ -395,6 +402,103 @@
                     </a>
                 </div>
             </section>
+            </div>
+
+            <div class="studio-surface-panel is-hidden" data-surface-panel="windows">
+                <p class="surface-placeholder">Configuración por superficie próximamente — hoy la app Windows usa la configuración global.</p>
+            </div>
+
+            <div class="studio-surface-panel is-hidden" data-surface-panel="android">
+                <section class="studio-card android-config-card" id="android-config-card">
+                    <div class="studio-card-head-static">
+                        <div>
+                            <p class="studio-kicker">Android</p>
+                            <h2>Config distribuida</h2>
+                        </div>
+                        <div class="studio-status-meta">
+                            <strong id="android-config-metric">Cargando</strong>
+                            <span id="android-config-pill" class="status-pill">Cargando</span>
+                        </div>
+                    </div>
+                    <p class="android-config-note">Estas keys se distribuyen automáticamente a todas las instalaciones de la app Android.</p>
+                    <form id="android-config-form" class="studio-form">
+                        <div class="studio-form-grid">
+                            <label class="field field-span-2">
+                                <span>OpenAI key</span>
+                                <div class="field-key-row">
+                                    <input id="android-openai-key" type="password" autocomplete="off" placeholder="sk-...">
+                                    <button type="button" class="field-key-toggle" id="android-openai-key-toggle" aria-label="Mostrar API key" aria-pressed="false">
+                                        <svg class="field-key-toggle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                </div>
+                            </label>
+                            <label class="field field-span-2">
+                                <span>Gemini key</span>
+                                <div class="field-key-row">
+                                    <input id="android-gemini-key" type="password" autocomplete="off" placeholder="AIza...">
+                                    <button type="button" class="field-key-toggle" id="android-gemini-key-toggle" aria-label="Mostrar API key" aria-pressed="false">
+                                        <svg class="field-key-toggle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                </div>
+                            </label>
+                            <label class="field field-span-2">
+                                <span>Deepgram key</span>
+                                <div class="field-key-row">
+                                    <input id="android-deepgram-key" type="password" autocomplete="off" placeholder="Clave de Deepgram">
+                                    <button type="button" class="field-key-toggle" id="android-deepgram-key-toggle" aria-label="Mostrar API key" aria-pressed="false">
+                                        <svg class="field-key-toggle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                </div>
+                            </label>
+                            <label class="field">
+                                <span>Proveedor por defecto</span>
+                                <select id="android-default-provider">
+                                    <option value="OPENAI">OPENAI</option>
+                                    <option value="GEMINI">GEMINI</option>
+                                </select>
+                            </label>
+                            <label class="field">
+                                <span>Modelo OpenAI por defecto</span>
+                                <input id="android-openai-model" type="text" autocomplete="off" placeholder="gpt-5.6-terra">
+                            </label>
+                            <label class="field">
+                                <span>Modelo Gemini por defecto</span>
+                                <input id="android-gemini-model" type="text" autocomplete="off" placeholder="gemini-3.5-flash">
+                            </label>
+                        </div>
+                        <div class="studio-actions">
+                            <button type="button" class="button ghost" id="android-config-refresh">Releer</button>
+                            <button type="submit" class="button primary" id="android-config-submit">Guardar</button>
+                        </div>
+                    </form>
+                    <p id="android-config-message" class="form-message"></p>
+                </section>
+
+                <section class="android-users-section">
+                    <div class="android-users-head">
+                        <nav class="android-breadcrumb" id="android-breadcrumb" aria-label="Navegacion Android"></nav>
+                        <button type="button" class="button ghost" id="android-users-refresh">Refrescar</button>
+                    </div>
+                    <div id="android-view-users" class="android-view">
+                        <div id="android-users-grid" class="android-users-grid"></div>
+                    </div>
+                    <div id="android-view-user" class="android-view is-hidden">
+                        <div class="android-user-header">
+                            <div class="android-user-header-copy">
+                                <h3 id="android-user-title"></h3>
+                                <p id="android-user-subtitle" class="android-user-subtitle"></p>
+                            </div>
+                            <button type="button" class="button ghost" id="android-device-logs-button">Logs del dispositivo</button>
+                        </div>
+                        <div id="android-prompts-list" class="android-prompts-list"></div>
+                    </div>
+                    <div id="android-view-logs" class="android-view is-hidden">
+                        <p id="android-logs-title" class="android-logs-title"></p>
+                        <div id="android-logs-terminal" class="android-terminal" tabindex="0"></div>
+                    </div>
+                    <p id="android-users-message" class="form-message"></p>
+                </section>
+            </div>
 
         </section>
     </main>

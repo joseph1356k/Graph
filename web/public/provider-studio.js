@@ -859,3 +859,551 @@
         renderAccessState(false, error.message || 'No pudimos cargar el Provider Studio.');
     });
 })();
+
+// ---------------------------------------------------------------------------
+// Superficies (Web App / Windows App / Android App) + panel Android:
+// config distribuida y telemetría de instalaciones. Módulo independiente,
+// mismo patrón de fetch autenticado que el resto del archivo.
+// ---------------------------------------------------------------------------
+(function () {
+    const tabs = Array.from(document.querySelectorAll('.studio-surface-tab'));
+    const panels = Array.from(document.querySelectorAll('[data-surface-panel]'));
+    if (!tabs.length || !panels.length) return;
+
+    const dom = {
+        configMetric: document.getElementById('android-config-metric'),
+        configPill: document.getElementById('android-config-pill'),
+        configForm: document.getElementById('android-config-form'),
+        openaiKey: document.getElementById('android-openai-key'),
+        geminiKey: document.getElementById('android-gemini-key'),
+        deepgramKey: document.getElementById('android-deepgram-key'),
+        defaultProvider: document.getElementById('android-default-provider'),
+        openaiModel: document.getElementById('android-openai-model'),
+        geminiModel: document.getElementById('android-gemini-model'),
+        configRefresh: document.getElementById('android-config-refresh'),
+        configSubmit: document.getElementById('android-config-submit'),
+        configMessage: document.getElementById('android-config-message'),
+
+        breadcrumb: document.getElementById('android-breadcrumb'),
+        usersRefresh: document.getElementById('android-users-refresh'),
+        viewUsers: document.getElementById('android-view-users'),
+        usersGrid: document.getElementById('android-users-grid'),
+        viewUser: document.getElementById('android-view-user'),
+        userTitle: document.getElementById('android-user-title'),
+        userSubtitle: document.getElementById('android-user-subtitle'),
+        deviceLogsButton: document.getElementById('android-device-logs-button'),
+        promptsList: document.getElementById('android-prompts-list'),
+        viewLogs: document.getElementById('android-view-logs'),
+        logsTitle: document.getElementById('android-logs-title'),
+        terminal: document.getElementById('android-logs-terminal'),
+        usersMessage: document.getElementById('android-users-message')
+    };
+
+    const state = {
+        loaded: false,
+        active: false,
+        view: 'users', // users | user | logs
+        users: [],
+        currentUser: null,
+        currentPrompt: null, // null cuando la vista de logs es "device"
+        logsMode: 'prompt', // prompt | device
+        usersTimer: null,
+        logsTimer: null
+    };
+
+    const STATUS_LABELS = {
+        running: 'En ejecución',
+        ok: 'OK',
+        error: 'Error',
+        cancelled: 'Cancelado'
+    };
+
+    async function authedFetch(url, init = {}) {
+        if (window.MiracleAuth?.whenAuthenticated) {
+            await window.MiracleAuth.whenAuthenticated();
+        }
+        const token = window.MiracleAuth?.getAccessToken?.() || '';
+        return fetch(url, {
+            ...init,
+            cache: 'no-store',
+            headers: {
+                ...(init.headers || {}),
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+            }
+        });
+    }
+
+    async function fetchJson(url, init = {}) {
+        const response = await authedFetch(url, init);
+        const text = await response.text();
+        let payload = {};
+        if (text.trim()) {
+            try {
+                payload = JSON.parse(text);
+            } catch (error) {
+                if (!response.ok) throw new Error(text.slice(0, 220) || `HTTP ${response.status}`);
+                throw error;
+            }
+        }
+        if (!response.ok) {
+            throw new Error(payload.error || `HTTP ${response.status}`);
+        }
+        return payload;
+    }
+
+    function setMessage(element, text, tone = '') {
+        if (!element) return;
+        element.textContent = text || '';
+        if (tone) element.dataset.tone = tone;
+        else delete element.dataset.tone;
+    }
+
+    function setPill(element, label, tone) {
+        if (!element) return;
+        element.textContent = label;
+        element.dataset.tone = tone;
+    }
+
+    function timeAgo(iso) {
+        const stamp = Date.parse(iso || '');
+        if (!Number.isFinite(stamp)) return 'sin registro';
+        const seconds = Math.max(0, Math.floor((Date.now() - stamp) / 1000));
+        if (seconds < 60) return 'hace segundos';
+        if (seconds < 3600) return `hace ${Math.floor(seconds / 60)} min`;
+        if (seconds < 86400) return `hace ${Math.floor(seconds / 3600)} h`;
+        return `hace ${Math.floor(seconds / 86400)} d`;
+    }
+
+    function formatClock(iso) {
+        const stamp = Date.parse(iso || '');
+        if (!Number.isFinite(stamp)) return '--:--:--';
+        return new Date(stamp).toLocaleTimeString('es-CO', { hour12: false });
+    }
+
+    function formatDateTime(iso) {
+        const stamp = Date.parse(iso || '');
+        if (!Number.isFinite(stamp)) return '';
+        return new Date(stamp).toLocaleString('es-CO', { hour12: false });
+    }
+
+    function formatDuration(startedAt, finishedAt) {
+        const start = Date.parse(startedAt || '');
+        const end = Date.parse(finishedAt || '');
+        if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return '';
+        const seconds = Math.round((end - start) / 1000);
+        if (seconds < 60) return `${seconds}s`;
+        const minutes = Math.floor(seconds / 60);
+        return `${minutes}m ${seconds % 60}s`;
+    }
+
+    // -------------------------- tabs de superficies --------------------------
+
+    function activateSurface(surface) {
+        tabs.forEach((tab) => {
+            const isActive = tab.dataset.surface === surface;
+            tab.classList.toggle('is-active', isActive);
+            tab.setAttribute('aria-selected', String(isActive));
+        });
+        panels.forEach((panel) => {
+            panel.classList.toggle('is-hidden', panel.dataset.surfacePanel !== surface);
+        });
+
+        const enteringAndroid = surface === 'android';
+        if (enteringAndroid && !state.active) {
+            state.active = true;
+            ensureAndroidLoaded();
+            startUsersPolling();
+            resumeLogsPollingIfNeeded();
+        } else if (!enteringAndroid && state.active) {
+            state.active = false;
+            stopUsersPolling();
+            stopLogsPolling();
+        }
+    }
+
+    tabs.forEach((tab) => {
+        tab.addEventListener('click', () => activateSurface(tab.dataset.surface));
+    });
+
+    // ------------------------- config distribuida ---------------------------
+
+    function fillConfig(config) {
+        dom.openaiKey.value = config.openai_key || '';
+        dom.geminiKey.value = config.gemini_key || '';
+        dom.deepgramKey.value = config.deepgram_key || '';
+        dom.defaultProvider.value = config.default_provider || 'OPENAI';
+        dom.openaiModel.value = config.default_openai_model || '';
+        dom.geminiModel.value = config.default_gemini_model || '';
+        [dom.openaiKey, dom.geminiKey, dom.deepgramKey].forEach((input) => {
+            input.type = 'password';
+            const toggle = input.parentElement?.querySelector('.field-key-toggle');
+            if (toggle) toggle.setAttribute('aria-pressed', 'false');
+        });
+
+        const keysReady = [config.openai_key, config.gemini_key].filter(Boolean).length;
+        dom.configMetric.textContent = `${config.default_provider || 'OPENAI'} · ${config.updated_at ? `actualizada ${timeAgo(config.updated_at)}` : 'sin guardar'}`;
+        setPill(dom.configPill, keysReady ? 'Configurado' : 'Sin keys', keysReady ? 'ready' : 'danger');
+    }
+
+    async function loadConfig() {
+        try {
+            const payload = await fetchJson('/api/android/client-config');
+            fillConfig(payload.config || {});
+        } catch (error) {
+            dom.configMetric.textContent = 'Error';
+            setPill(dom.configPill, 'Error', 'danger');
+            setMessage(dom.configMessage, error.message || 'No fue posible leer la config distribuida.', 'error');
+        }
+    }
+
+    async function submitConfig(event) {
+        event.preventDefault();
+        dom.configSubmit.disabled = true;
+        setMessage(dom.configMessage, 'Guardando config distribuida…');
+        try {
+            const payload = await fetchJson('/api/android/client-config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    openai_key: dom.openaiKey.value,
+                    gemini_key: dom.geminiKey.value,
+                    deepgram_key: dom.deepgramKey.value,
+                    default_provider: dom.defaultProvider.value,
+                    default_openai_model: dom.openaiModel.value,
+                    default_gemini_model: dom.geminiModel.value
+                })
+            });
+            fillConfig(payload.config || {});
+            setMessage(dom.configMessage, 'Config distribuida guardada. Las apps la descargan en su próximo arranque.', 'success');
+        } catch (error) {
+            setMessage(dom.configMessage, error.message || 'No fue posible guardar la config distribuida.', 'error');
+        } finally {
+            dom.configSubmit.disabled = false;
+        }
+    }
+
+    // ------------------------------ navegación ------------------------------
+
+    function renderBreadcrumb() {
+        dom.breadcrumb.innerHTML = '';
+        const crumbs = [{ label: 'Usuarios', action: showUsersView }];
+        if (state.view === 'user' || state.view === 'logs') {
+            const name = state.currentUser?.display_name || state.currentUser?.device_id || 'Usuario';
+            crumbs.push({ label: name, action: () => openUser(state.currentUser) });
+        }
+        if (state.view === 'logs') {
+            crumbs.push({
+                label: state.logsMode === 'device' ? 'Logs del dispositivo' : 'Logs del prompt',
+                action: null
+            });
+        }
+        crumbs.forEach((crumb, index) => {
+            if (index > 0) {
+                const sep = document.createElement('span');
+                sep.className = 'android-crumb-sep';
+                sep.textContent = '/';
+                dom.breadcrumb.appendChild(sep);
+            }
+            const isLast = index === crumbs.length - 1;
+            const el = document.createElement(isLast ? 'span' : 'button');
+            el.className = `android-crumb${isLast ? ' is-current' : ''}`;
+            el.textContent = crumb.label;
+            if (!isLast) {
+                el.type = 'button';
+                el.addEventListener('click', crumb.action);
+            }
+            dom.breadcrumb.appendChild(el);
+        });
+    }
+
+    function switchView(view) {
+        state.view = view;
+        dom.viewUsers.classList.toggle('is-hidden', view !== 'users');
+        dom.viewUser.classList.toggle('is-hidden', view !== 'user');
+        dom.viewLogs.classList.toggle('is-hidden', view !== 'logs');
+        if (view !== 'logs') {
+            stopLogsPolling();
+        }
+        renderBreadcrumb();
+    }
+
+    function showUsersView() {
+        state.currentUser = state.view === 'users' ? null : state.currentUser;
+        state.currentPrompt = null;
+        switchView('users');
+        renderUsers();
+    }
+
+    // -------------------------------- usuarios ------------------------------
+
+    function renderUsers() {
+        dom.usersGrid.innerHTML = '';
+        if (!state.users.length) {
+            const empty = document.createElement('p');
+            empty.className = 'android-empty';
+            empty.textContent = 'Aún no hay instalaciones registradas de la app Android.';
+            dom.usersGrid.appendChild(empty);
+            return;
+        }
+        state.users.forEach((user) => {
+            const card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'android-user-card';
+
+            const name = document.createElement('strong');
+            name.className = 'android-user-name';
+            name.textContent = user.display_name || user.device_id;
+
+            const meta = document.createElement('span');
+            meta.className = 'android-user-meta';
+            meta.textContent = [user.device_model, user.app_version ? `v${user.app_version}` : '']
+                .filter(Boolean).join(' · ') || 'Dispositivo desconocido';
+
+            const seen = document.createElement('span');
+            seen.className = 'android-user-seen';
+            seen.textContent = `Visto ${timeAgo(user.last_seen_at)}`;
+
+            const count = document.createElement('span');
+            count.className = 'android-user-count';
+            count.textContent = user.prompt_count === 1 ? '1 prompt' : `${user.prompt_count || 0} prompts`;
+
+            card.append(name, meta, seen, count);
+            card.addEventListener('click', () => openUser(user));
+            dom.usersGrid.appendChild(card);
+        });
+    }
+
+    async function loadUsers({ silent = false } = {}) {
+        if (!silent) setMessage(dom.usersMessage, 'Cargando usuarios…');
+        try {
+            const payload = await fetchJson('/api/android/users');
+            state.users = Array.isArray(payload.users) ? payload.users : [];
+            if (state.view === 'users') renderUsers();
+            if (!silent) setMessage(dom.usersMessage, '');
+        } catch (error) {
+            if (!silent) setMessage(dom.usersMessage, error.message || 'No fue posible leer los usuarios.', 'error');
+        }
+    }
+
+    function startUsersPolling() {
+        stopUsersPolling();
+        state.usersTimer = window.setInterval(() => {
+            loadUsers({ silent: true });
+        }, 10000);
+    }
+
+    function stopUsersPolling() {
+        if (state.usersTimer) {
+            window.clearInterval(state.usersTimer);
+            state.usersTimer = null;
+        }
+    }
+
+    // -------------------------------- prompts -------------------------------
+
+    function statusBadge(status) {
+        const badge = document.createElement('span');
+        badge.className = 'android-badge';
+        badge.dataset.status = status || 'running';
+        badge.textContent = STATUS_LABELS[status] || status || '?';
+        return badge;
+    }
+
+    function renderPrompts(prompts) {
+        dom.promptsList.innerHTML = '';
+        if (!prompts.length) {
+            const empty = document.createElement('p');
+            empty.className = 'android-empty';
+            empty.textContent = 'Este usuario aún no ha ejecutado prompts.';
+            dom.promptsList.appendChild(empty);
+            return;
+        }
+        prompts.forEach((prompt) => {
+            const row = document.createElement('button');
+            row.type = 'button';
+            row.className = 'android-prompt-row';
+
+            const head = document.createElement('div');
+            head.className = 'android-prompt-head';
+            const time = document.createElement('span');
+            time.className = 'android-prompt-time';
+            time.textContent = formatDateTime(prompt.started_at);
+            head.appendChild(time);
+            head.appendChild(statusBadge(prompt.status));
+            const duration = formatDuration(prompt.started_at, prompt.finished_at);
+            if (duration) {
+                const dur = document.createElement('span');
+                dur.className = 'android-prompt-duration';
+                dur.textContent = duration;
+                head.appendChild(dur);
+            }
+
+            const text = document.createElement('p');
+            text.className = 'android-prompt-text';
+            text.textContent = prompt.prompt || '';
+
+            row.append(head, text);
+            if (prompt.summary) {
+                const summary = document.createElement('p');
+                summary.className = 'android-prompt-summary';
+                summary.textContent = prompt.summary;
+                row.appendChild(summary);
+            }
+            row.addEventListener('click', () => openPromptLogs(prompt));
+            dom.promptsList.appendChild(row);
+        });
+    }
+
+    async function openUser(user) {
+        if (!user) return;
+        state.currentUser = user;
+        state.currentPrompt = null;
+        dom.userTitle.textContent = user.display_name || user.device_id;
+        dom.userSubtitle.textContent = [
+            user.device_model,
+            user.app_version ? `v${user.app_version}` : '',
+            `visto ${timeAgo(user.last_seen_at)}`
+        ].filter(Boolean).join(' · ');
+        switchView('user');
+        dom.promptsList.innerHTML = '<p class="android-empty">Cargando prompts…</p>';
+        try {
+            const payload = await fetchJson(`/api/android/users/${encodeURIComponent(user.device_id)}/prompts`);
+            renderPrompts(Array.isArray(payload.prompts) ? payload.prompts : []);
+        } catch (error) {
+            dom.promptsList.innerHTML = '';
+            setMessage(dom.usersMessage, error.message || 'No fue posible leer los prompts.', 'error');
+        }
+    }
+
+    // ---------------------------------- logs --------------------------------
+
+    function renderLogs(logs) {
+        dom.terminal.innerHTML = '';
+        if (!logs.length) {
+            const empty = document.createElement('p');
+            empty.className = 'android-terminal-empty';
+            empty.textContent = 'Sin líneas de log todavía.';
+            dom.terminal.appendChild(empty);
+            return;
+        }
+        const stickToBottom = dom.terminal.scrollHeight - dom.terminal.scrollTop - dom.terminal.clientHeight < 40;
+        logs.forEach((log) => {
+            const line = document.createElement('div');
+            line.className = 'android-log-line';
+            const time = document.createElement('span');
+            time.className = 'android-log-time';
+            time.textContent = formatClock(log.at);
+            const tag = document.createElement('span');
+            tag.className = 'android-log-tag';
+            tag.textContent = log.tag ? `[${log.tag}]` : '[—]';
+            const message = document.createElement('span');
+            message.className = 'android-log-message';
+            message.textContent = log.message || '';
+            line.append(time, tag, message);
+            dom.terminal.appendChild(line);
+        });
+        if (stickToBottom) {
+            dom.terminal.scrollTop = dom.terminal.scrollHeight;
+        }
+    }
+
+    async function refreshLogs({ silent = false } = {}) {
+        try {
+            const url = state.logsMode === 'device'
+                ? `/api/android/users/${encodeURIComponent(state.currentUser.device_id)}/logs`
+                : `/api/android/prompts/${encodeURIComponent(state.currentPrompt.id)}/logs`;
+            const payload = await fetchJson(url);
+            renderLogs(Array.isArray(payload.logs) ? payload.logs : []);
+            if (!silent) setMessage(dom.usersMessage, '');
+        } catch (error) {
+            if (!silent) setMessage(dom.usersMessage, error.message || 'No fue posible leer los logs.', 'error');
+        }
+    }
+
+    function startLogsPolling() {
+        stopLogsPolling();
+        state.logsTimer = window.setInterval(() => {
+            refreshLogs({ silent: true });
+        }, 5000);
+    }
+
+    function stopLogsPolling() {
+        if (state.logsTimer) {
+            window.clearInterval(state.logsTimer);
+            state.logsTimer = null;
+        }
+    }
+
+    function resumeLogsPollingIfNeeded() {
+        if (state.view === 'logs'
+            && state.logsMode === 'prompt'
+            && state.currentPrompt?.status === 'running') {
+            startLogsPolling();
+        }
+    }
+
+    async function openPromptLogs(prompt) {
+        state.currentPrompt = prompt;
+        state.logsMode = 'prompt';
+        switchView('logs');
+        const headBits = [formatDateTime(prompt.started_at), STATUS_LABELS[prompt.status] || prompt.status];
+        const duration = formatDuration(prompt.started_at, prompt.finished_at);
+        if (duration) headBits.push(duration);
+        dom.logsTitle.textContent = `${headBits.join(' · ')} — ${prompt.prompt || ''}`;
+        dom.terminal.innerHTML = '<p class="android-terminal-empty">Cargando logs…</p>';
+        await refreshLogs();
+        if (prompt.status === 'running') {
+            startLogsPolling();
+        }
+    }
+
+    async function openDeviceLogs() {
+        if (!state.currentUser) return;
+        state.currentPrompt = null;
+        state.logsMode = 'device';
+        switchView('logs');
+        dom.logsTitle.textContent = `Últimos logs de ${state.currentUser.display_name || state.currentUser.device_id} (incluye líneas sin prompt)`;
+        dom.terminal.innerHTML = '<p class="android-terminal-empty">Cargando logs…</p>';
+        await refreshLogs();
+    }
+
+    // --------------------------------- setup --------------------------------
+
+    function ensureAndroidLoaded() {
+        if (state.loaded) return;
+        state.loaded = true;
+        loadConfig();
+        loadUsers();
+        renderBreadcrumb();
+    }
+
+    function bindKeyToggle(input) {
+        const toggle = input?.parentElement?.querySelector('.field-key-toggle');
+        if (!toggle) return;
+        toggle.addEventListener('click', () => {
+            const revealed = input.type === 'text';
+            input.type = revealed ? 'password' : 'text';
+            toggle.setAttribute('aria-pressed', revealed ? 'false' : 'true');
+            toggle.setAttribute('aria-label', revealed ? 'Mostrar API key' : 'Ocultar API key');
+        });
+    }
+
+    [dom.openaiKey, dom.geminiKey, dom.deepgramKey].forEach(bindKeyToggle);
+
+    dom.configForm.addEventListener('submit', (event) => {
+        submitConfig(event).catch((error) => setMessage(dom.configMessage, error.message, 'error'));
+    });
+    dom.configRefresh.addEventListener('click', () => {
+        loadConfig();
+        setMessage(dom.configMessage, '');
+    });
+
+    dom.usersRefresh.addEventListener('click', () => {
+        if (state.view === 'users') loadUsers();
+        else if (state.view === 'user') openUser(state.currentUser);
+        else refreshLogs();
+    });
+    dom.deviceLogsButton.addEventListener('click', () => {
+        openDeviceLogs().catch((error) => setMessage(dom.usersMessage, error.message, 'error'));
+    });
+})();

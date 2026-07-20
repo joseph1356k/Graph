@@ -987,6 +987,447 @@ a.button:hover {
     word-break: break-all;
 }
 
+/* ------------------------------------------------------------------------ */
+/* Tabs de superficies (Web App / Windows App / Android App)                 */
+/* ------------------------------------------------------------------------ */
+
+.studio-surface-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: -14px auto 14px;
+    flex-wrap: wrap;
+}
+
+.studio-surface-tab {
+    padding: 11px 28px;
+    border: 1px solid var(--line-soft);
+    border-radius: 999px;
+    color: var(--muted);
+    background: rgba(8, 8, 8, 0.72);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    transition: color 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease, text-shadow 180ms ease;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.studio-surface-tab:hover:not(.is-active) {
+    color: var(--ink);
+    border-color: rgba(255, 255, 255, 0.38);
+    background: rgba(16, 16, 16, 0.85);
+}
+
+.studio-surface-tab:focus-visible {
+    outline: 1px solid #fff;
+    outline-offset: 4px;
+}
+
+.studio-surface-tab.is-active {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 18px rgba(255, 255, 255, 0.18), inset 0 0 14px rgba(255, 255, 255, 0.04);
+    text-shadow: 0 0 9px rgba(255, 255, 255, 0.45);
+}
+
+.studio-surface-panel {
+    display: grid;
+    gap: 26px;
+}
+
+.surface-placeholder {
+    margin: 0 auto;
+    max-width: 560px;
+    padding: 46px 30px;
+    border: 1px dashed rgba(255, 255, 255, 0.22);
+    border-radius: 18px;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.02);
+    text-align: center;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Panel Android: config distribuida                                         */
+/* ------------------------------------------------------------------------ */
+
+.android-config-card {
+    width: min(760px, 100%);
+    margin: 0 auto;
+}
+
+.studio-card-head-static {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.android-config-note {
+    margin: -6px 0 0;
+    color: var(--dim);
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Panel Android: usuarios / prompts / logs                                  */
+/* ------------------------------------------------------------------------ */
+
+.android-users-section {
+    width: min(1080px, 100%);
+    margin: 0 auto;
+    display: grid;
+    gap: 16px;
+}
+
+.android-users-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.android-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+    flex-wrap: wrap;
+}
+
+.android-crumb {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 140ms ease, text-shadow 140ms ease;
+}
+
+button.android-crumb:hover,
+button.android-crumb:focus-visible {
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.45);
+}
+
+.android-crumb.is-current {
+    color: var(--ink);
+    cursor: default;
+    max-width: 46vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.android-crumb-sep {
+    color: var(--dim);
+    font-size: 0.82rem;
+}
+
+.android-view {
+    display: grid;
+    gap: 14px;
+}
+
+.android-empty {
+    margin: 0;
+    padding: 26px 18px;
+    border: 1px dashed rgba(255, 255, 255, 0.16);
+    border-radius: 14px;
+    color: var(--muted);
+    font-size: 0.88rem;
+    text-align: center;
+}
+
+.android-users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+    gap: 14px;
+}
+
+.android-users-grid .android-empty {
+    grid-column: 1 / -1;
+}
+
+.android-user-card {
+    display: grid;
+    gap: 5px;
+    padding: 16px 18px;
+    border: 1px solid var(--line-soft);
+    border-radius: 16px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 42%), var(--panel);
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.android-user-card:hover,
+.android-user-card:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.55);
+    box-shadow: 0 0 18px rgba(255, 255, 255, 0.1);
+    outline: none;
+}
+
+.android-user-name {
+    font-size: 1.12rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.android-user-meta,
+.android-user-seen {
+    color: var(--muted);
+    font-size: 0.76rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.android-user-count {
+    margin-top: 4px;
+    color: var(--dim);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.android-user-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 18px;
+    border: 1px solid var(--line-soft);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.android-user-header-copy {
+    min-width: 0;
+    display: grid;
+    gap: 3px;
+}
+
+.android-user-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.android-user-subtitle {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.android-prompts-list {
+    display: grid;
+    gap: 10px;
+}
+
+.android-prompt-row {
+    display: grid;
+    gap: 7px;
+    padding: 13px 16px;
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    background: var(--control);
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 150ms ease, background-color 150ms ease;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.android-prompt-row:hover,
+.android-prompt-row:focus-visible {
+    border-color: rgba(255, 255, 255, 0.45);
+    background: var(--control-hover);
+    outline: none;
+}
+
+.android-prompt-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.android-prompt-time {
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.android-prompt-duration {
+    color: var(--dim);
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.android-prompt-text {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.android-prompt-summary {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.android-badge {
+    padding: 3px 11px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.android-badge[data-status="running"] {
+    color: #9fc6ff;
+    border-color: rgba(120, 170, 255, 0.5);
+    background: rgba(80, 130, 255, 0.13);
+    animation: android-badge-pulse 1.6s ease-in-out infinite;
+}
+
+.android-badge[data-status="ok"] {
+    color: var(--success);
+    border-color: rgba(157, 240, 172, 0.45);
+    background: rgba(157, 240, 172, 0.1);
+}
+
+.android-badge[data-status="error"] {
+    color: var(--danger);
+    border-color: rgba(255, 154, 139, 0.5);
+    background: rgba(255, 154, 139, 0.1);
+}
+
+.android-badge[data-status="cancelled"] {
+    color: rgba(244, 244, 242, 0.6);
+    border-color: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+@keyframes android-badge-pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(120, 170, 255, 0.3); }
+    50% { opacity: 0.72; box-shadow: 0 0 10px 1px rgba(120, 170, 255, 0.16); }
+}
+
+.android-logs-title {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.android-terminal {
+    max-height: 480px;
+    min-height: 130px;
+    padding: 14px 16px;
+    overflow: auto;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 14px;
+    background: #030303;
+    box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.8);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.76rem;
+    line-height: 1.55;
+}
+
+.android-terminal:focus-visible {
+    outline: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.android-terminal-empty {
+    margin: 0;
+    color: var(--dim);
+}
+
+.android-log-line {
+    display: grid;
+    grid-template-columns: 66px auto 1fr;
+    gap: 10px;
+    align-items: start;
+}
+
+.android-log-time {
+    color: rgba(244, 244, 242, 0.4);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.android-log-tag {
+    color: #9fc6ff;
+    white-space: nowrap;
+}
+
+.android-log-message {
+    color: var(--ink);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 560px) {
+    .studio-surface-tab {
+        padding: 9px 18px;
+        font-size: 0.82rem;
+    }
+
+    .android-users-head {
+        flex-wrap: wrap;
+    }
+
+    .android-user-header {
+        flex-wrap: wrap;
+    }
+
+    .android-log-line {
+        grid-template-columns: 58px 1fr;
+    }
+
+    .android-log-message {
+        grid-column: 1 / -1;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
