@@ -9,9 +9,15 @@
 //
 // CONTRATO (espejo de windows-client/src/Domain/Protocol.cs):
 //   Request : { session?, goal?, userId?, state{screen,uiContext,width,height,
-//               screenshot?,apps?}, results?[], inform? }
+//               screenshot?,apps?,surfaceId?,surfaceOrigin?,surfacePathname?},
+//               results?[], inform? }
 //   Response: { session, actions[], question?, done, text, needsScreenshot,
 //               narration, speech?, intents[] }  |  { error }
+//
+// surface*: el ID de superficie del SurfaceLocator del cliente (uia://proc.exe
+// + /ventana, web://dominio + /ruta). Con él se scopean los workflows que el
+// catálogo MCP declara este turno (solo los del lugar donde el usuario está
+// parado). Campos opcionales: sin ellos, el catálogo no incluye workflows.
 //
 // La autenticación NO vive aquí: el gate de X-API-Key de /api/v1 (requireApiKey)
 // reemplaza al CLIENT_TOKEN Bearer del backend viejo.
@@ -42,14 +48,23 @@ class AgentTurnService {
 
   /**
    * Ensambla el catálogo MCP que el cerebro declara al modelo este turno: base
-   * (gestos + sistema) + herramientas aprendidas + workflows, según lo que el
-   * store sepa de las apps visibles. Todo esto es innovación server-side; el
-   * cliente solo recibe el `Action[]` resultante.
+   * (gestos + sistema) + herramientas aprendidas + workflows DE LA SUPERFICIE
+   * ACTUAL (scoping por origin+pathname del SurfaceLocator). Todo esto es
+   * innovación server-side; el cliente solo recibe el `Action[]` resultante.
+   *
+   * Devuelve además el mapa herramienta→workflowId: el nombre MCP (workflow_*)
+   * es para el modelo; el cliente ejecuta por id (WorkflowPlayer), así que el
+   * turno inyecta el id en los args de la llamada (ver handleTurn).
    */
-  async assembleTools(userId, apps) {
-    const learned = await this.learningStore.learnedTools(userId, apps);
-    const workflows = await this.learningStore.workflows(userId, apps);
-    return [...baseCatalog(), ...learned.map(learnedToMcp), ...workflows.map(workflowToMcp)];
+  async assembleTools(userId, apps, surface = null) {
+    const learned = await this.learningStore.learnedTools(userId, apps, surface);
+    const workflows = await this.learningStore.workflows(userId, apps, surface);
+    const workflowTools = workflows.map(workflowToMcp);
+    const workflowIdByTool = new Map(
+      workflowTools.map((tool, i) => [tool.name, `${workflows[i].id || workflows[i].name || ''}`])
+    );
+    const tools = [...baseCatalog(), ...learned.map(learnedToMcp), ...workflowTools];
+    return { tools, workflowIdByTool };
   }
 
   /**
@@ -85,7 +100,12 @@ class AgentTurnService {
 
     try {
       const apps = Array.isArray(body.state.apps) ? body.state.apps : [];
-      const tools = await this.assembleTools(userId, apps);
+      const surface = {
+        id: `${body.state.surfaceId || ''}`.trim(),
+        origin: `${body.state.surfaceOrigin || ''}`.trim(),
+        pathname: `${body.state.surfacePathname || ''}`.trim()
+      };
+      const { tools, workflowIdByTool } = await this.assembleTools(userId, apps, surface);
       const memory = await this.memoryRepository.forPrompt(userId);
 
       const { session: next, turn } = await this.runProviderTurn({
@@ -98,6 +118,14 @@ class AgentTurnService {
         results: Array.isArray(body.results) ? body.results : [],
         apiKey: config.apiKey
       });
+
+      // El modelo llama workflow_<nombre>; el cliente ejecuta por id (WorkflowPlayer).
+      // Se inyecta aquí porque solo este turno conoce el mapa nombre→id del catálogo.
+      for (const action of turn.actions || []) {
+        if (action && action.kind === 'mcp' && workflowIdByTool.has(action.tool)) {
+          action.args = { ...(action.args || {}), workflow_id: workflowIdByTool.get(action.tool) };
+        }
+      }
 
       return { status: 200, json: { session: encodeSession(next), ...turn } };
     } catch (error) {

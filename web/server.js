@@ -57,6 +57,8 @@ const registerUsageRoutes = require('./api/registerUsageRoutes');
 const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
 const registerAndroidPanelRoutes = require('./api/registerAndroidPanelRoutes');
 const registerWindowsAgentRoutes = require('./api/registerWindowsAgentRoutes');
+const registerMcpRoutes = require('./api/registerMcpRoutes');
+const AgentWorkflowStore = require('../src/application/use-cases/AgentWorkflowStore');
 const requireClinicalAuth = require('./api/requireClinicalAuth');
 const MiracleWorkspaceStore = require('./api/miracleWorkspaceStore');
 const rateLimit = require('express-rate-limit');
@@ -158,7 +160,13 @@ const androidPanelService = new AndroidPanelService(supabaseRestClient);
 // está configurado) y la comparten el bucle de turnos y la enseñanza por video
 // — exactamente el acoplamiento que tenía el backend viejo con su MemoryStore.
 const agentMemoryRepository = new SupabaseAgentMemoryRepository(supabaseRestClient);
-const agentTurnService = new AgentTurnService({ memoryRepository: agentMemoryRepository });
+// Los workflows que el cerebro ve por MCP salen del catálogo real (Neo4j),
+// scopeados por la superficie que reporta el cliente. Ver AgentWorkflowStore.
+const agentWorkflowStore = new AgentWorkflowStore({ catalogService });
+const agentTurnService = new AgentTurnService({
+  memoryRepository: agentMemoryRepository,
+  learningStore: agentWorkflowStore
+});
 const teachVideoService = new TeachVideoService({
   memoryRepository: agentMemoryRepository,
   supabaseRestClient
@@ -984,6 +992,7 @@ registerMedicalRoutes(app, {
 registerUsageRoutes(app, { usageDashboardService });
 registerAndroidPanelRoutes(app, { androidPanelService });
 registerWindowsAgentRoutes(app, { agentTurnService, teachVideoService });
+registerMcpRoutes(app, { agentWorkflowStore, workflowExecutor });
 registerPublicApiRoutes(app, {
   callMiracleRuntime,
   noteFieldMatcher,
