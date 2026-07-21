@@ -40,6 +40,13 @@ const BiopsyPhotoProviderConfigService = require('../src/application/use-cases/B
 const BiopsyExtractionService = require('../src/application/use-cases/BiopsyExtractionService');
 const ApiKeyService = require('../src/application/use-cases/ApiKeyService');
 const AndroidPanelService = require('../src/application/use-cases/AndroidPanelService');
+// Módulo Windows App (agente de escritorio Ü, absorbido del backend viejo de
+// Vercel Functions): cerebro consciente + enseñanza por video + sus tarjetas.
+const AgentTurnService = require('../src/application/use-cases/AgentTurnService');
+const TeachVideoService = require('../src/application/use-cases/TeachVideoService');
+const ConsciousProviderConfigService = require('../src/application/use-cases/ConsciousProviderConfigService');
+const TeachVideoProviderConfigService = require('../src/application/use-cases/TeachVideoProviderConfigService');
+const SupabaseAgentMemoryRepository = require('../src/infrastructure/repositories/SupabaseAgentMemoryRepository');
 const registerLearningRoutes = require('./api/registerLearningRoutes');
 const registerWorkflowRoutes = require('./api/registerWorkflowRoutes');
 const registerContextRoutes = require('./api/registerContextRoutes');
@@ -49,6 +56,7 @@ const registerMedicalRoutes = require('./api/registerMedicalRoutes');
 const registerUsageRoutes = require('./api/registerUsageRoutes');
 const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
 const registerAndroidPanelRoutes = require('./api/registerAndroidPanelRoutes');
+const registerWindowsAgentRoutes = require('./api/registerWindowsAgentRoutes');
 const requireClinicalAuth = require('./api/requireClinicalAuth');
 const MiracleWorkspaceStore = require('./api/miracleWorkspaceStore');
 const rateLimit = require('express-rate-limit');
@@ -145,6 +153,18 @@ const apiKeyService = new ApiKeyService();
 // Android panel (Provider Studio): telemetry + distributed client config,
 // same Supabase project/service-role client as the clinical module.
 const androidPanelService = new AndroidPanelService(supabaseRestClient);
+// Agente de escritorio Ü (Windows App): la memoria por usuario vive en Supabase
+// (tabla graph_agent_memory, con fallback en memoria del proceso si Supabase no
+// está configurado) y la comparten el bucle de turnos y la enseñanza por video
+// — exactamente el acoplamiento que tenía el backend viejo con su MemoryStore.
+const agentMemoryRepository = new SupabaseAgentMemoryRepository(supabaseRestClient);
+const agentTurnService = new AgentTurnService({ memoryRepository: agentMemoryRepository });
+const teachVideoService = new TeachVideoService({
+  memoryRepository: agentMemoryRepository,
+  supabaseRestClient
+});
+const consciousProviderConfigService = new ConsciousProviderConfigService();
+const teachVideoProviderConfigService = new TeachVideoProviderConfigService();
 const miracleWorkspaceStore = new MiracleWorkspaceStore();
 
 app.use(bodyParser.json({ limit: '16mb' }));
@@ -923,6 +943,7 @@ registerMedicalRoutes(app, {
 });
 registerUsageRoutes(app, { usageDashboardService });
 registerAndroidPanelRoutes(app, { androidPanelService });
+registerWindowsAgentRoutes(app, { agentTurnService, teachVideoService });
 registerPublicApiRoutes(app, {
   callMiracleRuntime,
   noteFieldMatcher,
