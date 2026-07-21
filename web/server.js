@@ -612,6 +612,46 @@ app.post('/api/setup/product-llm', async (req, res) => {
   }
 });
 
+// --- Superficie Windows App: cerebro del agente de escritorio (conscious) y
+// enseñanza por video (teach). Mismo patrón de las demás cards del Studio:
+// status() lee de env, configure() escribe en Vercel + redeploy. Gated por
+// canManageGlobalWorkflows (prefijo /api/providers ya cubierto por requireAccountAuth).
+app.get('/api/providers/conscious/status', async (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar providers.' });
+  }
+  return res.json(consciousProviderConfigService.status());
+});
+
+app.post('/api/providers/conscious/configure', async (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar providers.' });
+  }
+  try {
+    return res.json(await consciousProviderConfigService.configure(req.body || {}));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible actualizar el agente de escritorio.' });
+  }
+});
+
+app.get('/api/providers/teach-video/status', async (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar providers.' });
+  }
+  return res.json(teachVideoProviderConfigService.status());
+});
+
+app.post('/api/providers/teach-video/configure', async (req, res) => {
+  if (!req.workflowAccess?.canManageGlobalWorkflows) {
+    return res.status(403).json({ error: 'No autorizado para administrar providers.' });
+  }
+  try {
+    return res.json(await teachVideoProviderConfigService.configure(req.body || {}));
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible actualizar la enseñanza por video.' });
+  }
+});
+
 async function probeMiracleSidecar(req, timeoutMs = 1500) {
   const baseUrl = resolveMiracleRuntimeUrl(req);
   if (!baseUrl) {

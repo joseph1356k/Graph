@@ -393,7 +393,111 @@
             </div>
 
             <div class="studio-surface-panel is-hidden" data-surface-panel="windows">
-                <p class="surface-placeholder">Configuración por superficie próximamente — hoy la app Windows usa la configuración global.</p>
+            <section class="studio-board">
+                <section class="studio-card is-collapsed" id="conscious-card">
+                    <button type="button" class="studio-card-head" id="conscious-toggle" aria-expanded="false" aria-controls="conscious-body">
+                        <div>
+                            <p class="studio-kicker">Windows</p>
+                            <h2>Agente de escritorio</h2>
+                        </div>
+                        <div class="studio-status-meta">
+                            <strong id="conscious-metric">Cargando</strong>
+                            <span id="conscious-pill" class="status-pill">Cargando</span>
+                            <svg class="studio-card-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>
+                        </div>
+                    </button>
+                    <div class="studio-card-body" id="conscious-body">
+                        <section class="studio-provider-group">
+                            <div class="studio-subhead">
+                                <h3>Cerebro (computer-use)</h3>
+                            </div>
+                            <p id="conscious-current" class="studio-current">Leyendo estado actual...</p>
+                            <form id="conscious-form" class="studio-form">
+                                <div class="studio-form-grid">
+                                    <label class="field">
+                                        <span>Provider</span>
+                                        <select id="conscious-select"></select>
+                                    </label>
+                                    <label class="field field-editor is-hidden" id="conscious-base-url-field">
+                                        <span>Base URL</span>
+                                        <input id="conscious-base-url" type="url" placeholder="https://.../v1">
+                                    </label>
+                                    <label class="field is-hidden" id="conscious-model-field">
+                                        <span>Modelo</span>
+                                        <select id="conscious-model"></select>
+                                    </label>
+                                    <label class="field field-editor is-hidden field-span-2" id="conscious-api-key-field">
+                                        <span>API key</span>
+                                        <div class="field-key-row">
+                                            <input id="conscious-api-key" type="password" autocomplete="off" placeholder="Clave del agente de escritorio">
+                                            <button type="button" class="field-key-toggle" id="conscious-api-key-toggle" aria-label="Mostrar API key" aria-pressed="false">
+                                                <svg class="field-key-toggle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                            </button>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="studio-actions">
+                                    <button type="button" class="button ghost" id="conscious-refresh">Releer</button>
+                                    <button type="submit" class="button primary" id="conscious-submit">Guardar agente</button>
+                                </div>
+                            </form>
+                            <p id="conscious-message" class="form-message"></p>
+                        </section>
+                    </div>
+                </section>
+
+                <section class="studio-card is-collapsed" id="teach-card">
+                    <button type="button" class="studio-card-head" id="teach-toggle" aria-expanded="false" aria-controls="teach-body">
+                        <div>
+                            <p class="studio-kicker">Windows</p>
+                            <h2>Enseñanza por video</h2>
+                        </div>
+                        <div class="studio-status-meta">
+                            <strong id="teach-metric">Cargando</strong>
+                            <span id="teach-pill" class="status-pill">Cargando</span>
+                            <svg class="studio-card-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>
+                        </div>
+                    </button>
+                    <div class="studio-card-body" id="teach-body">
+                        <section class="studio-provider-group">
+                            <div class="studio-subhead">
+                                <h3>Análisis de video (Gemini)</h3>
+                            </div>
+                            <p id="teach-current" class="studio-current">Leyendo estado actual...</p>
+                            <form id="teach-form" class="studio-form">
+                                <div class="studio-form-grid">
+                                    <label class="field">
+                                        <span>Provider</span>
+                                        <select id="teach-select"></select>
+                                    </label>
+                                    <label class="field field-editor is-hidden" id="teach-base-url-field">
+                                        <span>Base URL</span>
+                                        <input id="teach-base-url" type="url" placeholder="https://.../v1">
+                                    </label>
+                                    <label class="field is-hidden" id="teach-model-field">
+                                        <span>Modelo</span>
+                                        <select id="teach-model"></select>
+                                    </label>
+                                    <label class="field field-editor is-hidden field-span-2" id="teach-api-key-field">
+                                        <span>API key</span>
+                                        <div class="field-key-row">
+                                            <input id="teach-api-key" type="password" autocomplete="off" placeholder="Clave de Gemini">
+                                            <button type="button" class="field-key-toggle" id="teach-api-key-toggle" aria-label="Mostrar API key" aria-pressed="false">
+                                                <svg class="field-key-toggle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                            </button>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="studio-actions">
+                                    <button type="button" class="button ghost" id="teach-refresh">Releer</button>
+                                    <button type="submit" class="button primary" id="teach-submit">Guardar enseñanza</button>
+                                </div>
+                            </form>
+                            <p id="teach-message" class="form-message"></p>
+                        </section>
+                    </div>
+                </section>
+            </section>
             </div>
 
             <div class="studio-surface-panel is-hidden" data-surface-panel="android">

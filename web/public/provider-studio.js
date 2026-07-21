@@ -78,6 +78,38 @@
         miracleProductSubmit: document.getElementById('miracle-product-submit'),
         miracleProductMessage: document.getElementById('miracle-product-message'),
 
+        consciousPill: document.getElementById('conscious-pill'),
+        consciousMetric: document.getElementById('conscious-metric'),
+        consciousCurrent: document.getElementById('conscious-current'),
+        consciousForm: document.getElementById('conscious-form'),
+        consciousSelect: document.getElementById('conscious-select'),
+        consciousBaseUrlField: document.getElementById('conscious-base-url-field'),
+        consciousBaseUrl: document.getElementById('conscious-base-url'),
+        consciousModelField: document.getElementById('conscious-model-field'),
+        consciousModel: document.getElementById('conscious-model'),
+        consciousApiKeyField: document.getElementById('conscious-api-key-field'),
+        consciousApiKey: document.getElementById('conscious-api-key'),
+        consciousApiKeyToggle: document.getElementById('conscious-api-key-toggle'),
+        consciousRefresh: document.getElementById('conscious-refresh'),
+        consciousSubmit: document.getElementById('conscious-submit'),
+        consciousMessage: document.getElementById('conscious-message'),
+
+        teachPill: document.getElementById('teach-pill'),
+        teachMetric: document.getElementById('teach-metric'),
+        teachCurrent: document.getElementById('teach-current'),
+        teachForm: document.getElementById('teach-form'),
+        teachSelect: document.getElementById('teach-select'),
+        teachBaseUrlField: document.getElementById('teach-base-url-field'),
+        teachBaseUrl: document.getElementById('teach-base-url'),
+        teachModelField: document.getElementById('teach-model-field'),
+        teachModel: document.getElementById('teach-model'),
+        teachApiKeyField: document.getElementById('teach-api-key-field'),
+        teachApiKey: document.getElementById('teach-api-key'),
+        teachApiKeyToggle: document.getElementById('teach-api-key-toggle'),
+        teachRefresh: document.getElementById('teach-refresh'),
+        teachSubmit: document.getElementById('teach-submit'),
+        teachMessage: document.getElementById('teach-message'),
+
         miracleSttPill: document.getElementById('miracle-stt-pill'),
         miracleSttMetric: document.getElementById('miracle-stt-metric'),
         miracleSttCurrent: document.getElementById('miracle-stt-current'),
@@ -536,18 +568,22 @@
         }
 
         renderAccessState(true, '');
-        const [graph, assistant, biopsy, miracleProduct, miracleStt] = await Promise.all([
+        const [graph, assistant, biopsy, miracleProduct, miracleStt, conscious, teach] = await Promise.all([
             fetchJson('/api/providers/graph/status'),
             fetchJson('/api/providers/assistant/status'),
             fetchJson('/api/providers/biopsy/status'),
             fetchJson('/api/product-llm/status'),
-            fetchJson('/api/providers/miracle-stt/status')
+            fetchJson('/api/providers/miracle-stt/status'),
+            fetchJson('/api/providers/conscious/status'),
+            fetchJson('/api/providers/teach-video/status')
         ]);
         renderGraph(graph);
         renderAssistant(assistant);
         renderBiopsy(biopsy);
         renderMiracleProduct(miracleProduct);
         renderMiracleStt(miracleStt);
+        renderConscious(conscious);
+        renderTeach(teach);
         dom.overallStatus.textContent = 'Listo';
     }
 
@@ -667,6 +703,134 @@
         }
     }
 
+    // -------- Superficie Windows: agente de escritorio (conscious) --------
+    function syncConsciousFields() {
+        const provider = currentProvider(state.conscious?.providers, dom.consciousSelect);
+        dom.consciousApiKeyField.classList.toggle('is-hidden', !provider?.requires_api_key);
+        dom.consciousBaseUrlField.classList.toggle('is-hidden', !provider?.requires_base_url);
+        dom.consciousModelField.classList.toggle('is-hidden', !provider?.requires_model);
+        applyStoredApiKey(dom.consciousApiKey, provider);
+        if (provider) {
+            renderModelOptions(dom.consciousModel, provider);
+        }
+    }
+
+    function renderConscious(payload) {
+        state.conscious = payload;
+        renderOptions(dom.consciousSelect, payload.providers || []);
+        const current = payload.current_setup || {};
+        if (current.provider) {
+            dom.consciousSelect.value = current.provider;
+        }
+        const provider = currentProvider(payload.providers, dom.consciousSelect);
+        renderModelOptions(dom.consciousModel, provider, current.model || provider?.default_model || '');
+        syncConsciousFields();
+        dom.consciousCurrent.textContent = current.provider && current.provider !== 'disabled'
+            ? `Actual: ${current.label || current.provider} - ${current.model || 'sin modelo'}`
+            : 'Actual: cerebro deshabilitado.';
+        const configured = Boolean(payload.status?.configured);
+        dom.consciousMetric.textContent = formatSummary({ ...current, configured });
+        setPill(dom.consciousPill, configured ? 'Configurado' : 'Sin configurar', configured ? 'ready' : 'danger');
+        const vercelReady = payload?.vercel?.write_enabled;
+        if (!vercelReady) {
+            setMessage(dom.consciousMessage, 'Falta GRAPH_VERCEL_API_TOKEN en el servidor para guardar secretos en Vercel.', 'warning');
+        } else if (dom.consciousMessage.dataset.tone === 'warning') {
+            setMessage(dom.consciousMessage, '');
+        }
+    }
+
+    async function submitConscious(event) {
+        event.preventDefault();
+        const provider = currentProvider(state.conscious?.providers, dom.consciousSelect);
+        if (!provider) return;
+        dom.consciousSubmit.disabled = true;
+        setMessage(dom.consciousMessage, 'Guardando agente de escritorio en Vercel...');
+        try {
+            const payload = await fetchJson('/api/providers/conscious/configure', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    provider: provider.id,
+                    model: dom.consciousModel.value,
+                    api_key: dom.consciousApiKey.value
+                })
+            });
+            await refreshAll();
+            const deploymentMessage = payload?.deployment?.triggered
+                ? ' Vercel ya empezo el redeploy.'
+                : ` ${payload?.deployment?.message || 'Recuerda redeployar para aplicar el cambio.'}`;
+            setMessage(dom.consciousMessage, `Agente de escritorio actualizado.${deploymentMessage}`, 'success');
+        } catch (error) {
+            setMessage(dom.consciousMessage, error.message || 'No fue posible guardar el agente.', 'error');
+        } finally {
+            dom.consciousSubmit.disabled = false;
+        }
+    }
+
+    // -------- Superficie Windows: enseñanza por video (teach) --------
+    function syncTeachFields() {
+        const provider = currentProvider(state.teach?.providers, dom.teachSelect);
+        dom.teachApiKeyField.classList.toggle('is-hidden', !provider?.requires_api_key);
+        dom.teachBaseUrlField.classList.toggle('is-hidden', !provider?.requires_base_url);
+        dom.teachModelField.classList.toggle('is-hidden', !provider?.requires_model);
+        applyStoredApiKey(dom.teachApiKey, provider);
+        if (provider) {
+            renderModelOptions(dom.teachModel, provider);
+        }
+    }
+
+    function renderTeach(payload) {
+        state.teach = payload;
+        renderOptions(dom.teachSelect, payload.providers || []);
+        const current = payload.current_setup || {};
+        if (current.provider) {
+            dom.teachSelect.value = current.provider;
+        }
+        const provider = currentProvider(payload.providers, dom.teachSelect);
+        renderModelOptions(dom.teachModel, provider, current.model || provider?.default_model || '');
+        syncTeachFields();
+        dom.teachCurrent.textContent = current.provider && current.provider !== 'disabled'
+            ? `Actual: ${current.label || current.provider} - ${current.model || 'sin modelo'}`
+            : 'Actual: enseñanza por video deshabilitada.';
+        const configured = Boolean(payload.status?.configured);
+        dom.teachMetric.textContent = formatSummary({ ...current, configured });
+        setPill(dom.teachPill, configured ? 'Configurado' : 'Sin configurar', configured ? 'ready' : 'danger');
+        const vercelReady = payload?.vercel?.write_enabled;
+        if (!vercelReady) {
+            setMessage(dom.teachMessage, 'Falta GRAPH_VERCEL_API_TOKEN en el servidor para guardar secretos en Vercel.', 'warning');
+        } else if (dom.teachMessage.dataset.tone === 'warning') {
+            setMessage(dom.teachMessage, '');
+        }
+    }
+
+    async function submitTeach(event) {
+        event.preventDefault();
+        const provider = currentProvider(state.teach?.providers, dom.teachSelect);
+        if (!provider) return;
+        dom.teachSubmit.disabled = true;
+        setMessage(dom.teachMessage, 'Guardando enseñanza por video en Vercel...');
+        try {
+            const payload = await fetchJson('/api/providers/teach-video/configure', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    provider: provider.id,
+                    model: dom.teachModel.value,
+                    api_key: dom.teachApiKey.value
+                })
+            });
+            await refreshAll();
+            const deploymentMessage = payload?.deployment?.triggered
+                ? ' Vercel ya empezo el redeploy.'
+                : ` ${payload?.deployment?.message || 'Recuerda redeployar para aplicar el cambio.'}`;
+            setMessage(dom.teachMessage, `Enseñanza por video actualizada.${deploymentMessage}`, 'success');
+        } catch (error) {
+            setMessage(dom.teachMessage, error.message || 'No fue posible guardar la enseñanza.', 'error');
+        } finally {
+            dom.teachSubmit.disabled = false;
+        }
+    }
+
     async function submitMiracleStt(event) {
         event.preventDefault();
         const provider = currentProvider(state.miracleStt?.providers, dom.miracleSttSelect);
@@ -761,12 +925,16 @@
         bindCollapsible('graph-provider-card', 'graph-provider-toggle');
         bindCollapsible('assistant-provider-card', 'assistant-provider-toggle');
         bindCollapsible('biopsy-provider-card', 'biopsy-provider-toggle');
+        bindCollapsible('conscious-card', 'conscious-toggle');
+        bindCollapsible('teach-card', 'teach-toggle');
 
         bindApiKeyToggle(dom.graphApiKeyToggle, dom.graphApiKey);
         bindApiKeyToggle(dom.assistantApiKeyToggle, dom.assistantApiKey);
         bindApiKeyToggle(dom.biopsyApiKeyToggle, dom.biopsyApiKey);
         bindApiKeyToggle(dom.miracleProductApiKeyToggle, dom.miracleProductApiKey);
         bindApiKeyToggle(dom.miracleSttApiKeyToggle, dom.miracleSttApiKey);
+        bindApiKeyToggle(dom.consciousApiKeyToggle, dom.consciousApiKey);
+        bindApiKeyToggle(dom.teachApiKeyToggle, dom.teachApiKey);
 
         if (dom.extensionDownload) {
             dom.extensionDownload.addEventListener('click', () => {
@@ -818,6 +986,28 @@
         });
         dom.miracleProductForm.addEventListener('submit', (event) => {
             submitMiracleProduct(event).catch((error) => setMessage(dom.miracleProductMessage, error.message, 'error'));
+        });
+
+        dom.consciousSelect.addEventListener('change', () => {
+            dom.consciousModel.value = '';
+            syncConsciousFields();
+        });
+        dom.consciousRefresh.addEventListener('click', () => {
+            refreshAll().catch((error) => setMessage(dom.consciousMessage, error.message, 'error'));
+        });
+        dom.consciousForm.addEventListener('submit', (event) => {
+            submitConscious(event).catch((error) => setMessage(dom.consciousMessage, error.message, 'error'));
+        });
+
+        dom.teachSelect.addEventListener('change', () => {
+            dom.teachModel.value = '';
+            syncTeachFields();
+        });
+        dom.teachRefresh.addEventListener('click', () => {
+            refreshAll().catch((error) => setMessage(dom.teachMessage, error.message, 'error'));
+        });
+        dom.teachForm.addEventListener('submit', (event) => {
+            submitTeach(event).catch((error) => setMessage(dom.teachMessage, error.message, 'error'));
         });
 
         dom.miracleSttSelect.addEventListener('change', () => {
