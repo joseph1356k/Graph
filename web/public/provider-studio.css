@@ -1572,3 +1572,67 @@ button.android-crumb:focus-visible {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ───────────── Visualización consciente/subconsciente (tab Windows) ───────────── */
+#mind-viz {
+    margin: 0 0 18px;
+    padding: 8px 6px 2px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.02);
+    overflow: hidden;
+}
+#mind-viz svg { width: 100%; height: auto; display: block; }
+
+.viz-wire { fill: none; stroke: rgba(255, 255, 255, 0.20); stroke-width: 2; }
+.viz-wire-faint { stroke: rgba(240, 200, 90, 0.32); }
+.viz-arrowhead { fill: rgba(255, 255, 255, 0.35); }
+
+.viz-circle circle {
+    fill: rgba(255, 255, 255, 0.04);
+    stroke: rgba(255, 255, 255, 0.45);
+    stroke-width: 1.5;
+    animation: viz-breathe 3.4s ease-in-out infinite;
+}
+.viz-circle text { fill: rgba(255, 255, 255, 0.9); font-size: 16px; text-anchor: middle; font-weight: 500; }
+
+.viz-bar rect { fill: rgba(255, 255, 255, 0.06); stroke: rgba(255, 255, 255, 0.14); stroke-width: 1; }
+.viz-bar text { fill: rgba(255, 255, 255, 0.82); font-size: 17px; text-anchor: middle; letter-spacing: 0.02em; }
+
+.viz-tree circle { fill: none; stroke: rgba(255, 255, 255, 0.12); stroke-width: 1; }
+.viz-tree .viz-branch { fill: none; stroke: rgba(255, 255, 255, 0.30); stroke-width: 1.4; }
+.viz-tree .viz-node { fill: rgba(255, 255, 255, 0.5); stroke: none; }
+.viz-mcp-label { fill: rgba(255, 255, 255, 0.7); font-size: 15px; text-anchor: middle; letter-spacing: 0.08em; }
+.viz-mcp-dot { fill: rgba(255, 255, 255, 0.55); }
+
+/* Pulsos de energía: un solo ciclo compartido de 3.4s; cada uno activo en su ventana. */
+.viz-pulse-rise   { fill: #F4C752; offset-path: path("M150 286 C150 250 150 230 150 178"); animation: viz-rise 3.4s linear infinite; }
+.viz-pulse-throw  { fill: #FFD65C; offset-path: path("M203 138 C250 150 272 152 296 140"); animation: viz-throw 3.4s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.viz-pulse-return { fill: #6FC9F5; offset-path: path("M320 222 C320 250 320 268 320 286"); animation: viz-return 3.4s ease-in-out infinite; }
+.viz-pulse-learn  { fill: #E7C56A; offset-path: path("M425 300 C520 292 560 268 634 250"); animation: viz-learn 3.4s ease-in infinite; }
+
+@keyframes viz-rise {
+    0% { offset-distance: 0%; opacity: 0; } 2% { opacity: 1; }
+    26% { offset-distance: 100%; opacity: 1; } 30% { offset-distance: 100%; opacity: 0; } 100% { opacity: 0; }
+}
+@keyframes viz-throw {
+    0%, 29% { offset-distance: 0%; opacity: 0; } 31% { opacity: 1; }
+    50% { offset-distance: 100%; opacity: 1; } 54% { offset-distance: 100%; opacity: 0; } 100% { opacity: 0; }
+}
+@keyframes viz-return {
+    0%, 52% { offset-distance: 0%; opacity: 0; } 55% { opacity: 0.85; }
+    88% { offset-distance: 100%; opacity: 0.85; } 92% { offset-distance: 100%; opacity: 0; } 100% { opacity: 0; }
+}
+@keyframes viz-learn {
+    0%, 60% { offset-distance: 0%; opacity: 0; } 64% { opacity: 0.6; }
+    96% { offset-distance: 100%; opacity: 0.5; } 99% { opacity: 0; } 100% { opacity: 0; }
+}
+@keyframes viz-breathe { 0%, 100% { opacity: 0.82; } 50% { opacity: 1; } }
+
+.viz-caption { margin: 4px 12px 8px; font-size: 12px; color: var(--muted); }
+.viz-caption span { opacity: 0.55; }
+
+@media (prefers-reduced-motion: reduce) {
+    .viz-pulse-rise, .viz-pulse-throw, .viz-pulse-return, .viz-pulse-learn, .viz-circle circle { animation: none; }
+    .viz-pulse-throw, .viz-pulse-return { opacity: 0.7; }
+}
