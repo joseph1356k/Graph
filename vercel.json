@@ -6,7 +6,8 @@
   "outputDirectory": "public",
   "functions": {
     "api/index.js": {
-      "includeFiles": "{chrome-extension-src,web/public}/**"
+      "includeFiles": "{chrome-extension-src,web/public}/**",
+      "maxDuration": 60
     },
     "api/miracle_runtime.py": {
       "includeFiles": "bounded/miracle-ai/**"
