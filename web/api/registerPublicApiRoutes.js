@@ -524,6 +524,52 @@ function registerPublicApiRoutes(app, deps = {}) {
     }
   });
 
+  // Aprendizaje del loop consciente→subconsciente: el cliente se alineó conscientemente con la
+  // superficie del workflow (abrió/enfocó la app), y lo enseña anteponiendo un step de alineación
+  // en orden 0. Así la próxima vez el plan ya lo trae y arranca solo. Idempotente. La app se deriva
+  // del sourceOrigin YA guardado del workflow (el cliente no manda nada).
+  app.post('/api/v1/workflows/:id/prepend-alignment', async (req, res) => {
+    if (!catalogService) {
+      return res.status(503).json({ error: 'Workflow catalog not configured.' });
+    }
+    try {
+      const access = workflowAccess(req);
+      const wf = await catalogService.getWorkflowById(req.params.id, access);
+      if (!wf) {
+        return res.status(404).json({ error: 'Workflow not found' });
+      }
+      const origin = `${wf.sourceOrigin || ''}`.trim();
+      if (!origin) {
+        return res.status(400).json({ error: 'El workflow no tiene superficie de origen.' });
+      }
+      const steps = Array.isArray(wf.steps) ? wf.steps : [];
+      const first = steps[0];
+      if (first && `${first.selector || ''}`.startsWith('app:')) {
+        return res.json({ workflow: wf, already_present: true });
+      }
+      const proc = origin.replace(/^[a-z]+:\/\//i, '').split('/')[0]; // uia://notepad.exe → notepad.exe
+      const alignmentStep = {
+        actionType: 'navigation',       // único tipo con url que sobrevive al planner
+        url: origin,                    // isExecutableStep exige url truthy para navigation
+        selector: `app:${proc}`,        // el cliente reconoce el step de alineación por este prefijo
+        label: `Abrir/enfocar ${proc}`,
+        explanation: 'Alineación consciente: llegar a la superficie del workflow antes de ejecutar.',
+        surfaceHints: { kind: 'surface-alignment', appId: proc },
+        stepOrder: 0                    // NO se reindexan los demás (branches/variables dependen del orden)
+      };
+      const updated = await catalogService.updateWorkflow(
+        { id: wf.id, steps: [alignmentStep, ...steps] },
+        access
+      );
+      return res.json({ workflow: updated, learned: true });
+    } catch (error) {
+      if ((error.message || '').includes('not found')) {
+        return res.status(404).json({ error: error.message });
+      }
+      return publicError(res, error, 'workflow_prepend_alignment_failed');
+    }
+  });
+
   app.post('/api/v1/workflows/:id/plan', async (req, res) => {
     if (!workflowExecutor) {
       return res.status(503).json({ error: 'Workflow execution planner not configured.' });
