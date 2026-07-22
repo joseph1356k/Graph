@@ -46,6 +46,7 @@ const AgentTurnService = require('../src/application/use-cases/AgentTurnService'
 const TeachVideoService = require('../src/application/use-cases/TeachVideoService');
 const ConsciousProviderConfigService = require('../src/application/use-cases/ConsciousProviderConfigService');
 const TeachVideoProviderConfigService = require('../src/application/use-cases/TeachVideoProviderConfigService');
+const WindowsAppReleaseService = require('../src/application/use-cases/WindowsAppReleaseService');
 const SupabaseAgentMemoryRepository = require('../src/infrastructure/repositories/SupabaseAgentMemoryRepository');
 const registerLearningRoutes = require('./api/registerLearningRoutes');
 const registerWorkflowRoutes = require('./api/registerWorkflowRoutes');
@@ -57,6 +58,7 @@ const registerUsageRoutes = require('./api/registerUsageRoutes');
 const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
 const registerAndroidPanelRoutes = require('./api/registerAndroidPanelRoutes');
 const registerWindowsAgentRoutes = require('./api/registerWindowsAgentRoutes');
+const registerWindowsDistributionRoutes = require('./api/registerWindowsDistributionRoutes');
 const registerMcpRoutes = require('./api/registerMcpRoutes');
 const AgentWorkflowStore = require('../src/application/use-cases/AgentWorkflowStore');
 const requireClinicalAuth = require('./api/requireClinicalAuth');
@@ -173,6 +175,7 @@ const teachVideoService = new TeachVideoService({
 });
 const consciousProviderConfigService = new ConsciousProviderConfigService();
 const teachVideoProviderConfigService = new TeachVideoProviderConfigService();
+const windowsAppReleaseService = new WindowsAppReleaseService();
 const miracleWorkspaceStore = new MiracleWorkspaceStore();
 
 app.use(bodyParser.json({ limit: '16mb' }));
@@ -992,6 +995,7 @@ registerMedicalRoutes(app, {
 registerUsageRoutes(app, { usageDashboardService });
 registerAndroidPanelRoutes(app, { androidPanelService });
 registerWindowsAgentRoutes(app, { agentTurnService, teachVideoService });
+registerWindowsDistributionRoutes(app, { windowsAppReleaseService });
 registerMcpRoutes(app, { agentWorkflowStore, workflowExecutor });
 registerPublicApiRoutes(app, {
   callMiracleRuntime,

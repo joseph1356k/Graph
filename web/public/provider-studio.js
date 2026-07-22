@@ -1080,7 +1080,15 @@
         viewLogs: document.getElementById('android-view-logs'),
         logsTitle: document.getElementById('android-logs-title'),
         terminal: document.getElementById('android-logs-terminal'),
-        usersMessage: document.getElementById('android-users-message')
+        usersMessage: document.getElementById('android-users-message'),
+
+        windowsDownloadSplit: document.getElementById('windows-download-split'),
+        windowsDownloadCaret: document.getElementById('windows-download-caret'),
+        windowsDownloadMenu: document.getElementById('windows-download-menu'),
+        windowsDistributeTrigger: document.getElementById('windows-distribute-trigger'),
+        windowsBuildProgress: document.getElementById('windows-build-progress'),
+        windowsBuildProgressTitle: document.getElementById('windows-build-progress-title'),
+        windowsBuildProgressDetail: document.getElementById('windows-build-progress-detail')
     };
 
     const state = {
@@ -1092,8 +1100,13 @@
         currentPrompt: null, // null cuando la vista de logs es "device"
         logsMode: 'prompt', // prompt | device
         usersTimer: null,
-        logsTimer: null
+        logsTimer: null,
+        windowsBuildTimer: null,
+        windowsBuildStartedAt: 0
     };
+
+    const WINDOWS_BUILD_POLL_MS = 4000;
+    const WINDOWS_BUILD_TIMEOUT_MS = 15 * 60 * 1000;
 
     const STATUS_LABELS = {
         running: 'En ejecución',
@@ -1208,6 +1221,83 @@
     tabs.forEach((tab) => {
         tab.addEventListener('click', () => activateSurface(tab.dataset.surface));
     });
+
+    // ------------------- distribución de la app de Windows ------------------
+
+    function closeWindowsDownloadMenu() {
+        if (!dom.windowsDownloadMenu) return;
+        dom.windowsDownloadMenu.classList.add('is-hidden');
+        dom.windowsDownloadCaret?.setAttribute('aria-expanded', 'false');
+    }
+
+    function toggleWindowsDownloadMenu() {
+        if (!dom.windowsDownloadMenu) return;
+        const opening = dom.windowsDownloadMenu.classList.contains('is-hidden');
+        dom.windowsDownloadMenu.classList.toggle('is-hidden', !opening);
+        dom.windowsDownloadCaret?.setAttribute('aria-expanded', String(opening));
+    }
+
+    function setWindowsBuildProgress(visible, title, detail) {
+        if (!dom.windowsBuildProgress) return;
+        dom.windowsBuildProgress.classList.toggle('is-hidden', !visible);
+        if (title !== undefined && dom.windowsBuildProgressTitle) {
+            dom.windowsBuildProgressTitle.textContent = title;
+        }
+        if (detail !== undefined && dom.windowsBuildProgressDetail) {
+            dom.windowsBuildProgressDetail.textContent = detail;
+        }
+    }
+
+    function stopWindowsBuildPolling() {
+        if (state.windowsBuildTimer) {
+            window.clearInterval(state.windowsBuildTimer);
+            state.windowsBuildTimer = null;
+        }
+    }
+
+    function finishWindowsBuild(title, detail) {
+        stopWindowsBuildPolling();
+        setWindowsBuildProgress(true, title, detail);
+        if (dom.windowsDistributeTrigger) dom.windowsDistributeTrigger.disabled = false;
+        window.setTimeout(() => setWindowsBuildProgress(false), 8000);
+    }
+
+    function pollWindowsBuild(requestId, version) {
+        stopWindowsBuildPolling();
+        state.windowsBuildStartedAt = Date.now();
+        state.windowsBuildTimer = window.setInterval(async () => {
+            if (Date.now() - state.windowsBuildStartedAt > WINDOWS_BUILD_TIMEOUT_MS) {
+                finishWindowsBuild('Tiempo de espera agotado', 'El build sigue corriendo en GitHub Actions; revísalo allá.');
+                return;
+            }
+            try {
+                const status = await fetchJson(`/api/providers/windows-app/build/status?request_id=${encodeURIComponent(requestId)}`);
+                if (status.phase === 'success') {
+                    finishWindowsBuild('Build publicado', `Versión ${version} distribuida correctamente.`);
+                } else if (status.phase === 'failure') {
+                    finishWindowsBuild('El build falló', status.runUrl ? `Revisa el run en GitHub: ${status.runUrl}` : 'Revisa el workflow en GitHub Actions.');
+                } else {
+                    setWindowsBuildProgress(true, status.phase === 'running' ? 'Construyendo…' : 'En cola…', `Versión ${version}`);
+                }
+            } catch (error) {
+                finishWindowsBuild('No se pudo leer el estado', error.message || 'Intenta de nuevo desde Provider Studio.');
+            }
+        }, WINDOWS_BUILD_POLL_MS);
+    }
+
+    async function triggerWindowsDistribute() {
+        if (!dom.windowsDistributeTrigger || dom.windowsDistributeTrigger.disabled) return;
+        closeWindowsDownloadMenu();
+        dom.windowsDistributeTrigger.disabled = true;
+        setWindowsBuildProgress(true, 'Iniciando build…', 'Disparando el workflow en GitHub Actions.');
+        try {
+            const { requestId, version } = await fetchJson('/api/providers/windows-app/build', { method: 'POST' });
+            setWindowsBuildProgress(true, 'Construyendo…', `Versión ${version}`);
+            pollWindowsBuild(requestId, version);
+        } catch (error) {
+            finishWindowsBuild('No se pudo iniciar el build', error.message || 'Intenta de nuevo.');
+        }
+    }
 
     // ------------------------- config distribuida ---------------------------
 
@@ -1589,5 +1679,25 @@
     });
     dom.deviceLogsButton.addEventListener('click', () => {
         openDeviceLogs().catch((error) => setMessage(dom.usersMessage, error.message, 'error'));
+    });
+
+    if (dom.windowsDownloadCaret) {
+        dom.windowsDownloadCaret.addEventListener('click', (event) => {
+            event.stopPropagation();
+            toggleWindowsDownloadMenu();
+        });
+    }
+    if (dom.windowsDistributeTrigger) {
+        dom.windowsDistributeTrigger.addEventListener('click', () => {
+            triggerWindowsDistribute();
+        });
+    }
+    document.addEventListener('click', (event) => {
+        if (dom.windowsDownloadSplit && !dom.windowsDownloadSplit.contains(event.target)) {
+            closeWindowsDownloadMenu();
+        }
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeWindowsDownloadMenu();
     });
 })();
