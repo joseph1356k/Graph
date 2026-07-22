@@ -524,6 +524,23 @@ function registerPublicApiRoutes(app, deps = {}) {
     }
   });
 
+  // Borrar un workflow (desde el carrusel del cliente Windows). Mismo modelo de acceso que el resto de
+  // /api/v1/workflows (X-API-Key → workflowAccess). El delete es idempotente-amistoso: 404 si no existe.
+  app.delete('/api/v1/workflows/:id', async (req, res) => {
+    if (!catalogService) {
+      return res.status(503).json({ error: 'Workflow catalog not configured.' });
+    }
+    try {
+      await catalogService.deleteWorkflow(req.params.id, workflowAccess(req));
+      return res.json({ deleted: true, id: req.params.id });
+    } catch (error) {
+      if ((error.message || '').includes('not found')) {
+        return res.status(404).json({ error: error.message });
+      }
+      return publicError(res, error, 'workflow_delete_failed');
+    }
+  });
+
   // Aprendizaje del loop consciente→subconsciente: el cliente se alineó conscientemente con la
   // superficie del workflow (abrió/enfocó la app), y lo enseña anteponiendo un step de alineación
   // en orden 0. Así la próxima vez el plan ya lo trae y arranca solo. Idempotente. La app se deriva
