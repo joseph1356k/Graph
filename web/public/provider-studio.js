@@ -1692,6 +1692,13 @@
             triggerWindowsDistribute();
         });
     }
+    // Delegado: cualquier item del menú (incluida "Descargar extensión", que
+    // vive en el módulo principal del archivo) cierra el dropdown al hacer clic.
+    dom.windowsDownloadMenu?.addEventListener('click', (event) => {
+        if (event.target.closest('.studio-split-menu-item')) {
+            closeWindowsDownloadMenu();
+        }
+    });
     document.addEventListener('click', (event) => {
         if (dom.windowsDownloadSplit && !dom.windowsDownloadSplit.contains(event.target)) {
             closeWindowsDownloadMenu();
