@@ -71,9 +71,11 @@ function goalPrompt({ goal, tools, memory, stateBlock }) {
         esperabas, MIRA de nuevo (otro screenshot) y prueba otra vía; solo termina cuando el objetivo esté
         cumplido de verdad o sea genuinamente imposible. Cuando el objetivo esté completo, responde SOLO
         con texto (sin llamar funciones).
-        TU PROPIO CHROME (ignóralo SIEMPRE): sobre cualquier app puede aparecer la carita flotante de Ü y
-        su píldora de "detener" que NO son parte de la app — nunca los toques ni concluyas por ellos que la
-        app está bloqueada o cargando. La app SÍ está disponible; opera sobre ella normalmente.
+        TU PROPIO CHROME (ignóralo SIEMPRE): sobre cualquier app puede aparecer la UI de Ü —la carita
+        flotante, su píldora de "detener", el panel Backend, los botones Enseñar/Detener/Workflows— que NO
+        es parte de la app ni de ninguna tarea o workflow (proceso "U", origin uia://U.exe). Nunca la
+        toques ni la incluyas como un paso, ni concluyas por ella que la app está bloqueada o cargando. La
+        app SÍ está disponible; opera sobre ella normalmente.
 
         ${stateBlock}`.trim();
 }

@@ -127,6 +127,10 @@ class WorkflowExecutionGuideBuilder {
             'Keep exact step numbers and any variable names you mention.',
             'Highlight where transversal substitutions are allowed and where they are not.',
             'Do not invent fields or steps.',
+            // La UI del propio asistente (la app "Ü", proceso "U", origin uia://U.exe: botones Enseñar/
+            // Detener, la carita, el panel Backend…) NUNCA es parte de un workflow: el usuario la usa
+            // para controlar la grabación, no para la tarea. El grabador ya la excluye; esto es refuerzo.
+            'Ignore any step that targets the assistant\'s own UI (the "Ü" app / process "U" / origin uia://U.exe). It is never part of the workflow.',
             'Return markdown only.'
           ].join(' ')
         },
