@@ -16,6 +16,30 @@
       "topic": "Motores del cliente Windows",
       "docs": [
         {
+          "id": "motor-localizador-superficie",
+          "title": "SurfaceLocator: la \"URL de Windows\"",
+          "summary": "La geolocalización dentro del SO: dónde está parado el usuario, como URL. Alimenta el scoping, el mismatch y la confirmación del navegador.",
+          "file": "motor-localizador-superficie.md"
+        },
+        {
+          "id": "motor-superficies-uisurface",
+          "title": "Superficies (IUiSurface): el CÓMO de cada mundo",
+          "summary": "La abstracción que separa hablar con Graph de tocar Windows: UiaSurface y SapGuiSurface, selectores re-resolubles y modo flexible.",
+          "file": "motor-superficies-uisurface.md"
+        },
+        {
+          "id": "motor-ensenanza-workflow",
+          "title": "Enseñanza: cómo un workflow entra al sistema",
+          "summary": "🎓 Enseñar: pasos estructurados (UIA/SAP) + video de contexto en paralelo, el orden crítico al detener y el título automático.",
+          "file": "motor-ensenanza-workflow.md"
+        },
+        {
+          "id": "motor-ejecucion-workflowplayer",
+          "title": "WorkflowPlayer: el motor de ejecución subconsciente",
+          "summary": "Graph decide QUÉ, la máquina decide CÓMO: pide el plan, verifica superficie, alinea, ejecuta paso a paso y para al primer fallo.",
+          "file": "motor-ejecucion-workflowplayer.md"
+        },
+        {
           "id": "motor-navegacion-superficie",
           "title": "SurfaceNavigator: el motor que alcanza el punto de arranque",
           "summary": "En vez de fallar cuando la pantalla no coincide, navega el SO hasta el punto de arranque del workflow — escalera de estrategias (enfocar → acceso directo → shell).",
