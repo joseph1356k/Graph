@@ -24,6 +24,16 @@ function normalizeComparable(value = '') {
     .toLowerCase();
 }
 
+// Eleva a mayúscula la primera letra de la casilla (requisito de patología:
+// cada casilla empieza con mayúscula). No toca números (p. ej. rótulos como
+// "26-3456"), signos ni el resto del texto; respeta espacios iniciales.
+function capitalizeFirst(content = '') {
+  return `${content || ''}`.replace(
+    /^(\s*)(\p{Ll})/u,
+    (_, space, letter) => `${space}${letter.toUpperCase()}`
+  );
+}
+
 function isPrudentEmptyContent(content = '') {
   const normalized = normalizeComparable(content);
   if (!normalized) {
@@ -120,7 +130,7 @@ class ClinicalNoteValidationService {
       return {
         key: expectedSection.key,
         label: expectedSection.label,
-        content: content.slice(0, MAX_SECTION_CONTENT_LENGTH),
+        content: capitalizeFirst(content).slice(0, MAX_SECTION_CONTENT_LENGTH),
         confidence,
         evidence: evidence.slice(0, MAX_EVIDENCE_LENGTH)
       };
@@ -202,7 +212,7 @@ class ClinicalNoteValidationService {
       return {
         key: expectedSection.key,
         label: expectedSection.label,
-        content: raw.content.slice(0, MAX_SECTION_CONTENT_LENGTH),
+        content: capitalizeFirst(raw.content).slice(0, MAX_SECTION_CONTENT_LENGTH),
         confidence: clampConfidence(raw.confidence, 1),
         evidence: typeof raw.evidence === 'string' ? raw.evidence.slice(0, MAX_EVIDENCE_LENGTH) : ''
       };

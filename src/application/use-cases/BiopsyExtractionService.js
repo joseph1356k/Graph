@@ -78,6 +78,16 @@ function parseTemplateSections(value) {
   return out.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 
+// Eleva a mayúscula la primera letra de la casilla (requisito de patología:
+// cada casilla empieza con mayúscula). No toca números (p. ej. rótulos como
+// "26-3456"), signos ni el resto del texto; respeta espacios iniciales.
+function capitalizeFirst(content = '') {
+  return `${content || ''}`.replace(
+    /^(\s*)(\p{Ll})/u,
+    (_, space, letter) => `${space}${letter.toUpperCase()}`
+  );
+}
+
 // Alinea la respuesta del modelo con las secciones de la plantilla: una entrada
 // por key, en el orden de la plantilla, con el content saneado. Garantiza que la
 // nota casa con la plantilla aunque el modelo omita, reordene o invente claves.
@@ -94,7 +104,7 @@ function alignSections(template, modelValue) {
   return template.map((section) => ({
     key: section.key,
     label: section.label,
-    content: byKey.get(section.key) ?? ''
+    content: capitalizeFirst(byKey.get(section.key) ?? '')
   }));
 }
 
@@ -120,7 +130,7 @@ function sanitizeDynamicSections(modelValue) {
     }
     usedKeys.add(uniqueKey);
     const content = typeof item.content === 'string' ? item.content.trim().slice(0, MAX_SECTION_CHARS) : '';
-    out.push({ key: uniqueKey, label, content });
+    out.push({ key: uniqueKey, label, content: capitalizeFirst(content) });
   }
   return out;
 }
