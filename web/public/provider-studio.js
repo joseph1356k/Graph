@@ -1088,7 +1088,8 @@
         windowsDistributeTrigger: document.getElementById('windows-distribute-trigger'),
         windowsBuildProgress: document.getElementById('windows-build-progress'),
         windowsBuildProgressTitle: document.getElementById('windows-build-progress-title'),
-        windowsBuildProgressDetail: document.getElementById('windows-build-progress-detail')
+        windowsBuildProgressDetail: document.getElementById('windows-build-progress-detail'),
+        windowsBuildMeta: document.getElementById('windows-build-meta')
     };
 
     const state = {
@@ -1274,6 +1275,7 @@
                 const status = await fetchJson(`/api/providers/windows-app/build/status?request_id=${encodeURIComponent(requestId)}`);
                 if (status.phase === 'success') {
                     finishWindowsBuild('Build publicado', `Versión ${version} distribuida correctamente.`);
+                    loadWindowsBuildMeta();
                 } else if (status.phase === 'failure') {
                     finishWindowsBuild('El build falló', status.runUrl ? `Revisa el run en GitHub: ${status.runUrl}` : 'Revisa el workflow en GitHub Actions.');
                 } else {
@@ -1296,6 +1298,28 @@
             pollWindowsBuild(requestId, version);
         } catch (error) {
             finishWindowsBuild('No se pudo iniciar el build', error.message || 'Intenta de nuevo.');
+        }
+    }
+
+    async function loadWindowsBuildMeta() {
+        if (!dom.windowsBuildMeta) return;
+        try {
+            const info = await fetchJson('/api/providers/windows-app/build-info');
+            if (!info.lastBuildAt) {
+                dom.windowsBuildMeta.textContent = 'Aún no se ha distribuido ningún build.';
+                return;
+            }
+            const when = formatDateTime(info.lastBuildAt);
+            const freshness = info.upToDate === true
+                ? 'al día con main'
+                : info.upToDate === false
+                    ? 'desactualizado, main tiene cambios nuevos'
+                    : '';
+            dom.windowsBuildMeta.textContent = freshness
+                ? `Último build: ${when} · ${freshness}`
+                : `Último build: ${when}`;
+        } catch (error) {
+            dom.windowsBuildMeta.textContent = '';
         }
     }
 
@@ -1707,4 +1731,5 @@
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') closeWindowsDownloadMenu();
     });
+    loadWindowsBuildMeta();
 })();

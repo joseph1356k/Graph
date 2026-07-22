@@ -159,6 +159,53 @@ class WindowsAppReleaseService {
       url: `${this.supabaseUrl}/storage/v1/object/public/windows/${setupAsset.FileName}`
     };
   }
+
+  // Distingue builds reales de pruebas dry-run por el tag que el propio
+  // workflow escribe en su run-name (ver windows-app/.github/workflows/windows-release.yml),
+  // ya que la API de runs de GitHub no expone los inputs del dispatch.
+  async getLastBuildStatus() {
+    this.assertConfigured();
+
+    const params = new URLSearchParams({ event: 'workflow_dispatch', status: 'success', per_page: '25' });
+    const response = await this.fetchImpl(
+      `https://api.github.com/repos/${this.repo}/actions/workflows/${this.workflowFile}/runs?${params.toString()}`,
+      { headers: this.githubHeaders(), cache: 'no-store' }
+    );
+    if (!response.ok) {
+      const payload = await response.text();
+      const error = new Error(`GitHub no devolvió el historial de builds: ${payload.slice(0, 220) || `HTTP ${response.status}`}`);
+      error.statusCode = 502;
+      throw error;
+    }
+    const payload = await response.json();
+    const runs = Array.isArray(payload?.workflow_runs) ? payload.workflow_runs : [];
+    const lastRealRun = runs.find((run) => `${run?.display_title || ''}`.includes('[real]'));
+
+    if (!lastRealRun) {
+      return { lastBuildAt: null, headSha: null, latestMainSha: null, upToDate: null };
+    }
+
+    let latestMainSha = null;
+    try {
+      const branchResponse = await this.fetchImpl(
+        `https://api.github.com/repos/${this.repo}/commits/${this.branch}`,
+        { headers: this.githubHeaders(), cache: 'no-store' }
+      );
+      if (branchResponse.ok) {
+        const branchPayload = await branchResponse.json();
+        latestMainSha = branchPayload?.sha || null;
+      }
+    } catch (error) {
+      latestMainSha = null;
+    }
+
+    return {
+      lastBuildAt: lastRealRun.updated_at || lastRealRun.run_started_at || null,
+      headSha: lastRealRun.head_sha || null,
+      latestMainSha,
+      upToDate: latestMainSha ? latestMainSha === lastRealRun.head_sha : null
+    };
+  }
 }
 
 module.exports = WindowsAppReleaseService;

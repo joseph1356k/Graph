@@ -19,17 +19,20 @@
                         <strong id="provider-studio-overall-status">Sincronizando</strong>
                     </div>
                 </div>
-                <div class="studio-split-button" id="windows-download-split">
-                    <a class="button primary studio-split-main" id="windows-download-main" href="/api/windows/latest-installer">Descargar App</a>
-                    <button type="button" class="studio-split-caret" id="windows-download-caret" aria-haspopup="true" aria-expanded="false" aria-label="Más opciones de distribución">
-                        <svg class="studio-topbar-caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v7m0 0 3-3m-3 3L5 6m-2 7h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </button>
-                    <div class="studio-split-menu is-hidden" id="windows-download-menu" role="menu">
-                        <button type="button" class="studio-split-menu-item" id="windows-distribute-trigger" role="menuitem">Distribuir App</button>
-                        <button type="button" class="studio-split-menu-item" id="provider-studio-extension-download" role="menuitem" title="Descarga la extensión de Chrome empaquetada en tiempo real">
-                            <strong id="provider-studio-extension-label">Descargar extensión</strong>
+                <div class="studio-download-block">
+                    <div class="studio-split-button" id="windows-download-split">
+                        <a class="button primary studio-split-main" id="windows-download-main" href="/api/windows/latest-installer">Descargar App</a>
+                        <button type="button" class="studio-split-caret" id="windows-download-caret" aria-haspopup="true" aria-expanded="false" aria-label="Más opciones de distribución">
+                            <svg class="studio-topbar-caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v7m0 0 3-3m-3 3L5 6m-2 7h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </button>
+                        <div class="studio-split-menu is-hidden" id="windows-download-menu" role="menu">
+                            <button type="button" class="studio-split-menu-item" id="windows-distribute-trigger" role="menuitem">Distribuir App</button>
+                            <button type="button" class="studio-split-menu-item" id="provider-studio-extension-download" role="menuitem" title="Descarga la extensión de Chrome empaquetada en tiempo real">
+                                <strong id="provider-studio-extension-label">Descargar extensión</strong>
+                            </button>
+                        </div>
                     </div>
+                    <p class="studio-build-meta" id="windows-build-meta"></p>
                 </div>
             </div>
             <div class="studio-build-progress is-hidden" id="windows-build-progress" role="status" aria-live="polite">

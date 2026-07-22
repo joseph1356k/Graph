@@ -46,6 +46,15 @@ function registerWindowsDistributionRoutes(app, deps = {}) {
     }
   });
 
+  app.get('/api/providers/windows-app/build-info', requireProviderAdmin, async (req, res) => {
+    try {
+      res.json(await windowsAppReleaseService.getLastBuildStatus());
+    } catch (error) {
+      console.error(`[Windows App] getLastBuildStatus error: ${error.message}`);
+      res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible leer el último build.' });
+    }
+  });
+
   // Pública a propósito: no pasa por requireAccountAuth/requireApiKey (ver
   // web/server.js, prefijos /api/providers, /api/android y /api/v1 — este
   // path no coincide con ninguno).
