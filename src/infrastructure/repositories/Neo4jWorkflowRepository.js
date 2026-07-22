@@ -572,12 +572,18 @@ class Neo4jWorkflowRepository {
     return wf.length > 0 ? wf[0].desc : 'No description';
   }
 
-  async completeWorkflow(workflowId, summary, executionGuide = '', access = null) {
+  async completeWorkflow(workflowId, summary, executionGuide = '', access = null, title = null) {
     const params = { id: workflowId, summary, executionGuide };
     const mutableClause = this.buildMutableWorkflowClause('w', access, params);
     const whereClause = mutableClause ? `WHERE ${mutableClause}` : '';
+    // title (opcional): título automático generado al finalizar cuando se enseñó sin descripción.
+    let titleClause = '';
+    if (typeof title === 'string' && title.trim()) {
+      params.title = title.trim();
+      titleClause = ', w.description = $title';
+    }
     await this.db.run(
-      `MATCH (w:Workflow {id: $id}) ${whereClause} SET w.status = "done", w.summary = $summary, w.executionGuide = $executionGuide, w.completedAt = timestamp()`,
+      `MATCH (w:Workflow {id: $id}) ${whereClause} SET w.status = "done", w.summary = $summary, w.executionGuide = $executionGuide, w.completedAt = timestamp()${titleClause}`,
       params
     );
   }

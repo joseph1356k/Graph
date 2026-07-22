@@ -125,7 +125,15 @@ class WorkflowLearner {
       console.warn(`[WorkflowLearner] valueMode classify: ${err.message}`);
     }
 
-    await this.repository.completeWorkflow(workflowId, summary, executionGuide, options.access || null);
+    // Título automático: si se enseñó sin título (placeholder del recorder o vacío), el título se crea
+    // al final a partir de lo aprendido (el summary). Así "Enseñar" es plug-and-play, sin pedir título.
+    const desc = `${initialDesc || ''}`.trim();
+    const isPlaceholder = desc === '' || desc.toLowerCase() === 'workflow sin descripción';
+    const autoTitle = isPlaceholder
+      ? (`${summary || ''}`.split(/[.\n]/)[0].trim().slice(0, 80) || null)
+      : null;
+
+    await this.repository.completeWorkflow(workflowId, summary, executionGuide, options.access || null, autoTitle);
 
     // Rebuild catalog
     if (this.catalogService && this.catalogWriter) {
