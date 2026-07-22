@@ -1,0 +1,16 @@
+{
+  "note": "Índice de la documentación viva del sistema, mostrada en Provider Studio. Para añadir un doc: crea el .md en esta carpeta y agrégalo aquí bajo su tema.",
+  "topics": [
+    {
+      "topic": "Workflows y superficies",
+      "docs": [
+        {
+          "id": "coincidencia-superficie-estado",
+          "title": "Coincidencia de superficie y estado: los 3 escenarios",
+          "summary": "Cuándo un workflow exige la misma pantalla/estado exacto y cuándo generaliza — decidido por el LLM.",
+          "file": "coincidencia-superficie-estado.md"
+        }
+      ]
+    }
+  ]
+}

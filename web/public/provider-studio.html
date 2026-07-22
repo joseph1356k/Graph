@@ -646,11 +646,32 @@
             </div>
 
         </section>
+
+        <!-- Documentación viva del sistema: los detalles de arquitectura que se entienden con el
+             tiempo, como documentos por tema. Fuente: /studio-docs/index.json + archivos .md. -->
+        <section class="studio-docs" id="studio-docs" aria-label="Documentación del sistema">
+            <div class="studio-docs-head">
+                <h2>Documentación</h2>
+                <p>Los detalles de arquitectura que vamos entendiendo con el tiempo.</p>
+            </div>
+            <div id="studio-docs-topics" class="studio-docs-topics">
+                <p class="studio-docs-loading">Cargando documentación…</p>
+            </div>
+        </section>
     </main>
+
+    <!-- Lector: se abre al hacer clic en un documento. -->
+    <div class="studio-docs-reader is-hidden" id="studio-docs-reader" role="dialog" aria-modal="true">
+        <div class="studio-docs-reader-panel">
+            <button type="button" class="studio-docs-close" id="studio-docs-close" aria-label="Cerrar">✕</button>
+            <article class="studio-docs-content" id="studio-docs-content"></article>
+        </div>
+    </div>
 
     <script src="/auth-gate.js"></script>
     <script src="/admin-workspace.js"></script>
     <script src="/provider-studio.js?v=3"></script>
+    <script src="/studio-docs.js"></script>
     <script>
       (function () {
         const els = {

@@ -1636,3 +1636,55 @@ button.android-crumb:focus-visible {
     .viz-pulse-rise, .viz-pulse-throw, .viz-pulse-return, .viz-pulse-learn, .viz-circle circle { animation: none; }
     .viz-pulse-throw, .viz-pulse-return { opacity: 0.7; }
 }
+
+/* ───────────── Documentación viva (Provider Studio) ───────────── */
+.studio-docs { margin: 34px auto 40px; max-width: 960px; padding: 0 8px; }
+.studio-docs-head h2 { margin: 0 0 2px; font-size: 20px; }
+.studio-docs-head p { margin: 0 0 16px; font-size: 13px; color: var(--muted); }
+.studio-docs-group { margin-bottom: 18px; }
+.studio-docs-topic {
+    margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted); font-weight: 600;
+}
+.studio-docs-topics { display: block; }
+.studio-docs-card {
+    display: block; width: 100%; text-align: left; cursor: pointer;
+    margin: 0 0 8px; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.03); color: inherit;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.studio-docs-card:hover { border-color: rgba(255, 255, 255, 0.22); background: rgba(255, 255, 255, 0.06); transform: translateY(-1px); }
+.studio-docs-card-title { display: block; font-size: 14px; font-weight: 600; }
+.studio-docs-card-sum { display: block; margin-top: 3px; font-size: 12px; color: var(--muted); }
+.studio-docs-loading { font-size: 13px; color: var(--muted); }
+
+.studio-docs-reader {
+    position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
+    padding: 24px; background: rgba(0, 0, 0, 0.62); backdrop-filter: blur(4px);
+}
+.studio-docs-reader.is-hidden { display: none; }
+.studio-docs-reader-panel {
+    position: relative; width: 100%; max-width: 720px; max-height: 84vh; overflow: auto;
+    padding: 28px 30px; border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.12); background: #0b0b0d;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+.studio-docs-close {
+    position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; cursor: pointer;
+    border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.75); font-size: 14px;
+}
+.studio-docs-close:hover { background: rgba(255, 255, 255, 0.12); }
+.studio-docs-content { color: rgba(255, 255, 255, 0.88); line-height: 1.6; font-size: 14px; }
+.studio-docs-content h1 { font-size: 22px; margin: 0 0 14px; }
+.studio-docs-content h2 { font-size: 17px; margin: 22px 0 8px; }
+.studio-docs-content h3 { font-size: 14px; margin: 18px 0 6px; color: rgba(255, 255, 255, 0.95); }
+.studio-docs-content p { margin: 0 0 12px; }
+.studio-docs-content ul { margin: 0 0 12px; padding-left: 20px; }
+.studio-docs-content li { margin: 3px 0; }
+.studio-docs-content code { background: rgba(255, 255, 255, 0.08); padding: 1px 5px; border-radius: 5px; font-size: 12.5px; }
+.studio-docs-content pre { background: rgba(255, 255, 255, 0.05); padding: 12px 14px; border-radius: 10px; overflow-x: auto; margin: 0 0 12px; }
+.studio-docs-content pre code { background: none; padding: 0; }
+.studio-docs-content hr { border: none; border-top: 1px solid rgba(255, 255, 255, 0.12); margin: 18px 0; }
+.studio-docs-content a { color: #7db4ff; }
