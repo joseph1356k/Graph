@@ -108,6 +108,8 @@ class WorkflowCatalog {
           surfaceSection: row.surfaceSection,
           surfaceHints: row.surfaceHints,
           allowedOptions: row.allowedOptions,
+          valueMode: row.valueMode,
+          bindTo: row.bindTo,
           stepOrder: row.stepOrder
         });
       }

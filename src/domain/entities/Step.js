@@ -53,7 +53,17 @@ class Step {
           label: normalizeText(option?.label),
           text: normalizeText(option?.text)
         }))
-    
+
+    // Elasticidad de coincidencia por step (los 3 escenarios, ver doc "coincidencia-superficie-estado"):
+    //   fixed    → usa el valor exacto enseñado (default; comportamiento de siempre).
+    //   dynamic  → valor por-ejecución (del contexto); bindTo lo ata a otra variable (consistencia).
+    //   flexible → el valor exacto no importa; si no resuelve, el ejecutor salta el step sin fallar.
+    // Lo fija el LLM organizador al terminar la grabación (WorkflowLearner). Retrocompatible: sin él, 'fixed'.
+    this.valueMode = ['fixed', 'dynamic', 'flexible'].includes(normalizeText(data.valueMode))
+      ? normalizeText(data.valueMode)
+      : 'fixed';
+    this.bindTo = normalizeText(data.bindTo);
+
     this.stepOrder = Number.isFinite(data.stepOrder) ? data.stepOrder : Number(data.stepOrder);
   }
 }

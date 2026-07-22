@@ -149,6 +149,73 @@ class WorkflowExecutionGuideBuilder {
       return draft;
     }
   }
+
+  // Clasifica CÓMO debe coincidir el valor de cada step al reejecutar (los 3 escenarios). Devuelve
+  // [{stepOrder, valueMode, bindTo}] solo para steps input/select/click. Fail-safe: ante cualquier duda
+  // o error → [] (el default 'fixed' del Step mantiene el comportamiento de siempre, sin regresión).
+  async classifyValueModes(workflow = {}) {
+    const steps = (Array.isArray(workflow.steps) ? workflow.steps : [])
+      .map((s) => ({
+        stepOrder: s.stepOrder,
+        actionType: `${s.actionType || ''}`.trim().toLowerCase(),
+        label: `${s.label || ''}`.trim(),
+        value: `${s.value || s.selectedLabel || s.semanticTarget || ''}`.trim()
+      }));
+    const classifiable = steps.filter((s) => ['input', 'select', 'click'].includes(s.actionType));
+    if (!classifiable.length || !this.llmProvider || typeof this.llmProvider.hasApiKey !== 'function' || !this.llmProvider.hasApiKey()) {
+      return [];
+    }
+
+    try {
+      const content = await this.llmProvider.chat([
+        {
+          role: 'system',
+          content: [
+            'You classify how each step of a learned UI workflow must match its value when REPLAYED, so the workflow generalizes correctly across runs and apps.',
+            'For each input/select/click step pick exactly one valueMode:',
+            '- "fixed": always reuse the exact taught value (e.g. a specific document or patient the user explicitly wants every time).',
+            '- "dynamic": the value changes per run (comes from the user/context). Set "bindTo" to another step variable ("input_<stepOrder>" or "target_<stepOrder>") ONLY when the value must equal a previous step (e.g. "same patient as step 4").',
+            '- "flexible": the exact value does not matter (e.g. selecting "the new tab", opening "a new blank note", picking any item). On replay it is best-effort and skippable.',
+            'Use the description, summary, context notes (what the user SAID while teaching) and the step sequence as signals. A selection of a just-created item (a tab/note created by a preceding "add/new" click) is almost always "flexible". When genuinely unsure, choose "fixed" (safest).',
+            'Return ONLY a JSON array, no prose: [{"stepOrder":N,"valueMode":"fixed|dynamic|flexible","bindTo":""}].'
+          ].join(' ')
+        },
+        {
+          role: 'user',
+          content: JSON.stringify({
+            description: workflow.description || '',
+            summary: workflow.summary || '',
+            contextNotes: Array.isArray(workflow.contextNotes) ? workflow.contextNotes : [],
+            steps
+          })
+        }
+      ]);
+      return this.parseValueModes(content, classifiable);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  parseValueModes(content, classifiable) {
+    const allowedOrders = new Set(classifiable.map((c) => Number(c.stepOrder)));
+    const modes = ['fixed', 'dynamic', 'flexible'];
+    let arr;
+    try {
+      const match = `${content || ''}`.match(/\[[\s\S]*\]/); // tolera texto alrededor del JSON
+      arr = JSON.parse(match ? match[0] : `${content}`);
+    } catch (error) {
+      return [];
+    }
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .filter((x) => x && allowedOrders.has(Number(x.stepOrder)))
+      .map((x) => ({
+        stepOrder: Number(x.stepOrder),
+        valueMode: modes.includes(`${x.valueMode || ''}`.trim().toLowerCase()) ? `${x.valueMode}`.trim().toLowerCase() : 'fixed',
+        bindTo: `${x.bindTo || ''}`.trim()
+      }))
+      .filter((x) => x.valueMode !== 'fixed' || x.bindTo); // fixed sin bindTo es el default: no hace falta persistir
+  }
 }
 
 module.exports = WorkflowExecutionGuideBuilder;

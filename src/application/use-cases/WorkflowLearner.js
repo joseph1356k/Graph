@@ -110,6 +110,21 @@ class WorkflowLearner {
       executionGuide = this.executionGuideBuilder.buildDraft(summary || initialDesc, workflow.steps || []);
     }
 
+    // El LLM clasifica cómo debe coincidir el valor de cada step al reejecutar (fixed/dynamic/flexible):
+    // así el workflow generaliza (ej. "la pestaña nueva" = flexible, no la exacta grabada). Fail-safe:
+    // si no clasifica, cada step queda 'fixed' (comportamiento de siempre). Ver doc coincidencia-superficie-estado.
+    try {
+      if (typeof this.executionGuideBuilder.classifyValueModes === 'function'
+          && typeof this.repository.setStepValueModes === 'function') {
+        const modes = await this.executionGuideBuilder.classifyValueModes({ ...workflow.toJSON(), summary });
+        if (modes.length) {
+          await this.repository.setStepValueModes(workflowId, modes, options.access || null);
+        }
+      }
+    } catch (err) {
+      console.warn(`[WorkflowLearner] valueMode classify: ${err.message}`);
+    }
+
     await this.repository.completeWorkflow(workflowId, summary, executionGuide, options.access || null);
 
     // Rebuild catalog

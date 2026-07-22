@@ -165,6 +165,8 @@ class Neo4jWorkflowRepository {
              s.surfaceSection as surfaceSection,
              s.surfaceHints as surfaceHints,
              s.allowedOptions as allowedOptions,
+             s.valueMode as valueMode,
+             s.bindTo as bindTo,
              s.stepOrder as stepOrder
       ORDER BY w.id ASC, s.stepOrder ASC
     `, params);
@@ -536,8 +538,26 @@ class Neo4jWorkflowRepository {
              s.surfaceSection as surfaceSection,
              s.surfaceHints as surfaceHints,
              s.allowedOptions as allowedOptions,
+             s.valueMode as valueMode,
+             s.bindTo as bindTo,
              s.stepOrder as stepOrder
       ORDER BY s.stepOrder ASC
+    `, params);
+  }
+
+  // Fija los modos de valor (fixed/dynamic/flexible + bindTo) por step, sin reescribir el workflow.
+  // Lo llama WorkflowLearner tras clasificar con el LLM al terminar la grabación.
+  async setStepValueModes(workflowId, modes = [], access = null) {
+    if (!Array.isArray(modes) || modes.length === 0) return;
+    const params = { id: workflowId, modes };
+    const mutableClause = this.buildMutableWorkflowClause('w', access, params);
+    const whereClause = mutableClause ? `WHERE ${mutableClause}` : '';
+    await this.db.run(`
+      MATCH (w:Workflow {id: $id}) ${whereClause}
+      WITH w
+      UNWIND $modes AS m
+      MATCH (w)-[:HAS_STEP]->(s:Step {stepOrder: m.stepOrder})
+      SET s.valueMode = m.valueMode, s.bindTo = m.bindTo
     `, params);
   }
 
