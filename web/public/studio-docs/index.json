@@ -46,6 +46,23 @@
           "file": "motor-navegacion-superficie.md"
         }
       ]
+    },
+    {
+      "topic": "Distribución y seguridad",
+      "docs": [
+        {
+          "id": "distribucion-app-conectada",
+          "title": "Distribución: el .exe llega conectado, sin config del usuario",
+          "summary": "Cómo el Setup.exe distribuido funciona de fábrica: la API key de Graph se hornea en el build vía CI, sin secretos en el repo.",
+          "file": "distribucion-app-conectada.md"
+        },
+        {
+          "id": "autenticacion-interna-plan",
+          "title": "Autenticación interna: enrolamiento por instalación (PLAN)",
+          "summary": "La siguiente mejora: identidad por instalación (enroll + token en DB) manteniendo el cero-config. Analizada y decidida.",
+          "file": "autenticacion-interna-plan.md"
+        }
+      ]
     }
   ]
 }
