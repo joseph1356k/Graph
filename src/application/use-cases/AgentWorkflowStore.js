@@ -50,12 +50,18 @@ class AgentWorkflowStore {
       .map(AgentWorkflowStore.toAgentWorkflow);
   }
 
-  /** Misma regla que WorkflowPlayer.SurfaceMismatch: campos vacíos del workflow no restringen. */
+  /**
+   * Misma regla que WorkflowPlayer.SurfaceMismatch: campos vacíos del workflow no restringen, y el
+   * pathname SOLO acota superficies con ruta estable (web/sapgui). En apps nativas (uia://) el
+   * pathname es el título/documento (instancia, no identidad): se scopea por app. Así un workflow de
+   * Notepad aparece por MCP en cualquier nota, no solo en la que se grabó.
+   */
   static matchesSurface(wf, origin, pathname) {
     const wfOrigin = `${wf.sourceOrigin || ''}`.trim();
     const wfPathname = `${wf.sourcePathname || ''}`.trim();
     if (wfOrigin && wfOrigin.toLowerCase() !== origin.toLowerCase()) return false;
-    if (wfPathname && wfPathname.toLowerCase() !== pathname.toLowerCase()) return false;
+    const pathnameScopes = !wfOrigin.toLowerCase().startsWith('uia://');
+    if (pathnameScopes && wfPathname && wfPathname.toLowerCase() !== pathname.toLowerCase()) return false;
     return true;
   }
 
