@@ -11,6 +11,17 @@
           "file": "coincidencia-superficie-estado.md"
         }
       ]
+    },
+    {
+      "topic": "Motores del cliente Windows",
+      "docs": [
+        {
+          "id": "motor-navegacion-superficie",
+          "title": "SurfaceNavigator: el motor que alcanza el punto de arranque",
+          "summary": "En vez de fallar cuando la pantalla no coincide, navega el SO hasta el punto de arranque del workflow — escalera de estrategias (enfocar → acceso directo → shell).",
+          "file": "motor-navegacion-superficie.md"
+        }
+      ]
     }
   ]
 }
