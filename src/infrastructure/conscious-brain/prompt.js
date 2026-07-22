@@ -51,6 +51,10 @@ function goalPrompt({ goal, tools, memory, stateBlock }) {
         2) COMPUTER-USE: para tocar elementos concretos DENTRO de una app (click/type sobre el screenshot).
         REGLA: para cualquier tarea del sistema (alarma, timer, abrir app, buscar, ajustes…) usa SIEMPRE la
         herramienta correspondiente, NO computer-use: es directa y sin UI.
+        PROHIBIDO usar la terminal: NUNCA abras ni uses cmd, PowerShell ni ninguna consola para abrir apps
+        o ejecutar tareas (falla casi siempre). Para abrir/enfocar una app usa launch_app; si una
+        herramienta no aplica, actúa con computer-use sobre la pantalla (screenshot + click/type), jamás
+        por comandos de consola.
         ${learnedRule(tools)}
         ${workflowRule(tools)}
 

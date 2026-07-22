@@ -28,14 +28,17 @@ class AgentWorkflowStore {
   }
 
   /**
-   * Workflows de la superficie actual, en el shape que espera workflowToMcp
-   * ({name, description, steps[{action, subconscious}]}) más el id real para
-   * que AgentTurnService pueda inyectarlo en la llamada MCP.
+   * Workflows que el cerebro declara este turno, en el shape que espera workflowToMcp
+   * ({name, description, steps[{action, app, subconscious}]}) más el id real para que
+   * AgentTurnService pueda inyectarlo en la llamada MCP.
+   *
+   * Se declaran TODOS los workflows (los de la superficie actual PRIMERO, el resto anotado
+   * con su app): el usuario puede pedir por chat una tarea aprendida estando en otra app, y
+   * el cliente ya sabe alinearse solo (abrir/enfocar la app del workflow) al ejecutarlo.
    */
   async workflows(userId, apps, surface = null) {
     const origin = `${surface?.origin || ''}`.trim();
     const pathname = `${surface?.pathname || ''}`.trim();
-    if (!origin) return [];
 
     let catalog;
     try {
@@ -44,8 +47,13 @@ class AgentWorkflowStore {
       return []; // sin Neo4j no hay workflows; el turno sigue con el catálogo base
     }
 
-    return catalog
-      .filter((wf) => AgentWorkflowStore.matchesSurface(wf, origin, pathname))
+    const usable = catalog.filter((wf) => Array.isArray(wf.steps) && wf.steps.length > 0);
+    const current = [];
+    const others = [];
+    for (const wf of usable) {
+      (origin && AgentWorkflowStore.matchesSurface(wf, origin, pathname) ? current : others).push(wf);
+    }
+    return [...current, ...others]
       .slice(0, MAX_WORKFLOW_TOOLS)
       .map(AgentWorkflowStore.toAgentWorkflow);
   }
@@ -67,9 +75,12 @@ class AgentWorkflowStore {
 
   /** Fila del catálogo Neo4j → workflow del agente (shape de workflowToMcp). */
   static toAgentWorkflow(wf) {
+    // La app del workflow (del sourceOrigin) se anota en los steps para que el tool MCP
+    // diga "[app: notepad.exe]": así el modelo sabe dónde vive aunque esté en otra superficie.
+    const app = `${wf.sourceOrigin || ''}`.replace(/^[a-z]+:\/\//i, '').split('/')[0];
     const steps = (Array.isArray(wf.steps) ? wf.steps : []).map((step) => ({
       action: `${step.explanation || step.label || step.actionType || 'paso'}`.slice(0, 80),
-      app: '',
+      app,
       subconscious: true
     }));
     return {
