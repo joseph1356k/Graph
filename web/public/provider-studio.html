@@ -55,12 +55,12 @@
 
         <section id="provider-studio-grid" class="studio-content is-hidden">
             <nav class="studio-surface-tabs" id="studio-surface-tabs" role="tablist" aria-label="Superficies">
-                <button type="button" class="studio-surface-tab is-active" role="tab" aria-selected="true" data-surface="web">Web App</button>
-                <button type="button" class="studio-surface-tab" role="tab" aria-selected="false" data-surface="windows">Windows App</button>
+                <button type="button" class="studio-surface-tab" role="tab" aria-selected="false" data-surface="web">Web App</button>
+                <button type="button" class="studio-surface-tab is-active" role="tab" aria-selected="true" data-surface="windows">Windows App</button>
                 <button type="button" class="studio-surface-tab" role="tab" aria-selected="false" data-surface="android">Android App</button>
             </nav>
 
-            <div class="studio-surface-panel" data-surface-panel="web">
+            <div class="studio-surface-panel is-hidden" data-surface-panel="web">
             <section class="studio-board">
                 <section class="studio-card is-collapsed" id="miracle-product-card">
                     <button type="button" class="studio-card-head" id="miracle-product-toggle" aria-expanded="false" aria-controls="miracle-product-body">
@@ -410,7 +410,7 @@
             </section>
             </div>
 
-            <div class="studio-surface-panel is-hidden" data-surface-panel="windows">
+            <div class="studio-surface-panel" data-surface-panel="windows">
 
             <!-- Visualización del sistema en vivo: a la IZQUIERDA el loop CONSCIENTE (analizar pantalla
                  → clic → vuelta, con pulsos de energía), a la DERECHA el SUBCONSCIENTE (MCP → workflows).
@@ -569,6 +569,43 @@
                     </div>
                 </section>
             </section>
+
+            <section class="studio-section studio-section-links">
+                <div class="studio-section-head">
+                    <div>
+                        <p class="studio-kicker">Validar</p>
+                        <h2>Superficies reales</h2>
+                    </div>
+                </div>
+                <div class="studio-links">
+                    <a class="studio-link" href="/miracle">
+                        <svg class="studio-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM15 3v5h4M9 13h6M9 17h6M9 9h2"/></svg>
+                        <span>Nota en blanco</span>
+                        <svg class="studio-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
+                    </a>
+                    <a class="studio-link" href="/emr-workspace.html">
+                        <svg class="studio-link-icon studio-link-play" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 3 16 9L5 21Z"/></svg>
+                        <span>Probar</span>
+                        <svg class="studio-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
+                    </a>
+                    <a class="studio-link" href="/assistant-lab.html">
+                        <svg class="studio-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H7l-3 3V4Z"/><path d="M8 9h8M8 12h5"/></svg>
+                        <span>Probar asistente</span>
+                        <svg class="studio-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
+                    </a>
+                    <a class="studio-link" href="/biopsy-lab.html">
+                        <svg class="studio-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H7l-3 3V4Z"/><path d="M8 9h8M8 12h5"/></svg>
+                        <span>Probar biopsia</span>
+                        <svg class="studio-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
+                    </a>
+                    <a class="studio-link" href="/visualize.html">Abrir Workflow Graph</a>
+                    <a class="studio-link" href="/usage-dashboard.html">
+                        <svg class="studio-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10h4v10H4Zm7 0V4h4v16h-4Zm7 0v-7h4v7h-4Z"/></svg>
+                        <span>Uso de tokens</span>
+                        <svg class="studio-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
+                    </a>
+                </div>
+            </section>
             </div>
 
             <div class="studio-surface-panel is-hidden" data-surface-panel="android">
@@ -661,17 +698,57 @@
                     </div>
                     <p id="android-users-message" class="form-message"></p>
                 </section>
+
+                <section class="studio-section studio-section-links">
+                    <div class="studio-section-head">
+                        <div>
+                            <p class="studio-kicker">Validar</p>
+                            <h2>Superficies reales</h2>
+                        </div>
+                    </div>
+                    <div class="studio-links">
+                        <a class="studio-link" href="/miracle">
+                            <svg class="studio-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM15 3v5h4M9 13h6M9 17h6M9 9h2"/></svg>
+                            <span>Nota en blanco</span>
+                            <svg class="studio-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
+                        </a>
+                        <a class="studio-link" href="/emr-workspace.html">
+                            <svg class="studio-link-icon studio-link-play" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 3 16 9L5 21Z"/></svg>
+                            <span>Probar</span>
+                            <svg class="studio-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
+                        </a>
+                        <a class="studio-link" href="/assistant-lab.html">
+                            <svg class="studio-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H7l-3 3V4Z"/><path d="M8 9h8M8 12h5"/></svg>
+                            <span>Probar asistente</span>
+                            <svg class="studio-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
+                        </a>
+                        <a class="studio-link" href="/biopsy-lab.html">
+                            <svg class="studio-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H7l-3 3V4Z"/><path d="M8 9h8M8 12h5"/></svg>
+                            <span>Probar biopsia</span>
+                            <svg class="studio-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
+                        </a>
+                        <a class="studio-link" href="/visualize.html">Abrir Workflow Graph</a>
+                        <a class="studio-link" href="/usage-dashboard.html">
+                            <svg class="studio-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10h4v10H4Zm7 0V4h4v16h-4Zm7 0v-7h4v7h-4Z"/></svg>
+                            <span>Uso de tokens</span>
+                            <svg class="studio-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
+                        </a>
+                    </div>
+                </section>
             </div>
 
         </section>
 
         <!-- Documentación viva del sistema: los detalles de arquitectura que se entienden con el
              tiempo, como documentos por tema. Fuente: /studio-docs/index.json + archivos .md. -->
-        <section class="studio-docs" id="studio-docs" aria-label="Documentación del sistema">
-            <div class="studio-docs-head">
-                <h2>Documentación</h2>
-                <p>Los detalles de arquitectura que vamos entendiendo con el tiempo.</p>
-            </div>
+        <section class="studio-docs is-collapsed" id="studio-docs" aria-label="Documentación del sistema">
+            <button type="button" class="studio-docs-head" id="studio-docs-toggle" aria-expanded="false" aria-controls="studio-docs-topics">
+                <div class="studio-docs-head-copy">
+                    <h2>Documentación</h2>
+                    <p>Los detalles de arquitectura que vamos entendiendo con el tiempo.</p>
+                </div>
+                <svg class="studio-docs-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>
+            </button>
             <div id="studio-docs-topics" class="studio-docs-topics">
                 <p class="studio-docs-loading">Cargando documentación…</p>
             </div>

@@ -1562,6 +1562,10 @@ button.android-crumb:focus-visible {
     .android-log-message {
         grid-column: 1 / -1;
     }
+
+    .studio-docs-topics {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1639,14 +1643,30 @@ button.android-crumb:focus-visible {
 
 /* ───────────── Documentación viva (Provider Studio) ───────────── */
 .studio-docs { margin: 34px auto 40px; max-width: 960px; padding: 0 8px; }
+.studio-docs-head {
+    all: unset; box-sizing: border-box; width: 100%; cursor: pointer;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 18px;
+}
+.studio-docs-head:focus-visible { outline: 1px solid #fff; outline-offset: 4px; border-radius: 8px; }
+.studio-docs-head-copy { min-width: 0; }
 .studio-docs-head h2 { margin: 0 0 2px; font-size: 20px; }
-.studio-docs-head p { margin: 0 0 16px; font-size: 13px; color: var(--muted); }
-.studio-docs-group { margin-bottom: 18px; }
+.studio-docs-head p { margin: 0; font-size: 13px; color: var(--muted); }
+.studio-docs-chevron {
+    width: 16px; height: 16px; flex: none; margin-top: 4px; fill: none;
+    stroke: rgba(255, 255, 255, 0.55); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+    transition: transform 160ms ease;
+}
+.studio-docs:not(.is-collapsed) .studio-docs-chevron { transform: rotate(180deg); }
+.studio-docs.is-collapsed .studio-docs-topics { display: none; }
+.studio-docs-group { margin-bottom: 0; }
 .studio-docs-topic {
     margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
     color: var(--muted); font-weight: 600;
 }
-.studio-docs-topics { display: block; }
+.studio-docs-topics {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 24px; margin-top: 16px; align-items: start;
+}
 .studio-docs-card {
     display: block; width: 100%; text-align: left; cursor: pointer;
     margin: 0 0 8px; padding: 12px 14px; border-radius: 12px;

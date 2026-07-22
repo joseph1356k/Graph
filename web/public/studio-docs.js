@@ -103,6 +103,16 @@
     });
   }
 
+  // Documentación colapsable: por defecto colapsada (solo título + subtítulo).
+  var docsSection = document.getElementById('studio-docs');
+  var docsToggle = document.getElementById('studio-docs-toggle');
+  if (docsSection && docsToggle) {
+    docsToggle.addEventListener('click', function () {
+      var collapsed = docsSection.classList.toggle('is-collapsed');
+      docsToggle.setAttribute('aria-expanded', String(!collapsed));
+    });
+  }
+
   if (closeBtn) closeBtn.addEventListener('click', closeDoc);
   reader.addEventListener('click', function (e) { if (e.target === reader) closeDoc(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !reader.classList.contains('is-hidden')) closeDoc(); });
