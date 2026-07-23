@@ -1040,8 +1040,14 @@
                 left: 50%;
                 bottom: -10px;
                 transform: translateX(-50%) translateY(4px);
-                min-width: 86px;
-                max-width: 138px;
+                /* Ancho fijo + una sola linea: antes el pill saltaba entre 1 y 2
+                   lineas (22px<->33px) y de 86px a 138px al alternar "Escuchando",
+                   "Organizando", "Llenando campos"... Fijarlo evita el parpadeo de
+                   tamano al lado de la carita. */
+                width: 118px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
                 padding: 5px 9px;
                 border-radius: 999px;
                 background: rgba(13, 22, 30, 0.88);
@@ -1886,13 +1892,14 @@
             noteButton.style.top = `${controlsTop}px`;
         }
         if (notePanel && notePanel.dataset.visible === 'true') {
-            const noteRect = notePanel.getBoundingClientRect();
-            const noteWidth = Math.max(noteRect.width, 240);
-            const noteHeight = Math.max(noteRect.height, 280);
-            const noteLeft = clamp(rawLeft, padding, Math.max(padding, window.innerWidth - noteWidth - padding));
-            const noteTop = clamp(currentBottom - noteHeight, padding, Math.max(padding, window.innerHeight - noteHeight - padding));
-            notePanel.style.left = `${noteLeft}px`;
-            notePanel.style.top = `${noteTop}px`;
+            // La hoja de notas vive anclada a una esquina fija de la pagina. Antes se
+            // reposicionaba respecto a la pila de mensajes (currentBottom) y a su propio
+            // alto, asi que mientras se transcribia el panel "saltaba" cada vez que el
+            // mensaje del asistente o el contenido cambiaban de tamano. Al fijarla a la
+            // esquina superior izquierda queda quieta y solo crece hacia abajo dentro de
+            // su max-height (con scroll interno del editor).
+            notePanel.style.left = `${padding}px`;
+            notePanel.style.top = `${padding}px`;
         }
     }
 
