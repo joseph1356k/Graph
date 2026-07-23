@@ -16,6 +16,8 @@ class WorkflowExecutor {
     if (step.actionType === 'select') return Boolean(step.selector);
     // Teclas de acción (Enter, etc.): no apuntan a un elemento, van al foco. Basta con la tecla.
     if (step.actionType === 'key') return Boolean(step.value || step.selector);
+    // Scroll: la rueda hasta un punto. El selector lleva la posición del panel; el value, el delta.
+    if (step.actionType === 'scroll') return Boolean(step.value || step.selector);
     return false;
   }
 
