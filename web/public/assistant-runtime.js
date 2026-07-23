@@ -56,8 +56,20 @@
             targetSide: 'left',
             blinkTimer: null,
             blinkRestoreTimer: null
+        },
+        movement: {
+            lastMoveAt: 0,
+            pendingTimer: null,
+            pendingSelector: null,
+            pendingOptions: null
         }
     };
+    // La carita anima su desplazamiento con una transicion CSS de 320ms. Durante
+    // el llenado automatico llegan pedidos de mover cada ~120ms hacia campos que
+    // no estan en orden espacial, asi que sin un limite la carita se teletransporta
+    // de un lado a otro sin asentarse. Este intervalo minimo la deja descansar en
+    // cada campo (un poco mas que la transicion) antes de saltar al siguiente.
+    const MIN_MOVE_INTERVAL_MS = 360;
     const ACTIVITY_LABELS = {
         voice: 'voz activa',
         note: 'dictado activo',
@@ -1559,6 +1571,7 @@
             const rect = shell.getBoundingClientRect();
 
             state.pinned = false;
+            cancelPendingMove();
             api.clearSpotlight();
             state.interaction.lastTouchAt = Date.now();
             emit('touched', { type: 'pointerdown' });
@@ -1632,7 +1645,17 @@
         });
     }
 
+    function cancelPendingMove() {
+        if (state.movement.pendingTimer) {
+            window.clearTimeout(state.movement.pendingTimer);
+            state.movement.pendingTimer = null;
+        }
+        state.movement.pendingSelector = null;
+        state.movement.pendingOptions = null;
+    }
+
     function pinShellBottomRight() {
+        cancelPendingMove();
         const { shell } = ensureElements();
         const padding = 28;
         const rect = shell.getBoundingClientRect();
@@ -2217,7 +2240,8 @@
                 return false;
             }
 
-            positionNearRect(element.getBoundingClientRect());
+            // El spotlight, el mensaje y el modo se actualizan de inmediato: no
+            // provocan el temblor, solo el desplazamiento de la carita lo hace.
             updateSpotlightForElement(options.spotlight === false ? null : element);
             if (options.message) {
                 showBubble(options.message);
@@ -2225,6 +2249,44 @@
             if (options.mode) {
                 setMode(options.mode);
             }
+
+            // El desplazamiento de la carita se limita para que alcance a asentarse
+            // en cada campo antes de saltar al siguiente. Si el ultimo movimiento fue
+            // muy reciente, se agenda un movimiento final hacia el campo mas nuevo
+            // (re-resolviendo el elemento por si la pagina se desplazo mientras tanto).
+            const now = Date.now();
+            const elapsed = now - state.movement.lastMoveAt;
+            if (elapsed >= MIN_MOVE_INTERVAL_MS) {
+                if (state.movement.pendingTimer) {
+                    window.clearTimeout(state.movement.pendingTimer);
+                    state.movement.pendingTimer = null;
+                }
+                state.movement.lastMoveAt = now;
+                positionNearRect(element.getBoundingClientRect());
+            } else {
+                state.movement.pendingSelector = selector;
+                state.movement.pendingOptions = options;
+                if (!state.movement.pendingTimer) {
+                    state.movement.pendingTimer = window.setTimeout(() => {
+                        state.movement.pendingTimer = null;
+                        const pendingSelector = state.movement.pendingSelector;
+                        const pendingOptions = state.movement.pendingOptions || {};
+                        state.movement.pendingSelector = null;
+                        state.movement.pendingOptions = null;
+                        if (state.pinned) {
+                            return;
+                        }
+                        const pendingElement = resolveElement(pendingSelector);
+                        if (!pendingElement) {
+                            return;
+                        }
+                        state.movement.lastMoveAt = Date.now();
+                        positionNearRect(pendingElement.getBoundingClientRect());
+                        updateSpotlightForElement(pendingOptions.spotlight === false ? null : pendingElement);
+                    }, MIN_MOVE_INTERVAL_MS - elapsed);
+                }
+            }
+
             emit('move', { selector, found: true, options });
             return true;
         },
