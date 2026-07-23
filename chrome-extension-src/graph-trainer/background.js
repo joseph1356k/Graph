@@ -1,3 +1,6 @@
+// Runner de Computer Use visual (una sola tarea activa). Expone self.VisualAgent.
+importScripts('visual-agent-core.js', 'visual-agent.js');
+
 const DEFAULT_BACKEND_URL = 'https://miracle-zeta.vercel.app';
 const AUTH_SESSION_KEY = 'graphTrainerAuthSession';
 
@@ -131,7 +134,33 @@ async function proxyApiFetch(request = {}) {
   }
 }
 
+// Mensajes del agente visual (Side Panel ↔ runner del service worker).
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (!message || typeof message.type !== 'string' || !message.type.startsWith('mira:agent')) {
+    return false;
+  }
+  const run = async () => {
+    switch (message.type) {
+      case 'mira:agent-start':
+        return self.VisualAgent.startTask({ goal: message.goal, tabId: message.tabId });
+      case 'mira:agent-stop':
+        return self.VisualAgent.stopTask();
+      case 'mira:agent-get-state':
+        return self.VisualAgent.getState();
+      default:
+        return null;
+    }
+  };
+  run()
+    .then((payload) => sendResponse({ ok: true, payload }))
+    .catch((error) => sendResponse({ ok: false, error: error.message || `${error}` }));
+  return true;
+});
+
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (typeof message?.type === 'string' && message.type.startsWith('mira:')) {
+    return false; // lo maneja el listener del agente visual
+  }
   const run = async () => {
     switch (message?.type) {
       case 'graph:auth-status':

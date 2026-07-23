@@ -5,7 +5,9 @@
   "version": "0.2.0",
   "permissions": [
     "storage",
-    "tabs"
+    "tabs",
+    "debugger",
+    "sidePanel"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -13,6 +15,9 @@
   "action": {
     "default_title": "Miracle",
     "default_popup": "popup.html"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
   },
   "background": {
     "service_worker": "background.js"

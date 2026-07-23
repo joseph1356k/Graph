@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Miracle · Agente visual</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { margin: 0; padding: 14px; font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #102033; background: #f7fbff; }
+    h1 { margin: 0 0 4px; font-size: 15px; }
+    .muted { color: #64748b; font-size: 12px; margin: 0 0 12px; }
+    label { display: block; margin: 10px 0 4px; font-weight: 600; font-size: 12px; }
+    input[type="text"], input[type="password"], textarea {
+      width: 100%; box-sizing: border-box; padding: 9px 11px; border: 1px solid #c7d7e6; border-radius: 9px; background: #fff; font: inherit;
+    }
+    textarea { resize: vertical; min-height: 62px; }
+    details { margin: 8px 0; }
+    summary { cursor: pointer; font-size: 12px; color: #0f5f8c; }
+    .row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+    .btns { display: flex; gap: 8px; margin-top: 12px; }
+    button { flex: 1; border: none; border-radius: 9px; padding: 10px 12px; font-weight: 700; cursor: pointer; }
+    #start { background: #0f5f8c; color: #fff; }
+    #stop { background: #fdecec; color: #a63f3f; }
+    button:disabled { opacity: 0.5; cursor: default; }
+    #statusBar { margin-top: 12px; padding: 9px 11px; border-radius: 9px; background: #eef6fc; font-size: 12px; }
+    #statusBar.run { background: #eafaf0; color: #1b6b4b; }
+    #statusBar.err { background: #fdecec; color: #a63f3f; }
+    #shot { width: 100%; border: 1px solid #c7d7e6; border-radius: 9px; margin-top: 10px; display: none; }
+    #log { margin-top: 10px; max-height: 300px; overflow: auto; border: 1px solid #dbe7f1; border-radius: 9px; background: #fff; }
+    .entry { padding: 7px 10px; border-bottom: 1px solid #eef3f8; font-size: 12px; }
+    .entry:last-child { border-bottom: none; }
+    .entry .k { font-weight: 700; color: #0f5f8c; }
+    .entry .x { color: #a63f3f; }
+    .entry small { color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <h1>🤖 Agente visual</h1>
+  <p class="muted">Computer Use por visión: el modelo mira la página (screenshot) y actúa por mouse/teclado. Dentro de la página todo es visual.</p>
+
+  <details id="cfg">
+    <summary>Configuración (backend + API key)</summary>
+    <label for="backendUrl">Backend URL</label>
+    <input id="backendUrl" type="text" placeholder="https://miracle-zeta.vercel.app">
+    <label for="apiKey">API key (X-API-Key)</label>
+    <input id="apiKey" type="password" placeholder="clave de MIRACLE_API_KEYS">
+    <label for="userId">User ID (opcional)</label>
+    <input id="userId" type="text" placeholder="anon">
+  </details>
+
+  <label for="goal">¿Qué quieres que haga?</label>
+  <textarea id="goal" placeholder="Abre YouTube, busca un video de cómo hacer pan y reprodúcelo"></textarea>
+
+  <div class="row">
+    <input id="useCurrent" type="checkbox">
+    <label for="useCurrent" style="margin:0;font-weight:600;">Usar la pestaña actual (si no, abre una nueva)</label>
+  </div>
+
+  <div class="btns">
+    <button id="start">▶ Iniciar</button>
+    <button id="stop" disabled>■ Detener</button>
+  </div>
+
+  <div id="statusBar">Listo.</div>
+  <img id="shot" alt="captura del agente">
+  <div id="log"></div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

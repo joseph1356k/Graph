@@ -509,6 +509,19 @@ async function init() {
   const authPasswordEl = document.getElementById('authPassword');
   const authLoginButton = document.getElementById('authLogin');
   const authLogoutButton = document.getElementById('authLogout');
+  const openVisualAgentButton = document.getElementById('openVisualAgent');
+
+  if (openVisualAgentButton) {
+    openVisualAgentButton.addEventListener('click', async () => {
+      try {
+        const win = await chrome.windows.getCurrent();
+        await chrome.sidePanel.open({ windowId: win.id });
+        window.close();
+      } catch (error) {
+        statusEl.textContent = `No se pudo abrir el panel: ${error.message || error}`;
+      }
+    });
+  }
 
   const renderAuthStatus = (session) => {
     const authenticated = Boolean(session?.authenticated);
