@@ -154,9 +154,34 @@ function baseCatalog() {
   return [...gestureTools, ...systemTools];
 }
 
+// Transporte de pestaña para el modo Computer Use VISUAL en el navegador. Es el
+// ÚNICO no-visual permitido: NO resuelve la tarea (buscar/reproducir/agendar
+// sigue siendo 100% por visión), solo lleva al agente hasta un sitio. El URL lo
+// decide el modelo. Se ejecuta en el cliente con chrome.tabs.update (ver
+// visual-agent-core.js). El chrome del navegador (barra/pestañas) no es
+// observable ni controlable visualmente por una extensión (verificado con CDP).
+const TRANSPORT_VIA = 'transporte de pestaña (chrome.tabs)';
+const navigateTool = {
+  name: 'navigate',
+  via: TRANSPORT_VIA,
+  description: 'Abre o navega la pestaña de trabajo a un URL. Úsalo SOLO para ir a un '
+    + 'sitio (p. ej. https://www.youtube.com). No lo uses para resolver la tarea dentro '
+    + 'de la página: eso se hace por visión (click/type/scroll sobre el screenshot).',
+  params: [{ name: 'url', description: 'URL completa a la que ir (incluye https://).' }]
+};
+
+/**
+ * Catálogo del modo VISUAL de navegador: solo el transporte `navigate`. Sin
+ * gestos de Windows, sin acciones de sistema, sin workflows: dentro de la página
+ * el modelo solo puede actuar con computer-use (screenshot + click/type/scroll).
+ */
+function browserVisualCatalog() {
+  return [navigateTool];
+}
+
 /** Nombres de las herramientas (para distinguir llamadas MCP vs funciones custom). */
 function catalogNames(tools) {
   return new Set(tools.map((tool) => tool.name));
 }
 
-module.exports = { baseCatalog, catalogNames, WORKFLOW_VIA, LEARNED_VIA };
+module.exports = { baseCatalog, browserVisualCatalog, navigateTool, catalogNames, WORKFLOW_VIA, LEARNED_VIA };

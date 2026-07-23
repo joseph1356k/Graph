@@ -23,7 +23,7 @@
 // reemplaza al CLIENT_TOKEN Bearer del backend viejo.
 
 const { freshSession, encodeSession, decodeSession } = require('../../domain/agent/session');
-const { baseCatalog, catalogNames } = require('../../domain/agent/mcpCatalog');
+const { baseCatalog, browserVisualCatalog, catalogNames } = require('../../domain/agent/mcpCatalog');
 const { learnedToMcp, workflowToMcp, InMemoryAgentLearningStore } = require('../../domain/agent/learning');
 const { runProviderTurn } = require('../../infrastructure/conscious-brain');
 const { resolveConsciousConfig } = require('../../infrastructure/conscious-brain/config');
@@ -98,6 +98,14 @@ class AgentTurnService {
 
     if (typeof body.inform === 'string') session.informText = body.inform;
 
+    // Modo Computer Use VISUAL de navegador (demo Miracle): dentro de la página el
+    // modelo solo actúa por visión; la ÚNICA herramienta es `navigate` (transporte
+    // de pestaña). Sin baseCatalog (open_url/create_event/…), sin aprendidas, sin
+    // workflows. La marca viaja en la sesión (blob opaco) para que openaiBrain elija
+    // el prompt de navegador en todos los turnos. No afecta el flujo de Windows.
+    const visual = `${body.state.mode || ''}`.trim() === 'browser-visual';
+    if (visual) session.mode = 'browser-visual';
+
     try {
       const apps = Array.isArray(body.state.apps) ? body.state.apps : [];
       const surface = {
@@ -105,8 +113,10 @@ class AgentTurnService {
         origin: `${body.state.surfaceOrigin || ''}`.trim(),
         pathname: `${body.state.surfacePathname || ''}`.trim()
       };
-      const { tools, workflowIdByTool } = await this.assembleTools(userId, apps, surface);
-      const memory = await this.memoryRepository.forPrompt(userId);
+      const { tools, workflowIdByTool } = visual
+        ? { tools: browserVisualCatalog(), workflowIdByTool: new Map() }
+        : await this.assembleTools(userId, apps, surface);
+      const memory = visual ? '' : await this.memoryRepository.forPrompt(userId);
 
       const { session: next, turn } = await this.runProviderTurn({
         session,

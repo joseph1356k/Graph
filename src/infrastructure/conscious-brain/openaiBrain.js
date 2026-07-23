@@ -12,7 +12,7 @@
 //  - Las acciones vienen en PÍXELES ABSOLUTOS del screenshot enviado; el cliente
 //    Windows captura a resolución real, así que la escala es 1.
 
-const { goalPrompt } = require('./prompt');
+const { goalPrompt, browserGoalPrompt } = require('./prompt');
 
 const OA_BASE = 'https://api.openai.com';
 
@@ -77,7 +77,11 @@ async function runOpenAiTurn(inp) {
   const s = JSON.parse(JSON.stringify(inp.session)); // copia mutable
   const { tools, mcpNames, memory, apps, state, results, apiKey } = inp;
 
-  const stateBlock = `Pantalla actual: ${state.screen}\nDónde estás (árbol de UI de Windows):\n${state.uiContext}`;
+  // Modo Computer Use VISUAL de navegador: sin árbol de UI (UIA), solo screenshot.
+  const visual = s.mode === 'browser-visual';
+  const stateBlock = visual
+    ? `Contexto: estás en un navegador. Página/URL actual: ${state.screen || '(desconocida)'}`
+    : `Pantalla actual: ${state.screen}\nDónde estás (árbol de UI de Windows):\n${state.uiContext}`;
   const input = [];
 
   const userMessage = (text) => {
@@ -87,7 +91,9 @@ async function runOpenAiTurn(inp) {
   };
 
   if (!s.previousId) {
-    userMessage(goalPrompt({ goal: s.goal, tools, memory, stateBlock }));
+    userMessage(visual
+      ? browserGoalPrompt({ goal: s.goal, stateBlock })
+      : goalPrompt({ goal: s.goal, tools, memory, stateBlock }));
   } else if (s.pending.length === 0) {
     userMessage(`${s.continuationMessage || s.informText || 'Continúa.'}\n${stateBlock}`);
     s.continuationMessage = '';
@@ -114,13 +120,31 @@ async function runOpenAiTurn(inp) {
       }
     });
     s.informText = '';
+    // Modo visual: garantiza que el modelo SIEMPRE vea el frame actual, aun cuando
+    // el turno previo fue navigate/ask_user (sin computer_call que cargue la captura).
+    // Sin esto, tras navegar el modelo decidiría a ciegas.
+    if (visual && !s.pending.some((call) => call.isComputer) && state.screenshot) {
+      input.push({
+        type: 'message', role: 'user', content: [
+          { type: 'input_text', text: 'Captura actual de la página:' },
+          { type: 'input_image', image_url: dataUri(state.screenshot), detail: 'original' }
+        ]
+      });
+    }
   }
 
-  const toolDecls = [{ type: 'computer' }];
+  // En modo visual, el tool computer lleva las dimensiones del screenshot y el
+  // entorno 'browser' (lo que espera computer-use para páginas web). En Windows se
+  // conserva EXACTAMENTE `{type:'computer'}` como estaba (no tocar el cliente).
+  const computerTool = visual
+    ? { type: 'computer', display_width: Number(state.width) || 1280, display_height: Number(state.height) || 800, environment: 'browser' }
+    : { type: 'computer' };
+  const toolDecls = [computerTool];
   for (const tool of tools) toolDecls.push(mcpFn(tool));
   toolDecls.push(customFn('ask_user', 'Pregunta al usuario cuando tengas una duda real e importante. Responde con texto o voz.', 'question'));
   toolDecls.push(customFn('speak', 'Di algo en voz alta con tu personalidad. Solo para lo importante; no narres cada paso.', 'text'));
-  toolDecls.push(customFn('list_apps', 'Lista las aplicaciones instaladas para elegir cuál abrir.', 'reason'));
+  // list_apps es específico de Windows; en modo visual de navegador no aplica.
+  if (!visual) toolDecls.push(customFn('list_apps', 'Lista las aplicaciones instaladas para elegir cuál abrir.', 'reason'));
 
   const reqBody = {
     model: s.model,
