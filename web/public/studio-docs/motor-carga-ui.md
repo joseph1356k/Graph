@@ -10,16 +10,27 @@ sistema de URLs de Windows, pero para el **estado de carga** de una pantalla.
 
 ---
 
-## La idea (una barra de carga aprendida)
+## La idea (esperar hasta que lo que buscamos esté listo)
 
-- Al **GRABAR**, se toma un snapshot de **cuántos elementos interactivos hay listos** en
-  esa ruta — esa es la **meta** (el 100% de carga de ese nodo).
-- Al **EJECUTAR**, antes de cada paso se compara el conteo **actual** contra la meta para
-  saber el **% cargado**, y **no se actúa** hasta superar un umbral (**80%**).
-- Es **resiliente**: si no llega al umbral, sigue esperando hasta un techo, y da una
-  **gracia final** (500 ms) por si el elemento objetivo tarda un poco más en aparecer.
+Señal **primaria** — el elemento objetivo: antes de cada paso se mira si el elemento que
+ese paso va a tocar **ya está presente y habilitado** (`IsStepReady`). En cuanto lo está,
+**se ejecuta YA**. Es la razón real de esperar, así que no tiene sentido esperar más.
 
-En los logs se ve como una barra: `carga UI [████████░░] 80% (24/30)`.
+Señal **de respaldo** — el % de carga: para pasos que no van a un elemento resoluble (o
+mientras el elemento aún no aparece), se usa una barra de carga aprendida:
+- Al **GRABAR** se guarda **cuántos elementos interactivos hay listos** en esa ruta (la
+  **meta**, el 100% de ese nodo).
+- Al **EJECUTAR** se compara el conteo actual contra la meta; si supera un umbral (**80%**)
+  se procede.
+
+Es **resiliente**: si nada se confirma dentro de un techo (4 s), se intenta igual.
+
+En los logs se ve la barra: `carga UI [████████░░] 80% (24/30)`, o directamente
+`elemento objetivo listo → ejecutar`.
+
+> Por qué el elemento manda sobre el %: el conteo total es **inestable** (una lista de SAP
+> tiene distinto nº de filas entre grabación y ejecución), así que esperar un % exacto es
+> frágil y lento. El elemento concreto que necesitamos, en cambio, o está o no está.
 
 ---
 
