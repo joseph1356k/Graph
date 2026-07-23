@@ -106,12 +106,20 @@ function browserGoalPrompt({ goal, stateBlock }) {
         REGLAS:
         - Trabaja SIEMPRE sobre lo que ves. No inventes elementos que no estén en el screenshot;
           si algo no está visible, haz scroll y vuelve a mirar.
-        - Después de cada acción la pantalla puede tardar en cambiar: si aún no cambió como
-          esperabas, MIRA otra vez (siguiente screenshot) o usa una espera corta, y reintenta.
-        - No te rindas tras una sola acción. Termina (responde SOLO con texto, sin llamar
-          herramientas ni computer-use) únicamente cuando el objetivo esté cumplido de verdad.
-        - Si de verdad necesitas un dato que no puedes ver ni deducir, usa ask_user. No preguntes
-          lo que puedas resolver mirando la pantalla.
+        - UNA acción principal por turno y vuelve a mirar. Después de un click, Enter, navegación,
+          scroll, abrir un modal o una carga, la pantalla suele tardar: observa el nuevo screenshot
+          ANTES de decidir el siguiente paso dependiente. Escribir un texto y luego Enter sí puede ir junto.
+        - Si tras una acción la pantalla NO cambió como esperabas, no repitas lo mismo: prueba otra
+          zona/otra vía (el click pudo caer al lado, o hacía falta enfocar primero).
+        - ESPERAS LARGAS (p. ej. generar una imagen): usa una espera y vuelve a observar; repite
+          mientras veas un indicador de progreso. Reconoce visualmente cuándo el resultado final ya
+          apareció y solo entonces termina. No te quedes esperando indefinidamente ni termines antes
+          de que el resultado sea visible.
+        - VERIFICA antes de terminar: confirma en el screenshot que el objetivo se cumplió (el video
+          reproduciéndose, el evento guardado y visible, la imagen ya generada). Termina respondiendo
+          SOLO con texto (sin llamar herramientas ni computer-use).
+        - Si de verdad necesitas un dato que no puedes ver ni deducir (una cuenta, un dato ambiguo),
+          usa ask_user. No preguntes lo que puedas resolver mirando la pantalla.
         - Habla corto y natural, en el idioma del usuario. No enumeres tus herramientas.
 
         ${stateBlock}`.trim();

@@ -102,6 +102,17 @@ onclick="document.title='P2CLICK'">Segundo</button></body></html>`;
   }, { goal: 'x', width: 1280, height: 800, settleMs: 50, maxTurns: 10 });
   check('shouldStop corta el loop (status stopped)', () => assert.strictEqual(cancelRes.status, 'stopped'));
 
+  // ---- ANTI-LOOP: pantalla sin cambios corta ----
+  console.log('\n[Anti-loop]');
+  await page.goto(`${BASE}/p1`);
+  const stuckRes = await core.runTaskLoop({
+    ...io, shouldStop: () => false,
+    // siempre toca una zona vacía → el screenshot no cambia
+    fetchTurn: async () => turn('s', [{ kind: 'tap', x: 900, y: 600 }])
+  }, { goal: 'x', width: 1280, height: 800, settleMs: 40, maxTurns: 20, stuckLimit: 3 });
+  check('pantalla sin cambios tras varias acciones → status stuck', () => assert.strictEqual(stuckRes.status, 'stuck'));
+  check('corta pronto (no agota maxTurns)', () => assert.ok(stuckRes.turns <= 5, `turns=${stuckRes.turns}`));
+
   // ---- detach limpio ----
   console.log('\n[Detach limpio]');
   await check('detach/cierre sin throw', async () => { await cdp.detach().catch(() => {}); });

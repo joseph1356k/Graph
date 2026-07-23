@@ -49,6 +49,11 @@
   </details>
 
   <label for="goal">¿Qué quieres que haga?</label>
+  <div class="row" style="flex-wrap:wrap;margin-top:0;margin-bottom:6px">
+    <button class="ex" type="button" data-goal="Abre YouTube, busca un video de cómo hacer pan y ponlo a reproducir" style="flex:0 0 auto;background:#eef6fc;color:#0f5f8c;padding:5px 9px;font-size:11px;font-weight:600">YouTube</button>
+    <button class="ex" type="button" data-goal="Abre ChatGPT, genera una imagen de un gato astronauta flotando sobre Medellín, estilo cinematográfico, y espera hasta que esté lista" style="flex:0 0 auto;background:#eef6fc;color:#0f5f8c;padding:5px 9px;font-size:11px;font-weight:600">ChatGPT</button>
+    <button class="ex" type="button" data-goal="Abre Google Calendar y crea una reunión el próximo martes a las 3:00 p. m. llamada Reunión con inversionistas, de 30 minutos, y guárdala" style="flex:0 0 auto;background:#eef6fc;color:#0f5f8c;padding:5px 9px;font-size:11px;font-weight:600">Calendar</button>
+  </div>
   <textarea id="goal" placeholder="Abre YouTube, busca un video de cómo hacer pan y reprodúcelo"></textarea>
 
   <div class="row">
@@ -62,7 +67,12 @@
   </div>
 
   <div id="statusBar">Listo.</div>
+  <div id="metrics" class="muted" style="margin-top:6px"></div>
   <img id="shot" alt="captura del agente">
+  <div class="row" style="justify-content:flex-end;margin-top:8px">
+    <button id="copyTrace" type="button" style="flex:0 0 auto;background:#e7f0f7;color:#0f5f8c;padding:6px 10px;font-size:12px">Copiar trace</button>
+    <button id="clearTrace" type="button" style="flex:0 0 auto;background:#f1f5f9;color:#475569;padding:6px 10px;font-size:12px">Limpiar</button>
+  </div>
   <div id="log"></div>
 
   <script src="sidepanel.js"></script>

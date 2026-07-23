@@ -17,6 +17,11 @@ const statusBar = $('statusBar');
 const shotImg = $('shot');
 const logEl = $('log');
 const cfgEl = $('cfg');
+const metricsEl = $('metrics');
+const copyTraceBtn = $('copyTrace');
+const clearTraceBtn = $('clearTrace');
+
+let lastState = null;
 
 function sendMessage(msg) {
   return new Promise((resolve, reject) => {
@@ -54,6 +59,7 @@ function saveConfig() {
 
 function render(state) {
   if (!state) return;
+  lastState = state;
   const running = !!state.running;
   startBtn.disabled = running;
   stopBtn.disabled = !running;
@@ -62,6 +68,7 @@ function render(state) {
     idle: 'Listo.', running: `Trabajando… (turno ${state.turns || 0})`, stopping: 'Deteniendo…',
     done: `✔ Terminado en ${state.turns || 0} turnos.`, stopped: 'Detenido.',
     timeout: `⏱ Límite alcanzado (${state.turns || 0} turnos).`,
+    stuck: `⚠ Sin cambios en pantalla; detenido (${state.turns || 0} turnos). Revisa el trace.`,
     question: `❓ Pregunta: ${(state.result && state.result.question) || ''}`,
     error: `✖ Error: ${(state.result && state.result.error) || ''}`
   }[state.status] || state.status;
@@ -73,6 +80,13 @@ function render(state) {
     shotImg.style.display = 'block';
   }
 
+  // Línea de métricas de calibración del último turno observado.
+  const lastDecided = [...(state.log || [])].reverse().find((e) => e.phase === 'decided');
+  if (lastDecided) {
+    const s = lastDecided.screenshotSize, v = lastDecided.viewportSize, sc = lastDecided.scale;
+    metricsEl.textContent = `URL: ${lastDecided.url || '—'} · shot ${s ? s.w + '×' + s.h : '?'} · viewport ${v ? v.w + '×' + v.h : '?'} · escala ${sc ? sc.x : '?'}`;
+  }
+
   logEl.innerHTML = '';
   (state.log || []).slice().reverse().forEach((e) => {
     const div = document.createElement('div');
@@ -82,17 +96,36 @@ function render(state) {
       body = `<span class="k">turno ${e.turnIndex}</span> ${(e.actions || []).join(', ') || '(fin)'}` +
         (e.narration ? ` — <em>${escapeHtml(e.narration)}</em>` : '') +
         (e.text ? ` — ${escapeHtml(e.text)}` : '');
+    } else if (e.phase === 'executed' && (e.orig || e.sent)) {
+      body = `<small>↳ ${escapeHtml(e.action || '')}${e.orig ? ` orig(${e.orig.x},${e.orig.y})→css(${e.sent.x},${e.sent.y})` : ''}</small>`;
     } else if (e.phase === 'exec-error' || e.phase === 'brain-error') {
       body = `<span class="x">error</span> ${escapeHtml(e.error || '')}`;
     } else if (e.phase === 'finish') {
       body = `<span class="k">fin</span> ${e.status} · ${Math.round((e.ms || 0) / 1000)}s`;
     } else {
-      return; // executed/exec detail: no saturar la UI
+      return;
     }
     div.innerHTML = `${body} <small>${new Date(e.t || Date.now()).toLocaleTimeString()}</small>`;
     logEl.appendChild(div);
   });
 }
+
+if (copyTraceBtn) {
+  copyTraceBtn.addEventListener('click', async () => {
+    const trace = JSON.stringify((lastState && lastState.log) || [], null, 2);
+    try { await navigator.clipboard.writeText(trace); copyTraceBtn.textContent = '¡Copiado!'; }
+    catch (e) { copyTraceBtn.textContent = 'No se pudo copiar'; }
+    setTimeout(() => { copyTraceBtn.textContent = 'Copiar trace'; }, 1500);
+  });
+}
+if (clearTraceBtn) {
+  clearTraceBtn.addEventListener('click', () => { logEl.innerHTML = ''; metricsEl.textContent = ''; });
+}
+
+// Ejemplos de meta (solo prefill del textarea; NO son flujos hardcodeados).
+document.querySelectorAll('.ex').forEach((btn) => {
+  btn.addEventListener('click', () => { goalEl.value = btn.getAttribute('data-goal') || ''; goalEl.focus(); });
+});
 
 function escapeHtml(s) { return `${s}`.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 

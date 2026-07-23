@@ -19,6 +19,30 @@
   const MAX_LOG = 60;
 
   let state = emptyState();
+  let attachedTabId = null;
+
+  // Reconexión del debugger si se desprende durante una tarea (p. ej. el usuario
+  // cerró el aviso de depuración o abrió DevTools). Si la pestaña se cerró, aborta.
+  try {
+    chrome.debugger.onDetach.addListener((source, reason) => {
+      if (!state.running || attachedTabId == null || !source || source.tabId !== attachedTabId) return;
+      if (reason === 'target_closed') {
+        state.running = false; state.status = 'error';
+        state.result = { status: 'error', error: 'La pestaña de trabajo se cerró.' };
+        persist(); return;
+      }
+      chrome.debugger.attach({ tabId: attachedTabId }, '1.3', () => {
+        const e = chrome.runtime.lastError;
+        if (e) {
+          state.running = false; state.status = 'error';
+          state.result = { status: 'error', error: `Debugger desconectado: ${e.message}` };
+          persist();
+        } else {
+          onLog({ turnIndex: state.turns, phase: 'info', note: 'debugger reconectado' });
+        }
+      });
+    });
+  } catch (e) { /* onDetach no disponible en tests */ }
 
   function emptyState() {
     return { running: false, goal: '', tabId: null, status: 'idle', turns: 0, log: [], lastScreenshot: '', startedAt: 0, result: null };
@@ -51,11 +75,13 @@
   // ---------- chrome.debugger promisificado ----------
   function dbgAttach(tabId) {
     return new Promise((resolve, reject) => chrome.debugger.attach({ tabId }, '1.3', () => {
-      const e = chrome.runtime.lastError; e ? reject(new Error(e.message)) : resolve();
+      const e = chrome.runtime.lastError;
+      if (e) return reject(new Error(e.message));
+      attachedTabId = tabId; resolve();
     }));
   }
   function dbgDetach(tabId) {
-    return new Promise((resolve) => chrome.debugger.detach({ tabId }, () => { void chrome.runtime.lastError; resolve(); }));
+    return new Promise((resolve) => chrome.debugger.detach({ tabId }, () => { void chrome.runtime.lastError; if (attachedTabId === tabId) attachedTabId = null; resolve(); }));
   }
   function mkCdpSend(tabId) {
     return (method, params) => new Promise((resolve, reject) => chrome.debugger.sendCommand({ tabId }, method, params || {}, (res) => {
@@ -121,6 +147,7 @@
   // ---------- API pública ----------
   async function startTask({ goal, tabId }) {
     if (state.running) throw new Error('Ya hay una tarea activa. Deténla primero.');
+    if (attachedTabId != null) { await dbgDetach(attachedTabId); } // limpia un debugger colgado de una tarea previa
     const cfg = await getConfig();
     if (!cfg.apiKey) throw new Error('Falta la API key (X-API-Key) en la configuración del Side Panel.');
     if (!`${goal || ''}`.trim()) throw new Error('Escribe una meta.');
