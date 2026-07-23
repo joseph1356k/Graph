@@ -1751,8 +1751,13 @@
                         syncMiracleNotePanel(miracleNoteState.active ? 'Dictando hacia Miracle...' : 'Lista para dictado con Miracle.');
                         return;
                     }
+                    // Cerrar la hoja ya NO detiene el dictado. Si Miracle esta escuchando,
+                    // sigue grabando y anotando en segundo plano (la carita conserva su
+                    // pulso de actividad); solo el boton de microfono detiene la grabacion.
+                    // Al reabrir la hoja se recupera el estado y el contenido acumulado.
                     if (miracleNoteState.active) {
-                        await stopMiracleNoteDictation().catch(() => {});
+                        syncMiracleNotePanel('Escuchando en segundo plano...');
+                        return;
                     }
                     stopMiracleDynamicFillSession();
                 });
