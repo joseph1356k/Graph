@@ -433,10 +433,10 @@
             :root {
                 --graph-assistant-glass-size: 151px;
                 --graph-assistant-glass-radius: 999px;
-                --graph-assistant-glass-highlight: rgba(255, 255, 255, 0.12);
-                --graph-assistant-glass-mid: rgba(255, 255, 255, 0.05);
-                --graph-assistant-glass-shadow: rgba(0, 0, 0, 0.35);
-                --graph-assistant-glass-border: rgba(255, 255, 255, 0.18);
+                --graph-assistant-glass-highlight: rgba(255, 255, 255, 0.24);
+                --graph-assistant-glass-mid: rgba(255, 255, 255, 0.08);
+                --graph-assistant-glass-shadow: rgba(0, 0, 0, 0.32);
+                --graph-assistant-glass-border: rgba(255, 255, 255, 0.36);
                 --graph-assistant-face-tint: #ffffff;
             }
             .graph-assistant-shell {
@@ -521,13 +521,21 @@
                 left: 16px;
                 top: 16px;
                 z-index: calc(var(--graph-assistant-z, 2147483000) + 1);
-                max-width: min(320px, calc(100vw - 136px));
-                padding: 12px 14px;
-                padding-bottom: 22px;
+                /* Tamano predeterminado FIJO: la burbuja de estado ya no cambia de
+                   tamano segun el texto (ni durante la animacion de tecleo). Antes,
+                   al crecer empujaba la fila de botones (su posicion depende del alto
+                   y ancho de la burbuja), volviendo casi imposible atinarle al boton
+                   de "abrir nota". Con caja fija, los botones quedan quietos. */
+                width: 232px;
+                height: 64px;
+                box-sizing: border-box;
+                display: flex;
+                align-items: center;
+                padding: 10px 14px;
                 border-radius: 18px;
                 background: rgba(20, 27, 34, 0.94);
                 color: #f8fbff;
-                font: 500 13px/1.45 "Inter", "Segoe UI", sans-serif;
+                font: 500 13px/1.35 "Inter", "Segoe UI", sans-serif;
                 box-shadow:
                     0 24px 64px rgba(2, 8, 18, 0.55),
                     0 0 0 1px rgba(255, 255, 255, 0.12),
@@ -544,8 +552,13 @@
                 transform: translateY(0);
             }
             .graph-assistant-bubble-text {
-                display: block;
-                white-space: pre-wrap;
+                display: -webkit-box;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 2;
+                line-clamp: 2;
+                overflow: hidden;
+                white-space: normal;
+                width: 100%;
             }
             .graph-assistant-user-bubble {
                 position: fixed;
@@ -713,8 +726,10 @@
                 top: 16px;
                 z-index: calc(var(--graph-assistant-z, 2147483000) + 5);
                 width: min(360px, calc(100vw - 32px));
-                min-height: 280px;
-                max-height: min(68vh, 620px);
+                /* Alto FIJO: al no cambiar de tamano con el contenido, anclada a la
+                   esquina inferior izquierda queda totalmente quieta mientras se
+                   transcribe (el editor hace scroll interno). */
+                height: min(70vh, 560px);
                 display: none;
                 box-sizing: border-box;
                 border-radius: 18px;
@@ -1011,11 +1026,18 @@
                 align-items: center;
                 justify-content: center;
                 background:
-                    linear-gradient(135deg, var(--graph-assistant-glass-highlight) 0%, var(--graph-assistant-glass-mid) 50%, rgba(255, 255, 255, 0.08) 100%);
-                backdrop-filter: blur(60px) saturate(180%);
-                -webkit-backdrop-filter: blur(60px) saturate(180%);
-                border: 0.5px solid var(--graph-assistant-glass-border);
-                box-shadow: 0 15px 50px var(--graph-assistant-glass-shadow);
+                    linear-gradient(140deg, var(--graph-assistant-glass-highlight) 0%, var(--graph-assistant-glass-mid) 48%, rgba(255, 255, 255, 0.03) 100%);
+                /* brightness(>1) levanta el fondo oscuro para que el cristal se
+                   perciba translucido incluso sobre el negro uniforme de la app.
+                   Solo con blur/saturate, sobre un fondo negro plano no hay nada
+                   claro que revelar y el disco se veia solido. */
+                backdrop-filter: blur(22px) saturate(150%) brightness(1.28);
+                -webkit-backdrop-filter: blur(22px) saturate(150%) brightness(1.28);
+                border: 1px solid var(--graph-assistant-glass-border);
+                box-shadow:
+                    inset 0 1px 1px rgba(255, 255, 255, 0.42),
+                    inset 0 -10px 24px rgba(255, 255, 255, 0.05),
+                    0 12px 34px var(--graph-assistant-glass-shadow);
                 transition: transform 180ms ease;
                 pointer-events: auto;
                 cursor: grab;
@@ -1892,14 +1914,14 @@
             noteButton.style.top = `${controlsTop}px`;
         }
         if (notePanel && notePanel.dataset.visible === 'true') {
-            // La hoja de notas vive anclada a una esquina fija de la pagina. Antes se
-            // reposicionaba respecto a la pila de mensajes (currentBottom) y a su propio
-            // alto, asi que mientras se transcribia el panel "saltaba" cada vez que el
-            // mensaje del asistente o el contenido cambiaban de tamano. Al fijarla a la
-            // esquina superior izquierda queda quieta y solo crece hacia abajo dentro de
-            // su max-height (con scroll interno del editor).
+            // La hoja de notas vive anclada a la esquina INFERIOR IZQUIERDA de la
+            // pagina, con alto fijo (ver CSS). Antes se reposicionaba respecto a la
+            // pila de mensajes y a su propio alto, asi que "saltaba" mientras se
+            // transcribia. Ahora su caja no cambia de tamano y el ancla es constante,
+            // por lo que queda totalmente quieta (el editor hace scroll interno).
+            const noteHeight = Math.max(notePanel.getBoundingClientRect().height, 280);
             notePanel.style.left = `${padding}px`;
-            notePanel.style.top = `${padding}px`;
+            notePanel.style.top = `${Math.max(padding, window.innerHeight - noteHeight - padding)}px`;
         }
     }
 
