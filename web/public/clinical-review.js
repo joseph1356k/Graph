@@ -13,46 +13,16 @@
         style.id = 'miracle-review-styles';
         style.textContent = [
             '.miracle-unconfirmed{outline:2px solid #f59e0b !important;outline-offset:1px;background-color:rgba(245,158,11,0.10) !important;transition:outline-color .2s;}',
-            '.miracle-unconfirmed.miracle-lowconf{outline-color:#ef4444 !important;background-color:rgba(239,68,68,0.12) !important;}',
-            '#miracle-review-chip{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:2147482500;display:none;align-items:center;gap:10px;padding:10px 14px;border-radius:999px;background:#7c2d12;color:#fff;font:600 13px Inter,system-ui,sans-serif;box-shadow:0 14px 30px rgba(0,0,0,.28);}',
-            '#miracle-review-chip button{border:0;border-radius:999px;padding:6px 12px;font:inherit;font-weight:700;cursor:pointer;}',
-            '#miracle-review-next{background:#fff;color:#7c2d12;}',
-            '#miracle-review-all{background:#22c55e;color:#06230f;}'
+            '.miracle-unconfirmed.miracle-lowconf{outline-color:#ef4444 !important;background-color:rgba(239,68,68,0.12) !important;}'
         ].join('');
         document.head.appendChild(style);
     }
 
-    function buildChip() {
-        let chip = document.getElementById('miracle-review-chip');
-        if (chip) return chip;
-        chip = document.createElement('div');
-        chip.id = 'miracle-review-chip';
-        const label = document.createElement('span');
-        label.id = 'miracle-review-label';
-        const next = document.createElement('button');
-        next.id = 'miracle-review-next';
-        next.type = 'button';
-        next.textContent = 'Revisar';
-        next.addEventListener('click', stepToNext);
-        const all = document.createElement('button');
-        all.id = 'miracle-review-all';
-        all.type = 'button';
-        all.textContent = 'Confirmar todo';
-        all.addEventListener('click', confirmAll);
-        chip.append(label, next, all);
-        (document.body || document.documentElement).appendChild(chip);
-        return chip;
-    }
-
     function updateChip() {
-        const chip = buildChip();
-        const label = document.getElementById('miracle-review-label');
-        if (unconfirmed.size === 0) {
-            chip.style.display = 'none';
-            return;
-        }
-        if (label) label.textContent = `⚠️ ${unconfirmed.size} campo(s) sin confirmar`;
-        chip.style.display = 'flex';
+        // Bottom review chip removed by design: the note panel already reports how
+        // many fields need confirmation, so no floating bar is shown anymore.
+        const chip = document.getElementById('miracle-review-chip');
+        if (chip) chip.remove();
     }
 
     function describe(meta) {
@@ -130,11 +100,6 @@
         if (looksLikeFinalize(event.target)) {
             event.preventDefault();
             event.stopPropagation();
-            const chip = buildChip();
-            chip.animate(
-                [{ transform: 'translateX(-50%) scale(1)' }, { transform: 'translateX(-50%) scale(1.08)' }, { transform: 'translateX(-50%) scale(1)' }],
-                { duration: 320 }
-            );
             stepToNext();
         }
     }, true);

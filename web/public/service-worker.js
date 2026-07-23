@@ -1,8 +1,8 @@
 // Miracle EMR service worker: makes the EMR shell installable and usable offline.
-// HTML is network-first (so code updates are picked up); same-origin static assets
-// are stale-while-revalidate (instant + offline, refreshed in the background).
+// HTML and same-origin static assets are network-first (fresh code on every online
+// load) with cache fallback so the shell still works offline.
 // API calls and cross-origin requests (OpenAI, CDN) are never cached.
-const CACHE = 'miracle-shell-v14';
+const CACHE = 'miracle-shell-v15';
 const SHELL = [
     '/emr-workspace.html',
     '/manifest.webmanifest',
@@ -65,17 +65,16 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Stale-while-revalidate for same-origin static assets.
+    // Network-first for same-origin static assets: always pick up fresh code when
+    // online (stale-while-revalidate made every deploy take two reloads to show),
+    // fall back to cache offline.
     event.respondWith(
-        caches.match(req).then((cached) => {
-            const network = fetch(req)
-                .then((res) => {
-                    const copy = res.clone();
-                    caches.open(CACHE).then((cache) => cache.put(req, copy));
-                    return res;
-                })
-                .catch(() => cached);
-            return cached || network;
-        })
+        fetch(req)
+            .then((res) => {
+                const copy = res.clone();
+                caches.open(CACHE).then((cache) => cache.put(req, copy));
+                return res;
+            })
+            .catch(() => caches.match(req))
     );
 });

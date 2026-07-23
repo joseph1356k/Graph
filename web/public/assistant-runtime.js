@@ -13,6 +13,9 @@
         currentStopIndex: -1,
         listeners: new Map(),
         pinned: false,
+        spotlightTarget: null,
+        spotlightFrame: null,
+        spotlightTracker: null,
         dragging: {
             active: false,
             pointerId: null,
@@ -565,7 +568,8 @@
                 left: 16px;
                 top: 16px;
                 z-index: calc(var(--graph-assistant-z, 2147483000) + 2);
-                max-width: min(280px, calc(100vw - 152px));
+                width: min(280px, calc(100vw - 152px));
+                box-sizing: border-box;
                 padding: 10px 12px;
                 border-radius: 16px;
                 background: rgba(255, 255, 255, 0.98);
@@ -733,7 +737,9 @@
                 display: none;
                 box-sizing: border-box;
                 border-radius: 18px;
-                background: rgba(249, 252, 254, 0.98);
+                background: rgba(249, 252, 254, 0.68);
+                backdrop-filter: blur(10px) saturate(150%);
+                -webkit-backdrop-filter: blur(10px) saturate(150%);
                 color: #163345;
                 border: 1px solid rgba(15, 95, 140, 0.14);
                 box-shadow: 0 22px 52px rgba(5, 10, 20, 0.22);
@@ -751,7 +757,7 @@
                 gap: 14px;
                 padding: 13px 14px 12px;
                 border-bottom: 1px solid rgba(15, 95, 140, 0.1);
-                background: rgba(255, 255, 255, 0.86);
+                background: rgba(255, 255, 255, 0.55);
             }
             .graph-assistant-note-heading {
                 min-width: 0;
@@ -834,7 +840,7 @@
                 min-height: 0;
                 box-sizing: border-box;
                 padding: 15px 16px 16px;
-                background: linear-gradient(180deg, #ffffff 0%, #fbfdfe 100%);
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(251, 253, 254, 0.4) 100%);
                 color: #163345;
                 font: 400 14px/1.55 "Inter", "Segoe UI", -apple-system, sans-serif;
                 outline: none;
@@ -917,7 +923,7 @@
                 padding: 12px 16px 14px;
                 overflow-y: auto;
                 border-top: 1px solid rgba(15, 95, 140, 0.12);
-                background: #f7fbfd;
+                background: rgba(247, 251, 253, 0.55);
             }
             .graph-assistant-note-fill-summary {
                 display: none;
@@ -926,7 +932,7 @@
                 justify-content: space-between;
                 padding: 10px 16px;
                 border-top: 1px solid rgba(15, 95, 140, 0.12);
-                background: #eef8fc;
+                background: rgba(238, 248, 252, 0.6);
             }
             .graph-assistant-note-fill-summary[data-visible="true"] {
                 display: flex;
@@ -1143,7 +1149,9 @@
                 box-shadow: 0 0 0 9999px rgba(15, 19, 25, 0.18), 0 0 0 8px rgba(15, 95, 140, 0.12);
                 pointer-events: none;
                 opacity: 0;
-                transition: opacity 180ms ease, left 280ms ease, top 280ms ease, width 280ms ease, height 280ms ease;
+                /* Only fade. Animating left/top/width/height made the box visibly fly
+                   across the page between fields, which read as it "losing" the field. */
+                transition: opacity 140ms ease;
                 z-index: calc(var(--graph-assistant-z, 2147483000) - 1);
             }
             .graph-assistant-spotlight[data-visible="true"] {
@@ -1933,20 +1941,123 @@
         syncExpandedAttributes();
     }
 
-    function updateSpotlightForElement(element) {
+    // A field is only a valid spotlight target if it is actually laid out and
+    // visible. Hidden fields (inactive EMR view, display:none, zero size) return an
+    // all-zero rect, which used to park the highlight in the top-left corner and
+    // read as "the box jumped onto blank space".
+    function isSpotlightTargetUsable(element) {
+        if (!element || !element.isConnected || typeof element.getBoundingClientRect !== 'function') {
+            return false;
+        }
+        // Never highlight the page itself. Automation falls back to selector 'body'
+        // when a step has no target, which used to draw a box around the whole page.
+        if (element === document.body || element === document.documentElement) {
+            return false;
+        }
+        const rect = element.getBoundingClientRect();
+        if (rect.width < 4 || rect.height < 4) {
+            return false;
+        }
+        // A target that covers most of the viewport is a layout wrapper, not a field.
+        if (rect.width > window.innerWidth * 0.9 && rect.height > window.innerHeight * 0.9) {
+            return false;
+        }
+        const style = window.getComputedStyle(element);
+        return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) !== 0;
+    }
+
+    // While a highlight is on screen, keep re-measuring its field. The page moves for
+    // many reasons the runtime never hears about (the automation scrolls fields into
+    // view, filling a value reflows the layout, containers scroll), and any of them
+    // used to leave the box stranded over unrelated content.
+    function startSpotlightTracking() {
+        if (state.spotlightTracker) {
+            return;
+        }
+        state.spotlightTracker = window.setInterval(renderSpotlightRect, 120);
+    }
+
+    function stopSpotlightTracking() {
+        if (state.spotlightTracker) {
+            window.clearInterval(state.spotlightTracker);
+            state.spotlightTracker = null;
+        }
+    }
+
+    function renderSpotlightRect() {
         const { spotlight } = ensureElements();
-        if (!element) {
+        const element = state.spotlightTarget;
+        // Target is gone for good (detached, hidden, or the page itself): drop it.
+        if (!isSpotlightTargetUsable(element)) {
             spotlight.dataset.visible = 'false';
+            state.spotlightTarget = null;
+            stopSpotlightTracking();
             return;
         }
 
         const rect = element.getBoundingClientRect();
         const pad = 10;
-        spotlight.style.left = `${Math.max(0, rect.left - pad)}px`;
-        spotlight.style.top = `${Math.max(0, rect.top - pad)}px`;
-        spotlight.style.width = `${Math.min(window.innerWidth, rect.width + pad * 2)}px`;
-        spotlight.style.height = `${Math.min(window.innerHeight, rect.height + pad * 2)}px`;
+        const margin = 4;
+        // Clip the box to the viewport instead of clamping its origin: clamping put
+        // the highlight at 0,0 whenever the field was scrolled out of view.
+        const left = Math.max(margin, rect.left - pad);
+        const top = Math.max(margin, rect.top - pad);
+        const right = Math.min(window.innerWidth - margin, rect.right + pad);
+        const bottom = Math.min(window.innerHeight - margin, rect.bottom + pad);
+
+        // Scrolled out of view -> hide rather than draw a sliver in a wrong place, but
+        // keep tracking so it reappears when the field scrolls back on screen.
+        if (right - left < 12 || bottom - top < 12) {
+            spotlight.dataset.visible = 'false';
+            return;
+        }
+
+        spotlight.style.left = `${left}px`;
+        spotlight.style.top = `${top}px`;
+        spotlight.style.width = `${right - left}px`;
+        spotlight.style.height = `${bottom - top}px`;
         spotlight.dataset.visible = 'true';
+    }
+
+    // Throttled with a timer rather than requestAnimationFrame: rAF is paused in
+    // background tabs, which would leave the highlight stranded on the old spot.
+    function scheduleSpotlightSync() {
+        if (state.spotlightFrame) {
+            return;
+        }
+        state.spotlightFrame = window.setTimeout(() => {
+            state.spotlightFrame = null;
+            renderSpotlightRect();
+        }, 16);
+    }
+
+    function updateSpotlightForElement(element) {
+        const { spotlight } = ensureElements();
+        if (!isSpotlightTargetUsable(element)) {
+            state.spotlightTarget = null;
+            spotlight.dataset.visible = 'false';
+            stopSpotlightTracking();
+            return;
+        }
+
+        const isNewTarget = state.spotlightTarget !== element;
+        state.spotlightTarget = element;
+
+        // Bring the field into view before drawing, so the highlight lands on the
+        // field instead of on whatever happens to be on screen. The tracker below
+        // keeps re-measuring, so the box follows the scroll instead of lagging.
+        const rect = element.getBoundingClientRect();
+        const fullyVisible = rect.top >= 8 && rect.bottom <= window.innerHeight - 8;
+        if (isNewTarget && !fullyVisible) {
+            try {
+                element.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            } catch (error) {
+                element.scrollIntoView();
+            }
+        }
+
+        renderSpotlightRect();
+        startSpotlightTracking();
     }
 
     function emit(eventName, payload) {
@@ -2251,7 +2362,13 @@
                 api.mount();
             }
 
-            if (state.pinned) {
+            // While the note sheet is open, keep the assistant parked: hopping to
+            // each filled field dragged the sheet all over the page. The spotlight
+            // still highlights the target so the user sees what is being filled.
+            if (state.pinned || state.note.open) {
+                if (state.note.open && options.spotlight !== false) {
+                    updateSpotlightForElement(resolveElement(selector));
+                }
                 if (options.message) {
                     showBubble(options.message);
                 }
@@ -2414,9 +2531,20 @@
         }
     };
 
+    // The spotlight is position:fixed, so it has to be re-measured whenever the page
+    // scrolls; without this it stayed behind and ended up sitting over blank space.
+    window.addEventListener('scroll', () => {
+        if (state.mounted && state.spotlightTarget) {
+            scheduleSpotlightSync();
+        }
+    }, true);
+
     window.addEventListener('resize', () => {
         if (!state.mounted) {
             return;
+        }
+        if (state.spotlightTarget) {
+            scheduleSpotlightSync();
         }
         if (state.pinned) {
             pinShellBottomRight();
