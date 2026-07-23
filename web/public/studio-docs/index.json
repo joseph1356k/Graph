@@ -44,6 +44,12 @@
           "title": "SurfaceNavigator: el motor que alcanza el punto de arranque",
           "summary": "En vez de fallar cuando la pantalla no coincide, navega el SO hasta el punto de arranque del workflow — escalera de estrategias (enfocar → acceso directo → shell).",
           "file": "motor-navegacion-superficie.md"
+        },
+        {
+          "id": "motor-carga-ui",
+          "title": "SurfaceReadiness: el motor de carga de UI",
+          "summary": "La \"barra de carga\" interna: al grabar guarda cuántos elementos hay listos en la ruta; al ejecutar espera a que la pantalla cargue (≥80%) antes de actuar. Evita el fallo por UI sin cargar.",
+          "file": "motor-carga-ui.md"
         }
       ]
     },
