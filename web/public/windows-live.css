@@ -1,0 +1,435 @@
+/* ============================================================================
+   Windows Live — sistema en vivo por usuario (panel Windows del Provider Studio).
+   Estética: red neuronal / energético en tiempo real. Negro profundo con azul
+   marino, azul eléctrico como único color dominante, nodos con borde fino y
+   halo, pulsos con estela, paneles de cristal oscuro. Todo lo pinta
+   windows-live.js dentro de #windows-live.
+   ============================================================================ */
+
+#windows-live {
+    --wl-blue: #4c8dff;
+    --wl-blue-bright: #7fb2ff;
+    --wl-blue-core: #cfe2ff;
+    --wl-blue-deep: #1e63e6;
+    --wl-cyan: #56e0ff;
+    --wl-ink: #eaf2ff;
+    --wl-muted: rgba(200, 220, 255, 0.62);
+    --wl-dim: rgba(200, 220, 255, 0.4);
+    --wl-line: rgba(96, 148, 235, 0.22);
+    --wl-line-soft: rgba(96, 148, 235, 0.12);
+    --wl-glass: rgba(9, 17, 34, 0.62);
+    --wl-glass-strong: rgba(11, 20, 40, 0.9);
+    --wl-node-fill: rgba(9, 18, 38, 0.72);
+    --wl-danger: #ff9a8b;
+    --wl-success: #7fe0a1;
+
+    display: block;
+    margin: 0 0 22px;
+    color: var(--wl-ink);
+}
+
+/* ───────────────────────── cabecera + selector ───────────────────────── */
+
+.wl-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin: 0 2px 14px;
+}
+
+.wl-head-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.wl-kicker {
+    margin: 0;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--wl-dim);
+}
+.wl-title { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+
+/* Selector de usuario — pastilla de cristal con estado en vivo. */
+.wl-selector { position: relative; flex: 0 0 auto; }
+
+.wl-selector-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 250px;
+    max-width: 360px;
+    padding: 9px 14px;
+    border: 1px solid var(--wl-line);
+    border-radius: 14px;
+    background:
+        linear-gradient(180deg, rgba(76, 141, 255, 0.08), rgba(9, 17, 34, 0.4)),
+        var(--wl-glass);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: var(--wl-ink);
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+.wl-selector-btn:hover { border-color: rgba(127, 178, 255, 0.5); }
+.wl-selector-btn:focus-visible {
+    outline: none;
+    border-color: var(--wl-blue);
+    box-shadow: 0 0 0 3px rgba(76, 141, 255, 0.25);
+}
+
+.wl-avatar {
+    flex: 0 0 auto;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: 13px; font-weight: 700;
+    color: var(--wl-blue-core);
+    background: radial-gradient(circle at 30% 25%, rgba(127, 178, 255, 0.55), rgba(30, 99, 230, 0.28));
+    border: 1px solid rgba(127, 178, 255, 0.5);
+    box-shadow: 0 0 14px rgba(76, 141, 255, 0.3);
+}
+.wl-selector-id { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; flex: 1 1 auto; }
+.wl-selector-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wl-selector-sub { font-size: 11px; color: var(--wl-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wl-selector-caret { flex: 0 0 auto; width: 16px; height: 16px; opacity: 0.6; transition: transform 0.2s ease; }
+.wl-selector.is-open .wl-selector-caret { transform: rotate(180deg); }
+
+/* dot de estado vivo (activo hace <2 min) */
+.wl-live-dot {
+    flex: 0 0 auto;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--wl-dim);
+}
+.wl-live-dot.is-live {
+    background: var(--wl-success);
+    box-shadow: 0 0 0 0 rgba(127, 224, 161, 0.6);
+    animation: wl-live-ping 2.2s ease-out infinite;
+}
+@keyframes wl-live-ping {
+    0% { box-shadow: 0 0 0 0 rgba(127, 224, 161, 0.5); }
+    70%, 100% { box-shadow: 0 0 0 7px rgba(127, 224, 161, 0); }
+}
+
+.wl-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: min(380px, 86vw);
+    max-height: 60vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--wl-line);
+    border-radius: 16px;
+    background: var(--wl-glass-strong);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(76, 141, 255, 0.08);
+    z-index: 40;
+    opacity: 0;
+    transform: translateY(-6px) scale(0.99);
+    pointer-events: none;
+    transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.wl-selector.is-open .wl-menu { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+
+.wl-search {
+    margin: 10px 10px 6px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--wl-line-soft);
+    border-radius: 10px;
+    background: rgba(4, 9, 20, 0.6);
+}
+.wl-search svg { width: 15px; height: 15px; opacity: 0.5; flex: 0 0 auto; }
+.wl-search input {
+    border: 0; outline: 0; background: transparent; color: var(--wl-ink);
+    width: 100%; font-size: 13px;
+}
+.wl-search input::placeholder { color: var(--wl-dim); }
+
+.wl-menu-list { overflow-y: auto; padding: 4px 6px 8px; }
+
+.wl-user-row {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.14s ease, border-color 0.14s ease;
+}
+.wl-user-row:hover { background: rgba(76, 141, 255, 0.09); border-color: var(--wl-line-soft); }
+.wl-user-row.is-selected { background: rgba(76, 141, 255, 0.14); border-color: rgba(127, 178, 255, 0.4); }
+.wl-user-row .wl-avatar { width: 30px; height: 30px; font-size: 12px; }
+.wl-user-main { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; line-height: 1.3; }
+.wl-user-name { font-size: 13.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wl-user-mail { font-size: 11px; color: var(--wl-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wl-user-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex: 0 0 auto; }
+.wl-user-count {
+    font-size: 11px; color: var(--wl-blue-bright); font-variant-numeric: tabular-nums;
+    padding: 2px 7px; border-radius: 999px; background: rgba(76, 141, 255, 0.12);
+}
+.wl-user-seen { font-size: 10px; color: var(--wl-dim); }
+
+.wl-menu-empty { padding: 22px 16px; text-align: center; color: var(--wl-muted); font-size: 13px; }
+
+/* ─────────────────────────── stage (viz) ─────────────────────────── */
+
+.wl-stage {
+    position: relative;
+    border: 1px solid rgba(76, 141, 255, 0.14);
+    border-radius: 20px;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse 60% 80% at 78% 42%, rgba(30, 78, 190, 0.16), transparent 70%),
+        radial-gradient(ellipse 46% 70% at 16% 52%, rgba(30, 99, 230, 0.1), transparent 72%),
+        linear-gradient(180deg, #030713 0%, #01030a 100%);
+    box-shadow: inset 0 0 90px rgba(0, 0, 0, 0.6);
+}
+.wl-stage svg { display: block; width: 100%; height: auto; }
+
+/* fondo de constelación (puntitos) pintado por JS en su propia capa */
+.wl-constellation line { stroke: rgba(96, 148, 235, 0.1); stroke-width: 0.5; }
+.wl-constellation circle { fill: rgba(150, 190, 255, 0.35); }
+
+/* wires */
+.wl-wire { fill: none; stroke: var(--wl-line); stroke-width: 1.6; }
+.wl-wire-soft { stroke: var(--wl-line-soft); }
+.wl-wire-dash { stroke-dasharray: 3 6; stroke: rgba(96, 148, 235, 0.28); }
+/* rastro que se enciende detrás del pulso */
+.wl-wire-trail {
+    fill: none;
+    stroke: var(--wl-blue-bright);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    filter: url(#wl-glow);
+    opacity: 0;
+}
+
+/* nodos conscientes + MCP + apps: base */
+.wl-node-ring {
+    fill: var(--wl-node-fill);
+    stroke: rgba(127, 178, 255, 0.55);
+    stroke-width: 1.4;
+}
+.wl-node-halo { fill: none; stroke: rgba(76, 141, 255, 0.16); stroke-width: 1; opacity: 0.7; }
+.wl-node-label { fill: var(--wl-ink); font-size: 15px; font-weight: 500; text-anchor: middle; dominant-baseline: middle; }
+.wl-node-sub { fill: var(--wl-muted); font-size: 11px; text-anchor: middle; }
+
+.wl-breathe { animation: wl-breathe 4.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes wl-breathe { 0%, 100% { opacity: 0.9; } 50% { opacity: 1; } }
+
+/* ignición: el nodo se llena de azul desde el borde al recibir un pulso */
+.wl-ignite { animation: wl-ignite 1s ease-out; }
+@keyframes wl-ignite {
+    0% { fill: var(--wl-node-fill); stroke: rgba(127, 178, 255, 0.55); }
+    22% {
+        fill: rgba(76, 141, 255, 0.5);
+        stroke: var(--wl-blue-core);
+        filter: drop-shadow(0 0 14px rgba(76, 141, 255, 0.85));
+    }
+    100% { fill: var(--wl-node-fill); stroke: rgba(127, 178, 255, 0.55); }
+}
+/* onda de energía al llegar un pulso */
+.wl-ring-wave { fill: none; stroke: var(--wl-blue-bright); stroke-width: 1.6; }
+
+/* pulso de energía: esfera con núcleo + halo (el glow lo da el filtro SVG) */
+.wl-pulse-core { fill: var(--wl-blue-core); }
+.wl-pulse-glow { fill: var(--wl-blue); filter: url(#wl-glow); }
+
+/* barras base consciente/subconsciente */
+.wl-bar { fill: rgba(76, 141, 255, 0.05); stroke: var(--wl-line-soft); stroke-width: 1; }
+.wl-bar-label { fill: var(--wl-muted); font-size: 14px; text-anchor: middle; letter-spacing: 0.03em; }
+
+.wl-mcp-label { fill: var(--wl-blue-bright); font-size: 13px; text-anchor: middle; letter-spacing: 0.14em; }
+
+/* apps del subconsciente */
+.wl-app { cursor: pointer; }
+.wl-app-ring {
+    fill: var(--wl-node-fill);
+    stroke: rgba(127, 178, 255, 0.45);
+    stroke-width: 1.3;
+    transition: stroke 0.2s ease, filter 0.2s ease;
+}
+.wl-app:hover .wl-app-ring { stroke: var(--wl-blue-core); filter: drop-shadow(0 0 10px rgba(76, 141, 255, 0.6)); }
+.wl-app-glow { fill: url(#wl-app-fill); opacity: 0.5; }
+
+/* mini-grafo de workflows dentro del círculo de app */
+.wl-wf-edge { stroke: rgba(127, 178, 255, 0.35); stroke-width: 1; fill: none; }
+.wl-wf-node { fill: var(--wl-blue-bright); }
+.wl-wf-node-dim { fill: rgba(127, 178, 255, 0.45); }
+
+/* pill (tag) de la app */
+.wl-pill-bg { fill: rgba(6, 12, 26, 0.92); stroke: rgba(127, 178, 255, 0.4); stroke-width: 1; }
+.wl-pill-text { fill: var(--wl-blue-core); font-size: 11px; font-weight: 600; text-anchor: middle; letter-spacing: 0.02em; }
+.wl-app-count { fill: var(--wl-muted); font-size: 10px; text-anchor: middle; }
+
+/* tooltip HTML (hover en pill → URL/coordenada completa) */
+.wl-tip {
+    position: absolute;
+    z-index: 30;
+    padding: 7px 11px;
+    border: 1px solid var(--wl-line);
+    border-radius: 9px;
+    background: var(--wl-glass-strong);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55);
+    font-size: 12px;
+    color: var(--wl-ink);
+    max-width: 320px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.14s ease, transform 0.14s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.wl-tip.is-visible { opacity: 1; transform: translateY(0); }
+.wl-tip .wl-tip-key { color: var(--wl-blue-bright); font-variant-numeric: tabular-nums; }
+
+/* estados vacío / carga */
+.wl-empty {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    text-align: center; padding: 20px;
+    color: var(--wl-muted);
+    pointer-events: none;
+}
+.wl-empty-inner { max-width: 320px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.wl-empty-title { font-size: 15px; font-weight: 600; color: var(--wl-ink); }
+.wl-empty-sub { font-size: 12.5px; line-height: 1.5; }
+.wl-spinner {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid rgba(127, 178, 255, 0.25);
+    border-top-color: var(--wl-blue-bright);
+    animation: wl-spin 0.8s linear infinite;
+}
+@keyframes wl-spin { to { transform: rotate(360deg); } }
+
+.wl-caption { margin: 8px 6px 0; font-size: 12px; color: var(--wl-muted); }
+.wl-caption b { color: var(--wl-blue-bright); font-weight: 600; }
+
+/* ───────────────────────── overlay de detalle (zoom) ───────────────────────── */
+
+.wl-detail {
+    position: absolute; inset: 0;
+    z-index: 25;
+    display: flex; flex-direction: column;
+    background: linear-gradient(180deg, rgba(3, 7, 19, 0.9), rgba(1, 3, 10, 0.96));
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.22s ease;
+}
+.wl-detail.is-open { opacity: 1; pointer-events: auto; }
+.wl-detail-head {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--wl-line-soft);
+}
+.wl-detail-back {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 12px; border-radius: 10px;
+    border: 1px solid var(--wl-line);
+    background: rgba(76, 141, 255, 0.08);
+    color: var(--wl-ink); cursor: pointer; font-size: 13px;
+}
+.wl-detail-back:hover { border-color: rgba(127, 178, 255, 0.5); }
+.wl-detail-back svg { width: 15px; height: 15px; }
+.wl-detail-title { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.wl-detail-title strong { font-size: 15px; }
+.wl-detail-title span { font-size: 11.5px; color: var(--wl-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wl-detail-body { flex: 1 1 auto; overflow-y: auto; padding: 16px 18px; display: grid; gap: 14px; }
+
+.wl-wf-card {
+    border: 1px solid var(--wl-line-soft);
+    border-radius: 14px;
+    background: rgba(8, 15, 32, 0.5);
+    overflow: hidden;
+}
+.wl-wf-card-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 11px 14px; border-bottom: 1px solid var(--wl-line-soft);
+}
+.wl-wf-card-title { font-size: 13.5px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wl-wf-card-meta { flex: 0 0 auto; font-size: 11px; color: var(--wl-muted); font-variant-numeric: tabular-nums; }
+.wl-wf-card-graph { padding: 8px 6px; overflow-x: auto; }
+.wl-wf-card-graph svg { display: block; height: auto; min-width: 100%; }
+.wl-status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.wl-status-dot[data-status="done"] { background: var(--wl-success); }
+.wl-status-dot[data-status="recording"] { background: var(--wl-cyan); }
+.wl-status-dot[data-status="draft"] { background: var(--wl-dim); }
+
+/* ───────────────────────────── logs ───────────────────────────── */
+
+.wl-logs {
+    margin-top: 16px;
+    border: 1px solid var(--wl-line-soft);
+    border-radius: 14px;
+    background: var(--wl-glass);
+    overflow: hidden;
+}
+.wl-logs-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 11px 16px;
+    cursor: pointer;
+    user-select: none;
+}
+.wl-logs-head-left { display: flex; align-items: center; gap: 10px; }
+.wl-logs-title { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; }
+.wl-logs-badge {
+    font-size: 10.5px; color: var(--wl-blue-bright);
+    padding: 1px 8px; border-radius: 999px; background: rgba(76, 141, 255, 0.12);
+    font-variant-numeric: tabular-nums;
+}
+.wl-logs-chevron { width: 16px; height: 16px; opacity: 0.6; transition: transform 0.2s ease; }
+.wl-logs.is-open .wl-logs-chevron { transform: rotate(180deg); }
+.wl-logs-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.28s ease;
+}
+.wl-logs.is-open .wl-logs-body { max-height: 320px; }
+.wl-terminal {
+    height: 300px;
+    overflow-y: auto;
+    padding: 10px 14px 14px;
+    font-family: "SFMono-Regular", ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.65;
+    background: rgba(2, 5, 12, 0.7);
+    border-top: 1px solid var(--wl-line-soft);
+}
+.wl-log-line { display: flex; gap: 10px; white-space: pre-wrap; word-break: break-word; }
+.wl-log-time { color: var(--wl-dim); flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+.wl-log-tag {
+    flex: 0 0 auto; min-width: 96px;
+    color: var(--wl-blue-bright); text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.04em;
+    padding-top: 1px;
+}
+.wl-log-tag[data-kind="action"] { color: var(--wl-cyan); }
+.wl-log-tag[data-kind="analyze"] { color: #b9a7ff; }
+.wl-log-tag[data-kind^="workflow"] { color: var(--wl-success); }
+.wl-log-tag[data-phase="error"] { color: var(--wl-danger); }
+.wl-log-msg { color: var(--wl-ink); opacity: 0.92; }
+.wl-log-empty { color: var(--wl-muted); padding: 12px 2px; }
+
+/* ───────────────────────────── responsive ───────────────────────────── */
+
+@media (max-width: 720px) {
+    .wl-head { flex-direction: column; align-items: stretch; }
+    .wl-selector-btn { width: 100%; max-width: none; }
+    .wl-menu { width: min(94vw, 380px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wl-breathe, .wl-live-dot.is-live, .wl-spinner { animation: none; }
+    .wl-ignite { animation-duration: 0.01s; }
+}

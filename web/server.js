@@ -57,6 +57,11 @@ const registerMedicalRoutes = require('./api/registerMedicalRoutes');
 const registerUsageRoutes = require('./api/registerUsageRoutes');
 const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
 const registerAndroidPanelRoutes = require('./api/registerAndroidPanelRoutes');
+// Windows Live: core de telemetría/visualización por usuario del cliente Windows.
+const WindowsTelemetryService = require('../src/application/use-cases/WindowsTelemetryService');
+const WindowsPanelService = require('../src/application/use-cases/WindowsPanelService');
+const registerWindowsTelemetryRoutes = require('./api/registerWindowsTelemetryRoutes');
+const registerWindowsPanelRoutes = require('./api/registerWindowsPanelRoutes');
 const registerWindowsAgentRoutes = require('./api/registerWindowsAgentRoutes');
 const registerWindowsDistributionRoutes = require('./api/registerWindowsDistributionRoutes');
 const registerMcpRoutes = require('./api/registerMcpRoutes');
@@ -157,6 +162,11 @@ const apiKeyService = new ApiKeyService();
 // Android panel (Provider Studio): telemetry + distributed client config,
 // same Supabase project/service-role client as the clinical module.
 const androidPanelService = new AndroidPanelService(supabaseRestClient);
+// Windows Live: ingesta (cliente Windows -> Supabase) y lectura (dashboard).
+// El subconsciente sale del catálogo real (Neo4j) vía catalogService, scopeado
+// por owner = email del usuario.
+const windowsTelemetryService = new WindowsTelemetryService(supabaseRestClient);
+const windowsPanelService = new WindowsPanelService({ catalogService, supabaseRestClient });
 // Agente de escritorio Ü (Windows App): la memoria por usuario vive en Supabase
 // (tabla graph_agent_memory, con fallback en memoria del proceso si Supabase no
 // está configurado) y la comparten el bucle de turnos y la enseñanza por video
@@ -404,7 +414,9 @@ function isMiracleMedicalProxyRequest(req) {
   '/api/account',
   '/api/visualize',
   '/api/providers',
-  '/api/android'
+  '/api/android',
+  // Solo el panel (lectura admin). '/api/windows/latest-installer' queda público.
+  '/api/windows/users'
 ].forEach((routePrefix) => {
   app.use(routePrefix, requireAccountAuth, attachWorkflowAccess);
 });
@@ -994,6 +1006,9 @@ registerMedicalRoutes(app, {
 });
 registerUsageRoutes(app, { usageDashboardService });
 registerAndroidPanelRoutes(app, { androidPanelService });
+// Windows Live: ingesta bajo /api/v1 (X-API-Key) + lectura admin /api/windows/*.
+registerWindowsTelemetryRoutes(app, { windowsTelemetryService });
+registerWindowsPanelRoutes(app, { windowsPanelService });
 registerWindowsAgentRoutes(app, { agentTurnService, teachVideoService });
 registerWindowsDistributionRoutes(app, { windowsAppReleaseService });
 registerMcpRoutes(app, { agentWorkflowStore, workflowExecutor });

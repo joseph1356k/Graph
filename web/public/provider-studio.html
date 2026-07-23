@@ -6,6 +6,7 @@
     <title>Provider Studio | Miracle</title>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/provider-studio.css">
+    <link rel="stylesheet" href="/windows-live.css">
     <script src="/miracle-bg.js" defer></script>
 </head>
 <body>
@@ -412,57 +413,12 @@
 
             <div class="studio-surface-panel" data-surface-panel="windows">
 
-            <!-- Visualización del sistema en vivo: a la IZQUIERDA el loop CONSCIENTE (analizar pantalla
-                 → clic → vuelta, con pulsos de energía), a la DERECHA el SUBCONSCIENTE (MCP → workflows).
-                 v1: refleja la arquitectura real actual; la telemetría por-usuario en tiempo real es la
-                 fase siguiente. Ver docs/VISION_SUPERFICIES_Y_SDK.md. -->
-            <section id="mind-viz" aria-label="Loop consciente y subconsciente">
-                <svg viewBox="0 0 920 340" role="img">
-                    <defs>
-                        <filter id="viz-glow" x="-60%" y="-60%" width="220%" height="220%">
-                            <feGaussianBlur stdDeviation="3.5" result="b"/>
-                            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-                        </filter>
-                        <marker id="viz-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                            <path d="M0 0 L10 5 L0 10 z" class="viz-arrowhead"/>
-                        </marker>
-                    </defs>
-
-                    <!-- conectores -->
-                    <path class="viz-wire" d="M150 286 C150 250 150 230 150 178"/>
-                    <path class="viz-wire" d="M320 222 C320 250 320 268 320 286"/>
-                    <path class="viz-wire" marker-end="url(#viz-arrow)" d="M203 138 C250 150 272 152 296 140"/>
-                    <path class="viz-wire viz-wire-faint" stroke-dasharray="4 5" d="M425 300 C520 292 560 268 634 250"/>
-                    <path class="viz-wire" d="M650 264 C650 275 650 280 650 286"/>
-                    <path class="viz-wire" d="M652 238 C700 200 700 150 726 96"/>
-                    <path class="viz-wire" d="M650 238 C650 190 700 150 812 118"/>
-                    <path class="viz-wire" d="M648 240 C600 200 590 150 604 120"/>
-
-                    <!-- pulsos de energía (loop de 3.4s) -->
-                    <circle class="viz-pulse viz-pulse-rise"   r="5" filter="url(#viz-glow)"/>
-                    <circle class="viz-pulse viz-pulse-throw"  r="6" filter="url(#viz-glow)"/>
-                    <circle class="viz-pulse viz-pulse-return" r="4" filter="url(#viz-glow)"/>
-                    <circle class="viz-pulse viz-pulse-learn"  r="3.5" filter="url(#viz-glow)"/>
-
-                    <!-- subconsciente: clusters de workflows -->
-                    <g class="viz-tree"><circle cx="726" cy="96" r="34"/><path d="M712 108 C716 96 722 96 726 88 M726 88 C730 96 736 96 740 84" class="viz-branch"/><circle cx="712" cy="108" r="3.5" class="viz-node"/><circle cx="726" cy="88" r="3.5" class="viz-node"/><circle cx="740" cy="84" r="3.5" class="viz-node"/></g>
-                    <g class="viz-tree"><circle cx="812" cy="118" r="34"/><path d="M798 130 C802 118 808 118 812 110 M812 110 C816 118 822 118 826 106" class="viz-branch"/><circle cx="798" cy="130" r="3.5" class="viz-node"/><circle cx="812" cy="110" r="3.5" class="viz-node"/><circle cx="826" cy="106" r="3.5" class="viz-node"/></g>
-                    <g class="viz-tree"><circle cx="604" cy="120" r="34"/><path d="M590 132 C594 120 600 120 604 112 M604 112 C608 120 614 120 618 108" class="viz-branch"/><circle cx="590" cy="132" r="3.5" class="viz-node"/><circle cx="604" cy="112" r="3.5" class="viz-node"/><circle cx="618" cy="108" r="3.5" class="viz-node"/></g>
-
-                    <!-- nodos conscientes -->
-                    <g class="viz-circle"><circle cx="150" cy="120" r="58"/><text x="150" y="115">Analizar</text><text x="150" y="133">pantalla</text></g>
-                    <g class="viz-circle"><circle cx="320" cy="170" r="50"/><text x="320" y="175">Clic</text></g>
-
-                    <!-- MCP -->
-                    <text x="650" y="228" class="viz-mcp-label">MCP</text>
-                    <circle cx="650" cy="240" r="6" class="viz-mcp-dot"/>
-
-                    <!-- barras -->
-                    <g class="viz-bar"><rect x="40" y="286" width="384" height="44" rx="9"/><text x="232" y="314">Consciente</text></g>
-                    <g class="viz-bar"><rect x="496" y="286" width="384" height="44" rx="9"/><text x="688" y="314">Subconsciente</text></g>
-                </svg>
-                <p class="viz-caption">El consciente analiza la pantalla y actúa; lo aprendido se expone al subconsciente por MCP. <span>Tiempo real por usuario: próxima fase.</span></p>
-            </section>
+            <!-- Sistema en vivo por usuario (core "Windows Live"): a la IZQUIERDA el loop
+                 CONSCIENTE (analizar pantalla → clic), a la DERECHA el SUBCONSCIENTE (MCP →
+                 apps aprendidas → workflows → nodos). Selector de usuario arriba-derecha;
+                 los pulsos y el grafo salen de datos reales (telemetría Supabase + Neo4j).
+                 Todo lo construye windows-live.js dentro de este root. -->
+            <section id="windows-live" aria-label="Sistema en vivo por usuario"></section>
 
             <section class="studio-board">
                 <section class="studio-card is-collapsed" id="conscious-card">
@@ -766,6 +722,7 @@
     <script src="/auth-gate.js"></script>
     <script src="/admin-workspace.js"></script>
     <script src="/provider-studio.js?v=3"></script>
+    <script src="/windows-live.js?v=1" defer></script>
     <script src="/studio-docs.js"></script>
     <script>
       (function () {
