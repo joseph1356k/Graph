@@ -53,11 +53,12 @@
     return new Promise((resolve) => (chrome.storage.sync || chrome.storage.local).get(defaults, resolve));
   }
   async function getConfig() {
-    const s = await storageGet({ backendUrl: DEFAULT_BACKEND_URL, agentApiKey: '', agentUserId: '' });
+    const s = await storageGet({ backendUrl: DEFAULT_BACKEND_URL, agentApiKey: '', agentUserId: '', agentVercelBypass: '' });
     return {
       backendUrl: `${s.backendUrl || DEFAULT_BACKEND_URL}`.trim().replace(/\/+$/, '') || DEFAULT_BACKEND_URL,
       apiKey: `${s.agentApiKey || ''}`.trim(),
-      userId: `${s.agentUserId || ''}`.trim()
+      userId: `${s.agentUserId || ''}`.trim(),
+      vercelBypass: `${s.agentVercelBypass || ''}`.trim()
     };
   }
 
@@ -131,9 +132,12 @@
   // ---------- fetch al cerebro ----------
   function mkFetchTurn(cfg) {
     return async (body) => {
+      const headers = { 'Content-Type': 'application/json', 'X-API-Key': cfg.apiKey };
+      // Preview de Vercel protegido: header de Protection Bypass for Automation.
+      if (cfg.vercelBypass) { headers['x-vercel-protection-bypass'] = cfg.vercelBypass; headers['x-vercel-set-bypass-cookie'] = 'true'; }
       const res = await fetch(`${cfg.backendUrl}/api/v1/agent/turn`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-API-Key': cfg.apiKey },
+        headers,
         body: JSON.stringify(cfg.userId ? Object.assign({ userId: cfg.userId }, body) : body)
       });
       const text = await res.text();

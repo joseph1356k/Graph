@@ -9,6 +9,7 @@ const $ = (id) => document.getElementById(id);
 const backendUrlEl = $('backendUrl');
 const apiKeyEl = $('apiKey');
 const userIdEl = $('userId');
+const vercelBypassEl = $('vercelBypass');
 const goalEl = $('goal');
 const useCurrentEl = $('useCurrent');
 const startBtn = $('start');
@@ -37,11 +38,12 @@ function sendMessage(msg) {
 function loadConfig() {
   return new Promise((resolve) => {
     (chrome.storage.sync || chrome.storage.local).get(
-      { backendUrl: DEFAULT_BACKEND_URL, agentApiKey: '', agentUserId: '' },
+      { backendUrl: DEFAULT_BACKEND_URL, agentApiKey: '', agentUserId: '', agentVercelBypass: '' },
       (s) => {
         backendUrlEl.value = s.backendUrl || DEFAULT_BACKEND_URL;
         apiKeyEl.value = s.agentApiKey || '';
         userIdEl.value = s.agentUserId || '';
+        if (vercelBypassEl) vercelBypassEl.value = s.agentVercelBypass || '';
         resolve();
       }
     );
@@ -52,10 +54,11 @@ function saveConfig() {
   (chrome.storage.sync || chrome.storage.local).set({
     backendUrl: `${backendUrlEl.value || DEFAULT_BACKEND_URL}`.trim(),
     agentApiKey: `${apiKeyEl.value || ''}`.trim(),
-    agentUserId: `${userIdEl.value || ''}`.trim()
+    agentUserId: `${userIdEl.value || ''}`.trim(),
+    agentVercelBypass: `${(vercelBypassEl && vercelBypassEl.value) || ''}`.trim()
   });
 }
-[backendUrlEl, apiKeyEl, userIdEl].forEach((el) => el.addEventListener('change', saveConfig));
+[backendUrlEl, apiKeyEl, userIdEl, vercelBypassEl].filter(Boolean).forEach((el) => el.addEventListener('change', saveConfig));
 
 function render(state) {
   if (!state) return;
