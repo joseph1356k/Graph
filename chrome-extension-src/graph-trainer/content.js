@@ -336,7 +336,7 @@ function createExtensionAuthBridge() {
       'background:rgba(15,23,42,0.94)',
       'color:#f8fafc',
       'box-shadow:0 18px 40px rgba(15,23,42,0.28)',
-      'font:13px/1.4 Inter,system-ui,-apple-system,\"Segoe UI\",sans-serif'
+      'font:13px/1.4 Inter,system-ui,-apple-system,"Segoe UI",sans-serif'
     ].join(';');
 
     const status = document.createElement('div');
