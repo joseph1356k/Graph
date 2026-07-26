@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "build-feature": {
+      "source": "maleonro/startup-product-skills",
+      "sourceType": "github",
+      "skillPath": "skills/build-feature/SKILL.md",
+      "computedHash": "53537252bc9812d13f87cf7afe10add8a6d4db804514122fd420b20975e689a3"
+    }
+  }
+}
