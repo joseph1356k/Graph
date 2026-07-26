@@ -46,6 +46,20 @@ class Step {
     this.semanticTarget = normalizeText(data.semanticTarget);
     this.surfaceSection = normalizeText(data.surfaceSection);
     this.surfaceHints = parseJsonObject(data.surfaceHints) || null;
+
+    // Paso de árbol SAP (ver CONTRATO-PASO-ARBOL, acordado con el cliente Windows). Los nodos de un
+    // GuiTree no viven en el selector (que apunta al árbol entero): se accionan por CLAVE y su
+    // identidad estable es la RUTA jerárquica — la etiqueta no sirve para resolver ("Órdenes
+    // Clínicas" aparece 17 veces en el árbol real del hospital). actionType sigue siendo 'click';
+    // la presencia de nodeKey es lo que activa la rama de árbol en el ejecutor del cliente.
+    //   nodeKey    -> clave del nodo (p.ej. "vw00073"); cómo se acciona (selectNode/doubleClickNode).
+    //   nodePath   -> ruta GetNodePathByKey (p.ej. "1\2\7"); cómo se re-resuelve si la clave cambió.
+    //   nodeAction -> select | double | expand | collapse; vacío = el ejecutor asume double.
+    this.nodeKey = normalizeText(data.nodeKey);
+    this.nodePath = normalizeText(data.nodePath);
+    this.nodeAction = ['select', 'double', 'expand', 'collapse'].includes(normalizeText(data.nodeAction))
+      ? normalizeText(data.nodeAction)
+      : '';
     
     this.allowedOptions = parseAllowedOptions(data.allowedOptions)
       .map((option) => ({

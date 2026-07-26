@@ -167,6 +167,9 @@ class Neo4jWorkflowRepository {
              s.allowedOptions as allowedOptions,
              s.valueMode as valueMode,
              s.bindTo as bindTo,
+             s.nodeKey as nodeKey,
+             s.nodePath as nodePath,
+             s.nodeAction as nodeAction,
              s.stepOrder as stepOrder
       ORDER BY w.id ASC, s.stepOrder ASC
     `, params);
@@ -343,6 +346,9 @@ class Neo4jWorkflowRepository {
         surfaceSection: $surfaceSection,
         surfaceHints: $surfaceHints,
         allowedOptions: $allowedOptions,
+        nodeKey: $nodeKey,
+        nodePath: $nodePath,
+        nodeAction: $nodeAction,
         stepOrder: $stepOrder,
         timestamp: timestamp()
       })
@@ -540,6 +546,9 @@ class Neo4jWorkflowRepository {
              s.allowedOptions as allowedOptions,
              s.valueMode as valueMode,
              s.bindTo as bindTo,
+             s.nodeKey as nodeKey,
+             s.nodePath as nodePath,
+             s.nodeAction as nodeAction,
              s.stepOrder as stepOrder
       ORDER BY s.stepOrder ASC
     `, params);
@@ -626,6 +635,9 @@ class Neo4jWorkflowRepository {
         surfaceSection: step.surfaceSection,
         surfaceHints: step.surfaceHints,
         allowedOptions: step.allowedOptions,
+        nodeKey: step.nodeKey,
+        nodePath: step.nodePath,
+        nodeAction: step.nodeAction,
         stepOrder: step.stepOrder,
         timestamp: timestamp()
       })
@@ -684,6 +696,9 @@ class Neo4jWorkflowRepository {
         surfaceSection: step.surfaceSection,
         surfaceHints: step.surfaceHints,
         allowedOptions: step.allowedOptions,
+        nodeKey: step.nodeKey,
+        nodePath: step.nodePath,
+        nodeAction: step.nodeAction,
         stepOrder: step.stepOrder,
         timestamp: timestamp()
       })
