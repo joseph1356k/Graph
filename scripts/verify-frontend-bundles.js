@@ -160,6 +160,44 @@ async function main() {
     });
   }
 
+  // El service worker es estático y no puede leer el manifiesto, así que su
+  // lista de precache se mantiene a mano. Esta comprobación es lo que impide
+  // que se desincronice en silencio (que era el problema original de la fase).
+  check('service-worker.js: el precache coincide con los bundles de emr-workspace', () => {
+    const sw = fs.readFileSync(path.join(fb.publicRoot, 'service-worker.js'), 'utf8');
+    const enSw = new Set(
+      [...sw.matchAll(/['"](\/dist\/[^'"]+\.js)['"]/g)].map((m) => m[1])
+    );
+    const esperados = grupos
+      .filter((g) => g.id.startsWith('emr-workspace.'))
+      .map((g) => `/dist/${g.id}.js`);
+
+    assert.ok(esperados.length > 0, 'no hay bundles de emr-workspace en el manifiesto');
+
+    const faltan = esperados.filter((b) => !enSw.has(b));
+    const sobran = [...enSw].filter((b) => !esperados.includes(b));
+    assert.deepStrictEqual(
+      { faltan, sobran },
+      { faltan: [], sobran: [] },
+      `el precache del service worker quedó desincronizado. Faltan: ${faltan.join(', ') || '(ninguno)'}. Sobran: ${sobran.join(', ') || '(ninguno)'}`
+    );
+  });
+
+  // Tercera lista de carga: los content_scripts del manifest de la extensión.
+  // Tiene que apuntar al bundle y a nada más.
+  check('manifest.json de la extensión: content_scripts apunta solo al bundle', () => {
+    const { RUNTIME_BUNDLE_ARCHIVE_PATH } = require('./lib/chrome-extension-bundle');
+    const manifest = JSON.parse(
+      fs.readFileSync(path.join(fb.extensionSrcRoot, 'manifest.json'), 'utf8')
+    );
+    const js = manifest?.content_scripts?.[0]?.js || [];
+    assert.deepStrictEqual(
+      js,
+      [RUNTIME_BUNDLE_ARCHIVE_PATH],
+      `content_scripts debería listar solo ${RUNTIME_BUNDLE_ARCHIVE_PATH}, pero lista: ${JSON.stringify(js)}`
+    );
+  });
+
   console.log('');
   if (fallos.length > 0) {
     console.error(`[verify-frontend-bundles] ${fallos.length} FALLOS:`);

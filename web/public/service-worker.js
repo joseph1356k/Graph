@@ -2,30 +2,20 @@
 // HTML and same-origin static assets are network-first (fresh code on every online
 // load) with cache fallback so the shell still works offline.
 // API calls and cross-origin requests (OpenAI, CDN) are never cached.
-const CACHE = 'miracle-shell-v15';
+// v16: el shell pasó de 20 archivos JS sueltos a los bundles de /dist (ver
+// docs/PLAN-BUILD-FRONTEND.md). Bump obligatorio, o un cliente con la caché
+// vieja seguiría sirviendo los archivos individuales que ya nadie pide.
+const CACHE = 'miracle-shell-v16';
+// Los bundles que carga emr-workspace.html. Esta lista es corta a propósito y
+// `scripts/verify-frontend-bundles.js` falla si se desincroniza del manifiesto
+// (scripts/lib/frontend-bundles.manifest.json), que es la fuente de verdad.
+// Un service worker es un archivo estático: no puede leer el manifiesto, así
+// que la consistencia la garantiza el test, no un require.
 const SHELL = [
     '/emr-workspace.html',
     '/manifest.webmanifest',
-    '/page-state.js',
-    '/auth-gate.js',
-    '/demo-auth.js',
-    '/admin-workspace.js',
-    '/clinical-review.js',
-    '/recorder.js',
-    '/assistant-runtime.js',
-    '/shared/deepgram-dictation.js',
-    '/trainer-plugin.js',
-    '/plugin/plugin-events.js',
-    '/plugin/plugin-host.js',
-    '/plugin/plugin-adapters.js',
-    '/plugin/plugin-context.js',
-    '/plugin/plugin-api.js',
-    '/plugin/plugin-learning-bridge.js',
-    '/plugin/plugin-learning-client.js',
-    '/plugin/plugin-trainer-shell.js',
-    '/plugin/plugin-surface-profile-client.js',
-    '/plugin/plugin-execution-client.js',
-    '/plugin/plugin-workflow-overlay-bridge.js'
+    '/dist/emr-workspace.classic.1.js',
+    '/dist/emr-workspace.classic.2.js'
 ];
 
 self.addEventListener('install', (event) => {

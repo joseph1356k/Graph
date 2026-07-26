@@ -83,6 +83,14 @@ function resolverSrc(src, htmlDir) {
   const abs = limpio.startsWith('/')
     ? path.join(publicRoot, limpio.slice(1))
     : path.resolve(htmlDir, limpio);
+
+  // Un bundle ya generado NO es un fuente. Sin esto, después de la migración la
+  // derivación tomaría /dist/*.js como si fuera código a bundlear — y el
+  // resultado cambiaría según si el build ya corrió o no (se detectó porque la
+  // cuenta de verificaciones variaba entre corridas).
+  const distRoot = path.join(publicRoot, DIST_DIR_NAME) + path.sep;
+  if (abs.startsWith(distRoot)) return null;
+
   return fs.existsSync(abs) ? abs : null;
 }
 

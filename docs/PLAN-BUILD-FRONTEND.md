@@ -158,6 +158,23 @@ Baseline **medido con `node scripts/measure-frontend-payload.js`** el 2026-07-26
 
 **Instrumentación:** `scripts/measure-frontend-payload.js` mide requests y KB por entry point, para poder re-correr la métrica y no depender de números copiados a mano en este documento.
 
+## Resultado (Fase 1 completa)
+
+Medido con `node scripts/measure-frontend-payload.js`:
+
+| Métrica | Baseline | Después |
+|---|---|---|
+| `<script src>` en todo el frontend | 76 | **16** |
+| `emr-workspace` | 19 req / 450 KB | **2 req / 229 KB** |
+| `page1` / `page2` | 18 req / 429 KB | **1 req / 216 KB** |
+| `windows-lab` | 5 req / 123 KB | **2 req / 67 KB** |
+| `manifest.json` `content_scripts` | 17 entradas | **1** |
+| `service-worker.js` precache | 20 rutas | **2** (y con test que falla si se desincroniza) |
+| **Listas a sincronizar a mano** | **3** | **1** |
+| Archivos del paquete de la extensión | 22 | **6** |
+
+Verificado: `npm run verify` en verde, 46 verificaciones en `npm run test:frontend-bundles`, ZIP de la extensión generado correctamente **sin `/dist` en disco** (valida el diseño para el serverless), y todas las páginas sirviendo sus bundles con 200 contra el server real.
+
 ## Plan de ejecución
 
 1. ✅ `scripts/measure-frontend-payload.js` + baseline en `docs/baseline-frontend-payload.json`.

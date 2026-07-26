@@ -16,7 +16,7 @@ function removeDir(dirPath) {
   }
 }
 
-function build() {
+async function build() {
   removeDir(outputRoot);
   ensureDir(outputRoot);
 
@@ -24,15 +24,21 @@ function build() {
   // the on-disk layout matches the previous behaviour (files land directly in
   // generated/chrome-extension/graph-trainer/...).
   const prefix = `${EXTENSION_DIR_NAME}/`;
-  for (const { absPath, archivePath } of collectExtensionFiles()) {
+  const archivos = await collectExtensionFiles();
+
+  for (const { archivePath, getContent } of archivos) {
     const relative = archivePath.startsWith(prefix) ? archivePath.slice(prefix.length) : archivePath;
     const destination = path.join(outputRoot, relative);
     ensureDir(path.dirname(destination));
-    fs.copyFileSync(absPath, destination);
+    // getContent() lee del disco o construye el bundle del runtime en memoria.
+    fs.writeFileSync(destination, await getContent());
   }
 
   fs.writeFileSync(path.join(outputRoot, 'README.txt'), buildReadme(outputRoot));
-  console.log(`Chrome extension generated at: ${outputRoot}`);
+  console.log(`Chrome extension generated at: ${outputRoot} (${archivos.length} archivos)`);
 }
 
-build();
+build().catch((error) => {
+  console.error('[build-chrome-extension] falló:', error);
+  process.exit(1);
+});

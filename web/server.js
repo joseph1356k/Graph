@@ -930,7 +930,7 @@ app.post('/api/providers/miracle-stt/medical', async (req, res) => {
   }
 });
 
-app.get('/api/providers/chrome-extension/download', (req, res) => {
+app.get('/api/providers/chrome-extension/download', async (req, res) => {
   if (!req.workflowAccess?.canManageGlobalWorkflows) {
     return res.status(403).json({ error: 'No autorizado para generar la extension.' });
   }
@@ -941,6 +941,17 @@ app.get('/api/providers/chrome-extension/download', (req, res) => {
       collectExtensionFiles,
       buildReadme
     } = require('../scripts/lib/chrome-extension-bundle');
+
+    // El runtime se bundlea en memoria, así que se resuelve TODO el contenido
+    // antes de abrir el stream: si el bundling falla, todavía se puede devolver
+    // un JSON de error con status, en vez de un ZIP truncado.
+    const archivos = await collectExtensionFiles();
+    const contenidos = await Promise.all(
+      archivos.map(async ({ archivePath, getContent }) => ({
+        archivePath,
+        contenido: await getContent()
+      }))
+    );
 
     const archive = archiver('zip', { zlib: { level: 9 } });
     archive.on('error', (error) => {
@@ -955,8 +966,8 @@ app.get('/api/providers/chrome-extension/download', (req, res) => {
     res.setHeader('Content-Disposition', 'attachment; filename="miracle-chrome-extension.zip"');
     archive.pipe(res);
 
-    for (const { absPath, archivePath } of collectExtensionFiles()) {
-      archive.file(absPath, { name: archivePath });
+    for (const { archivePath, contenido } of contenidos) {
+      archive.append(contenido, { name: archivePath });
     }
     archive.append(buildReadme(EXTENSION_DIR_NAME), { name: `${EXTENSION_DIR_NAME}/README.txt` });
     archive.finalize();
