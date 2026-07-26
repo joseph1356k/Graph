@@ -1,3 +1,4 @@
+// @ts-check
 // Application service for the "Android App" panel in Provider Studio.
 //
 // Reads the telemetry uploaded by the Android app (graph_app_users,

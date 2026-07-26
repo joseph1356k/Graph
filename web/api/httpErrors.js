@@ -1,3 +1,4 @@
+// @ts-check
 function isDependencyUnavailable(error) {
   const code = `${error?.code || ''}`.trim();
   const message = `${error?.message || ''}`.toLowerCase();

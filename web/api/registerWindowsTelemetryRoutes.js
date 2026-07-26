@@ -1,3 +1,4 @@
+// @ts-check
 // Rutas de INGESTA de "Windows Live" bajo /api/v1 (ya gated con X-API-Key por
 // requireApiKey en server.js). Las llama el cliente Windows (BackendClient):
 //   POST /api/v1/agent/register  -> alta/heartbeat del usuario (upsert por email)

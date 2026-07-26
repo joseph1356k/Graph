@@ -1,3 +1,4 @@
+// @ts-check
 const VercelProjectEnvService = require('./VercelProjectEnvService');
 
 // Providers para la tarjeta de Provider Studio "Biopsia / Laboratorio" (lectura

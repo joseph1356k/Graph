@@ -1,3 +1,4 @@
+// @ts-check
 // Ingesta de telemetría del cliente Windows (Ü / U.WindowsClient) — el lado
 // escritura del core "Windows Live". El cliente habla SOLO con el backend Graph
 // (/api/v1, X-API-Key); este servicio persiste en Supabase con service-role

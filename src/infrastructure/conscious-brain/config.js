@@ -1,3 +1,4 @@
+// @ts-check
 // Configuración del módulo "Computer-use consciente" y de la "Enseñanza por
 // video", leída del entorno EN CADA LLAMADA (serverless-friendly: el redeploy
 // de Vercel tras guardar la tarjeta trae los env nuevos y aquí no hay caché).

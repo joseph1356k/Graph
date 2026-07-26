@@ -1,3 +1,4 @@
+// @ts-check
 const createUsageRecorder = require('./recordUsageBestEffort');
 
 const MAX_AUDIO_BASE64_LENGTH = 15 * 1024 * 1024;

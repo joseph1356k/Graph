@@ -1,3 +1,4 @@
+// @ts-check
 // Rutas de LECTURA del panel Windows en Provider Studio (dashboard). Solo-admin,
 // mismo gate que el panel Android (workflowAccess.canManageGlobalWorkflows, que
 // adjunta requireAccountAuth + attachWorkflowAccess en server.js).

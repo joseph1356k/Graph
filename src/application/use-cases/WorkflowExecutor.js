@@ -1,3 +1,4 @@
+// @ts-check
 const TransversalWorkflowComposer = require('./TransversalWorkflowComposer');
 const WorkflowBranchPlanner = require('./WorkflowBranchPlanner');
 

@@ -1,3 +1,4 @@
+// @ts-check
 function isDemoAutopilotContext(context = {}) {
   return `${context.demoMode || ''}`.trim().toLowerCase() === 'autopilot';
 }

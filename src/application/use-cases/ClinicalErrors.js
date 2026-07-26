@@ -1,3 +1,4 @@
+// @ts-check
 // Stable error codes for the clinical API. Routes translate these into
 // { error: { code, message } } responses; messages are user-facing (no PHI,
 // no stack traces).

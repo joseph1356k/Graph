@@ -1,3 +1,4 @@
+// @ts-check
 const { statusForError, publicErrorMessage } = require('./httpErrors');
 
 function buildSurfaceContext(body = {}, access = null) {

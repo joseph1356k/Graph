@@ -1,3 +1,4 @@
+// @ts-check
 // Persists clinical templates in Supabase (public.clinical_templates).
 // The table predates this engine, so the repository maps between the API model
 // and the physical columns: specialty <-> specialty_code (+ specialty_name),

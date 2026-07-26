@@ -1,3 +1,4 @@
+// @ts-check
 const { clinicalError } = require('./ClinicalErrors');
 
 // Business rules for clinical encounters: template snapshots,

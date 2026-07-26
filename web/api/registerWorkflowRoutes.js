@@ -1,3 +1,4 @@
+// @ts-check
 const WorkflowBranchLearning = require('../../src/application/use-cases/WorkflowBranchLearning');
 const { statusForError, publicErrorMessage } = require('./httpErrors');
 const createUsageRecorder = require('./recordUsageBestEffort');

@@ -1,3 +1,4 @@
+// @ts-check
 // Punto de entrada del cerebro consciente: despacha el turno al adaptador del
 // proveedor indicado en la sesión. Port de Android/backend/src/brain/provider.ts.
 //

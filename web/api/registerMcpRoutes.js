@@ -1,3 +1,4 @@
+// @ts-check
 // Servidor MCP REAL de Graph: expone los workflows aprendidos como herramientas
 // descubribles vía Model Context Protocol (JSON-RPC 2.0 sobre Streamable HTTP,
 // modo stateless — cada POST es autocontenido, como exige serverless).

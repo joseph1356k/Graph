@@ -1,3 +1,4 @@
+// @ts-check
 const Workflow = require('../../domain/entities/Workflow');
 const WorkflowExecutionGuideBuilder = require('./WorkflowExecutionGuideBuilder');
 

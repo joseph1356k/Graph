@@ -1,3 +1,4 @@
+// @ts-check
 class WorkflowExecutionGuideBuilder {
   constructor(llmProvider = null) {
     this.llmProvider = llmProvider;

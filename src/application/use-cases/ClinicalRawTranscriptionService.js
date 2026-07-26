@@ -1,3 +1,4 @@
+// @ts-check
 class ClinicalRawTranscriptionService {
   constructor(options = {}) {
     this.fetchImpl = options.fetchImpl || fetch;

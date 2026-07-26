@@ -1,3 +1,4 @@
+// @ts-check
 const { clinicalError, isClinicalError } = require('./ClinicalErrors');
 
 // Orchestrates note generation: loads the encounter, builds the strict prompt

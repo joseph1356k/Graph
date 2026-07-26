@@ -1,3 +1,4 @@
+// @ts-check
 class LearningSessionService {
   constructor(workflowLearner) {
     this.workflowLearner = workflowLearner;

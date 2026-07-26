@@ -1,3 +1,4 @@
+// @ts-check
 const workflowAssistantPolicy = require('./WorkflowAssistantPolicy');
 const WorkflowDecisionNormalizer = require('./WorkflowDecisionNormalizer');
 

@@ -1,3 +1,4 @@
+// @ts-check
 // ============================================================================
 // EL CATÁLOGO DE MOTORES — fuente única de verdad de las tabs del panel de logs,
 // del marcador de pruebas y del anclaje de los avances.

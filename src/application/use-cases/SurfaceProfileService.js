@@ -1,3 +1,4 @@
+// @ts-check
 class SurfaceProfileService {
   constructor(repository, llmProvider) {
     this.repository = repository;

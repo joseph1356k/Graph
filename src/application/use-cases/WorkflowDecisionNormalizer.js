@@ -1,3 +1,4 @@
+// @ts-check
 class WorkflowDecisionNormalizer {
   normalizeText(value = '') {
     return `${value || ''}`

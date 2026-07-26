@@ -1,3 +1,4 @@
+// @ts-check
 // Distribución de la app de Windows (Ü) desde Provider Studio: disparar un
 // build en GitHub Actions, consultar su estado, y resolver el instalador
 // vigente. Las rutas /api/providers/windows-app/* son admin-only (mismo

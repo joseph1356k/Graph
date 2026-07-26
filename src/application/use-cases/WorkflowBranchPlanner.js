@@ -1,3 +1,4 @@
+// @ts-check
 const WorkflowBranch = require('../../domain/entities/WorkflowBranch');
 const TransversalWorkflowComposer = require('./TransversalWorkflowComposer');
 
