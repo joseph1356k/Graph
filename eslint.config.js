@@ -157,6 +157,10 @@ module.exports = [
       'generated/**',
       'public/**',
       'dist/**',
+      // Salida del bundler. `dist/**` solo matchea el dist de la raíz, así que
+      // sin esta línea ESLint lintea los bundles minificados y llena el gate de
+      // ruido (verificado empíricamente).
+      'web/public/dist/**',
       'build/**',
       'coverage/**',
       '.vercel/**',
