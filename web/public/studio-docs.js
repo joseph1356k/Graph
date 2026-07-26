@@ -78,6 +78,9 @@
 
   function closeDoc() { reader.classList.add('is-hidden'); }
 
+  // Hook para que otras piezas (ej. el mapa del laboratorio) abran un doc por archivo.
+  window.StudioDocs = { open: openDoc, close: closeDoc };
+
   function render(index) {
     var topics = (index && index.topics) || [];
     if (!topics.length) { topicsEl.innerHTML = '<p class="studio-docs-loading">Sin documentos aún.</p>'; return; }

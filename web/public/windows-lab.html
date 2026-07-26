@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>El sistema por dentro · Windows | Miracle</title>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/provider-studio.css">
+    <link rel="stylesheet" href="/windows-live.css">
+    <link rel="stylesheet" href="/windows-lab.css">
+    <script src="/miracle-bg.js" defer></script>
+</head>
+<body>
+    <main class="lab-shell">
+        <a class="lab-back" href="/provider-studio.html">
+            <svg class="lab-back-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 19 3 12l7-7M3 12h18"/></svg>
+            <span>Provider Studio</span>
+        </a>
+
+        <header class="lab-hero">
+            <p class="lab-kicker">Laboratorio</p>
+            <h1>El sistema por dentro · Windows</h1>
+            <p class="lab-intro">
+                Arriba, el sistema en vivo del usuario. Abajo, el mapa de lo que realmente pasa
+                entre «el usuario hace algo» y «la máquina lo repite sola». Cada estación se
+                <strong>enciende cuando pasa por ella un evento real</strong>, así que el mapa también
+                muestra qué partes todavía no nos están contando nada.
+            </p>
+        </header>
+
+        <!-- La visualización en vivo + los logs (movidos aquí desde la pestaña Windows del
+             Provider Studio). Todo lo construye windows-live.js dentro de este root. -->
+        <section id="windows-live" aria-label="Sistema en vivo por usuario"></section>
+
+        <!-- El mapa del sistema real: los sentidos siempre encendidos + los dos caminos
+             (enseñar / ejecutar). Lo construye windows-lab.js. -->
+        <section id="lab-map" class="lab-map" aria-label="Mapa del sistema"></section>
+
+        <!-- Documentación viva: el lector modal lo reutiliza el mapa (window.StudioDocs). -->
+        <section class="studio-docs is-collapsed" id="studio-docs" aria-label="Documentación del sistema">
+            <button type="button" class="studio-docs-head" id="studio-docs-toggle" aria-expanded="false" aria-controls="studio-docs-topics">
+                <div class="studio-docs-head-copy">
+                    <h2>Documentación del sistema</h2>
+                    <p>El detalle escrito de cada motor. Es la fuente de este mapa.</p>
+                </div>
+                <svg class="studio-docs-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 6 5 5 5-5"/></svg>
+            </button>
+            <div id="studio-docs-topics" class="studio-docs-topics">
+                <p class="studio-docs-loading">Cargando documentación…</p>
+            </div>
+        </section>
+    </main>
+
+    <div class="studio-docs-reader is-hidden" id="studio-docs-reader" role="dialog" aria-modal="true">
+        <div class="studio-docs-reader-panel">
+            <button type="button" class="studio-docs-close" id="studio-docs-close" aria-label="Cerrar">✕</button>
+            <article class="studio-docs-content" id="studio-docs-content"></article>
+        </div>
+    </div>
+
+    <script src="/auth-gate.js"></script>
+    <script src="/windows-live.js?v=2" defer></script>
+    <script src="/studio-docs.js"></script>
+    <script src="/windows-lab.js" defer></script>
+</body>
+</html>

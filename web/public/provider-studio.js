@@ -1086,7 +1086,7 @@
         windowsDownloadCaret: document.getElementById('windows-download-caret'),
         windowsDownloadMenu: document.getElementById('windows-download-menu'),
         windowsDistributeTrigger: document.getElementById('windows-distribute-trigger'),
-        windowsBuildProgress: document.getElementById('windows-build-progress'),
+        heroShell: document.querySelector('.studio-hero'),
         windowsBuildProgressTitle: document.getElementById('windows-build-progress-title'),
         windowsBuildProgressDetail: document.getElementById('windows-build-progress-detail'),
         windowsBuildMeta: document.getElementById('windows-build-meta')
@@ -1238,14 +1238,23 @@
         dom.windowsDownloadCaret?.setAttribute('aria-expanded', String(opening));
     }
 
-    function setWindowsBuildProgress(visible, title, detail) {
-        if (!dom.windowsBuildProgress) return;
-        dom.windowsBuildProgress.classList.toggle('is-hidden', !visible);
+    function setWindowsBuildProgress(visible, title, detail, url) {
+        if (dom.heroShell) dom.heroShell.classList.toggle('is-building', Boolean(visible));
         if (title !== undefined && dom.windowsBuildProgressTitle) {
             dom.windowsBuildProgressTitle.textContent = title;
         }
         if (detail !== undefined && dom.windowsBuildProgressDetail) {
-            dom.windowsBuildProgressDetail.textContent = detail;
+            dom.windowsBuildProgressDetail.textContent = '';
+            if (url) {
+                const link = document.createElement('a');
+                link.href = url;
+                link.target = '_blank';
+                link.rel = 'noopener';
+                link.textContent = detail || 'Ver run en GitHub ↗';
+                dom.windowsBuildProgressDetail.appendChild(link);
+            } else if (detail) {
+                dom.windowsBuildProgressDetail.textContent = detail;
+            }
         }
     }
 
@@ -1256,11 +1265,11 @@
         }
     }
 
-    function finishWindowsBuild(title, detail) {
+    function finishWindowsBuild(title, detail, url) {
         stopWindowsBuildPolling();
-        setWindowsBuildProgress(true, title, detail);
+        setWindowsBuildProgress(true, title, detail, url);
         if (dom.windowsDistributeTrigger) dom.windowsDistributeTrigger.disabled = false;
-        window.setTimeout(() => setWindowsBuildProgress(false), 8000);
+        window.setTimeout(() => setWindowsBuildProgress(false), 9000);
     }
 
     function pollWindowsBuild(requestId, version) {
@@ -1268,21 +1277,21 @@
         state.windowsBuildStartedAt = Date.now();
         state.windowsBuildTimer = window.setInterval(async () => {
             if (Date.now() - state.windowsBuildStartedAt > WINDOWS_BUILD_TIMEOUT_MS) {
-                finishWindowsBuild('Tiempo de espera agotado', 'El build sigue corriendo en GitHub Actions; revísalo allá.');
+                finishWindowsBuild('Sigue corriendo', 'Revísalo en GitHub Actions');
                 return;
             }
             try {
                 const status = await fetchJson(`/api/providers/windows-app/build/status?request_id=${encodeURIComponent(requestId)}`);
                 if (status.phase === 'success') {
-                    finishWindowsBuild('Build publicado', `Versión ${version} distribuida correctamente.`);
+                    finishWindowsBuild('Publicado', `Versión ${version}`);
                     loadWindowsBuildMeta();
                 } else if (status.phase === 'failure') {
-                    finishWindowsBuild('El build falló', status.runUrl ? `Revisa el run en GitHub: ${status.runUrl}` : 'Revisa el workflow en GitHub Actions.');
+                    finishWindowsBuild('Falló', status.runUrl ? 'Ver run en GitHub ↗' : 'Revisa GitHub Actions', status.runUrl || null);
                 } else {
                     setWindowsBuildProgress(true, status.phase === 'running' ? 'Construyendo…' : 'En cola…', `Versión ${version}`);
                 }
             } catch (error) {
-                finishWindowsBuild('No se pudo leer el estado', error.message || 'Intenta de nuevo desde Provider Studio.');
+                finishWindowsBuild('Error', `${error.message || 'Reintenta'}`.slice(0, 60));
             }
         }, WINDOWS_BUILD_POLL_MS);
     }
@@ -1291,13 +1300,13 @@
         if (!dom.windowsDistributeTrigger || dom.windowsDistributeTrigger.disabled) return;
         closeWindowsDownloadMenu();
         dom.windowsDistributeTrigger.disabled = true;
-        setWindowsBuildProgress(true, 'Iniciando build…', 'Disparando el workflow en GitHub Actions.');
+        setWindowsBuildProgress(true, 'Iniciando…', '');
         try {
             const { requestId, version } = await fetchJson('/api/providers/windows-app/build', { method: 'POST' });
             setWindowsBuildProgress(true, 'Construyendo…', `Versión ${version}`);
             pollWindowsBuild(requestId, version);
         } catch (error) {
-            finishWindowsBuild('No se pudo iniciar el build', error.message || 'Intenta de nuevo.');
+            finishWindowsBuild('No inició', `${error.message || 'Reintenta'}`.slice(0, 60));
         }
     }
 

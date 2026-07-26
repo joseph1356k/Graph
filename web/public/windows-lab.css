@@ -1,0 +1,301 @@
+/* ============================================================================
+   Windows Lab — el mapa del sistema real.
+   Estetica hermana de windows-live.css (negro profundo, azul electrico) pero
+   con los dos caminos diferenciados por color: 🎓 consciente en violeta-cian,
+   ⚡ subconsciente en azul electrico. Todo lo pinta windows-lab.js.
+   ============================================================================ */
+
+.lab-shell {
+    position: relative;
+    z-index: 1;
+    width: min(1240px, calc(100vw - 40px));
+    margin: 0 auto;
+    padding: 26px 0 64px;
+}
+
+/* ─────────────────────────────── cabecera ─────────────────────────────── */
+
+.lab-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 6px 2px;
+    transition: color 0.16s ease;
+}
+.lab-back:hover { color: var(--ink); }
+.lab-back-icon {
+    width: 16px; height: 16px; fill: none; stroke: currentColor;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.lab-hero { margin: 14px 2px 26px; max-width: 760px; }
+.lab-kicker {
+    margin: 0 0 6px;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(200, 220, 255, 0.45);
+}
+.lab-hero h1 { margin: 0 0 10px; font-size: 30px; letter-spacing: -0.03em; }
+.lab-intro { margin: 0; font-size: 14px; line-height: 1.62; color: var(--muted); }
+.lab-intro strong { color: var(--ink); font-weight: 600; }
+
+/* ──────────────────────────────── el mapa ─────────────────────────────── */
+
+.lab-map {
+    --lab-line: rgba(255, 255, 255, 0.11);
+    --lab-glass: rgba(10, 12, 18, 0.62);
+    --lab-a: #b79cff;          /* consciente */
+    --lab-b: #4c8dff;          /* subconsciente */
+    --lab-s: #7fe0c0;          /* sentidos */
+    --lab-accent: var(--lab-s);
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    align-items: start;
+    margin-top: 34px;
+}
+
+.lab-toolbar {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 0 2px 4px;
+}
+.lab-toolbar-note { margin: 0; font-size: 12.5px; color: rgba(200, 220, 255, 0.5); }
+.lab-tool {
+    border: 1px solid var(--lab-line);
+    background: var(--lab-glass);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: border-color 0.16s ease, color 0.16s ease, background 0.16s ease;
+}
+.lab-tool:hover { color: var(--ink); border-color: rgba(255, 255, 255, 0.24); }
+.lab-tool.is-on {
+    color: #ffd9a0;
+    border-color: rgba(255, 190, 110, 0.5);
+    background: rgba(255, 176, 80, 0.1);
+}
+
+/* ─────────────────────────────── las bandas ───────────────────────────── */
+
+.lab-band {
+    border: 1px solid var(--lab-line);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012));
+    padding: 20px 18px 22px;
+}
+.lab-band[data-band="sentidos"] { grid-column: 1 / -1; --lab-accent: var(--lab-s); }
+.lab-band[data-band="ensenar"]  { --lab-accent: var(--lab-a); }
+.lab-band[data-band="ejecutar"] { --lab-accent: var(--lab-b); }
+
+.lab-band-head { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 18px; }
+.lab-band-icon {
+    flex: 0 0 auto;
+    width: 40px; height: 40px;
+    display: grid; place-items: center;
+    font-size: 19px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--lab-accent) 34%, transparent);
+    background: color-mix(in srgb, var(--lab-accent) 11%, transparent);
+}
+.lab-band-copy { min-width: 0; }
+.lab-band-tag {
+    margin: 0 0 3px;
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--lab-accent);
+}
+.lab-band-title { margin: 0 0 7px; font-size: 19px; letter-spacing: -0.02em; }
+.lab-band-lead { margin: 0; font-size: 13px; line-height: 1.6; color: var(--muted); }
+.lab-band-lead strong { color: var(--ink); font-weight: 600; }
+
+/* ─────────────────────────────── el recorrido ─────────────────────────── */
+
+.lab-track { display: flex; flex-direction: column; gap: 0; }
+.lab-band[data-band="sentidos"] .lab-track {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 12px;
+}
+
+.lab-arrow {
+    display: block;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.2);
+    padding: 5px 0;
+}
+
+/* ─────────────────────────────── estaciones ───────────────────────────── */
+
+.lab-station {
+    border: 1px solid var(--lab-line);
+    border-radius: 13px;
+    background: var(--lab-glass);
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+.lab-station:hover { border-color: rgba(255, 255, 255, 0.2); }
+
+.lab-station-head {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 13px 14px;
+    background: none;
+    border: 0;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.lab-station-icon {
+    flex: 0 0 auto;
+    width: 30px; height: 30px;
+    display: grid; place-items: center;
+    font-size: 15px;
+    border-radius: 9px;
+    border: 1px solid color-mix(in srgb, var(--lab-accent) 26%, transparent);
+    background: color-mix(in srgb, var(--lab-accent) 8%, transparent);
+}
+.lab-station-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.lab-station-name { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
+.lab-station-one { font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+
+.lab-hits {
+    flex: 0 0 auto;
+    min-width: 26px;
+    text-align: center;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    padding: 3px 7px;
+    border-radius: 999px;
+    border: 1px solid var(--lab-line);
+    color: rgba(200, 220, 255, 0.42);
+    background: rgba(255, 255, 255, 0.03);
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+/* cuerpo desplegable */
+.lab-station-body { display: none; padding: 0 14px 15px 56px; }
+.lab-station.is-open .lab-station-body { display: block; }
+
+.lab-station-meta { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 11px; }
+.lab-chip {
+    font-size: 10.5px;
+    letter-spacing: 0.03em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--lab-line);
+    color: var(--muted);
+}
+.lab-chip-engine {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: color-mix(in srgb, var(--lab-accent) 70%, #fff);
+    border-color: color-mix(in srgb, var(--lab-accent) 30%, transparent);
+    background: color-mix(in srgb, var(--lab-accent) 8%, transparent);
+}
+.lab-chip.is-ok { color: #9df0ac; border-color: rgba(157, 240, 172, 0.3); }
+.lab-chip.is-bench { color: #ffd9a0; border-color: rgba(255, 200, 130, 0.32); }
+.lab-chip.is-todo { color: rgba(244, 244, 242, 0.6); border-style: dashed; }
+
+.lab-detail { margin: 0 0 12px; padding-left: 17px; }
+.lab-detail li { margin: 5px 0; font-size: 12.5px; line-height: 1.58; color: var(--muted); }
+
+.lab-pending {
+    border-left: 2px solid rgba(255, 190, 110, 0.35);
+    padding: 2px 0 2px 12px;
+    margin: 0 0 12px;
+}
+.lab-pending-title { margin: 0 0 4px; font-size: 11px; letter-spacing: 0.06em; color: #ffd9a0; }
+.lab-pending ul { margin: 0; padding-left: 16px; }
+.lab-pending li { margin: 4px 0; font-size: 12.5px; line-height: 1.55; color: rgba(244, 244, 242, 0.62); }
+
+.lab-doc-link {
+    border: 0;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: 12.5px;
+    color: color-mix(in srgb, var(--lab-accent) 78%, #fff);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+.lab-doc-link:hover { color: #fff; }
+
+/* ─────────────────────────── estado en vivo ───────────────────────────── */
+
+.lab-station.is-live {
+    border-color: color-mix(in srgb, var(--lab-accent) 62%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--lab-accent) 22%, transparent),
+                0 0 26px color-mix(in srgb, var(--lab-accent) 24%, transparent);
+    transform: translateX(2px);
+}
+.lab-station.is-live .lab-station-icon {
+    border-color: color-mix(in srgb, var(--lab-accent) 70%, transparent);
+    background: color-mix(in srgb, var(--lab-accent) 20%, transparent);
+    animation: lab-ping 0.9s ease-out;
+}
+.lab-station.is-live .lab-hits {
+    color: #fff;
+    border-color: color-mix(in srgb, var(--lab-accent) 55%, transparent);
+    background: color-mix(in srgb, var(--lab-accent) 20%, transparent);
+}
+.lab-station.is-error {
+    border-color: rgba(255, 154, 139, 0.6);
+    box-shadow: 0 0 0 1px rgba(255, 154, 139, 0.2), 0 0 26px rgba(255, 154, 139, 0.22);
+}
+
+@keyframes lab-ping {
+    0%   { transform: scale(1); }
+    35%  { transform: scale(1.14); }
+    100% { transform: scale(1); }
+}
+
+/* puntos ciegos: estaciones que nunca emitieron telemetria */
+.lab-map.show-blind .lab-station.is-blind {
+    border-color: rgba(255, 190, 110, 0.34);
+    border-style: dashed;
+    opacity: 0.82;
+}
+.lab-map.show-blind .lab-station.is-blind .lab-station-name::after {
+    content: "sin señal todavia";
+    margin-left: 9px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    padding: 2px 7px;
+    border-radius: 999px;
+    color: #ffd9a0;
+    background: rgba(255, 176, 80, 0.12);
+    border: 1px solid rgba(255, 190, 110, 0.3);
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+/* ─────────────────────────────── responsive ───────────────────────────── */
+
+@media (max-width: 1080px) {
+    .lab-map { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+    .lab-shell { width: calc(100vw - 24px); }
+    .lab-hero h1 { font-size: 24px; }
+    .lab-station-body { padding-left: 14px; }
+}
+
+/* La documentacion viva vive dentro del shell del laboratorio. */
+.lab-shell .studio-docs { max-width: none; margin: 40px 0 0; padding: 0; }

@@ -6,7 +6,6 @@
     <title>Provider Studio | Miracle</title>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/provider-studio.css">
-    <link rel="stylesheet" href="/windows-live.css">
     <script src="/miracle-bg.js" defer></script>
 </head>
 <body>
@@ -36,16 +35,14 @@
                     <p class="studio-build-meta" id="windows-build-meta"></p>
                 </div>
             </div>
-            <div class="studio-build-progress is-hidden" id="windows-build-progress" role="status" aria-live="polite">
-                <span class="studio-build-progress-spinner" aria-hidden="true"></span>
-                <div class="studio-build-progress-copy">
-                    <strong id="windows-build-progress-title">Iniciando build…</strong>
-                    <span id="windows-build-progress-detail" class="form-message"></span>
-                </div>
-            </div>
             <div class="studio-hero-copy">
-                <div class="studio-hero-mark" aria-hidden="true">
-                    <svg viewBox="0 0 60 54"><path d="M30 3 57 51H3Z"/></svg>
+                <div class="studio-hero-mark" id="windows-hero-mark">
+                    <svg viewBox="0 0 60 54" aria-hidden="true"><path d="M30 3 57 51H3Z"/></svg>
+                    <div class="studio-hero-build" id="windows-build-progress" role="status" aria-live="polite">
+                        <span class="studio-hero-build-spinner" aria-hidden="true"></span>
+                        <strong id="windows-build-progress-title">Construyendo…</strong>
+                        <span id="windows-build-progress-detail" class="studio-hero-build-detail"></span>
+                    </div>
                 </div>
                 <h1>Provider Studio</h1>
                 <p class="studio-intro">Panel minimo para revisar, cambiar y validar los providers principales de Miracle.</p>
@@ -413,12 +410,18 @@
 
             <div class="studio-surface-panel" data-surface-panel="windows">
 
-            <!-- Sistema en vivo por usuario (core "Windows Live"): a la IZQUIERDA el loop
-                 CONSCIENTE (analizar pantalla → clic), a la DERECHA el SUBCONSCIENTE (MCP →
-                 apps aprendidas → workflows → nodos). Selector de usuario arriba-derecha;
-                 los pulsos y el grafo salen de datos reales (telemetría Supabase + Neo4j).
-                 Todo lo construye windows-live.js dentro de este root. -->
-            <section id="windows-live" aria-label="Sistema en vivo por usuario"></section>
+            <!-- La visualización en vivo por usuario y sus logs se mudaron a su propia página
+                 (/windows-lab.html), donde además está el mapa completo del sistema real.
+                 Aquí queda solo la puerta de entrada. -->
+            <a class="studio-lab-entry" href="/windows-lab.html">
+                <span class="studio-lab-entry-mark" aria-hidden="true">⚡</span>
+                <span class="studio-lab-entry-copy">
+                    <span class="studio-lab-entry-kicker">Laboratorio</span>
+                    <strong>El sistema por dentro</strong>
+                    <span class="studio-lab-entry-sub">La visualización en vivo, los logs del usuario y el mapa de todo lo que pasa entre «el usuario hace algo» y «la máquina lo repite sola».</span>
+                </span>
+                <svg class="studio-lab-entry-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
+            </a>
 
             <section class="studio-board">
                 <section class="studio-card is-collapsed" id="conscious-card">
@@ -722,7 +725,6 @@
     <script src="/auth-gate.js"></script>
     <script src="/admin-workspace.js"></script>
     <script src="/provider-studio.js?v=3"></script>
-    <script src="/windows-live.js?v=1" defer></script>
     <script src="/studio-docs.js"></script>
     <script>
       (function () {

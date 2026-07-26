@@ -1834,3 +1834,68 @@ button.android-crumb:focus-visible {
     to { transform: rotate(360deg); }
 }
 .studio-docs-content a { color: #7db4ff; }
+
+/* ───────────── Puerta al laboratorio (la viz en vivo vive en /windows-lab.html) ───────────── */
+
+.studio-lab-entry {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    text-decoration: none;
+    color: inherit;
+    margin: 0 auto 24px;
+    max-width: 960px;
+    padding: 20px 22px;
+    border: 1px solid rgba(96, 148, 235, 0.28);
+    border-radius: 18px;
+    background:
+        radial-gradient(120% 160% at 0% 0%, rgba(76, 141, 255, 0.14), transparent 62%),
+        rgba(9, 14, 26, 0.6);
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.25s ease;
+}
+
+.studio-lab-entry:hover {
+    border-color: rgba(127, 178, 255, 0.55);
+    transform: translateY(-1px);
+    box-shadow: 0 0 32px rgba(76, 141, 255, 0.16);
+}
+
+.studio-lab-entry-mark {
+    flex: 0 0 auto;
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    font-size: 21px;
+    border-radius: 14px;
+    border: 1px solid rgba(96, 148, 235, 0.36);
+    background: rgba(76, 141, 255, 0.12);
+}
+
+.studio-lab-entry-copy { display: grid; gap: 3px; min-width: 0; }
+
+.studio-lab-entry-kicker {
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(127, 178, 255, 0.8);
+}
+
+.studio-lab-entry-copy strong { font-size: 17px; letter-spacing: -0.02em; }
+
+.studio-lab-entry-sub { font-size: 12.5px; line-height: 1.55; color: var(--muted); }
+
+.studio-lab-entry-arrow {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    color: rgba(127, 178, 255, 0.7);
+    transition: transform 0.2s ease;
+}
+
+.studio-lab-entry:hover .studio-lab-entry-arrow { transform: translateX(3px); }

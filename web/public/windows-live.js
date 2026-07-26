@@ -551,6 +551,8 @@
 
     // Traduce un evento real a un pulso + ignición en la viz.
     function pulseForEvent(ev) {
+        // El mapa del sistema (windows-lab.js) escucha esto para encender su estación.
+        try { window.dispatchEvent(new CustomEvent('wl:event', { detail: ev })); } catch (e) { /* */ }
         switch (ev.kind) {
             case 'conscious_run_start':
                 firePulse(state.wires.consc_analyze, { onArrive: () => igniteNode('analyze') }); break;
@@ -738,6 +740,7 @@
         closeDetail();
         setEmpty('loading', 'Cargando el sistema de este usuario…', '');
         stopEventsPolling();
+        try { window.dispatchEvent(new CustomEvent('wl:user', { detail: { email } })); } catch (e) { /* */ }
         try {
             state.graph = await loadGraph(email);
             renderGraph();
@@ -809,7 +812,9 @@
     }
     function windowsPanelVisible() {
         const panel = document.querySelector('[data-surface-panel="windows"]');
-        return panel && !panel.classList.contains('is-hidden');
+        // Sin panel de superficies estamos en página propia (windows-lab.html): siempre visible.
+        if (!panel) return true;
+        return !panel.classList.contains('is-hidden');
     }
     function syncActive() { if (windowsPanelVisible()) activate(); else deactivate(); }
 
