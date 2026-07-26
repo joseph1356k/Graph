@@ -50,6 +50,12 @@
           "title": "SurfaceReadiness: el motor de carga de UI",
           "summary": "La \"barra de carga\" interna: al grabar guarda cuántos elementos hay listos en la ruta; al ejecutar espera a que la pantalla cargue (≥80%) antes de actuar. Evita el fallo por UI sin cargar.",
           "file": "motor-carga-ui.md"
+        },
+        {
+          "id": "motor-medicion-tiempos",
+          "title": "RunTimings: medición de tiempos de respuesta",
+          "summary": "Cronometra cada fase de la ejecución (espera-carga, acción, alineación, total) por paso y emite un resumen milimétrico al terminar. Para ver dónde se va el tiempo.",
+          "file": "motor-medicion-tiempos.md"
         }
       ]
     },
