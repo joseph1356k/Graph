@@ -110,6 +110,9 @@ class WorkflowCatalog {
           allowedOptions: row.allowedOptions,
           valueMode: row.valueMode,
           bindTo: row.bindTo,
+          nodeKey: row.nodeKey,
+          nodePath: row.nodePath,
+          nodeAction: row.nodeAction,
           stepOrder: row.stepOrder
         });
       }
