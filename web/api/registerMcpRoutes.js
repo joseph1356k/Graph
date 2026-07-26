@@ -100,9 +100,11 @@ function registerMcpRoutes(app, deps = {}) {
         return rpcError(id, -32602, `herramienta desconocida para esta superficie: ${name}`);
       }
       try {
+        // El context viaja TAMBIÉN como variable: es lo que activa la sustitución dinámica de
+        // valores en el executor (en execution_intent es solo informativo).
         const executionPlan = await workflowExecutor.getExecutionPlanById(
           match.id,
-          {},
+          { context: `${args.context || ''}` },
           { source: 'mcp', surface: 'native', context: `${args.context || ''}` },
           null
         );
