@@ -325,6 +325,12 @@ class Neo4jWorkflowRepository {
       ...step,
       surfaceHints: this.serializeJsonObject(step.surfaceHints),
       allowedOptions: this.serializeAllowedOptions(step.allowedOptions),
+      // "El que autora manda": si el modo vino explícito se persiste; si no, la propiedad NO se
+      // crea (null en un mapa de CREATE no genera propiedad) y el clasificador del finish la
+      // rellenará con coalesce. Sin esto, la grabación normal del cliente marcaría todo 'fixed'
+      // y bloquearía al clasificador.
+      valueMode: step.valueModeExplicit ? step.valueMode : null,
+      bindTo: step.bindTo ? step.bindTo : null,
       stepOrder: nextStepOrder
     };
     const mutableClause = this.buildMutableWorkflowClause('w', access, params);
@@ -349,6 +355,8 @@ class Neo4jWorkflowRepository {
         nodeKey: $nodeKey,
         nodePath: $nodePath,
         nodeAction: $nodeAction,
+        valueMode: $valueMode,
+        bindTo: $bindTo,
         stepOrder: $stepOrder,
         timestamp: timestamp()
       })
@@ -566,7 +574,9 @@ class Neo4jWorkflowRepository {
       WITH w
       UNWIND $modes AS m
       MATCH (w)-[:HAS_STEP]->(s:Step {stepOrder: m.stepOrder})
-      SET s.valueMode = m.valueMode, s.bindTo = m.bindTo
+      // El clasificador RELLENA, no pisa: un modo puesto explícitamente al autorar/grabar manda.
+      SET s.valueMode = coalesce(s.valueMode, m.valueMode),
+          s.bindTo = coalesce(s.bindTo, m.bindTo)
     `, params);
   }
 
@@ -638,6 +648,8 @@ class Neo4jWorkflowRepository {
         nodeKey: step.nodeKey,
         nodePath: step.nodePath,
         nodeAction: step.nodeAction,
+        valueMode: step.valueMode,
+        bindTo: step.bindTo,
         stepOrder: step.stepOrder,
         timestamp: timestamp()
       })
@@ -699,6 +711,8 @@ class Neo4jWorkflowRepository {
         nodeKey: step.nodeKey,
         nodePath: step.nodePath,
         nodeAction: step.nodeAction,
+        valueMode: step.valueMode,
+        bindTo: step.bindTo,
         stepOrder: step.stepOrder,
         timestamp: timestamp()
       })
