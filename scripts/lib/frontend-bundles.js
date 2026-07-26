@@ -255,11 +255,65 @@ function descubrirPaginas() {
   return paginas;
 }
 
+// Manifiesto generado y versionado. Ver `porQueUnManifiesto` abajo.
+const MANIFIESTO_PATH = path.join(__dirname, 'frontend-bundles.manifest.json');
+
+/**
+ * Por qué existe un manifiesto en vez de derivar siempre de los HTML:
+ *
+ * La derivación desde los `<script>` de cada HTML es correcta ANTES de la
+ * migración, y es lo que permite hacerla sin escribir listas a mano. Pero una
+ * vez que el HTML dice `<script src="/dist/page1.classic.js">`, los tags
+ * originales ya no están y no hay nada de dónde derivar — sería circular.
+ *
+ * Así que la migración genera este manifiesto UNA VEZ y desde entonces él es la
+ * fuente única de verdad. Sigue cumpliendo el objetivo de la fase: agregar un
+ * módulo al runtime se edita en UN lugar, no en tres.
+ *
+ * @returns {GrupoBundle[]|null} los bundles del manifiesto, o null si no existe
+ */
+function cargarManifiesto() {
+  if (!fs.existsSync(MANIFIESTO_PATH)) return null;
+  const crudo = JSON.parse(fs.readFileSync(MANIFIESTO_PATH, 'utf8'));
+  return (crudo.bundles || []).map((/** @type {any} */ b) => ({
+    id: b.id,
+    semantica: b.semantica,
+    // En el manifiesto las rutas son relativas a la raíz del repo, para que sea
+    // legible en un diff y no dependa de dónde esté clonado.
+    archivos: b.archivos.map((/** @type {string} */ rel) => path.join(repoRoot, rel)),
+    posiciones: [],
+    start: -1,
+    end: -1
+  }));
+}
+
+/**
+ * Serializa los bundles a la forma del manifiesto (rutas relativas al repo).
+ * @param {GrupoBundle[]} bundles
+ * @returns {object}
+ */
+function serializarManifiesto(bundles) {
+  return {
+    _comentario: 'GENERADO por scripts/generate-frontend-manifest.js. Fuente única de verdad de los bundles del frontend (ver docs/PLAN-BUILD-FRONTEND.md). Para agregar un módulo al runtime, edita el bundle correspondiente acá: es el único lugar.',
+    bundles: bundles.map((b) => ({
+      id: b.id,
+      semantica: b.semantica,
+      archivos: b.archivos.map((abs) => path.relative(repoRoot, abs).split(path.sep).join('/'))
+    }))
+  };
+}
+
 /**
  * Todos los bundles del frontend, incluido el de la extensión de Chrome.
+ *
+ * Usa el manifiesto si existe (estado post-migración); si no, deriva de los
+ * HTML (estado pre-migración). Los consumidores no necesitan saber cuál es.
  * @returns {GrupoBundle[]}
  */
 function todosLosBundles() {
+  const delManifiesto = cargarManifiesto();
+  if (delManifiesto) return delManifiesto;
+
   const bundles = descubrirPaginas().flatMap((p) => p.grupos);
   bundles.push(bundleExtension());
   return bundles;
@@ -307,6 +361,7 @@ function bundleExtension() {
 
 module.exports = {
   DIST_DIR_NAME,
+  MANIFIESTO_PATH,
   publicRoot,
   extensionSrcRoot,
   repoRoot,
@@ -314,5 +369,7 @@ module.exports = {
   agrupar,
   descubrirPaginas,
   todosLosBundles,
-  bundleExtension
+  bundleExtension,
+  cargarManifiesto,
+  serializarManifiesto
 };

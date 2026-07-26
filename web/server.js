@@ -67,6 +67,7 @@ const registerStudioProgressRoutes = require('./api/registerStudioProgressRoutes
 const registerWindowsAgentRoutes = require('./api/registerWindowsAgentRoutes');
 const registerWindowsDistributionRoutes = require('./api/registerWindowsDistributionRoutes');
 const registerMcpRoutes = require('./api/registerMcpRoutes');
+const registerFrontendBundleDevRoutes = require('./api/registerFrontendBundleDevRoutes');
 const AgentWorkflowStore = require('../src/application/use-cases/AgentWorkflowStore');
 const requireClinicalAuth = require('./api/requireClinicalAuth');
 const MiracleWorkspaceStore = require('./api/miracleWorkspaceStore');
@@ -294,6 +295,11 @@ app.get('/miracle/voice-lab', (req, res) => {
 });
 
 app.use('/miracle', express.static(miracleWorkspaceStaticRoot));
+
+// Bundles del frontend en dev: construye /dist/*.js al vuelo. Va ANTES de
+// express.static, o un /dist viejo en disco le ganaría al bundle fresco.
+// En producción no se registra (ahí /dist lo generó npm run build:vercel).
+registerFrontendBundleDevRoutes(app);
 
 app.use(express.static('web/public'));
 
