@@ -77,6 +77,11 @@ class Step {
       ? normalizeText(data.valueMode)
       : 'fixed';
     this.bindTo = normalizeText(data.bindTo);
+    // ¿El modo vino EXPLÍCITO en el origen (autoría manual, o ya persistido en la base)? Regla
+    // "el que autora manda": solo los steps SIN modo explícito quedan sin propiedad en Neo4j,
+    // y el clasificador LLM del finish rellena únicamente esos (coalesce en setStepValueModes).
+    // Transitorio: no se persiste como propiedad propia.
+    this.valueModeExplicit = ['fixed', 'dynamic', 'flexible'].includes(normalizeText(data.valueMode));
 
     this.stepOrder = Number.isFinite(data.stepOrder) ? data.stepOrder : Number(data.stepOrder);
   }
