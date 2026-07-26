@@ -1,0 +1,121 @@
+{
+  "paginas": [
+    {
+      "pagina": "api-docs.html",
+      "requests": 0,
+      "bytes": 0,
+      "kb": 0,
+      "externos": 0,
+      "noResueltos": 0
+    },
+    {
+      "pagina": "assistant-lab.html",
+      "requests": 1,
+      "bytes": 19048,
+      "kb": 19,
+      "externos": 0,
+      "noResueltos": 0
+    },
+    {
+      "pagina": "autofill-api-docs.html",
+      "requests": 0,
+      "bytes": 0,
+      "kb": 0,
+      "externos": 0,
+      "noResueltos": 0
+    },
+    {
+      "pagina": "biopsy-lab.html",
+      "requests": 1,
+      "bytes": 19048,
+      "kb": 19,
+      "externos": 0,
+      "noResueltos": 0
+    },
+    {
+      "pagina": "emr-workspace.html",
+      "requests": 19,
+      "bytes": 460340,
+      "kb": 450,
+      "externos": 0,
+      "noResueltos": 0
+    },
+    {
+      "pagina": "index.html",
+      "requests": 1,
+      "bytes": 19048,
+      "kb": 19,
+      "externos": 0,
+      "noResueltos": 0
+    },
+    {
+      "pagina": "miracle/index.html",
+      "requests": 4,
+      "bytes": 67465,
+      "kb": 66,
+      "externos": 0,
+      "noResueltos": 0
+    },
+    {
+      "pagina": "miracle/voice.html",
+      "requests": 1,
+      "bytes": 372,
+      "kb": 0,
+      "externos": 0,
+      "noResueltos": 0
+    },
+    {
+      "pagina": "page1.html",
+      "requests": 18,
+      "bytes": 439406,
+      "kb": 429,
+      "externos": 0,
+      "noResueltos": 0
+    },
+    {
+      "pagina": "page2.html",
+      "requests": 18,
+      "bytes": 439406,
+      "kb": 429,
+      "externos": 0,
+      "noResueltos": 0
+    },
+    {
+      "pagina": "provider-studio.html",
+      "requests": 5,
+      "bytes": 135970,
+      "kb": 133,
+      "externos": 0,
+      "noResueltos": 0
+    },
+    {
+      "pagina": "usage-dashboard.html",
+      "requests": 1,
+      "bytes": 19048,
+      "kb": 19,
+      "externos": 0,
+      "noResueltos": 0
+    },
+    {
+      "pagina": "visualize.html",
+      "requests": 2,
+      "bytes": 42364,
+      "kb": 41,
+      "externos": 1,
+      "noResueltos": 0
+    },
+    {
+      "pagina": "windows-lab.html",
+      "requests": 5,
+      "bytes": 126405,
+      "kb": 123,
+      "externos": 0,
+      "noResueltos": 0
+    }
+  ],
+  "listas": [
+    "HTML con >5 scripts (3 páginas)",
+    "manifest.json content_scripts (17 entradas)",
+    "service-worker.js precache (20 rutas .js)"
+  ]
+}

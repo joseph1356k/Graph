@@ -1,0 +1,165 @@
+{
+  "_comentario": "GENERADO por scripts/generate-frontend-manifest.js. Fuente única de verdad de los bundles del frontend (ver docs/PLAN-BUILD-FRONTEND.md). Para agregar un módulo al runtime, edita el bundle correspondiente acá: es el único lugar.",
+  "bundles": [
+    {
+      "id": "emr-workspace.classic.1",
+      "semantica": "classic",
+      "archivos": [
+        "web/public/page-state.js",
+        "web/public/auth-gate.js",
+        "web/public/clinical-review.js"
+      ]
+    },
+    {
+      "id": "emr-workspace.classic.2",
+      "semantica": "classic",
+      "archivos": [
+        "web/public/recorder.js",
+        "web/public/assistant-runtime.js",
+        "web/public/plugin/plugin-events.js",
+        "web/public/plugin/plugin-host.js",
+        "web/public/plugin/plugin-adapters.js",
+        "web/public/plugin/plugin-context.js",
+        "web/public/plugin/plugin-api.js",
+        "web/public/plugin/plugin-learning-bridge.js",
+        "web/public/plugin/plugin-learning-client.js",
+        "web/public/plugin/plugin-trainer-shell.js",
+        "web/public/plugin/plugin-surface-profile-client.js",
+        "web/public/plugin/plugin-execution-client.js",
+        "web/public/plugin/plugin-workflow-overlay-bridge.js",
+        "web/public/shared/deepgram-dictation.js",
+        "web/public/trainer-plugin.js",
+        "web/public/admin-workspace.js"
+      ]
+    },
+    {
+      "id": "miracle-index.classic",
+      "semantica": "classic",
+      "archivos": [
+        "web/public/auth-gate.js",
+        "web/public/dev-logs.js",
+        "web/public/shared/deepgram-dictation.js"
+      ]
+    },
+    {
+      "id": "miracle-index.module",
+      "semantica": "module",
+      "archivos": [
+        "web/public/miracle/app.js"
+      ]
+    },
+    {
+      "id": "miracle-voice.module",
+      "semantica": "module",
+      "archivos": [
+        "web/public/miracle/voice.js"
+      ]
+    },
+    {
+      "id": "page1.classic",
+      "semantica": "classic",
+      "archivos": [
+        "web/public/page-state.js",
+        "web/public/demo-auth.js",
+        "web/public/recorder.js",
+        "web/public/assistant-runtime.js",
+        "web/public/plugin/plugin-events.js",
+        "web/public/plugin/plugin-host.js",
+        "web/public/plugin/plugin-adapters.js",
+        "web/public/plugin/plugin-context.js",
+        "web/public/plugin/plugin-api.js",
+        "web/public/plugin/plugin-learning-bridge.js",
+        "web/public/plugin/plugin-learning-client.js",
+        "web/public/plugin/plugin-trainer-shell.js",
+        "web/public/plugin/plugin-surface-profile-client.js",
+        "web/public/plugin/plugin-execution-client.js",
+        "web/public/plugin/plugin-workflow-overlay-bridge.js",
+        "web/public/shared/deepgram-dictation.js",
+        "web/public/trainer-plugin.js",
+        "web/public/admin-workspace.js"
+      ]
+    },
+    {
+      "id": "page2.classic",
+      "semantica": "classic",
+      "archivos": [
+        "web/public/page-state.js",
+        "web/public/demo-auth.js",
+        "web/public/recorder.js",
+        "web/public/assistant-runtime.js",
+        "web/public/plugin/plugin-events.js",
+        "web/public/plugin/plugin-host.js",
+        "web/public/plugin/plugin-adapters.js",
+        "web/public/plugin/plugin-context.js",
+        "web/public/plugin/plugin-api.js",
+        "web/public/plugin/plugin-learning-bridge.js",
+        "web/public/plugin/plugin-learning-client.js",
+        "web/public/plugin/plugin-trainer-shell.js",
+        "web/public/plugin/plugin-surface-profile-client.js",
+        "web/public/plugin/plugin-execution-client.js",
+        "web/public/plugin/plugin-workflow-overlay-bridge.js",
+        "web/public/shared/deepgram-dictation.js",
+        "web/public/trainer-plugin.js",
+        "web/public/admin-workspace.js"
+      ]
+    },
+    {
+      "id": "provider-studio.classic",
+      "semantica": "classic",
+      "archivos": [
+        "web/public/auth-gate.js",
+        "web/public/admin-workspace.js",
+        "web/public/provider-studio.js",
+        "web/public/studio-docs.js"
+      ]
+    },
+    {
+      "id": "visualize.classic",
+      "semantica": "classic",
+      "archivos": [
+        "web/public/auth-gate.js",
+        "web/public/admin-workspace.js"
+      ]
+    },
+    {
+      "id": "windows-lab.defer",
+      "semantica": "defer",
+      "archivos": [
+        "web/public/miracle-bg.js",
+        "web/public/windows-live.js",
+        "web/public/windows-lab.js"
+      ]
+    },
+    {
+      "id": "windows-lab.classic",
+      "semantica": "classic",
+      "archivos": [
+        "web/public/auth-gate.js",
+        "web/public/studio-docs.js"
+      ]
+    },
+    {
+      "id": "extension-content",
+      "semantica": "classic",
+      "archivos": [
+        "web/public/page-state.js",
+        "web/public/recorder.js",
+        "web/public/assistant-runtime.js",
+        "web/public/plugin/plugin-events.js",
+        "web/public/plugin/plugin-host.js",
+        "web/public/plugin/plugin-adapters.js",
+        "web/public/plugin/plugin-context.js",
+        "web/public/plugin/plugin-api.js",
+        "web/public/plugin/plugin-learning-bridge.js",
+        "web/public/plugin/plugin-learning-client.js",
+        "web/public/plugin/plugin-trainer-shell.js",
+        "web/public/plugin/plugin-surface-profile-client.js",
+        "web/public/plugin/plugin-execution-client.js",
+        "web/public/plugin/plugin-workflow-overlay-bridge.js",
+        "web/public/shared/deepgram-dictation.js",
+        "web/public/trainer-plugin.js",
+        "chrome-extension-src/graph-trainer/content.js"
+      ]
+    }
+  ]
+}

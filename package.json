@@ -8,6 +8,8 @@
     "build:vercel": "node scripts/build-vercel.js",
     "build:chrome-extension": "node scripts/build-chrome-extension.js",
     "audit:readiness": "node scripts/audit-system-readiness.js",
+    "measure:frontend": "node scripts/measure-frontend-payload.js",
+    "test:frontend-bundles": "node scripts/verify-frontend-bundles.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
@@ -37,6 +39,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
+    "esbuild": "^0.28.1",
     "eslint": "^9.39.5",
     "typescript": "^7.0.2"
   }

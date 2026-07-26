@@ -25,9 +25,22 @@ npm run lint:fix              # ESLint con --fix
 npm run typecheck             # tsc --noEmit (chequeo gradual, ver abajo)
 npm test                      # batería clínica: catálogo + workflow + assistant
 npm run audit:readiness       # auditoría de readiness del sistema
-npm run build:vercel          # build de despliegue
+npm run build:vercel          # bundles del frontend + copia de estáticos
 npm run build:chrome-extension  # extensión desempaquetada en generated/chrome-extension/
+npm run test:frontend-bundles  # verifica que el bundling no cambió la semántica
+npm run measure:frontend      # requests y KB por página (métrica del build)
 ```
+
+## El frontend tiene build (no lo rompas)
+
+`web/public/` **ya no se sirve archivo por archivo**. Los HTML cargan bundles de `/dist/*.js`, generados con esbuild. Detalles en `docs/PLAN-BUILD-FRONTEND.md`.
+
+- **La fuente única de verdad es `scripts/lib/frontend-bundles.manifest.json`.** Para agregar un módulo al runtime, agregalo al bundle correspondiente **ahí**. Es el único lugar: antes había que editar el HTML, el `manifest.json` de la extensión y el precache del service worker.
+- **No agregues `<script src>` nuevos a los HTML.** Si un archivo tiene que cargarse, va dentro de un bundle.
+- **En dev no hace falta build:** `npm start` levanta un middleware que construye `/dist/*.js` al vuelo (sin minificar, con sourcemap). Guardás y refrescás, como siempre.
+- **El orden dentro de cada bundle importa** y refleja el orden real de ejecución del navegador. Los bundles nunca mezclan semánticas de carga distintas (`classic` / `defer` / `module`), porque el navegador las ejecuta en momentos distintos.
+- El bundle de la extensión (`extension-content`) se construye **en memoria**: el endpoint de descarga corre en el serverless y no puede depender de que exista `/dist` en disco.
+- Después de tocar el manifiesto de bundles, corré `npm run test:frontend-bundles`.
 
 **Antes de decir "listo"** (paso 11 de `build-feature`): `npm run verify`, y pega la salida. Nunca reportes una tarea como completa sin la evidencia.
 
@@ -61,7 +74,7 @@ Reglas al escribir código nuevo:
 
 - **Commits:** `tipo(ámbito): descripción en minúscula`, en español. Tipos: `feat`, `fix`, `docs`, `refactor`, `chore`. Ej: `feat(studio): logs en vivo por SSE`. El historial viejo mezcla estilos; sigue este.
 - **Idioma:** código, nombres y APIs en inglés. Comentarios y documentación en español.
-- **CommonJS** en todo el Node (`require`/`module.exports`). No hay ESM ni bundler; los archivos de `web/public/` se sirven tal cual.
+- **CommonJS** en todo el Node (`require`/`module.exports`). En el navegador, los scripts clásicos exportan por `window.X` y se bundlean con esbuild (ver "El frontend tiene build" arriba); `web/public/miracle/**` son módulos ES.
 - **Sin dependencias nuevas** sin decirlo primero. El runtime tiene 9 y conviene que siga así (las devDeps son solo `eslint`, `typescript`, `@types/node`).
 - **Secretos:** todo por env. Cualquier variable nueva se documenta en `.env.example` en el mismo commit.
 

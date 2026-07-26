@@ -23,23 +23,7 @@
         "<all_urls>"
       ],
       "js": [
-        "assets/page-state.js",
-        "assets/recorder.js",
-        "assets/assistant-runtime.js",
-        "assets/plugin/plugin-events.js",
-        "assets/plugin/plugin-host.js",
-        "assets/plugin/plugin-adapters.js",
-        "assets/plugin/plugin-context.js",
-        "assets/plugin/plugin-api.js",
-        "assets/plugin/plugin-learning-bridge.js",
-        "assets/plugin/plugin-learning-client.js",
-        "assets/plugin/plugin-trainer-shell.js",
-        "assets/plugin/plugin-surface-profile-client.js",
-        "assets/plugin/plugin-execution-client.js",
-        "assets/plugin/plugin-workflow-overlay-bridge.js",
-        "assets/shared/deepgram-dictation.js",
-        "assets/trainer-plugin.js",
-        "content.js"
+        "assets/extension-content.js"
       ],
       "run_at": "document_idle"
     }
