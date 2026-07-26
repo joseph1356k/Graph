@@ -382,13 +382,32 @@
     cursor: pointer;
     user-select: none;
 }
-.wl-logs-head-left { display: flex; align-items: center; gap: 10px; }
+.wl-logs-head-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.wl-logs-head-right { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
 .wl-logs-title { font-size: 13px; font-weight: 600; letter-spacing: 0.02em; }
 .wl-logs-badge {
     font-size: 10.5px; color: var(--wl-blue-bright);
     padding: 1px 8px; border-radius: 999px; background: rgba(76, 141, 255, 0.12);
     font-variant-numeric: tabular-nums;
 }
+/* estado del transporte: en vivo (stream) vs sondeo de respaldo */
+.wl-logs-live { font-size: 10.5px; color: var(--wl-dim); letter-spacing: 0.02em; }
+.wl-logs-live[data-kind="live"] { color: var(--wl-success); }
+.wl-logs-live[data-kind="warn"] { color: #F2C200; }
+.wl-logs-live[data-kind="fallback"] { color: var(--wl-danger); }
+
+.wl-logs-record {
+    padding: 5px 11px;
+    border: 1px solid var(--wl-line);
+    border-radius: 9px;
+    background: rgba(76, 141, 255, 0.1);
+    color: var(--wl-ink);
+    font-size: 11.5px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+.wl-logs-record:hover { border-color: rgba(127, 178, 255, 0.55); background: rgba(76, 141, 255, 0.18); }
+
 .wl-logs-chevron { width: 16px; height: 16px; opacity: 0.6; transition: transform 0.2s ease; }
 .wl-logs.is-open .wl-logs-chevron { transform: rotate(180deg); }
 .wl-logs-body {
@@ -396,7 +415,73 @@
     overflow: hidden;
     transition: max-height 0.28s ease;
 }
-.wl-logs.is-open .wl-logs-body { max-height: 320px; }
+/* 300 de terminal + la barra de herramientas (tabs, pregunta y marcador), con
+   holgura para cuando el marcador se parte en dos líneas. */
+.wl-logs.is-open .wl-logs-body { max-height: 500px; }
+
+/* ── barra de herramientas: tabs por motor + pregunta + marcador ── */
+.wl-logs-tools {
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 4px 12px 9px;
+    border-top: 1px solid var(--wl-line-soft);
+}
+.wl-tabs {
+    display: flex; gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+.wl-tab {
+    display: inline-flex; align-items: center; gap: 6px;
+    flex: 0 0 auto;
+    padding: 7px 10px 6px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--wl-muted);
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+.wl-tab:hover { color: var(--wl-ink); background: rgba(76, 141, 255, 0.07); }
+.wl-tab.is-active { color: var(--wl-ink); font-weight: 600; }
+/* un motor mudo se atenúa, no se esconde: que no llegue nada es información */
+.wl-tab.is-mute { opacity: 0.42; }
+.wl-tab-count {
+    font-size: 10px; font-variant-numeric: tabular-nums;
+    padding: 1px 6px; border-radius: 999px;
+    background: rgba(76, 141, 255, 0.12); color: var(--wl-blue-bright);
+}
+.wl-tab.is-mute .wl-tab-count { background: rgba(200, 220, 255, 0.07); color: var(--wl-dim); }
+
+.wl-tab-question { font-size: 11.5px; color: var(--wl-dim); line-height: 1.35; }
+
+.wl-score {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+    font-size: 11.5px; color: var(--wl-muted);
+    font-variant-numeric: tabular-nums;
+}
+.wl-score-sep { opacity: 0.35; }
+.wl-score-cell.is-ok { color: var(--wl-success); }
+.wl-score-cell.is-err { color: var(--wl-danger); }
+.wl-score-rate {
+    color: var(--wl-blue-core); font-weight: 600;
+    padding: 1px 8px; border-radius: 999px; background: rgba(76, 141, 255, 0.14);
+}
+/* "sin intentos medibles" NO es 0%: es un motor sin instrumentar, no uno roto */
+.wl-score-rate.is-void { color: var(--wl-dim); background: rgba(200, 220, 255, 0.06); font-weight: 400; }
+.wl-score-idle { color: var(--wl-dim); }
+.wl-score-versions { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-left: 6px; }
+.wl-score-ver { display: inline-flex; align-items: center; gap: 4px; color: var(--wl-muted); }
+.wl-score-ver b { color: var(--wl-blue-bright); font-weight: 600; }
+.wl-score-arrowsep { opacity: 0.4; }
+.wl-score-trend.is-up { color: var(--wl-success); }
+.wl-score-trend.is-down { color: var(--wl-danger); }
+.wl-score-lasterr {
+    color: var(--wl-danger); opacity: 0.85;
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
 .wl-terminal {
     height: 300px;
     overflow-y: auto;
@@ -408,7 +493,7 @@
     border-top: 1px solid var(--wl-line-soft);
 }
 .wl-log-line { display: flex; gap: 10px; white-space: pre-wrap; word-break: break-word; }
-.wl-log-time { color: var(--wl-dim); flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+.wl-log-time { color: var(--wl-dim); flex: 0 0 auto; font-variant-numeric: tabular-nums; cursor: help; }
 .wl-log-tag {
     flex: 0 0 auto; min-width: 96px;
     color: var(--wl-blue-bright); text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.04em;
@@ -418,8 +503,136 @@
 .wl-log-tag[data-kind="analyze"] { color: #b9a7ff; }
 .wl-log-tag[data-kind^="workflow"] { color: var(--wl-success); }
 .wl-log-tag[data-phase="error"] { color: var(--wl-danger); }
-.wl-log-msg { color: var(--wl-ink); opacity: 0.92; }
+.wl-log-tag[data-outcome="ok"] { color: var(--wl-success); }
+.wl-log-tag[data-outcome="error"] { color: var(--wl-danger); }
+.wl-log-engine {
+    flex: 0 0 auto; min-width: 84px;
+    color: var(--wl-dim); font-size: 10.5px; padding-top: 1px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.wl-log-msg { color: var(--wl-ink); opacity: 0.92; flex: 1 1 auto; min-width: 0; }
 .wl-log-empty { color: var(--wl-muted); padding: 12px 2px; }
+
+/* detalle del evento: el payload real, colapsado por defecto */
+.wl-log-toggle {
+    flex: 0 0 auto;
+    width: 18px; height: 18px;
+    display: grid; place-items: center;
+    border: 0; border-radius: 5px;
+    background: transparent; color: var(--wl-dim);
+    cursor: pointer;
+}
+.wl-log-toggle:hover { color: var(--wl-blue-bright); background: rgba(76, 141, 255, 0.12); }
+.wl-log-caret { width: 12px; height: 12px; transform: rotate(-90deg); transition: transform 0.16s ease; }
+.wl-log-entry.is-detail-open .wl-log-caret { transform: rotate(0deg); }
+.wl-log-detail {
+    display: none;
+    margin: 4px 0 8px 34px;
+    padding: 8px 10px;
+    border: 1px solid var(--wl-line-soft);
+    border-radius: 8px;
+    background: rgba(6, 12, 26, 0.8);
+    color: var(--wl-muted);
+    font-size: 11px;
+    line-height: 1.5;
+    max-height: 220px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.wl-log-entry.is-detail-open .wl-log-detail { display: block; }
+
+/* ─────────────────── modal: registrar avance ─────────────────── */
+
+.wl-modal {
+    position: fixed; inset: 0;
+    z-index: 60;
+    display: grid; place-items: center;
+    padding: 20px;
+    background: rgba(1, 3, 10, 0.72);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.18s ease;
+}
+.wl-modal.is-open { opacity: 1; pointer-events: auto; }
+.wl-modal-card {
+    width: min(660px, 100%);
+    max-height: 88vh;
+    display: flex; flex-direction: column;
+    border: 1px solid var(--wl-line);
+    border-radius: 16px;
+    background: var(--wl-glass-strong);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+}
+.wl-modal-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--wl-line-soft);
+    font-size: 14px;
+}
+.wl-modal-x {
+    border: 0; background: transparent; color: var(--wl-muted);
+    font-size: 20px; line-height: 1; cursor: pointer; padding: 0 4px;
+}
+.wl-modal-x:hover { color: var(--wl-ink); }
+.wl-modal-body { padding: 14px 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.wl-modal-foot {
+    display: flex; justify-content: flex-end; gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--wl-line-soft);
+}
+.wl-modal-error { color: var(--wl-danger); font-size: 12px; min-height: 15px; }
+
+.wl-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; flex: 1 1 160px; }
+.wl-field-label { font-size: 11.5px; color: var(--wl-muted); letter-spacing: 0.02em; }
+.wl-field-hint { font-size: 11px; color: var(--wl-dim); }
+.wl-field-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.wl-input {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid var(--wl-line);
+    border-radius: 10px;
+    background: rgba(4, 9, 20, 0.65);
+    color: var(--wl-ink);
+    font-size: 13px;
+    font-family: inherit;
+}
+.wl-input:focus { outline: none; border-color: var(--wl-blue); box-shadow: 0 0 0 3px rgba(76, 141, 255, 0.2); }
+.wl-input::placeholder { color: var(--wl-dim); }
+.wl-textarea { resize: vertical; min-height: 130px; line-height: 1.55; }
+select.wl-input option { background: #0b1428; color: var(--wl-ink); }
+
+.wl-btn {
+    padding: 8px 14px;
+    border: 1px solid var(--wl-line);
+    border-radius: 10px;
+    background: rgba(76, 141, 255, 0.06);
+    color: var(--wl-ink);
+    font-size: 13px;
+    cursor: pointer;
+}
+.wl-btn:hover { border-color: rgba(127, 178, 255, 0.5); }
+.wl-btn.is-primary { background: rgba(76, 141, 255, 0.24); border-color: rgba(127, 178, 255, 0.55); font-weight: 600; }
+.wl-btn[disabled] { opacity: 0.5; cursor: default; }
+
+.wl-toast {
+    position: fixed;
+    left: 50%; bottom: 26px;
+    transform: translate(-50%, 12px);
+    z-index: 70;
+    padding: 10px 16px;
+    border: 1px solid var(--wl-line);
+    border-radius: 12px;
+    background: var(--wl-glass-strong);
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.6);
+    color: var(--wl-ink);
+    font-size: 13px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.wl-toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
 
 /* ───────────────────────────── responsive ───────────────────────────── */
 
@@ -427,6 +640,9 @@
     .wl-head { flex-direction: column; align-items: stretch; }
     .wl-selector-btn { width: 100%; max-width: none; }
     .wl-menu { width: min(94vw, 380px); }
+    /* en móvil la línea de log no cabe con todo: se cae el motor (ya lo dice la tab) */
+    .wl-log-engine { display: none; }
+    .wl-logs-record { font-size: 11px; padding: 5px 9px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

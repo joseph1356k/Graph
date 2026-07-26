@@ -9,9 +9,16 @@
 // La telemetria vive en Supabase (graph_windows_users/_events); el subconsciente
 // vive en Neo4j (via WorkflowCatalog). Este servicio une ambas mitades por email.
 
+const { decorateEvent, summarizeEngines } = require('../../domain/windowsEngines');
+
 const USERS_EVENT_JOIN_LIMIT = 5000;
 const DEFAULT_EVENTS_LIMIT = 200;
 const MAX_EVENTS_LIMIT = 1000;
+// Ventana del marcador de pruebas: cuántos eventos recientes se agregan para
+// calcular el % de éxito por motor. Es un techo de lectura, no un filtro de
+// tiempo — así el marcador significa "las últimas N cosas que pasaron", que es
+// lo que un desarrollador quiere saber cuando acaba de probar algo.
+const STATS_SCAN_LIMIT = 4000;
 
 // Etiquetas amables para apps conocidas; el resto se muestra tal cual (con la
 // primera letra en mayuscula). El pill del circulo usa esto.
@@ -129,7 +136,37 @@ class WindowsPanelService {
     const events = Array.isArray(rows) ? rows : [];
     const ordered = (Number.isFinite(sinceId) && sinceId > 0) ? events : events.slice().reverse();
     const lastId = ordered.length ? ordered[ordered.length - 1].id : sinceId || 0;
-    return { events: ordered, lastId };
+    // `engine` y `outcome` se derivan aquí (no son columnas): el panel filtra por
+    // tab y pinta el veredicto sin tener que repetir la lógica en el navegador.
+    return { events: ordered.map(decorateEvent), lastId };
+  }
+
+  // El marcador de pruebas por motor. Responde las dos preguntas que hoy solo se
+  // pueden contestar preguntándole al que hizo el cambio:
+  //   "¿qué funciona hoy?"          -> successRate por motor
+  //   "¿esta implementación mejoró?" -> el desglose por app_version dentro
+  //
+  // Nota deliberada: se lee sobre los últimos STATS_SCAN_LIMIT eventos del
+  // usuario, no sobre toda la historia. Un porcentaje calculado sobre seis meses
+  // no dice si lo que acabas de tocar funciona.
+  async listEngineStats(email, { limit } = {}) {
+    const normalized = requireEmail(email);
+    const scan = clampLimit(limit, STATS_SCAN_LIMIT, STATS_SCAN_LIMIT);
+
+    const rows = await this.supabase.select(
+      'graph_windows_events',
+      `select=*&email=eq.${encodeURIComponent(normalized)}&order=id.desc&limit=${scan}`
+    );
+    const events = (Array.isArray(rows) ? rows : []).map(decorateEvent);
+
+    return {
+      email: normalized,
+      scanned: events.length,
+      // Rango real cubierto, para que el % no se lea fuera de contexto.
+      from: events.length ? events[events.length - 1].created_at : null,
+      to: events.length ? events[0].created_at : null,
+      engines: summarizeEngines(events)
+    };
   }
 
   // El subconsciente real del usuario: sus workflows en Neo4j agrupados por app

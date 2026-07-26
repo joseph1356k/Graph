@@ -62,6 +62,8 @@ const WindowsTelemetryService = require('../src/application/use-cases/WindowsTel
 const WindowsPanelService = require('../src/application/use-cases/WindowsPanelService');
 const registerWindowsTelemetryRoutes = require('./api/registerWindowsTelemetryRoutes');
 const registerWindowsPanelRoutes = require('./api/registerWindowsPanelRoutes');
+const StudioProgressService = require('../src/application/use-cases/StudioProgressService');
+const registerStudioProgressRoutes = require('./api/registerStudioProgressRoutes');
 const registerWindowsAgentRoutes = require('./api/registerWindowsAgentRoutes');
 const registerWindowsDistributionRoutes = require('./api/registerWindowsDistributionRoutes');
 const registerMcpRoutes = require('./api/registerMcpRoutes');
@@ -167,6 +169,9 @@ const androidPanelService = new AndroidPanelService(supabaseRestClient);
 // por owner = email del usuario.
 const windowsTelemetryService = new WindowsTelemetryService(supabaseRestClient);
 const windowsPanelService = new WindowsPanelService({ catalogService, supabaseRestClient });
+// Bitácora de avances del laboratorio: la mitad humana del banco de pruebas
+// (la mitad automática se deriva de la telemetría en src/domain/windowsEngines.js).
+const studioProgressService = new StudioProgressService(supabaseRestClient);
 // Agente de escritorio Ü (Windows App): la memoria por usuario vive en Supabase
 // (tabla graph_agent_memory, con fallback en memoria del proceso si Supabase no
 // está configurado) y la comparten el bucle de turnos y la enseñanza por video
@@ -416,7 +421,11 @@ function isMiracleMedicalProxyRequest(req) {
   '/api/providers',
   '/api/android',
   // Solo el panel (lectura admin). '/api/windows/latest-installer' queda público.
-  '/api/windows/users'
+  '/api/windows/users',
+  // Catálogo de motores del laboratorio (las tabs del panel de logs).
+  '/api/windows/engines',
+  // Bitácora de avances del laboratorio: leer y escribir exige el mismo admin.
+  '/api/studio/progress'
 ].forEach((routePrefix) => {
   app.use(routePrefix, requireAccountAuth, attachWorkflowAccess);
 });
@@ -1009,6 +1018,7 @@ registerAndroidPanelRoutes(app, { androidPanelService });
 // Windows Live: ingesta bajo /api/v1 (X-API-Key) + lectura admin /api/windows/*.
 registerWindowsTelemetryRoutes(app, { windowsTelemetryService });
 registerWindowsPanelRoutes(app, { windowsPanelService });
+registerStudioProgressRoutes(app, { studioProgressService });
 registerWindowsAgentRoutes(app, { agentTurnService, teachVideoService });
 registerWindowsDistributionRoutes(app, { windowsAppReleaseService });
 registerMcpRoutes(app, { agentWorkflowStore, workflowExecutor });

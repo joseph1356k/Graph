@@ -2,6 +2,17 @@
   "note": "Índice de la documentación viva del sistema, mostrada en Provider Studio. Para añadir un doc: crea el .md en esta carpeta y agrégalo aquí bajo su tema.",
   "topics": [
     {
+      "topic": "Cómo trabajamos",
+      "docs": [
+        {
+          "id": "como-probamos",
+          "title": "Cómo probamos: el banco de pruebas del laboratorio",
+          "summary": "El marcador automático (derivado de la telemetría) y la bitácora de avances, el contrato de instrumentación que todo desarrollador debe cumplir, y el estado honesto de qué llega hoy y qué no.",
+          "file": "como-probamos.md"
+        }
+      ]
+    },
+    {
       "topic": "Workflows y superficies",
       "docs": [
         {
@@ -16,9 +27,21 @@
       "topic": "Motores del cliente Windows",
       "docs": [
         {
+          "id": "motor-inspector-elementos",
+          "title": "Inspector de elementos: por qué un botón se marca en rojo",
+          "summary": "Uno de los dos motores centrales. Compara el elemento que tocaste con el que el asistente resolvería por etiqueta: amarillo coincide, rojo no. Es un detector de ambigüedad de etiquetas, no de botones rotos.",
+          "file": "motor-inspector-elementos.md"
+        },
+        {
+          "id": "motor-escaneo-sapgui",
+          "title": "Escaneo SAP GUI: cómo leemos una pantalla de SAP",
+          "summary": "El otro motor central. Enganche por COM a SAP GUI Scripting, los tres recorridos de la pantalla, el formato de los IDs findById y su normalización a sap:, y la regla de hilos STA.",
+          "file": "motor-escaneo-sapgui.md"
+        },
+        {
           "id": "motor-localizador-superficie",
-          "title": "SurfaceLocator: la \"URL de Windows\"",
-          "summary": "La geolocalización dentro del SO: dónde está parado el usuario, como URL. Alimenta el scoping, el mismatch y la confirmación del navegador.",
+          "title": "SurfaceLocator: el mapa generado por URL",
+          "summary": "La geolocalización dentro del SO: dónde está parado el usuario, como URL. Sondeo, reglas de normalización, los DOS sintetizadores que divergen, y cómo se comparan dos ubicaciones.",
           "file": "motor-localizador-superficie.md"
         },
         {
@@ -73,6 +96,17 @@
           "title": "Autenticación interna: enrolamiento por instalación (PLAN)",
           "summary": "La siguiente mejora: identidad por instalación (enroll + token en DB) manteniendo el cero-config. Analizada y decidida.",
           "file": "autenticacion-interna-plan.md"
+        }
+      ]
+    },
+    {
+      "topic": "Hipótesis por validar",
+      "docs": [
+        {
+          "id": "hipotesis-grafo-ubicaciones",
+          "title": "HIPÓTESIS: nodos = ubicaciones, aristas = transiciones",
+          "summary": "Propuesta SIN validar de emitir surface_change y construir un grafo de navegación. Incluye las dos objeciones abiertas, el riesgo de calidad de datos y el precedente medido del intento por eventos de Windows.",
+          "file": "hipotesis-grafo-ubicaciones.md"
         }
       ]
     }
