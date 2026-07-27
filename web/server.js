@@ -10,6 +10,7 @@ const Neo4jWorkflowRepository = require('../src/infrastructure/repositories/Neo4
 const SupabaseRestClient = require('../src/infrastructure/SupabaseRestClient');
 const SupabaseClinicalTemplateRepository = require('../src/infrastructure/repositories/SupabaseClinicalTemplateRepository');
 const SupabaseClinicalEncounterRepository = require('../src/infrastructure/repositories/SupabaseClinicalEncounterRepository');
+const SupabaseNoteExportRepository = require('../src/infrastructure/repositories/SupabaseNoteExportRepository');
 const MarkdownCatalogWriter = require('../src/infrastructure/file-system/MarkdownCatalogWriter');
 const UsageLedgerStore = require('../src/infrastructure/file-system/UsageLedgerStore');
 
@@ -26,6 +27,7 @@ const ClinicalDiagnosisSuggestionService = require('../src/application/use-cases
 const ClinicalRawTranscriptionService = require('../src/application/use-cases/ClinicalRawTranscriptionService');
 const ClinicalTemplateService = require('../src/application/use-cases/ClinicalTemplateService');
 const ClinicalEncounterService = require('../src/application/use-cases/ClinicalEncounterService');
+const NoteExportService = require('../src/application/use-cases/NoteExportService');
 const ClinicalNotePromptBuilder = require('../src/application/use-cases/ClinicalNotePromptBuilder');
 const ClinicalNoteValidationService = require('../src/application/use-cases/ClinicalNoteValidationService');
 const ClinicalNoteGeneratorService = require('../src/application/use-cases/ClinicalNoteGeneratorService');
@@ -54,6 +56,7 @@ const registerWorkflowRoutes = require('./api/registerWorkflowRoutes');
 const registerContextRoutes = require('./api/registerContextRoutes');
 const registerExecutionIntelligenceRoutes = require('./api/registerExecutionIntelligenceRoutes');
 const registerClinicalRoutes = require('./api/registerClinicalRoutes');
+const registerNoteExportRoutes = require('./api/registerNoteExportRoutes');
 const registerMedicalRoutes = require('./api/registerMedicalRoutes');
 const registerUsageRoutes = require('./api/registerUsageRoutes');
 const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
@@ -141,6 +144,21 @@ const clinicalTemplateRepository = new SupabaseClinicalTemplateRepository(supaba
 const clinicalEncounterRepository = new SupabaseClinicalEncounterRepository(supabaseRestClient);
 const clinicalTemplateService = new ClinicalTemplateService(clinicalTemplateRepository);
 const clinicalEncounterService = new ClinicalEncounterService(clinicalEncounterRepository, clinicalTemplateService);
+// Exportación de nota firmada a la historia clínica: cola durable en Supabase
+// (graph_note_exports) que sirve al ejecutor de Operations por pull. Requiere la
+// service-role key; sin ella el servicio queda apagado y las rutas responden 503
+// en vez de fingir que exportan.
+const noteExportRepository = new SupabaseNoteExportRepository(supabaseRestClient);
+const noteExportService = new NoteExportService({
+  repository: noteExportRepository,
+  // El workflow de automatización del HIS (piloto: uno por instalación).
+  defaultWorkflowId: process.env.GRAPH_NOTE_EXPORT_WORKFLOW_ID || '',
+  // `resolvePlan` se deja sin inyectar a propósito: hoy el claim entrega el
+  // payload y el ejecutor resuelve su plan. Activar la resolución server-side es
+  // inyectar aquí una función — el contrato del claim no cambia, así que no
+  // requiere tocar el frontend ni el cliente ejecutor.
+  resolvePlan: null
+});
 const clinicalNoteValidationService = new ClinicalNoteValidationService();
 const clinicalNoteGeneratorService = new ClinicalNoteGeneratorService({
   encounterService: clinicalEncounterService,
@@ -397,7 +415,10 @@ function isMiracleMedicalProxyRequest(req) {
 [
   '/api/clinical/templates',
   '/api/clinical/encounters',
-  '/api/clinical/assistant'
+  '/api/clinical/assistant',
+  // Exportación a historia clínica: la pide el médico desde Miracle Notes con su
+  // JWT. El carril del ejecutor es otro (/api/v1/operations, X-API-Key).
+  '/api/clinical/exports'
 ].forEach((routePrefix) => {
   app.use(routePrefix, requireClinicalAuth);
 });
@@ -1010,6 +1031,10 @@ registerClinicalRoutes(app, {
   noteValidationService: clinicalNoteValidationService,
   assistantService: clinicalAssistantService
 });
+// Dos carriles: /api/clinical/exports (JWT del médico) y
+// /api/v1/operations/exports (X-API-Key del ejecutor). Los middlewares de auth
+// ya están montados sobre esos prefijos.
+registerNoteExportRoutes(app, { noteExportService });
 registerMedicalRoutes(app, {
   rawTranscriptionService,
   callMiracleRuntime,

@@ -77,6 +77,21 @@ class SupabaseRestClient {
     return Array.isArray(body) ? body[0] : body;
   }
 
+  // Llama una función de Postgres (RPC). Se usa para las transiciones que
+  // tienen que ser atómicas del lado de la base de datos (p. ej. reclamar un
+  // trabajo de exportación con FOR UPDATE SKIP LOCKED, o confirmar una
+  // exportación y marcar la consulta en una sola transacción).
+  async rpc(fn, args = {}) {
+    return this.request(`/rpc/${encodeURIComponent(fn)}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify(args || {})
+    });
+  }
+
   async update(table, query, patch) {
     const body = await this.request(`/${table}?${query}`, {
       method: 'PATCH',
