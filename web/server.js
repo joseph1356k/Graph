@@ -17,6 +17,7 @@ const UsageLedgerStore = require('../src/infrastructure/file-system/UsageLedgerS
 const WorkflowCatalog = require('../src/application/use-cases/WorkflowCatalog');
 const WorkflowLearner = require('../src/application/use-cases/WorkflowLearner');
 const WorkflowExecutor = require('../src/application/use-cases/WorkflowExecutor');
+const DynamicValueResolver = require('../src/application/use-cases/DynamicValueResolver');
 const AgentChat = require('../src/application/use-cases/AgentChat');
 const SurfaceProfileService = require('../src/application/use-cases/SurfaceProfileService');
 const LearningSessionService = require('../src/application/use-cases/LearningSessionService');
@@ -124,7 +125,8 @@ const usageDashboardService = new UsageDashboardService(usageLedgerStore);
 
 const catalogService = new WorkflowCatalog(repository, catalogWriter);
 const workflowLearner = new WorkflowLearner(repository, llmProvider, catalogWriter, catalogService);
-const workflowExecutor = new WorkflowExecutor(catalogService);
+const dynamicValueResolver = new DynamicValueResolver(llmProvider);
+const workflowExecutor = new WorkflowExecutor(catalogService, dynamicValueResolver);
 const agentChat = new AgentChat(llmProvider, catalogService, workflowExecutor);
 const surfaceProfileService = new SurfaceProfileService(repository, llmProvider);
 const learningSessionService = new LearningSessionService(workflowLearner);

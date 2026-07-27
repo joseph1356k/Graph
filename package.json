@@ -14,12 +14,16 @@
     "test:templates-catalog": "node scripts/verify-institutional-catalog.js",
     "test:clinical-assistant-api": "node scripts/verify-clinical-assistant.js",
     "test:clinical": "node scripts/verify-institutional-catalog.js && node scripts/verify-clinical-workflow.js && node scripts/verify-clinical-assistant.js",
+    "test:tree-steps": "node scripts/verify-tree-node-steps.js",
+    "test:dynamic-values": "node scripts/verify-dynamic-values.js",
+    "test:explicit-modes": "node scripts/verify-explicit-modes.js",
+    "test:e2e-live": "node scripts/e2e-dynamic-live.js",
     "test:note-export": "node scripts/verify-note-signature-hash.js && node scripts/verify-note-export-flow.js",
     "test:note-export-db": "node scripts/verify-note-exports-db.js",
     "test:note-export-real": "node scripts/verify-note-export-real-postgres.js",
     "demo:note-export": "node scripts/demo-note-export-e2e.js",
     "simulate:operations": "node scripts/simulate-operations-executor.js",
-    "test": "node scripts/verify-institutional-catalog.js && node scripts/verify-clinical-workflow.js && node scripts/verify-clinical-assistant.js && node scripts/verify-note-signature-hash.js && node scripts/verify-note-export-flow.js && node scripts/verify-note-exports-db.js"
+    "test": "node scripts/verify-tree-node-steps.js && node scripts/verify-dynamic-values.js && node scripts/verify-explicit-modes.js && node scripts/verify-institutional-catalog.js && node scripts/verify-clinical-workflow.js && node scripts/verify-clinical-assistant.js && node scripts/verify-note-signature-hash.js && node scripts/verify-note-export-flow.js && node scripts/verify-note-exports-db.js"
   },
   "keywords": [],
   "author": "",
