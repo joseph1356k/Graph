@@ -1,0 +1,26 @@
+{
+  "alturaMediaInput": 46,
+  "numInputsVisibles": 26,
+  "alturaMediaTextarea": 108,
+  "numTextareasVisibles": 3,
+  "pxTopbar": 97,
+  "pxRibbon": 152,
+  "pxTabbar": 42,
+  "pxViewHeader": 148,
+  "pxCabecerasDeTarjeta": 150,
+  "pxTarjetas": [
+    425,
+    556,
+    489
+  ],
+  "pxVistaIntake": 1777,
+  "pxDocumento": 2354,
+  "pxCromoNoCampos": 589,
+  "paletaTabs": [
+    "rgb(20, 94, 168)",
+    "rgb(47, 140, 255)",
+    "rgb(47, 140, 255)",
+    "rgb(47, 140, 255)"
+  ],
+  "coloresDeAcentoDistintos": 8
+}

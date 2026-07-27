@@ -1,0 +1,554 @@
+{
+  "gateState": "ausente",
+  "porModulo": {
+    "intake": {
+      "tested": 32,
+      "mismatches": [
+        {
+          "control": "intake-payer-class",
+          "hitBy": "aside#"
+        },
+        {
+          "control": "intake-sex",
+          "hitBy": "div#"
+        },
+        {
+          "control": "btn-record-toggle",
+          "hitBy": "div#"
+        },
+        {
+          "control": "wf-desc",
+          "hitBy": "div#"
+        },
+        {
+          "control": "step-explanation",
+          "hitBy": "div#"
+        },
+        {
+          "control": "btn-start",
+          "hitBy": "div#"
+        },
+        {
+          "control": "btn-stop",
+          "hitBy": "div#"
+        },
+        {
+          "control": "graph-assistant-chat-input",
+          "hitBy": "h1#"
+        },
+        {
+          "control": "graph-assistant-chat-send",
+          "hitBy": "header#"
+        },
+        {
+          "control": "button",
+          "hitBy": "div#"
+        },
+        {
+          "control": "button",
+          "hitBy": "div#"
+        },
+        {
+          "control": "button",
+          "hitBy": "div#"
+        }
+      ],
+      "docHeight": 2354,
+      "screens": 2.62,
+      "visibleControls": 55,
+      "snapshotControls": 95,
+      "snapshotInvisible": 49,
+      "cardCount": 8,
+      "borderedBoxes": 51
+    },
+    "anamnesis": {
+      "tested": 26,
+      "mismatches": [
+        {
+          "control": "anamnesis-pain-location",
+          "hitBy": "aside#"
+        },
+        {
+          "control": "btn-record-toggle",
+          "hitBy": "textarea#anamnesis-history-illness"
+        },
+        {
+          "control": "wf-desc",
+          "hitBy": "textarea#anamnesis-history-illness"
+        },
+        {
+          "control": "step-explanation",
+          "hitBy": "textarea#anamnesis-history-illness"
+        },
+        {
+          "control": "btn-start",
+          "hitBy": "textarea#anamnesis-history-illness"
+        },
+        {
+          "control": "btn-stop",
+          "hitBy": "textarea#anamnesis-history-illness"
+        },
+        {
+          "control": "graph-assistant-chat-input",
+          "hitBy": "h1#"
+        },
+        {
+          "control": "graph-assistant-chat-send",
+          "hitBy": "header#"
+        },
+        {
+          "control": "button",
+          "hitBy": "div#"
+        },
+        {
+          "control": "button",
+          "hitBy": "div#"
+        },
+        {
+          "control": "button",
+          "hitBy": "div#"
+        }
+      ],
+      "docHeight": 1897,
+      "screens": 2.11,
+      "visibleControls": 39,
+      "snapshotControls": 95,
+      "snapshotInvisible": 65,
+      "cardCount": 8,
+      "borderedBoxes": 33
+    },
+    "orders": {
+      "tested": 26,
+      "mismatches": [
+        {
+          "control": "assessment-secondary-diagnosis",
+          "hitBy": "aside#"
+        },
+        {
+          "control": "btn-record-toggle",
+          "hitBy": "textarea#assessment-clinical-impression"
+        },
+        {
+          "control": "wf-desc",
+          "hitBy": "textarea#assessment-clinical-impression"
+        },
+        {
+          "control": "step-explanation",
+          "hitBy": "textarea#assessment-clinical-impression"
+        },
+        {
+          "control": "btn-start",
+          "hitBy": "textarea#assessment-clinical-impression"
+        },
+        {
+          "control": "btn-stop",
+          "hitBy": "textarea#assessment-clinical-impression"
+        },
+        {
+          "control": "graph-assistant-chat-input",
+          "hitBy": "h1#"
+        },
+        {
+          "control": "graph-assistant-chat-send",
+          "hitBy": "header#"
+        },
+        {
+          "control": "button",
+          "hitBy": "div#"
+        },
+        {
+          "control": "button",
+          "hitBy": "div#"
+        },
+        {
+          "control": "button",
+          "hitBy": "div#"
+        }
+      ],
+      "docHeight": 2124,
+      "screens": 2.36,
+      "visibleControls": 45,
+      "snapshotControls": 95,
+      "snapshotInvisible": 59,
+      "cardCount": 8,
+      "borderedBoxes": 39
+    },
+    "closure": {
+      "tested": 28,
+      "mismatches": [
+        {
+          "control": "disposition-status",
+          "hitBy": "aside#"
+        },
+        {
+          "control": "closure-final-check",
+          "hitBy": "div#"
+        },
+        {
+          "control": "btn-record-toggle",
+          "hitBy": "textarea#closure-discharge-summary"
+        },
+        {
+          "control": "wf-desc",
+          "hitBy": "div#"
+        },
+        {
+          "control": "step-explanation",
+          "hitBy": "textarea#closure-discharge-summary"
+        },
+        {
+          "control": "btn-start",
+          "hitBy": "div#"
+        },
+        {
+          "control": "btn-stop",
+          "hitBy": "div#"
+        },
+        {
+          "control": "graph-assistant-chat-input",
+          "hitBy": "h1#"
+        },
+        {
+          "control": "graph-assistant-chat-send",
+          "hitBy": "header#"
+        },
+        {
+          "control": "button",
+          "hitBy": "div#"
+        },
+        {
+          "control": "button",
+          "hitBy": "div#"
+        },
+        {
+          "control": "button",
+          "hitBy": "div#"
+        }
+      ],
+      "docHeight": 1404,
+      "screens": 1.56,
+      "visibleControls": 34,
+      "snapshotControls": 95,
+      "snapshotInvisible": 70,
+      "cardCount": 8,
+      "borderedBoxes": 26
+    }
+  },
+  "interceptacionClics": [
+    {
+      "boton": "Firmar nota clínica (sin marcas IA)",
+      "id": "assessment-sign-note",
+      "unconfirmedAntes": 0,
+      "feedbackAntes": "",
+      "feedbackDespues": "Nota clínica firmada y lista para cierre.",
+      "accionEjecutada": true,
+      "focoDespues": "",
+      "focoEnVistaOculta": false
+    },
+    {
+      "boton": "Firmar nota clínica (con 1 campo IA sin confirmar)",
+      "id": "assessment-sign-note",
+      "unconfirmedAntes": 1,
+      "feedbackAntes": "",
+      "feedbackDespues": "",
+      "accionEjecutada": false,
+      "focoDespues": "",
+      "focoEnVistaOculta": false
+    },
+    {
+      "boton": "Guardar nota médica (con 1 campo IA sin confirmar)",
+      "id": "anamnesis-save-note",
+      "unconfirmedAntes": 1,
+      "feedbackAntes": "",
+      "feedbackDespues": "",
+      "accionEjecutada": false,
+      "focoDespues": "",
+      "focoEnVistaOculta": false
+    },
+    {
+      "boton": "Cerrar encuentro (con 1 campo IA sin confirmar)",
+      "id": "closure-complete",
+      "unconfirmedAntes": 1,
+      "feedbackAntes": "",
+      "feedbackDespues": "Selecciona una disposición antes de cerrar el encuentro.",
+      "accionEjecutada": true,
+      "focoDespues": "",
+      "focoEnVistaOculta": false
+    },
+    {
+      "boton": "Guardar admisión (con 1 campo IA sin confirmar)",
+      "id": "intake-save-patient",
+      "unconfirmedAntes": 1,
+      "feedbackAntes": "",
+      "feedbackDespues": "Completa al menos nombre y apellido antes de guardar.",
+      "accionEjecutada": true,
+      "focoDespues": "",
+      "focoEnVistaOculta": false
+    }
+  ],
+  "autobloqueoAutomatizacion": {
+    "camposMarcadosPorLaIA": [
+      "assessment-primary-diagnosis"
+    ],
+    "clicDelMotorEjecutado": false,
+    "feedback": ""
+  },
+  "escrituraEnVistaOculta": {
+    "vistaActiva": "intake",
+    "campoEstaOculto": true,
+    "rectDelCampo": [
+      0,
+      0
+    ],
+    "escrituraAceptada": true,
+    "valorEscrito": "890201",
+    "marcadoComoNoConfirmado": true,
+    "visibleParaElUsuario": false
+  },
+  "coberturaAsistente": {
+    "runtimeApi": [
+      "mount",
+      "setExpanded",
+      "toggleExpanded",
+      "isExpanded",
+      "setActivityIndicators",
+      "speak",
+      "clearSpeech",
+      "showUserSpeech",
+      "clearUserSpeech",
+      "openChatComposer",
+      "closeChatComposer",
+      "clearChatComposer",
+      "setChatComposerBusy",
+      "setVoiceButtonActive",
+      "setNotePanelState",
+      "stopAudibleSpeech",
+      "moveToSelector",
+      "clearSpotlight",
+      "pinBottomRight",
+      "unpin",
+      "startTour",
+      "nextTourStop",
+      "finishTour",
+      "handleAutomationEvent",
+      "subscribe"
+    ],
+    "capas": {
+      "graph-assistant-shell": {
+        "rect": [
+          1261,
+          661,
+          151,
+          151
+        ],
+        "z": "2147483000",
+        "display": "block",
+        "opacity": "1",
+        "pointerEvents": "none",
+        "controlesSolapados": [
+          "intake-address"
+        ]
+      },
+      "graph-assistant-note-panel": {
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "z": "2147483005",
+        "display": "none",
+        "opacity": "1",
+        "pointerEvents": "auto",
+        "controlesSolapados": []
+      },
+      "graph-assistant-chat-composer": {
+        "rect": [
+          26,
+          29,
+          301,
+          103
+        ],
+        "z": "2147483004",
+        "display": "grid",
+        "opacity": "0",
+        "pointerEvents": "none",
+        "controlesSolapados": [
+          "",
+          "",
+          ""
+        ]
+      },
+      "graph-assistant-bubble": {
+        "rect": [
+          1032,
+          716,
+          218,
+          60
+        ],
+        "z": "2147483001",
+        "display": "flex",
+        "opacity": "0",
+        "pointerEvents": "none",
+        "controlesSolapados": [
+          "intake-address"
+        ]
+      },
+      "teaching-console": {
+        "rect": [
+          662,
+          822,
+          117,
+          70
+        ],
+        "z": "50",
+        "display": "grid",
+        "opacity": "0",
+        "pointerEvents": "none",
+        "controlesSolapados": [
+          "intake-plan-name"
+        ]
+      }
+    }
+  },
+  "notaAbierta": {
+    "rect": [
+      16,
+      324,
+      360,
+      560
+    ],
+    "porcentajeDeViewport": 15.6,
+    "controlesSolapados": [
+      "intake-patient-id",
+      "intake-first-name",
+      "intake-phone",
+      "intake-address",
+      "intake-insurance"
+    ],
+    "controlesRealmenteBloqueados": [
+      "intake-patient-id",
+      "intake-first-name",
+      "intake-phone"
+    ]
+  },
+  "persistencia": {
+    "claveUsada": "graph-emr-form-state-v1",
+    "camposPersistidos": 2,
+    "ejemplo": [
+      [
+        "assessment-primary-diagnosis",
+        "Faringitis aguda viral"
+      ],
+      [
+        "closure-billing-code",
+        "890201"
+      ]
+    ],
+    "otrasClaves": [
+      "graph-emr-form-state-v1",
+      "miracle-admin-session-v1"
+    ]
+  },
+  "arranque": {
+    "domContentLoadedMs": 186,
+    "loadMs": 226,
+    "scriptsCargados": 19,
+    "bytesDeScripts": 455,
+    "listaScripts": [
+      {
+        "f": "assistant-runtime.js",
+        "kb": 105
+      },
+      {
+        "f": "plugin-execution-client.js",
+        "kb": 97
+      },
+      {
+        "f": "trainer-plugin.js",
+        "kb": 72
+      },
+      {
+        "f": "recorder.js",
+        "kb": 36
+      },
+      {
+        "f": "admin-workspace.js",
+        "kb": 23
+      },
+      {
+        "f": "auth-gate.js",
+        "kb": 19
+      },
+      {
+        "f": "plugin-context.js",
+        "kb": 17
+      },
+      {
+        "f": "deepgram-dictation.js",
+        "kb": 17
+      },
+      {
+        "f": "plugin-api.js",
+        "kb": 14
+      },
+      {
+        "f": "plugin-trainer-shell.js",
+        "kb": 10
+      },
+      {
+        "f": "page-state.js",
+        "kb": 8
+      },
+      {
+        "f": "plugin-surface-profile-client.js",
+        "kb": 7
+      },
+      {
+        "f": "plugin-adapters.js",
+        "kb": 6
+      },
+      {
+        "f": "clinical-review.js",
+        "kb": 5
+      },
+      {
+        "f": "plugin-host.js",
+        "kb": 4
+      },
+      {
+        "f": "plugin-learning-client.js",
+        "kb": 4
+      },
+      {
+        "f": "plugin-workflow-overlay-bridge.js",
+        "kb": 3
+      },
+      {
+        "f": "plugin-learning-bridge.js",
+        "kb": 2
+      },
+      {
+        "f": "plugin-events.js",
+        "kb": 1
+      }
+    ]
+  },
+  "movil": {
+    "docHeight": 5029,
+    "screens": 5.96,
+    "desbordeHorizontal": false,
+    "scrollWidth": 390,
+    "clientWidth": 390,
+    "caritaRect": [
+      211,
+      605,
+      151,
+      151
+    ],
+    "caritaSeSaleDePantalla": false
+  },
+  "errores": [
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+  ]
+}

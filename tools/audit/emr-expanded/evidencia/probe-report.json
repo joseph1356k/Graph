@@ -1,0 +1,592 @@
+{
+  "fixedLayers": [
+    {
+      "tag": "div",
+      "id": "miracle-auth-gate",
+      "cls": "",
+      "z": "2147483000",
+      "pe": "auto",
+      "display": "grid",
+      "opacity": "1",
+      "rect": [
+        0,
+        0,
+        1440,
+        900
+      ],
+      "coversViewport": true
+    },
+    {
+      "tag": "section",
+      "id": "teaching-console",
+      "cls": "console",
+      "z": "50",
+      "pe": "none",
+      "display": "grid",
+      "opacity": "0",
+      "rect": [
+        662,
+        822,
+        117,
+        70
+      ],
+      "coversViewport": false
+    },
+    {
+      "tag": "div",
+      "id": "graph-assistant-shell",
+      "cls": "graph-assistant-shell",
+      "z": "2147483000",
+      "pe": "none",
+      "display": "block",
+      "opacity": "1",
+      "rect": [
+        1261,
+        661,
+        151,
+        151
+      ],
+      "coversViewport": false
+    },
+    {
+      "tag": "div",
+      "id": "graph-assistant-bubble",
+      "cls": "graph-assistant-bubble",
+      "z": "2147483001",
+      "pe": "none",
+      "display": "flex",
+      "opacity": "0",
+      "rect": [
+        1032,
+        716,
+        218,
+        60
+      ],
+      "coversViewport": false
+    },
+    {
+      "tag": "div",
+      "id": "graph-assistant-user-bubble",
+      "cls": "graph-assistant-user-bubble",
+      "z": "2147483002",
+      "pe": "none",
+      "display": "block",
+      "opacity": "0",
+      "rect": [
+        24,
+        27,
+        263,
+        19
+      ],
+      "coversViewport": false
+    },
+    {
+      "tag": "button",
+      "id": "graph-assistant-chat-toggle",
+      "cls": "graph-assistant-chat-toggle",
+      "z": "2147483003",
+      "pe": "none",
+      "display": "flex",
+      "opacity": "0",
+      "rect": [
+        1088,
+        787,
+        39,
+        39
+      ],
+      "coversViewport": false
+    },
+    {
+      "tag": "div",
+      "id": "graph-assistant-chat-composer",
+      "cls": "graph-assistant-chat-composer",
+      "z": "2147483004",
+      "pe": "none",
+      "display": "grid",
+      "opacity": "0",
+      "rect": [
+        26,
+        29,
+        301,
+        103
+      ],
+      "coversViewport": false
+    },
+    {
+      "tag": "button",
+      "id": "graph-assistant-note-toggle",
+      "cls": "graph-assistant-note-toggle",
+      "z": "2147483003",
+      "pe": "none",
+      "display": "flex",
+      "opacity": "0",
+      "rect": [
+        1140,
+        787,
+        39,
+        39
+      ],
+      "coversViewport": false
+    },
+    {
+      "tag": "div",
+      "id": "graph-assistant-note-panel",
+      "cls": "graph-assistant-note-panel",
+      "z": "2147483005",
+      "pe": "auto",
+      "display": "none",
+      "opacity": "1",
+      "rect": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "coversViewport": false
+    },
+    {
+      "tag": "div",
+      "id": "graph-assistant-spotlight",
+      "cls": "graph-assistant-spotlight",
+      "z": "2147482999",
+      "pe": "none",
+      "display": "block",
+      "opacity": "0",
+      "rect": [
+        0,
+        2354,
+        4,
+        4
+      ],
+      "coversViewport": false
+    }
+  ],
+  "hitTest": {
+    "visibleCount": 50,
+    "hiddenCount": 57,
+    "mismatches": [
+      {
+        "control": "a.nav-btn",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "a.nav-btn",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "clear-emr",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "emr-tab-intake",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "emr-tab-anamnesis",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "emr-tab-orders",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "emr-tab-closure",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "intake-patient-id",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "intake-document-type",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "intake-document-number",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "intake-payer-class",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "intake-first-name",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "intake-last-name",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "intake-dob",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "intake-sex",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "intake-phone",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "intake-email",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "btn-record-toggle",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "wf-desc",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "step-explanation",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "btn-start",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "btn-stop",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "graph-assistant-chat-input",
+        "hitBy": "div#miracle-auth-gate."
+      },
+      {
+        "control": "graph-assistant-chat-send",
+        "hitBy": "div#miracle-auth-gate."
+      }
+    ],
+    "hiddenSample": [
+      "anamnesis-visit-type",
+      "anamnesis-symptom-days",
+      "anamnesis-pain-location",
+      "anamnesis-history-illness",
+      "anamnesis-medical-history",
+      "anamnesis-allergies",
+      "anamnesis-current-medications",
+      "anamnesis-review-systems",
+      "exam-general-appearance",
+      "exam-findings",
+      "exam-risk-factors",
+      "exam-clinical-summary"
+    ]
+  },
+  "snapshot": {
+    "totalControlCount": 88,
+    "reportedControls": 88,
+    "controlsTruncated": false,
+    "currentSurfaceSection": "intake",
+    "invisibleReportedCount": 49,
+    "invisibleReportedSample": [
+      {
+        "selector": "[data-testid=\"anamnesis-visit-type\"]",
+        "label": "Tipo de visita",
+        "section": "anamnesis",
+        "editable": true
+      },
+      {
+        "selector": "[data-testid=\"anamnesis-symptom-days\"]",
+        "label": "Días con síntomas",
+        "section": "anamnesis",
+        "editable": true
+      },
+      {
+        "selector": "[data-testid=\"anamnesis-pain-location\"]",
+        "label": "Localización principal",
+        "section": "anamnesis",
+        "editable": true
+      },
+      {
+        "selector": "[data-testid=\"anamnesis-history-illness\"]",
+        "label": "Historia de la enfermedad actual",
+        "section": "anamnesis",
+        "editable": true
+      },
+      {
+        "selector": "[data-testid=\"anamnesis-medical-history\"]",
+        "label": "Antecedentes relevantes",
+        "section": "anamnesis",
+        "editable": true
+      },
+      {
+        "selector": "[data-testid=\"anamnesis-allergies\"]",
+        "label": "Alergias",
+        "section": "anamnesis",
+        "editable": true
+      },
+      {
+        "selector": "[data-testid=\"anamnesis-current-medications\"]",
+        "label": "Medicamentos actuales",
+        "section": "anamnesis",
+        "editable": true
+      },
+      {
+        "selector": "[data-testid=\"anamnesis-review-systems\"]",
+        "label": "Revisión por sistemas",
+        "section": "anamnesis",
+        "editable": true
+      },
+      {
+        "selector": "[data-testid=\"exam-general-appearance\"]",
+        "label": "Apariencia general",
+        "section": "anamnesis",
+        "editable": true
+      },
+      {
+        "selector": "[data-testid=\"exam-findings\"]",
+        "label": "Hallazgos del examen físico",
+        "section": "anamnesis",
+        "editable": true
+      },
+      {
+        "selector": "[data-testid=\"exam-risk-factors\"]",
+        "label": "Factores de riesgo",
+        "section": "anamnesis",
+        "editable": true
+      },
+      {
+        "selector": "[data-testid=\"exam-clinical-summary\"]",
+        "label": "Resumen clínico del médico",
+        "section": "anamnesis",
+        "editable": true
+      },
+      {
+        "selector": "[data-testid=\"anamnesis-save-note\"]",
+        "label": "Guardar nota médica",
+        "section": "anamnesis",
+        "editable": false
+      },
+      {
+        "selector": "[data-testid=\"anamnesis-request-labs\"]",
+        "label": "Solicitar ayudas diagnósticas",
+        "section": "anamnesis",
+        "editable": false
+      },
+      {
+        "selector": "[data-testid=\"anamnesis-go-intake\"]",
+        "label": "Volver al módulo Registro",
+        "section": "anamnesis",
+        "editable": false
+      }
+    ],
+    "fieldLabelsCount": 40,
+    "buttonsReported": 20
+  },
+  "layout": {
+    "documentHeight": 2354,
+    "viewportHeight": 900,
+    "screensToScroll": 2.62,
+    "workspaceBodyMinHeight": "920px",
+    "mainPanelHeight": 2055,
+    "horizontalOverflow": false
+  },
+  "globals": [
+    "EMRState",
+    "GraphAssistantRuntime",
+    "GraphLearningBridge",
+    "GraphPluginAdapters",
+    "GraphPluginApi",
+    "GraphPluginContext",
+    "GraphPluginEvents",
+    "GraphPluginHost",
+    "GraphPluginLearningClient",
+    "GraphPluginSurfaceProfileClient",
+    "GraphPluginTrainerShell",
+    "GraphWorkflowOverlayBridge",
+    "MiracleAdminWorkspace",
+    "MiracleAssistantRuntime",
+    "MiracleAuth",
+    "MiracleDeepgramDictation",
+    "MiracleReview",
+    "PageState",
+    "TrainerPlugin",
+    "WorkflowRecorder",
+    "pageXOffset",
+    "pageYOffset"
+  ],
+  "injectedStyleIds": [
+    "miracle-auth-style",
+    "miracle-review-styles",
+    "trainer-plugin-styles",
+    "graph-assistant-runtime-styles"
+  ],
+  "totalStyleTags": 5,
+  "assistantNodes": {
+    "graph-assistant-shell": {
+      "rect": [
+        1261,
+        661,
+        151,
+        151
+      ],
+      "z": "2147483000",
+      "pe": "none",
+      "display": "block",
+      "opacity": "1"
+    },
+    "graph-assistant-bubble": {
+      "rect": [
+        1032,
+        716,
+        218,
+        60
+      ],
+      "z": "2147483001",
+      "pe": "none",
+      "display": "flex",
+      "opacity": "0"
+    },
+    "graph-assistant-user-bubble": {
+      "rect": [
+        24,
+        27,
+        263,
+        19
+      ],
+      "z": "2147483002",
+      "pe": "none",
+      "display": "block",
+      "opacity": "0"
+    },
+    "graph-assistant-chat-toggle": {
+      "rect": [
+        1088,
+        787,
+        39,
+        39
+      ],
+      "z": "2147483003",
+      "pe": "none",
+      "display": "flex",
+      "opacity": "0"
+    },
+    "graph-assistant-chat-composer": {
+      "rect": [
+        26,
+        29,
+        301,
+        103
+      ],
+      "z": "2147483004",
+      "pe": "none",
+      "display": "grid",
+      "opacity": "0"
+    },
+    "graph-assistant-note-toggle": {
+      "rect": [
+        1140,
+        787,
+        39,
+        39
+      ],
+      "z": "2147483003",
+      "pe": "none",
+      "display": "flex",
+      "opacity": "0"
+    },
+    "graph-assistant-note-panel": {
+      "rect": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "z": "2147483005",
+      "pe": "auto",
+      "display": "none",
+      "opacity": "1"
+    },
+    "graph-assistant-spotlight": {
+      "rect": [
+        0,
+        2354,
+        4,
+        4
+      ],
+      "z": "2147482999",
+      "pe": "none",
+      "display": "block",
+      "opacity": "0"
+    },
+    "teaching-console": {
+      "rect": [
+        662,
+        822,
+        117,
+        70
+      ],
+      "z": "50",
+      "pe": "none",
+      "display": "grid",
+      "opacity": "0"
+    },
+    "workflow-overlay": {
+      "rect": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "z": "2147482998",
+      "pe": "none",
+      "display": "none",
+      "opacity": "1"
+    },
+    "miracle-auth-gate": {
+      "rect": [
+        0,
+        0,
+        1440,
+        900
+      ],
+      "z": "2147483000",
+      "pe": "auto",
+      "display": "grid",
+      "opacity": "1"
+    }
+  },
+  "consoleMessages": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_CONNECTION_RESET"
+    }
+  ],
+  "failedRequests": [
+    {
+      "url": "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap",
+      "err": "net::ERR_CONNECTION_RESET"
+    }
+  ],
+  "clickInterception": [
+    {
+      "step": "marcado IA",
+      "unconfirmed": [
+        "intake-phone"
+      ]
+    },
+    {
+      "step": "click en Firmar nota clínica",
+      "ownHandlerRan": false,
+      "feedbackBefore": "",
+      "feedbackAfter": "",
+      "activeElementAfterClick": "miracle-auth-username",
+      "activeElementVisible": true
+    }
+  ],
+  "hiddenFieldFocusTrap": {
+    "currentView": "orders",
+    "markedFieldInHiddenView": true,
+    "markedFieldRect": [
+      0,
+      0
+    ],
+    "activeElementAfter": "miracle-auth-username",
+    "feedback": ""
+  }
+}

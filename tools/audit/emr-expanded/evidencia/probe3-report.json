@@ -1,0 +1,157 @@
+{
+  "controlesAjenosEnSnapshot": {
+    "totalSnapshot": 95,
+    "ajenos": [
+      {
+        "selector": "aside > div:nth-of-type(1) > button",
+        "label": "Mostrar u ocultar workspace admin",
+        "tag": "button",
+        "visible": true,
+        "duenio": "miracle-admin-toggle"
+      },
+      {
+        "selector": "aside > div:nth-of-type(2) > button:nth-of-type(1)",
+        "label": "Logs (1)",
+        "tag": "button",
+        "visible": true,
+        "duenio": "miracle-admin-action secondary"
+      },
+      {
+        "selector": "aside > div:nth-of-type(2) > button:nth-of-type(2)",
+        "label": "Crear workflow",
+        "tag": "button",
+        "visible": true,
+        "duenio": "miracle-admin-action warning"
+      },
+      {
+        "selector": "a[href=\"/provider-studio.html\"]",
+        "label": "Providers",
+        "tag": "a",
+        "visible": true,
+        "duenio": "miracle-admin-action secondary"
+      },
+      {
+        "selector": "aside > div:nth-of-type(2) > button:nth-of-type(3)",
+        "label": "Mis workflows",
+        "tag": "button",
+        "visible": true,
+        "duenio": "miracle-admin-action secondary"
+      },
+      {
+        "selector": "a[href=\"/visualize.html\"]",
+        "label": "Grafo y globales",
+        "tag": "a",
+        "visible": true,
+        "duenio": "miracle-admin-action"
+      },
+      {
+        "selector": "aside > div:nth-of-type(2) > button:nth-of-type(4)",
+        "label": "Cerrar sesion",
+        "tag": "button",
+        "visible": true,
+        "duenio": "miracle-admin-action secondary"
+      }
+    ]
+  },
+  "bloqueadores": [
+    {
+      "campoBloqueado": "intake-payer-class",
+      "bloqueadoPor": "aside.miracle-admin-workspace",
+      "zIndexBloqueador": "2147482500",
+      "pointerEvents": "auto",
+      "position": "fixed"
+    },
+    {
+      "campoBloqueado": "intake-sex",
+      "bloqueadoPor": "div.miracle-admin-body < aside.miracle-admin-workspace",
+      "zIndexBloqueador": "auto",
+      "pointerEvents": "auto",
+      "position": "static"
+    }
+  ],
+  "onload": {
+    "tieneOnload": true,
+    "fuenteOnload": "() => {\n            window.PageState.init({ storageKey: 'graph-emr-form-state-v1' });\n            window.TrainerPlugin.mount({\n                appId: 'medical-demo'\n            });\n            setActiveView('intake');\n  ",
+    "pageStateInicializado": true,
+    "trainerMontado": true
+  },
+  "caritaSobreCampoInvisible": {
+    "vistaActiva": "intake",
+    "posAntes": [
+      1261,
+      661
+    ],
+    "posDespues": [
+      34,
+      28
+    ],
+    "seMovio": true,
+    "spotlightVisible": "false",
+    "spotlightRect": [
+      0,
+      2354
+    ]
+  },
+  "metricasVisuales": {
+    "elementosVisibles": 146,
+    "cajasConBorde": 51,
+    "cajasConSombra": 38,
+    "cajasConBordeRedondeado": 52,
+    "etiquetas": 67,
+    "etiquetasEnMayusculas": 67,
+    "alturaMediaCampo": 26,
+    "alturaMediaTextarea": 15,
+    "numTextareas": 21,
+    "caracteresDeTextoExplicativo": 1388,
+    "pxVerticalesModuloRegistro": 2055,
+    "densidad": "14.1 campos por 1000px"
+  },
+  "cssMuerto": {
+    "totalReglas": 77,
+    "selectoresSinUso": [
+      ".side-card",
+      ".workspace-top",
+      ".workspace-top strong",
+      ".workspace-top span",
+      ".workspace-badges",
+      ".badge",
+      ".grid-two",
+      ".side-card h3",
+      ".side-card p",
+      ".side-card li",
+      ".side-card ul",
+      ".side-stat-grid",
+      ".side-stat",
+      ".side-stat strong",
+      ".side-stat span",
+      ".side-note",
+      ".activity-list"
+    ]
+  },
+  "tabs": [
+    {
+      "texto": "Registro",
+      "target": "intake",
+      "activo": true,
+      "colorFondo": "rgb(20, 94, 168)"
+    },
+    {
+      "texto": "Anamnesis",
+      "target": "anamnesis",
+      "activo": false,
+      "colorFondo": "rgb(47, 140, 255)"
+    },
+    {
+      "texto": "Órdenes",
+      "target": "orders",
+      "activo": false,
+      "colorFondo": "rgb(47, 140, 255)"
+    },
+    {
+      "texto": "Cierre",
+      "target": "closure",
+      "activo": false,
+      "colorFondo": "rgb(47, 140, 255)"
+    }
+  ]
+}

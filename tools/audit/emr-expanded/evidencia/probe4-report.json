@@ -1,0 +1,50 @@
+{
+  "extensionDetectada": {
+    "marcaEnHtml": "true",
+    "widgetAuthExtension": true
+  },
+  "duplicados": {
+    "shellAsistente": 1,
+    "consolaEnsenanza": 1,
+    "estilosAsistente": 1,
+    "estilosTrainer": 1,
+    "estilosReview": 1,
+    "asideAdmin": 1,
+    "todosLosStyleTags": 5,
+    "burbujas": 1,
+    "botonesNota": 1,
+    "clavesLocalStorage": [
+      "miracle-admin-session-v1"
+    ]
+  },
+  "eventosPorEscritura": {
+    "eventosRecibidos": 2,
+    "fuentes": [
+      "human",
+      "human"
+    ]
+  },
+  "hitTest": [
+    {
+      "campo": "intake-payer-class",
+      "tapadoPor": "aside#.miracle-admin-workspace"
+    },
+    {
+      "campo": "intake-first-name",
+      "tapadoPor": "div#graph-trainer-auth-widget-subtitle."
+    },
+    {
+      "campo": "intake-sex",
+      "tapadoPor": "div#.miracle-admin-body"
+    },
+    {
+      "campo": "intake-phone",
+      "tapadoPor": "div#graph-trainer-auth-widget."
+    }
+  ],
+  "logs": [
+    "error: Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    "warning: [SurfaceProfile] Could not hydrate surface profile: El almacenamiento de workflows no está disponible. Verifica la conexión con Neo4j.",
+    "error: Failed to load resource: net::ERR_TUNNEL_CONNECTION_FAILED"
+  ]
+}
