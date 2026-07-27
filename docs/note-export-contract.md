@@ -38,6 +38,13 @@ o admin/supervisor de la misma organización → `estado='aprobada'` → tiene `
 → no es una nota de demostración → **el hash de la firma se re-verifica** contra
 `note`/`resumen`/`codigos` tal como están en `consultations`.
 
+> **Trampa del hash, verificada contra Postgres real:** Postgres normaliza el
+> orden de claves de `jsonb`, así que el hash **solo cuadra si se calcula sobre la
+> fila leída de la base de datos**, nunca sobre el objeto que se iba a insertar.
+> `signConsultationNote` en Miracle Notes ya lo hace bien (hace `SELECT` y luego
+> hashea). Si alguien mueve ese cálculo a antes de la escritura, **todas** las
+> exportaciones empezarán a fallar con `SIGNATURE_HASH_MISMATCH`.
+
 - `201 { export }` — trabajo creado en `pending`. **Nunca significa "exportada".**
 - `409 { error: { code: "EXPORT_ALREADY_EXISTS" }, export }` — ya existía un
   trabajo para esta consulta. **No es un error para el frontend**: es la respuesta
@@ -165,7 +172,23 @@ MIRACLE_API_KEY=... node scripts/simulate-operations-executor.js --watch --inter
 # Suites
 npm run test:note-export      # hash compartido + flujo sobre las rutas reales
 npm run test:note-export-db   # esquema y RPCs contra Postgres real (salta sin BD)
+
+# E2E completo: simulador real (proceso aparte) → HTTP → Graph real → Postgres real.
+# Opt-in porque necesita `pg`, que no es dependencia del runtime (Graph habla con
+# Supabase por HTTP). Salta con aviso si falta.
+npm i pg --no-save && npm run test:note-export-real
 ```
+
+Los tres arneses cubren cosas distintas y ninguno sustituye a otro:
+
+| Arnés | Rutas HTTP | Base de datos | Simulador |
+|---|---|---|---|
+| `test:note-export` | reales | falsa, en memoria | simulado en proceso |
+| `test:note-export-db` | — | **Postgres real** | — |
+| `test:note-export-real` | reales | **Postgres real** | **proceso aparte** |
+
+Lo que **ningún** arnés cubre todavía: la interfaz de Miracle Notes en un navegador
+contra un Graph desplegado. Eso exige un Supabase de staging (ver más abajo).
 
 El simulador **es el cliente de referencia**: cualquier proceso que hable
 claim/result es un ejecutor válido. Reemplazarlo por el cliente Windows real no

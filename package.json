@@ -16,6 +16,7 @@
     "test:clinical": "node scripts/verify-institutional-catalog.js && node scripts/verify-clinical-workflow.js && node scripts/verify-clinical-assistant.js",
     "test:note-export": "node scripts/verify-note-signature-hash.js && node scripts/verify-note-export-flow.js",
     "test:note-export-db": "node scripts/verify-note-exports-db.js",
+    "test:note-export-real": "node scripts/verify-note-export-real-postgres.js",
     "demo:note-export": "node scripts/demo-note-export-e2e.js",
     "simulate:operations": "node scripts/simulate-operations-executor.js",
     "test": "node scripts/verify-institutional-catalog.js && node scripts/verify-clinical-workflow.js && node scripts/verify-clinical-assistant.js && node scripts/verify-note-signature-hash.js && node scripts/verify-note-export-flow.js && node scripts/verify-note-exports-db.js"
