@@ -36,6 +36,17 @@ grant usage on schema auth to anon, authenticated, service_role;
 grant usage on schema extensions to anon, authenticated, service_role;
 grant usage on schema public to anon, authenticated, service_role;
 
+-- Default privileges del proyecto real: Supabase concede ALL sobre cada tabla
+-- NUEVA de `public` a anon y authenticated. Se reproduce aquí a propósito.
+--
+-- Sin esto los tests son más benévolos que producción: una tabla que solo hace
+-- `grant select to authenticated` parecería cerrada, cuando en la base real llega
+-- con INSERT/UPDATE/DELETE concedidos y RLS como única barrera. Reproducirlo es lo
+-- que permite afirmar de verdad quién bloquea qué (ver la migración
+-- 20260727033327_graph_note_exports_revoke_client_writes.sql).
+alter default privileges in schema public grant all on tables to anon, authenticated;
+alter default privileges in schema public grant all on sequences to anon, authenticated;
+
 -- Subconjunto de auth.users que usan las migraciones (FKs y el trigger de
 -- alta de usuario que lee raw_user_meta_data).
 create table if not exists auth.users (

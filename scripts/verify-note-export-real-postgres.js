@@ -182,7 +182,8 @@ async function main() {
   for (const f of [
     'tests/sql/00-supabase-bootstrap.sql',
     'tests/sql/01-upstream-miracle-notes.sql',
-    'supabase/migrations/20260727000000_graph_note_exports.sql'
+    'supabase/migrations/20260727000000_graph_note_exports.sql',
+    'supabase/migrations/20260727033327_graph_note_exports_revoke_client_writes.sql'
   ]) {
     execSync(`su postgres -c ${JSON.stringify(`psql -q -v ON_ERROR_STOP=1 -d ${DB} -f ${path.join(REPO_ROOT, f)}`)}`, { stdio: 'ignore' });
   }

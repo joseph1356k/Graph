@@ -76,6 +76,8 @@ const steps = [
   ['emulación de Supabase', 'tests/sql/00-supabase-bootstrap.sql'],
   ['esquema upstream de Miracle Notes', 'tests/sql/01-upstream-miracle-notes.sql'],
   ['migración graph_note_exports', 'supabase/migrations/20260727000000_graph_note_exports.sql'],
+  ['migración de endurecimiento (revoke de escrituras del cliente)',
+    'supabase/migrations/20260727033327_graph_note_exports_revoke_client_writes.sql'],
   ['aserciones de graph_note_exports', 'tests/sql/02-note-exports-tests.sql']
 ];
 

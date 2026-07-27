@@ -487,21 +487,60 @@ begin
   raise notice 'ok  RLS: el médico dueño lee el estado de su exportación';
 end;
 $$;
+-- Escritura del cliente: tiene que estar cerrada por PRIVILEGIO, no solo por RLS.
+-- El bootstrap reproduce el default privilege de Supabase (ALL a authenticated),
+-- así que si alguien quita los revokes de la migración de endurecimiento, estas
+-- tres aserciones fallan — que es exactamente lo que no pasó la primera vez.
 do $$
-declare v_ok boolean := false;
+declare
+  v_insert boolean := false;
+  v_update boolean := false;
+  v_delete boolean := false;
 begin
   begin
-    update public.graph_note_exports set status = 'completed';
-    -- Sin policy de UPDATE, PostgREST/PostgreSQL no afecta ninguna fila.
-    v_ok := not found;
-  exception when insufficient_privilege then
-    v_ok := true;
+    insert into public.graph_note_exports
+      (consultation_id, organization_id, doctor_id, requested_by, payload_hash)
+    values ('dddddddd-dddd-4ddd-8ddd-dddddddddd04', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+            '11111111-1111-4111-8111-111111111111', '11111111-1111-4111-8111-111111111111', 'x');
+  exception when others then v_insert := true;
   end;
-  assert v_ok, 'un usuario autenticado NO puede mover el estado de una exportación';
-  raise notice 'ok  RLS: un médico no puede auto-marcar su exportación como completada';
+  assert v_insert, 'un usuario autenticado NO puede INSERTAR trabajos de exportación';
+
+  begin
+    update public.graph_note_exports set status = 'completed';
+    v_update := not found;
+  exception when others then v_update := true;
+  end;
+  assert v_update, 'un usuario autenticado NO puede mover el estado de una exportación';
+
+  begin
+    delete from public.graph_note_exports;
+    v_delete := not found;
+  exception when others then v_delete := true;
+  end;
+  assert v_delete, 'un usuario autenticado NO puede borrar trabajos de exportación';
+
+  raise notice 'ok  el cliente autenticado no puede insertar, actualizar ni borrar exportaciones';
 end;
 $$;
 rollback;
+
+-- anon no tiene nada que hacer en esta tabla, ni leer.
+do $$
+begin
+  assert not has_table_privilege('anon', 'public.graph_note_exports', 'select'),
+    'anon no debe poder leer la cola de exportaciones';
+  assert not has_table_privilege('authenticated', 'public.graph_note_exports', 'insert'),
+    'authenticated no debe tener privilegio de INSERT (default privilege revocado)';
+  assert not has_table_privilege('authenticated', 'public.graph_note_exports', 'update'),
+    'authenticated no debe tener privilegio de UPDATE';
+  assert not has_table_privilege('authenticated', 'public.graph_note_exports', 'delete'),
+    'authenticated no debe tener privilegio de DELETE';
+  assert has_table_privilege('authenticated', 'public.graph_note_exports', 'select'),
+    'authenticated SÍ debe poder leer (lo necesita la UI y Realtime)';
+  raise notice 'ok  privilegios de tabla: authenticated solo SELECT, anon nada';
+end;
+$$;
 
 begin;
 set local role authenticated;
