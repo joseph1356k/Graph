@@ -1,0 +1,132 @@
+{
+  "$comment": [
+    "VECTOR DE PRUEBA COMPARTIDO — hash de la firma de la nota clínica.",
+    "Copia idéntica en los dos repos: Pagina-web-clientes-final/tests/fixtures/ y Graph/tests/fixtures/.",
+    "Contrato: sha256(JSON.stringify({ note, resumen, codigos })) — ese orden de claves exacto,",
+    "sobre los valores tal como los devuelve PostgREST (jsonb ya parseado; columnas ausentes = null).",
+    "Si cambias este archivo en un repo, cópialo al otro: los tests de ambos lados leen el mismo vector."
+  ],
+  "algorithm": "sha256",
+  "serialization": "JSON.stringify({ note, resumen, codigos })",
+  "cases": [
+    {
+      "name": "nota firmada típica (secciones + resumen + códigos)",
+      "consultation": {
+        "note": [
+          {
+            "key": "motivo_consulta",
+            "label": "Motivo de consulta",
+            "content": "Dolor lumbar de 3 días."
+          },
+          {
+            "key": "impresion_diagnostica",
+            "label": "Impresión diagnóstica",
+            "content": "Lumbalgia mecánica."
+          }
+        ],
+        "resumen": "Paciente con lumbalgia mecánica; manejo analgésico y control en 7 días.",
+        "codigos": [
+          {
+            "code": "M54.5",
+            "system": "CIE-10",
+            "label": "Lumbago no especificado"
+          }
+        ]
+      },
+      "expected_hash": "73de082cd88a7df8a9aadf60bc3b1da478553c941e475b30c079c4928906c42e"
+    },
+    {
+      "name": "defaults de la tabla (jsonb '[]' y resumen NULL)",
+      "consultation": {
+        "note": [],
+        "resumen": null,
+        "codigos": []
+      },
+      "expected_hash": "dd375de803689804713298e3971ad11931e91a06b196bcaef15f98029bd342b0"
+    },
+    {
+      "name": "resumen cadena vacía (NO es lo mismo que NULL)",
+      "consultation": {
+        "note": [],
+        "resumen": "",
+        "codigos": []
+      },
+      "expected_hash": "18388ada7cf8ceaf1089a9f432af7778c2ee02b220147470b20f9ed537ef72e7"
+    },
+    {
+      "name": "unicode: acentos, ñ, guion largo, comillas tipográficas y emoji",
+      "consultation": {
+        "note": [
+          {
+            "key": "evolucion",
+            "label": "Evolución",
+            "content": "Contusión ósea — mejoría del 80 %. “Sin dolor”. ✅"
+          }
+        ],
+        "resumen": "Señor de 62 años, niño acompañante. Coordinación ⚕️ ok.",
+        "codigos": [
+          {
+            "code": "S80.0",
+            "label": "Contusión de la rodilla — cerrada"
+          }
+        ]
+      },
+      "expected_hash": "f02ce339da901689c689e3d832bb3b5147aa6ccdcf9c746d41df18b17e822127"
+    },
+    {
+      "name": "escapes: saltos de línea, tabulaciones, comillas y backslash",
+      "consultation": {
+        "note": [
+          {
+            "key": "plan",
+            "label": "Plan",
+            "content": "Línea 1\nLínea 2\tcol\r\n\"citado\" y \\ruta\\windows"
+          }
+        ],
+        "resumen": "a\nb",
+        "codigos": []
+      },
+      "expected_hash": "32bff736558318ac08ed51bbf35e8117002bbf365e67989deee450bb170666c0"
+    },
+    {
+      "name": "números, booleanos y null anidados (orden de claves de jsonb)",
+      "consultation": {
+        "note": [
+          {
+            "key": "signos",
+            "label": "Signos",
+            "content": "TA 120/80",
+            "confidence": 0.95
+          }
+        ],
+        "resumen": null,
+        "codigos": [
+          {
+            "code": "Z00.0",
+            "principal": true,
+            "extra": null,
+            "orden": 1
+          }
+        ]
+      },
+      "expected_hash": "849cd957c21004e964ce456386b3af810be28c159c674b3f7be3081e186866ee"
+    },
+    {
+      "name": "nota como objeto (formato legado, no array)",
+      "consultation": {
+        "note": {
+          "summary": "Resumen legado",
+          "sections": [
+            {
+              "key": "s1",
+              "content": "x"
+            }
+          ]
+        },
+        "resumen": "Resumen legado",
+        "codigos": []
+      },
+      "expected_hash": "aa9d2a5ab6dc806d77b922abe6725407bf51b9d40206cc45ad66b33c2190e10a"
+    }
+  ]
+}
