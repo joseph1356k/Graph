@@ -789,6 +789,19 @@ app.get('/api/health', async (req, res) => {
         provider: llmProvider.provider || '',
         model: llmProvider.model || ''
       },
+      // El asistente clínico tiene su PROPIO proveedor (MIRACLE_ASSISTANT_LLM_*);
+      // que `llm` (notas) esté configurado no dice nada sobre este. Sin esta
+      // entrada, "las notas funcionan pero el asistente no" era indiagnosticable
+      // desde fuera. api_key_env dice de qué variable salió la key activa —
+      // nunca la key ni parte de ella: este endpoint es público.
+      assistant_llm: {
+        status: assistantLlmProvider.provider === 'disabled'
+          ? 'disabled'
+          : (assistantLlmProvider.hasApiKey() ? 'configured' : 'not_configured'),
+        provider: assistantLlmProvider.provider || '',
+        model: assistantLlmProvider.model || '',
+        api_key_env: assistantLlmProvider.activeApiKeyEnv()
+      },
       auth: {
         status: authBypassEnabled ? 'bypassed' : 'enabled'
       }

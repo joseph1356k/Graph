@@ -158,6 +158,20 @@ class LLMProvider {
     return Boolean(this.apiKey);
   }
 
+  // Name of the env var the active key was read from ('' when unconfigured or
+  // on the legacy global-env path). This is diagnostic surface: it lets /api/health
+  // and Provider Studio say "the runtime is using the key from X", which is the
+  // question that decides whether an updated key actually took effect.
+  activeApiKeyEnv() {
+    if (this.apiKeySource === 'generic') {
+      return `${this.envPrefix}_LLM_API_KEY`;
+    }
+    if (this.apiKeySource === 'per-provider') {
+      return this.perProviderApiKeyEnv(this.provider);
+    }
+    return '';
+  }
+
   getHeaders() {
     if (!this.hasApiKey()) {
       throw new Error('No LLM API key is configured');
