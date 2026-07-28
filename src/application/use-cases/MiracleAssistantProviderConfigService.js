@@ -89,42 +89,62 @@ class MiracleAssistantProviderConfigService {
     return '';
   }
 
+  // Only the tail, and only enough of it to tell two keys apart. The status
+  // endpoint is admin-gated, but it is still a browser response: shipping a
+  // usable provider key to the client is not something an authorization check
+  // makes safe.
+  static maskApiKey(apiKey) {
+    const value = `${apiKey || ''}`.trim();
+    if (!value) {
+      return '';
+    }
+    return `…${value.slice(-4)}`;
+  }
+
   status() {
     const provider = this.llmProvider?.provider || 'disabled';
     const source = this.llmProvider?.configSource || 'none';
     const currentSpec = PROVIDERS[provider] || PROVIDERS.disabled;
+    // Which env var the RUNTIME actually read its key from. Without this, a key
+    // updated in the wrong variable looks identical to one that took effect.
+    const apiKeySource = this.llmProvider?.apiKeySource || 'none';
+    const activeApiKeyEnv = apiKeySource === 'per-provider' && currentSpec.apiKeyEnv
+      ? currentSpec.apiKeyEnv
+      : (apiKeySource === 'generic' ? 'MIRACLE_ASSISTANT_LLM_API_KEY' : '');
+
+    const runtime = {
+      provider,
+      model: this.llmProvider?.model || '',
+      base_url: this.llmProvider?.baseUrl || '',
+      configured: Boolean(this.llmProvider?.hasApiKey?.()),
+      source,
+      api_key_source: apiKeySource,
+      api_key_env: activeApiKeyEnv,
+      api_key_masked: MiracleAssistantProviderConfigService.maskApiKey(this.llmProvider?.apiKey)
+    };
 
     return {
-      providers: Object.values(PROVIDERS).map((spec) => ({
-        id: spec.id,
-        label: spec.label,
-        description: spec.description,
-        requires_api_key: spec.requiresApiKey,
-        requires_base_url: spec.requiresBaseUrl,
-        requires_model: spec.requiresModel,
-        default_model: spec.defaultModel,
-        model_options: spec.modelOptions || [],
-        default_base_url: spec.defaultBaseUrl,
-        recommended: spec.id === 'openai',
-        stored_api_key: MiracleAssistantProviderConfigService.storedApiKeyFor(spec, provider)
-      })),
-      current_setup: {
-        provider,
-        label: currentSpec.label,
-        model: this.llmProvider?.model || '',
-        base_url: this.llmProvider?.baseUrl || '',
-        configured: Boolean(this.llmProvider?.hasApiKey?.()),
-        source
-      },
-      status: {
-        provider,
-        model: this.llmProvider?.model || '',
-        base_url: this.llmProvider?.baseUrl || '',
-        configured: Boolean(this.llmProvider?.hasApiKey?.()),
-        source,
-        storage: 'vercel-env',
-        redeploy_required: false
-      },
+      providers: Object.values(PROVIDERS).map((spec) => {
+        const storedApiKey = MiracleAssistantProviderConfigService.storedApiKeyFor(spec, provider);
+        return {
+          id: spec.id,
+          label: spec.label,
+          description: spec.description,
+          requires_api_key: spec.requiresApiKey,
+          requires_base_url: spec.requiresBaseUrl,
+          requires_model: spec.requiresModel,
+          default_model: spec.defaultModel,
+          model_options: spec.modelOptions || [],
+          default_base_url: spec.defaultBaseUrl,
+          recommended: spec.id === 'openai',
+          api_key_env: spec.apiKeyEnv || '',
+          // Never the key itself: enough to recognise it, useless to reuse.
+          has_stored_api_key: Boolean(storedApiKey),
+          stored_api_key_masked: MiracleAssistantProviderConfigService.maskApiKey(storedApiKey)
+        };
+      }),
+      current_setup: { ...runtime, label: currentSpec.label },
+      status: { ...runtime, storage: 'vercel-env', redeploy_required: false },
       vercel: this.vercelEnvService.status()
     };
   }
@@ -165,17 +185,19 @@ class MiracleAssistantProviderConfigService {
       throw error;
     }
 
-    const envWrites = [
-      this.vercelEnvService.upsertProjectEnv('MIRACLE_ASSISTANT_LLM_PROVIDER', providerId, { secret: false }),
-      this.vercelEnvService.upsertProjectEnv('MIRACLE_ASSISTANT_LLM_MODEL', providerId === 'disabled' ? '' : model, { secret: false }),
-      this.vercelEnvService.upsertProjectEnv('MIRACLE_ASSISTANT_LLM_BASE_URL', providerId === 'disabled' ? '' : baseUrl, { secret: false }),
-      this.vercelEnvService.upsertProjectEnv('MIRACLE_ASSISTANT_LLM_API_KEY', providerId === 'disabled' ? '' : apiKey, { secret: true })
+    const writes = [
+      ['MIRACLE_ASSISTANT_LLM_PROVIDER', providerId, false],
+      ['MIRACLE_ASSISTANT_LLM_MODEL', providerId === 'disabled' ? '' : model, false],
+      ['MIRACLE_ASSISTANT_LLM_BASE_URL', providerId === 'disabled' ? '' : baseUrl, false],
+      ['MIRACLE_ASSISTANT_LLM_API_KEY', providerId === 'disabled' ? '' : apiKey, true]
     ];
     if (spec.apiKeyEnv && apiKey) {
-      envWrites.push(this.vercelEnvService.upsertProjectEnv(spec.apiKeyEnv, apiKey, { secret: true }));
+      writes.push([spec.apiKeyEnv, apiKey, true]);
     }
 
-    await Promise.all(envWrites);
+    await Promise.all(writes.map(([key, value, secret]) => (
+      this.vercelEnvService.upsertProjectEnv(key, value, { secret })
+    )));
     const deployment = await this.vercelEnvService.triggerRedeploy();
 
     return {
@@ -186,6 +208,11 @@ class MiracleAssistantProviderConfigService {
         model: providerId === 'disabled' ? null : model,
         base_url: providerId === 'disabled' ? null : baseUrl
       },
+      // Exactly which variables changed and in which project. When a key does
+      // not take effect, this is what tells you whether it was written where the
+      // runtime reads it.
+      written_env_keys: writes.map(([key]) => key),
+      target_project_id: this.vercelEnvService.projectId || '',
       deployment
     };
   }

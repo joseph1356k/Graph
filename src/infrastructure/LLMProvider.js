@@ -27,16 +27,45 @@ class LLMProvider {
     return normalized;
   }
 
+  // Env var holding the per-provider key that the Provider Studio remembers
+  // across provider switches (e.g. "MIRACLE_ASSISTANT" + "azure-foundry" ->
+  // MIRACLE_ASSISTANT_LLM_AZURE_FOUNDRY_API_KEY). Same convention the
+  // *ProviderConfigService specs declare in their `apiKeyEnv`.
+  perProviderApiKeyEnv(providerId) {
+    const normalized = `${providerId || ''}`.trim().toUpperCase().replace(/-/g, '_');
+    return normalized ? `${this.envPrefix}_LLM_${normalized}_API_KEY` : '';
+  }
+
+  // The Provider Studio writes the key TWICE: the generic *_LLM_API_KEY that
+  // this runtime reads, and the per-provider one above. Reading both means a key
+  // set by hand in only one of them still configures the provider. Before this,
+  // updating just MIRACLE_ASSISTANT_LLM_OPENAI_API_KEY left the runtime silently
+  // using the stale generic key — the dashboard showed the new key while every
+  // request still failed against the old one.
+  resolveApiKey(providerId) {
+    const generic = `${process.env[`${this.envPrefix}_LLM_API_KEY`] || ''}`.trim();
+    if (generic) {
+      return { apiKey: generic, apiKeySource: 'generic' };
+    }
+    const perProviderEnv = this.perProviderApiKeyEnv(providerId);
+    const perProvider = perProviderEnv ? `${process.env[perProviderEnv] || ''}`.trim() : '';
+    if (perProvider) {
+      return { apiKey: perProvider, apiKeySource: 'per-provider' };
+    }
+    return { apiKey: '', apiKeySource: 'none' };
+  }
+
   reloadFromEnv() {
     this.provider = null;
     this.apiKey = '';
     this.baseUrl = '';
     this.model = '';
     this.configSource = 'none';
+    this.apiKeySource = 'none';
 
     const prefix = this.envPrefix;
     const explicitProvider = (process.env[`${prefix}_LLM_PROVIDER`] || '').trim().toLowerCase();
-    const explicitApiKey = (process.env[`${prefix}_LLM_API_KEY`] || '').trim();
+    const { apiKey: explicitApiKey, apiKeySource } = this.resolveApiKey(explicitProvider);
     const explicitBaseUrl = (process.env[`${prefix}_LLM_BASE_URL`] || '').trim().replace(/\/+$/, '');
     const explicitModel = (process.env[`${prefix}_LLM_MODEL`] || '').trim();
     const envSource = `${prefix.toLowerCase()}-env`;
@@ -48,6 +77,7 @@ class LLMProvider {
     }
 
     if (explicitProvider && explicitApiKey) {
+      this.apiKeySource = apiKeySource;
       if (explicitProvider === 'azure-foundry') {
         this.provider = 'azure-foundry';
         this.apiKey = explicitApiKey;
@@ -109,6 +139,7 @@ class LLMProvider {
       this.baseUrl = this.azureFoundryBaseUrl;
       this.model = this.normalizeAzureFoundryModel(this.azureFoundryModel);
       this.configSource = 'legacy-env';
+      this.apiKeySource = 'legacy';
       return;
     }
     this.provider = this.openRouterApiKey ? 'openrouter' : (this.openAiApiKey ? 'openai' : null);
@@ -120,6 +151,7 @@ class LLMProvider {
       ? (process.env.OPENROUTER_MODEL || 'openai/gpt-4o')
       : (process.env.OPENAI_MODEL || 'gpt-4o');
     this.configSource = this.provider ? 'legacy-env' : 'none';
+    this.apiKeySource = this.provider ? 'legacy' : 'none';
   }
 
   hasApiKey() {
@@ -158,10 +190,19 @@ class LLMProvider {
       return response.data;
     } catch (error) {
       const status = error.response?.status;
-      const details = typeof error.response?.data === 'string'
-        ? error.response.data
-        : JSON.stringify(error.response?.data || {});
-      throw new Error(`LLM request failed (${status || 'unknown'}): ${details}`);
+      const data = error.response?.data;
+      const details = typeof data === 'string' ? data : JSON.stringify(data || {});
+      // The HTTP status and the provider's own error code travel WITH the error.
+      // Callers need them to tell apart "retry in a moment" (a real 429 rate
+      // limit, a 5xx) from "no amount of retrying will help" (spent quota,
+      // revoked key, missing model) — collapsing all of them into one opaque
+      // message is what made a billing problem look like a transient blip.
+      const failure = new Error(`LLM request failed (${status || 'unknown'}): ${details}`);
+      failure.status = Number(status) || 0;
+      failure.provider = this.provider || '';
+      failure.providerErrorCode = `${(typeof data === 'object' && data?.error?.code) || ''}`.trim();
+      failure.providerErrorType = `${(typeof data === 'object' && data?.error?.type) || ''}`.trim();
+      throw failure;
     }
   }
 

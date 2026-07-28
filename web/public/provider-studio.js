@@ -235,9 +235,24 @@
     // Prefills a password field with the key already stored for that specific
     // provider (kept server-side per provider, not overwritten when the user
     // switches to a different provider and back).
+    // Cards whose status still ships the raw key keep prefilling it (legacy
+    // shape). Cards that only report has_stored_api_key leave the field EMPTY
+    // and say so in the placeholder: an empty field means "keep the stored key"
+    // server-side, so saving without typing changes nothing instead of silently
+    // rewriting the key that is already there — which is how a dead key survives
+    // repeated "fixes".
     function applyStoredApiKey(input, provider) {
         if (!input) return;
-        input.value = provider?.stored_api_key || '';
+        const legacyStoredKey = provider?.stored_api_key;
+        if (typeof legacyStoredKey === 'string') {
+            input.value = legacyStoredKey;
+            input.placeholder = '';
+        } else {
+            input.value = '';
+            input.placeholder = provider?.has_stored_api_key
+                ? `Guardada (${provider.stored_api_key_masked || '····'}) — escribe una nueva para reemplazarla`
+                : 'Pega la API key';
+        }
         input.type = 'password';
         const toggle = input.parentElement?.querySelector('.field-key-toggle');
         if (toggle) {
@@ -369,8 +384,15 @@
         dom.assistantBaseUrl.value = current.base_url || '';
         renderModelOptions(dom.assistantModel, currentProvider(payload.providers, dom.assistantSelect), current.model || '');
         syncAssistantFields();
+        // The env var the runtime actually read the key from, plus its last 4
+        // characters. This is the line that answers "cambie la key y no paso
+        // nada": if it names a different variable than the one you edited, or
+        // ends in different characters, the runtime never saw your key.
+        const keyOrigin = current.api_key_env
+            ? ` - key ${current.api_key_masked || ''} desde ${current.api_key_env}`
+            : '';
         dom.assistantCurrent.textContent = current.provider
-            ? `Actual: ${current.label || current.provider} - ${current.model || 'sin modelo'} - ${current.source || 'runtime actual'}`
+            ? `Actual: ${current.label || current.provider} - ${current.model || 'sin modelo'} - ${current.source || 'runtime actual'}${keyOrigin}`
             : 'Sin provider explicito para el asistente. Chat clinico deshabilitado.';
         const assistantConfigured = Boolean(current.configured);
         dom.assistantMetric.textContent = formatSummary(current);

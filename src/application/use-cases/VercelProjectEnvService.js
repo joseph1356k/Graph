@@ -1,9 +1,20 @@
+// Writes provider secrets into the Vercel project this backend runs in, then
+// redeploys it so the runtime picks them up.
+//
+// The project ID has NO hardcoded default on purpose. It used to fall back to a
+// project id/name that no longer exists, while the redeploy went through
+// GRAPH_VERCEL_DEPLOY_HOOK_URL — a hook that belongs to whichever project
+// created it. When the two disagreed, the variables landed in one project and a
+// different project got rebuilt: Provider Studio reported success, a fresh
+// deployment appeared, and the runtime kept using the old key. Failing loudly
+// when GRAPH_VERCEL_PROJECT_ID is missing is far better than silently writing
+// secrets into somebody else's project.
 class VercelProjectEnvService {
   constructor(options = {}) {
     this.apiToken = `${options.apiToken || process.env.GRAPH_VERCEL_API_TOKEN || ''}`.trim();
-    this.projectId = `${options.projectId || process.env.GRAPH_VERCEL_PROJECT_ID || process.env.VERCEL_PROJECT_ID || 'prj_aGN8aRUyPEyWX53NjdTT4fOZ2h15'}`.trim();
-    this.projectName = `${options.projectName || process.env.GRAPH_VERCEL_PROJECT_NAME || 'miracle'}`.trim();
-    this.teamId = `${options.teamId || process.env.GRAPH_VERCEL_TEAM_ID || 'jose-david-s-projects-22dd4300'}`.trim();
+    this.projectId = `${options.projectId || process.env.GRAPH_VERCEL_PROJECT_ID || process.env.VERCEL_PROJECT_ID || ''}`.trim();
+    this.projectName = `${options.projectName || process.env.GRAPH_VERCEL_PROJECT_NAME || ''}`.trim();
+    this.teamId = `${options.teamId || process.env.GRAPH_VERCEL_TEAM_ID || ''}`.trim();
     this.deployHookUrl = `${options.deployHookUrl || process.env.GRAPH_VERCEL_DEPLOY_HOOK_URL || ''}`.trim();
   }
 
@@ -93,9 +104,15 @@ class VercelProjectEnvService {
         error.statusCode = 502;
         throw error;
       }
+      // A deploy hook URL carries its target project opaquely, so there is no
+      // way to confirm here that it rebuilds the same project the variables were
+      // just written to. The target is reported back so the operator can see it
+      // and catch a mismatch instead of chasing a key that never took effect.
       return {
         triggered: true,
-        strategy: 'deploy-hook'
+        strategy: 'deploy-hook',
+        env_project_id: this.projectId,
+        warning: 'El redeploy se disparó con un deploy hook: verifica que el hook pertenezca a este mismo proyecto, o las variables no llegarán al runtime.'
       };
     }
 
@@ -123,7 +140,7 @@ class VercelProjectEnvService {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        name: this.projectName,
+        ...(this.projectName ? { name: this.projectName } : {}),
         project: this.projectId,
         target: 'production',
         deploymentId
@@ -143,6 +160,7 @@ class VercelProjectEnvService {
     return {
       triggered: true,
       strategy: 'redeploy-api',
+      env_project_id: this.projectId,
       deployment_id: payload?.id || '',
       deployment_url: payload?.url ? `https://${payload.url}` : ''
     };

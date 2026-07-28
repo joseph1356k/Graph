@@ -1,6 +1,17 @@
 const { clinicalError, isClinicalError } = require('./ClinicalErrors');
+const { classifyLlmFailure } = require('./LlmFailure');
 const contextBuilder = require('./ClinicalAssistantContextBuilder');
 const ClinicalAssistantValidationService = require('./ClinicalAssistantValidationService');
+
+// Messages for the provider failures that are NOT the doctor's problem and that
+// retrying cannot fix. They say what is wrong without leaking keys, endpoints or
+// billing details into the consulting room.
+const LLM_FAILURE_MESSAGES = {
+  LLM_QUOTA_EXCEEDED: 'El proveedor de IA del asistente se quedó sin cuota. Hay que recargarlo en la configuración del servidor.',
+  LLM_AUTH_FAILED: 'Las credenciales del proveedor de IA del asistente no son válidas. Revisa la configuración del servidor.',
+  LLM_MODEL_NOT_FOUND: 'El modelo configurado para el asistente no está disponible en el proveedor. Revisa la configuración del servidor.',
+  RATE_LIMITED: 'El proveedor de IA está saturado en este momento. Espera unos segundos e inténtalo de nuevo.'
+};
 
 // Miracle Clinical Assistant: contextual clinical chat, encounter-based
 // diagnostic suggestions and note adjustments. One service, three use cases —
@@ -31,6 +42,17 @@ class ClinicalAssistantService {
     if (!this.hasLlm()) {
       throw clinicalError('LLM_NOT_CONFIGURED', 'El proveedor de IA no está configurado.');
     }
+  }
+
+  // Turns a provider failure into the most specific clinical error available.
+  // `fallbackMessage` only applies to genuine engine failures (malformed
+  // response, timeout, 5xx) — the cases where "intenta de nuevo" is honest.
+  llmFailure(error, fallbackMessage) {
+    const code = classifyLlmFailure(error);
+    if (code) {
+      return clinicalError(code, LLM_FAILURE_MESSAGES[code]);
+    }
+    return clinicalError('ASSISTANT_FAILED', fallbackMessage);
   }
 
   async loadEncounterIfRequested(encounterId, doctorId) {
@@ -90,7 +112,7 @@ class ClinicalAssistantService {
         throw error;
       }
       console.error(`[Clinical Assistant] chat falló: ${error.message}`);
-      throw clinicalError('ASSISTANT_FAILED', 'No fue posible generar la respuesta del asistente. Intenta de nuevo.');
+      throw this.llmFailure(error, 'No fue posible generar la respuesta del asistente. Intenta de nuevo.');
     }
   }
 
@@ -123,7 +145,7 @@ class ClinicalAssistantService {
         throw error;
       }
       console.error(`[Clinical Assistant] diagnostic-suggestions falló: ${error.message}`);
-      throw clinicalError('ASSISTANT_FAILED', 'No fue posible generar sugerencias diagnósticas. Intenta de nuevo.');
+      throw this.llmFailure(error, 'No fue posible generar sugerencias diagnósticas. Intenta de nuevo.');
     }
   }
 
@@ -189,7 +211,7 @@ class ClinicalAssistantService {
         throw error;
       }
       console.error(`[Clinical Assistant] note-adjustment falló: ${error.message}`);
-      throw clinicalError('ASSISTANT_FAILED', 'No fue posible proponer el ajuste de la nota. Intenta de nuevo.');
+      throw this.llmFailure(error, 'No fue posible proponer el ajuste de la nota. Intenta de nuevo.');
     }
   }
 

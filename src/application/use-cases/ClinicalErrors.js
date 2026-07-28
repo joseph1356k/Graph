@@ -9,6 +9,15 @@ const CLINICAL_ERROR_STATUS = {
   TRANSCRIPT_REQUIRED: 400,
   TRANSCRIPT_TOO_LONG: 413,
   LLM_NOT_CONFIGURED: 503,
+  // Fallos del proveedor de IA que NO se arreglan reintentando: son problemas de
+  // configuración o de facturación del servidor, no de la petición del médico.
+  // 503 (y no 502) porque describen un servicio no disponible por configuración,
+  // igual que LLM_NOT_CONFIGURED.
+  LLM_QUOTA_EXCEEDED: 503,
+  LLM_AUTH_FAILED: 503,
+  LLM_MODEL_NOT_FOUND: 503,
+  // Límite de tasa real del proveedor: esto sí se reintenta.
+  RATE_LIMITED: 429,
   NOTE_GENERATION_FAILED: 502,
   NOTE_JSON_INVALID: 400,
   ASSISTANT_INVALID: 400,
