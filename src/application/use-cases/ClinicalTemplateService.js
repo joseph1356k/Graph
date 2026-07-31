@@ -23,7 +23,10 @@ function toSnakeKey(value = '') {
     .slice(0, 80);
 }
 
-function defaultInstruction(label = '') {
+function defaultInstruction(label = '', { verbatim = false } = {}) {
+  if (verbatim) {
+    return `Copia en la sección "${`${label}`.trim()}" lo que el médico dictó para esa casilla, palabra por palabra y en el mismo orden, sin reformular, resumir ni reordenar. No inventes datos clínicos. Si la información no fue mencionada, indícalo con una frase prudente como "No mencionado en la consulta."`;
+  }
   return `Redacta la sección "${`${label}`.trim()}" usando únicamente información mencionada de forma explícita en la transcripción. No inventes datos clínicos. Si la información no fue mencionada, indícalo con una frase prudente como "No mencionado en la consulta."`;
 }
 
@@ -61,13 +64,18 @@ class ClinicalTemplateService {
       }
       const key = toSnakeKey(`${draft.key || ''}`.trim() || label) || `seccion_${draft.index + 1}`;
       const orderValue = Number(draft.order);
+      // verbatim: la casilla se reporta tal cual la dictó el médico (patología y
+      // demás reportes literales). El prompt builder también lo activa por
+      // especialidad; esto permite marcarlo casilla por casilla.
+      const verbatim = draft.verbatim === true;
       const instruction = `${draft.instruction || ''}`.trim().slice(0, MAX_INSTRUCTION_LENGTH)
-        || defaultInstruction(label);
+        || defaultInstruction(label, { verbatim });
       return {
         key,
         label,
         order: Number.isFinite(orderValue) && orderValue > 0 ? orderValue : draft.index + 1,
         required: draft.required === true,
+        verbatim,
         instruction,
         index: draft.index
       };
@@ -95,6 +103,7 @@ class ClinicalTemplateService {
         label: section.label,
         order: position + 1,
         required: section.required,
+        verbatim: section.verbatim,
         instruction: section.instruction
       }));
   }

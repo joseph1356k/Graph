@@ -38,6 +38,7 @@ class ClinicalEncounterService {
         label: section.label,
         order: section.order,
         required: Boolean(section.required),
+        verbatim: Boolean(section.verbatim),
         instruction: section.instruction
       })),
       snapshot_at: now.toISOString()

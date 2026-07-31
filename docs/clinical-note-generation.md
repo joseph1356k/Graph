@@ -26,14 +26,36 @@ Cómo el backend convierte `transcript + template_snapshot` en `note_json` estru
 **System** (reglas fijas):
 - Rol: "Miracle Clinical Note Generator", notas en español.
 - Reglas de NO invención: solo información explícita de la transcripción; prohibido inventar signos vitales, examen físico, antecedentes, medicamentos, dosis, laboratorios o diagnósticos confirmados.
+- Reglas de fidelidad al dictado (siempre): escribir con las palabras del médico, conservar el orden en que enunció los datos, no resumir ni recortar, no agregar conectores ni frases de relleno. "Redactar" = repartir el dictado en las secciones correctas y aplicar la puntuación dictada.
+- Reglas de puntuación dictada: signos dictados como palabras ("coma", "punto y aparte", "abre paréntesis"…) y el signo `x` entre medidas ("tres por cuatro centímetros" → `3 x 4 cm`).
+- Modo literal cuando aplica (ver abajo).
 - Prudencia diagnóstica: impresión en términos de probabilidad, "pendiente de criterio médico".
 - Frases prudentes obligatorias cuando falta información: `"No referido."`, `"No mencionado en la consulta."`, `"No documentado en la transcripción."`
 - Estructura: devolver SOLO JSON; `sections` con exactamente las keys/labels/orden de la plantilla; `confidence` 0–1; `evidence` como cita textual breve; `warnings` y `missing_required_sections`.
-- Lista numerada de las secciones del snapshot con su instrucción individual (la instrucción de cada sección viaja en el prompt).
+- Lista numerada de las secciones del snapshot con su instrucción individual (la instrucción de cada sección viaja en el prompt); las secciones literales llevan la marca `· LITERAL`.
 
-**User** (payload JSON): `{ task, template: {name, specialty, sections}, transcript, expected_schema }`.
+**User** (payload JSON): `{ task, fidelity: {mode, reason, verbatim_sections}, template: {name, specialty, sections}, transcript, expected_schema }`.
 
 La llamada usa `chatExpectingJson(messages, { type: 'json_object' })` del `LLMProvider` existente, que fuerza salida JSON en los tres proveedores soportados.
+
+## Modo literal (especialidades de reporte)
+
+En patología, radiología y demás áreas de informe el médico dicta la nota tal cual: reordenar, parafrasear o recortar el dictado se lee como un error de la herramienta. Para eso el prompt tiene un **modo literal** que se activa solo (el médico no configura nada) y añade un bloque de reglas duras: copiar palabra por palabra y en el mismo orden, conservar cifras/unidades/rótulos/nomenclatura (CIE, TNM, Bethesda, Gleason, BI-RADS, HGVS…) sin normalizar formatos, no reordenar enumeraciones, no fusionar ni dividir oraciones, no completar frases ni corregir términos técnicos, no mover datos entre casillas. La única transformación permitida sigue siendo la puntuación dictada (incluido el signo `x` entre medidas).
+
+Se activa por cualquiera de estas vías:
+
+| Vía | Dónde | Efecto |
+|---|---|---|
+| Especialidad de la plantilla | `template_snapshot.specialty` en `ClinicalNotePromptBuilder.DEFAULT_VERBATIM_SPECIALTIES` | Toda la plantilla es literal |
+| Variable de entorno | `CLINICAL_VERBATIM_SPECIALTIES` (lista separada por comas) | Agrega especialidades a la lista base sin tocar código |
+| Plantilla completa | `template_snapshot.verbatim === true` | Toda la plantilla es literal |
+| Casilla individual | `section.verbatim === true` | Solo esa sección es literal; el resto sigue las reglas generales |
+
+Lista base: `patologia`, `anatomia_patologica`, `patologia_clinica`, `histopatologia`, `dermatopatologia`, `citologia`, `citopatologia`, `radiologia`, `imagenes_diagnosticas`, `radiologia_e_imagenes_diagnosticas`, `medicina_nuclear`, `laboratorio_clinico`, `genetica`, `genetica_medica`, `medicina_legal`. La comparación normaliza tildes, mayúsculas y guiones (`"Patología"`, `"anatomía-patológica"` → coinciden).
+
+`verbatim` viaja como campo de cada sección: se normaliza en `ClinicalTemplateService.normalizeSections`, se congela en `ClinicalEncounterService.buildTemplateSnapshot` y llega al prompt. Una casilla `verbatim` sin instrucción propia recibe una instrucción por defecto que manda copiar el dictado en lugar de redactarlo.
+
+Cobertura: [scripts/verify-note-fidelity.js](../scripts/verify-note-fidelity.js) (`npm run test:note-fidelity`).
 
 ## Validación y reparación post-LLM
 
