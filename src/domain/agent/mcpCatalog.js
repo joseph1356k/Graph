@@ -151,10 +151,49 @@ const systemTools = [
  * aprendizaje (ver learning.js), sin tocar esto.
  */
 function baseCatalog() {
-  return [...gestureTools, ...systemTools];
+  return [...gestureTools, ...systemTools, ...mapTools];
 }
 
 /** Nombres de las herramientas (para distinguir llamadas MCP vs funciones custom). */
+/**
+ * EL MAPA DEL COMPUTADOR. El cliente construye pasivamente un grafo de las pantallas que ha visto
+ * —nodos= superficies, aristas= transiciones con la acción que las provoca— mientras el usuario
+ * trabaja, sin que nadie enseñe nada. Esto lo expone al modelo.
+ *
+ * Es distinto de un workflow y conviene que el modelo lo entienda: un workflow es una tarea que
+ * alguien enseñó a propósito; el mapa es terreno conocido. Sirve para LLEGAR a sitios, no para
+ * hacer tareas.
+ *
+ * Las descripciones dicen lo que el mapa NO sabe además de lo que sabe. El terreno se aprende
+ * observando y su precisión medida ronda el 78%: un modelo que crea que es infalible improvisará
+ * sobre pantallas equivocadas, y uno que sepa que puede fallar preguntará o verificará. El cliente
+ * comprueba la llegada en cada tramo y se detiene si no coincide — por eso `map_go_to` puede
+ * responder "me quedé a mitad", y eso es una respuesta correcta, no un error.
+ */
+const MAP_VIA = 'mapa del computador (terreno aprendido por observación)';
+
+const mapTools = [
+  {
+    name: 'map_where_am_i', via: MAP_VIA, params: [],
+    description: 'Dice en qué pantalla está el usuario ahora mismo y cuántas salidas conocidas tiene.'
+  },
+  {
+    name: 'map_places', via: MAP_VIA,
+    description: 'Lista las pantallas que el mapa conoce, las más visitadas primero. Útil para saber a dónde se PUEDE ir antes de intentarlo.',
+    params: [{ name: 'app', description: 'Filtrar por app o dominio (opcional), p.ej. "explorer.exe" o "github.com"' }]
+  },
+  {
+    name: 'map_routes_from', via: MAP_VIA,
+    description: 'Salidas conocidas de una pantalla y con qué elemento se recorre cada una. Indica explícitamente las que se observaron pero cuya acción se desconoce.',
+    params: [{ name: 'surface', description: 'Id de superficie; si se omite, la pantalla actual' }]
+  },
+  {
+    name: 'map_go_to', via: MAP_VIA,
+    description: 'Navega hasta una pantalla conocida recorriendo la ruta aprendida, verificando la llegada en cada paso. Solo usa rutas COMPLETAS: si falta saber cómo se recorre algún tramo, no se mueve y lo dice. Si un paso no llega a donde debía, se detiene e informa dónde quedó.',
+    params: [{ name: 'surface', description: 'Id de superficie destino, tal como aparece en map_places' }]
+  }
+];
+
 function catalogNames(tools) {
   return new Set(tools.map((tool) => tool.name));
 }
