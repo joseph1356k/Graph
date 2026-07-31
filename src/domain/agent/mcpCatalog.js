@@ -188,6 +188,11 @@ const mapTools = [
     params: [{ name: 'surface', description: 'Id de superficie; si se omite, la pantalla actual' }]
   },
   {
+    name: 'map_take', via: MAP_VIA,
+    description: 'Toma UNA salida de la pantalla actual, elegida por su nombre tal como lo devuelve map_routes_from (p.ej. "Videos", "Documentos"). Es la forma natural de navegar el mapa: pide las salidas, elige la que sirva, y toma esa. Si el nombre coincide con varias, las devuelve para que elijas en vez de adivinar. Verifica la llegada.',
+    params: [{ name: 'exit', description: 'Nombre de la salida, como aparece en map_routes_from' }]
+  },
+  {
     name: 'map_go_to', via: MAP_VIA,
     description: 'Navega hasta una pantalla conocida recorriendo la ruta aprendida, verificando la llegada en cada paso. Solo usa rutas COMPLETAS: si falta saber cómo se recorre algún tramo, no se mueve y lo dice. Si un paso no llega a donde debía, se detiene e informa dónde quedó.',
     params: [{ name: 'surface', description: 'Id de superficie destino, tal como aparece en map_places' }]
