@@ -63,6 +63,7 @@ const registerMaintenanceRoutes = require('./api/registerMaintenanceRoutes');
 const SystemHealthAlertService = require('../src/application/use-cases/SystemHealthAlertService');
 const ConsultationMirrorService = require('../src/application/use-cases/ConsultationMirrorService');
 const NoteGenerationRescueService = require('../src/application/use-cases/NoteGenerationRescueService');
+const createOpportunisticRescue = require('./api/opportunisticRescue');
 const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
 const registerAndroidPanelRoutes = require('./api/registerAndroidPanelRoutes');
 // Windows Live: core de telemetría/visualización por usuario del cliente Windows.
@@ -1042,6 +1043,12 @@ registerContextRoutes(app, {
   surfaceProfileService
 });
 registerExecutionIntelligenceRoutes(app, { catalogService, executionIntelligenceService });
+// La cuenta de Vercel es Hobby y ahí los crons solo corren una vez al día: un
+// rescate diario dejaría una consulta rota esperando hasta 24 horas. Con esto,
+// el propio tráfico de los médicos va recuperando lo pendiente en minutos.
+app.use('/api/clinical', createOpportunisticRescue({
+  noteRescueService: noteGenerationRescueService
+}));
 registerClinicalRoutes(app, {
   diagnosisSuggestionService,
   templateService: clinicalTemplateService,

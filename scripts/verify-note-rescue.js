@@ -175,6 +175,56 @@ async function main() {
     assert.strictEqual(claim.args.p_max_attempts, 2);
   });
 
+  // --- Rescate oportunista ---------------------------------------------------
+  // La cuenta de Vercel es Hobby: los crons solo corren una vez al día. Estas
+  // comprobaciones protegen la pieza que hace que eso no importe.
+
+  const createOpportunisticRescue = require('../web/api/opportunisticRescue');
+  const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  await check('nunca retrasa la petición del médico', async () => {
+    let siguiente = false;
+    const mw = createOpportunisticRescue({
+      noteRescueService: { async run() { await esperar(50); return { rescued: 0 }; } },
+    });
+    mw({}, {}, () => { siguiente = true; });
+    assert.strictEqual(siguiente, true, 'next() debe llamarse de inmediato, sin esperar al rescate');
+  });
+
+  await check('el throttle evita un ciclo por cada petición', async () => {
+    let ciclos = 0;
+    const mw = createOpportunisticRescue({
+      noteRescueService: { async run() { ciclos += 1; return { rescued: 0 }; } },
+      intervalMs: 60000,
+    });
+    for (let i = 0; i < 5; i += 1) mw({}, {}, () => {});
+    await esperar(20);
+    assert.strictEqual(ciclos, 1, 'cinco peticiones seguidas, un solo ciclo');
+  });
+
+  await check('pasado el intervalo vuelve a intentarlo', async () => {
+    let ciclos = 0;
+    const mw = createOpportunisticRescue({
+      noteRescueService: { async run() { ciclos += 1; return { rescued: 0 }; } },
+      intervalMs: 10,
+    });
+    mw({}, {}, () => {});
+    await esperar(30);
+    mw({}, {}, () => {});
+    await esperar(20);
+    assert.strictEqual(ciclos, 2);
+  });
+
+  await check('un fallo del rescate no afecta a la petición en curso', async () => {
+    let siguiente = false;
+    const mw = createOpportunisticRescue({
+      noteRescueService: { async run() { throw new Error('base caída'); } },
+    });
+    mw({}, {}, () => { siguiente = true; });
+    await esperar(20);
+    assert.strictEqual(siguiente, true, 'la consulta del médico sigue su curso pase lo que pase');
+  });
+
   console.log(`\nverify-note-rescue: ${checks} verificaciones OK`);
 }
 

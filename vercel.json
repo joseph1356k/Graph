@@ -16,7 +16,7 @@
   "crons": [
     {
       "path": "/api/internal/maintenance/daily",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 12 * * *"
     }
   ],
   "rewrites": [
