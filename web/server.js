@@ -62,6 +62,7 @@ const registerUsageRoutes = require('./api/registerUsageRoutes');
 const registerMaintenanceRoutes = require('./api/registerMaintenanceRoutes');
 const SystemHealthAlertService = require('../src/application/use-cases/SystemHealthAlertService');
 const ConsultationMirrorService = require('../src/application/use-cases/ConsultationMirrorService');
+const NoteGenerationRescueService = require('../src/application/use-cases/NoteGenerationRescueService');
 const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
 const registerAndroidPanelRoutes = require('./api/registerAndroidPanelRoutes');
 // Windows Live: core de telemetría/visualización por usuario del cliente Windows.
@@ -173,7 +174,17 @@ const clinicalNoteGeneratorService = new ClinicalNoteGeneratorService({
   validationService: clinicalNoteValidationService,
   // El servidor publica la consulta en el historial: ya no depende de que el
   // navegador del médico complete la copia.
-  consultationMirrorService: new ConsultationMirrorService(supabaseRestClient)
+  consultationMirrorService: new ConsultationMirrorService(supabaseRestClient),
+  // Avisa en el momento si una nota no llega al historial, en vez de esperar
+  // al resumen diario.
+  healthAlertService: systemHealthAlertService
+});
+// Rescata las consultas que se quedaron con transcripción y sin nota porque la
+// cadena se rompió a mitad de camino. Lo dispara el cron de mantenimiento.
+const noteGenerationRescueService = new NoteGenerationRescueService({
+  restClient: supabaseRestClient,
+  noteGeneratorService: clinicalNoteGeneratorService,
+  healthAlertService: systemHealthAlertService
 });
 const clinicalAssistantService = new ClinicalAssistantService({
   encounterService: clinicalEncounterService,
@@ -1052,7 +1063,8 @@ registerUsageRoutes(app, { usageDashboardService });
 // Mantenimiento diario (cron de Vercel): limpieza + alerta de salud por correo.
 registerMaintenanceRoutes(app, {
   healthAlertService: systemHealthAlertService,
-  restClient: supabaseRestClient
+  restClient: supabaseRestClient,
+  noteRescueService: noteGenerationRescueService
 });
 registerAndroidPanelRoutes(app, { androidPanelService });
 // Windows Live: ingesta bajo /api/v1 (X-API-Key) + lectura admin /api/windows/*.

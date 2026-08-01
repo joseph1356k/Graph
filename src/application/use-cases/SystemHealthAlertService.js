@@ -186,6 +186,81 @@ class SystemHealthAlertService {
     return { subject, html };
   }
 
+  // --- Aviso inmediato -------------------------------------------------------
+  // El cron diario sirve para lo que solo se ve por acumulación (consultas que
+  // llevan días sin terminar). Pero un fallo de generación o una nota que no
+  // llega al historial son eventos con un instante exacto: esperar horas para
+  // contarlo es esperar de más. Estos avisan en el momento.
+
+  async lastSentAt(alertKey) {
+    const rows = await this.restClient.select(
+      'graph_alert_log',
+      `alert_key=eq.${encodeURIComponent(alertKey)}&select=last_sent_at&limit=1`,
+    );
+    const row = Array.isArray(rows) ? rows[0] : null;
+    return row?.last_sent_at ? new Date(row.last_sent_at) : null;
+  }
+
+  async recordSent(alertKey, detail = '') {
+    // upsert: la clave es única, así que repetir la alerta actualiza la fila.
+    await this.restClient.insert(
+      'graph_alert_log',
+      {
+        alert_key: alertKey,
+        last_sent_at: this.now().toISOString(),
+        last_detail: `${detail || ''}`.slice(0, 500),
+      },
+      'on_conflict=alert_key',
+    );
+  }
+
+  /**
+   * Avisa AHORA de un fallo puntual, salvo que ya se haya avisado de lo mismo
+   * dentro de la ventana de silencio (por defecto 30 minutos).
+   *
+   * Nunca lanza: se llama desde caminos donde el trabajo del médico ya está
+   * hecho, y un fallo del correo no puede tumbar una consulta.
+   */
+  async notifyNow(alertKey, finding, { cooldownMinutes = 30 } = {}) {
+    try {
+      if (!this.isConfigured()) {
+        return { sent: false, reason: 'alertas_no_configuradas' };
+      }
+
+      const ultimo = await this.lastSentAt(alertKey);
+      if (ultimo) {
+        const minutos = (this.now().getTime() - ultimo.getTime()) / 60000;
+        if (minutos < cooldownMinutes) {
+          return { sent: false, reason: 'en_ventana_de_silencio', minutos: Math.round(minutos) };
+        }
+      }
+
+      const { subject, html } = this.buildEmail([finding]);
+      const from = `${process.env.ALERT_EMAIL_FROM || 'Miracle <onboarding@resend.dev>'}`.trim();
+
+      const response = await this.fetchImpl('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${`${process.env.RESEND_API_KEY || ''}`.trim()}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ from, to: this.recipients(), subject, html }),
+      });
+
+      if (!response.ok) {
+        const body = await response.text().catch(() => '');
+        console.error(`[Alerta] Resend ${response.status} para ${alertKey}: ${body.slice(0, 200)}`);
+        return { sent: false, reason: 'resend_error' };
+      }
+
+      await this.recordSent(alertKey, finding?.title || '');
+      return { sent: true };
+    } catch (error) {
+      console.error(`[Alerta] No se pudo avisar de ${alertKey}: ${error.message}`);
+      return { sent: false, reason: 'error' };
+    }
+  }
+
   async send({ force = false } = {}) {
     const findings = await this.collectFindings();
 

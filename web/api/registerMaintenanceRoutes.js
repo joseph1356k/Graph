@@ -18,7 +18,7 @@ function isAuthorized(req) {
 }
 
 function registerMaintenanceRoutes(app, deps = {}) {
-  const { healthAlertService, restClient } = deps;
+  const { healthAlertService, restClient, noteRescueService } = deps;
 
   if (!app || !healthAlertService) {
     throw new Error('registerMaintenanceRoutes requires app and healthAlertService');
@@ -34,7 +34,19 @@ function registerMaintenanceRoutes(app, deps = {}) {
       return res.status(401).json({ error: 'No autorizado.' });
     }
 
-    const result = { purged: null, alert: null, errors: [] };
+    const result = { rescued: null, purged: null, alert: null, errors: [] };
+
+    // El rescate va PRIMERO: convierte en notas las consultas que quedaron a
+    // medias, para que el correo no reporte como problema algo que se acaba de
+    // arreglar en esta misma ejecución.
+    if (noteRescueService) {
+      try {
+        result.rescued = await noteRescueService.run();
+      } catch (error) {
+        result.errors.push(`rescate: ${error.message}`);
+        console.error(`[Mantenimiento] Rescate falló: ${error.message}`);
+      }
+    }
 
     // La limpieza va primero para que el correo refleje el estado ya depurado.
     if (restClient) {
@@ -60,7 +72,7 @@ function registerMaintenanceRoutes(app, deps = {}) {
 
     const hallazgos = result.alert?.findings?.length ?? 0;
     console.log(
-      `[Mantenimiento] Limpiadas ${result.purged ?? 0} · ${hallazgos} hallazgo(s) · correo ${result.alert?.sent ? 'enviado' : `no enviado (${result.alert?.reason || 'error'})`}`,
+      `[Mantenimiento] Rescatadas ${result.rescued?.rescued ?? 0} · limpiadas ${result.purged ?? 0} · ${hallazgos} hallazgo(s) · correo ${result.alert?.sent ? 'enviado' : `no enviado (${result.alert?.reason || 'error'})`}`,
     );
 
     // 207 cuando algo falló pero el resto siguió: el cron no debe reintentar en
