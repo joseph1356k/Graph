@@ -62,6 +62,8 @@ const registerUsageRoutes = require('./api/registerUsageRoutes');
 const registerMaintenanceRoutes = require('./api/registerMaintenanceRoutes');
 const SystemHealthAlertService = require('../src/application/use-cases/SystemHealthAlertService');
 const ConsultationMirrorService = require('../src/application/use-cases/ConsultationMirrorService');
+const NoteGenerationRescueService = require('../src/application/use-cases/NoteGenerationRescueService');
+const createOpportunisticRescue = require('./api/opportunisticRescue');
 const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
 const registerAndroidPanelRoutes = require('./api/registerAndroidPanelRoutes');
 // Windows Live: core de telemetría/visualización por usuario del cliente Windows.
@@ -173,7 +175,17 @@ const clinicalNoteGeneratorService = new ClinicalNoteGeneratorService({
   validationService: clinicalNoteValidationService,
   // El servidor publica la consulta en el historial: ya no depende de que el
   // navegador del médico complete la copia.
-  consultationMirrorService: new ConsultationMirrorService(supabaseRestClient)
+  consultationMirrorService: new ConsultationMirrorService(supabaseRestClient),
+  // Avisa en el momento si una nota no llega al historial, en vez de esperar
+  // al resumen diario.
+  healthAlertService: systemHealthAlertService
+});
+// Rescata las consultas que se quedaron con transcripción y sin nota porque la
+// cadena se rompió a mitad de camino. Lo dispara el cron de mantenimiento.
+const noteGenerationRescueService = new NoteGenerationRescueService({
+  restClient: supabaseRestClient,
+  noteGeneratorService: clinicalNoteGeneratorService,
+  healthAlertService: systemHealthAlertService
 });
 const clinicalAssistantService = new ClinicalAssistantService({
   encounterService: clinicalEncounterService,
@@ -1031,6 +1043,12 @@ registerContextRoutes(app, {
   surfaceProfileService
 });
 registerExecutionIntelligenceRoutes(app, { catalogService, executionIntelligenceService });
+// La cuenta de Vercel es Hobby y ahí los crons solo corren una vez al día: un
+// rescate diario dejaría una consulta rota esperando hasta 24 horas. Con esto,
+// el propio tráfico de los médicos va recuperando lo pendiente en minutos.
+app.use('/api/clinical', createOpportunisticRescue({
+  noteRescueService: noteGenerationRescueService
+}));
 registerClinicalRoutes(app, {
   diagnosisSuggestionService,
   templateService: clinicalTemplateService,
@@ -1052,7 +1070,8 @@ registerUsageRoutes(app, { usageDashboardService });
 // Mantenimiento diario (cron de Vercel): limpieza + alerta de salud por correo.
 registerMaintenanceRoutes(app, {
   healthAlertService: systemHealthAlertService,
-  restClient: supabaseRestClient
+  restClient: supabaseRestClient,
+  noteRescueService: noteGenerationRescueService
 });
 registerAndroidPanelRoutes(app, { androidPanelService });
 // Windows Live: ingesta bajo /api/v1 (X-API-Key) + lectura admin /api/windows/*.

@@ -219,6 +219,95 @@ async function main() {
     });
   });
 
+  // --- Aviso inmediato -------------------------------------------------------
+
+  const HALLAZGO = { severity: 'critico', title: 'Algo se rompió', detail: 'detalle' };
+
+  function restConAlertLog({ lastSentAt = null } = {}) {
+    const escrituras = [];
+    return {
+      escrituras,
+      async select(table, query) {
+        if (table === 'graph_alert_log' && query.includes('alert_key=eq.')) {
+          return lastSentAt ? [{ last_sent_at: lastSentAt }] : [];
+        }
+        return [];
+      },
+      async insert(table, row) {
+        escrituras.push({ table, row });
+        return row;
+      },
+    };
+  }
+
+  await check('avisa en el momento cuando algo se rompe', async () => {
+    await withEnv(ENV_LIMPIO, async () => {
+      const rest = restConAlertLog();
+      let enviado = null;
+      const svc = new SystemHealthAlertService({
+        restClient: rest,
+        fetchImpl: async (_url, init) => { enviado = JSON.parse(init.body); return { ok: true }; },
+      });
+      const r = await svc.notifyNow('prueba', HALLAZGO);
+      assert.strictEqual(r.sent, true);
+      assert.match(enviado.subject, /atención/i);
+      assert.ok(rest.escrituras.some((e) => e.table === 'graph_alert_log'), 'debe registrar el envío');
+    });
+  });
+
+  await check('no repite la misma alerta dentro de la ventana de silencio', async () => {
+    await withEnv(ENV_LIMPIO, async () => {
+      const haceCincoMinutos = new Date(Date.now() - 5 * 60000).toISOString();
+      let llamadas = 0;
+      const svc = new SystemHealthAlertService({
+        restClient: restConAlertLog({ lastSentAt: haceCincoMinutos }),
+        fetchImpl: async () => { llamadas += 1; return { ok: true }; },
+      });
+      const r = await svc.notifyNow('prueba', HALLAZGO, { cooldownMinutes: 30 });
+      assert.strictEqual(r.sent, false);
+      assert.strictEqual(r.reason, 'en_ventana_de_silencio');
+      assert.strictEqual(llamadas, 0, 'si el proveedor se cae, decenas de correos iguales serían ruido');
+    });
+  });
+
+  await check('pasada la ventana, vuelve a avisar', async () => {
+    await withEnv(ENV_LIMPIO, async () => {
+      const haceUnaHora = new Date(Date.now() - 60 * 60000).toISOString();
+      const svc = new SystemHealthAlertService({
+        restClient: restConAlertLog({ lastSentAt: haceUnaHora }),
+        fetchImpl: async () => ({ ok: true }),
+      });
+      const r = await svc.notifyNow('prueba', HALLAZGO, { cooldownMinutes: 30 });
+      assert.strictEqual(r.sent, true);
+    });
+  });
+
+  await check('el aviso inmediato NUNCA lanza hacia el flujo clínico', async () => {
+    await withEnv(ENV_LIMPIO, async () => {
+      const svc = new SystemHealthAlertService({
+        restClient: { async select() { throw new Error('base caída'); }, async insert() {} },
+        fetchImpl: async () => ({ ok: true }),
+      });
+      const r = await svc.notifyNow('prueba', HALLAZGO);
+      assert.strictEqual(r.sent, false);
+      assert.strictEqual(r.reason, 'error', 'devuelve el motivo en vez de romper la consulta del médico');
+    });
+  });
+
+  await check('sin configurar, el aviso inmediato no intenta enviar', async () => {
+    await withEnv({ ...ENV_LIMPIO, RESEND_API_KEY: null }, async () => {
+      let llamadas = 0;
+      const svc = new SystemHealthAlertService({
+        restClient: restConAlertLog(),
+        fetchImpl: async () => { llamadas += 1; return { ok: true }; },
+      });
+      const r = await svc.notifyNow('prueba', HALLAZGO);
+      assert.strictEqual(r.sent, false);
+      assert.strictEqual(r.reason, 'alertas_no_configuradas');
+      assert.strictEqual(llamadas, 0);
+    });
+  });
+
   console.log(`\nverify-health-alerts: ${checks} verificaciones OK`);
 }
 

@@ -10,7 +10,8 @@ class ClinicalNoteGeneratorService {
     llmProvider,
     promptBuilder,
     validationService,
-    consultationMirrorService = null
+    consultationMirrorService = null,
+    healthAlertService = null
   }) {
     if (!encounterService || !encounterRepository || !promptBuilder || !validationService) {
       throw new Error('ClinicalNoteGeneratorService requires encounterService, encounterRepository, promptBuilder and validationService');
@@ -23,6 +24,18 @@ class ClinicalNoteGeneratorService {
     // Opcional a propósito: los arneses de prueba generan notas sin base de
     // datos detrás, y el espejo no debe ser un requisito para generar.
     this.consultationMirrorService = consultationMirrorService;
+    // También opcional: avisar de un fallo no puede ser requisito para generar.
+    this.healthAlertService = healthAlertService;
+  }
+
+  // Avisar nunca puede tumbar la generación ni retrasar la respuesta al médico.
+  notifyInBackground(alertKey, finding, options = {}) {
+    if (!this.healthAlertService) {
+      return;
+    }
+    Promise.resolve()
+      .then(() => this.healthAlertService.notifyNow(alertKey, finding, options))
+      .catch((error) => console.error(`[Clinical Note] Aviso ${alertKey} falló: ${error.message}`));
   }
 
   hasLlm() {
@@ -83,9 +96,19 @@ class ClinicalNoteGeneratorService {
           );
           if (!mirror.published && mirror.reason !== 'ya_existe') {
             console.warn(`[Clinical Note] Encounter ${encounter.id}: no se publicó en el historial (${mirror.reason}).`);
+            this.notifyInBackground('orphan_note', {
+              severity: 'critico',
+              title: 'Una nota generada no llegó al historial del médico',
+              detail: `La consulta tiene su nota pero no aparece en el historial (motivo: ${mirror.reason}). El médico no la encuentra.`
+            });
           }
         } catch (mirrorError) {
           console.error(`[Clinical Note] Encounter ${encounter.id}: espejo falló: ${mirrorError.message}`);
+          this.notifyInBackground('orphan_note', {
+            severity: 'critico',
+            title: 'Una nota generada no llegó al historial del médico',
+            detail: 'Falló la publicación en el historial. El médico dictó su consulta y no la encuentra en su lista.'
+          });
         }
       }
 
