@@ -61,6 +61,7 @@ const registerMedicalRoutes = require('./api/registerMedicalRoutes');
 const registerUsageRoutes = require('./api/registerUsageRoutes');
 const registerMaintenanceRoutes = require('./api/registerMaintenanceRoutes');
 const SystemHealthAlertService = require('../src/application/use-cases/SystemHealthAlertService');
+const ConsultationMirrorService = require('../src/application/use-cases/ConsultationMirrorService');
 const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
 const registerAndroidPanelRoutes = require('./api/registerAndroidPanelRoutes');
 // Windows Live: core de telemetría/visualización por usuario del cliente Windows.
@@ -169,7 +170,10 @@ const clinicalNoteGeneratorService = new ClinicalNoteGeneratorService({
   encounterRepository: clinicalEncounterRepository,
   llmProvider,
   promptBuilder: new ClinicalNotePromptBuilder(),
-  validationService: clinicalNoteValidationService
+  validationService: clinicalNoteValidationService,
+  // El servidor publica la consulta en el historial: ya no depende de que el
+  // navegador del médico complete la copia.
+  consultationMirrorService: new ConsultationMirrorService(supabaseRestClient)
 });
 const clinicalAssistantService = new ClinicalAssistantService({
   encounterService: clinicalEncounterService,

@@ -54,6 +54,28 @@ class SystemHealthAlertService {
     return Array.isArray(rows) ? rows.length : 0;
   }
 
+  // Cuenta notas generadas que no tienen fila en el historial. PostgREST no hace
+  // anti-joins, así que se comparan los ids de las notas recientes contra los
+  // que sí existen en consultations: dos lecturas de ids, sin contenido clínico.
+  async countOrphanNotes() {
+    const desde = this.sinceIso(30);
+    const conNota = await this.restClient.select(
+      'clinical_encounters',
+      `status=eq.note_generated&created_at=gte.${desde}&select=id&limit=1000`,
+    );
+    const ids = (Array.isArray(conNota) ? conNota : []).map((row) => row.id).filter(Boolean);
+    if (ids.length === 0) {
+      return 0;
+    }
+
+    const enHistorial = await this.restClient.select(
+      'consultations',
+      `id=in.(${ids.join(',')})&select=id&limit=1000`,
+    );
+    const publicadas = new Set((Array.isArray(enHistorial) ? enHistorial : []).map((row) => row.id));
+    return ids.filter((id) => !publicadas.has(id)).length;
+  }
+
   async collectFindings() {
     const findings = [];
 
@@ -98,6 +120,20 @@ class SystemHealthAlertService {
         severity: 'atencion',
         title: `${exportacionesEnCola} exportación(es) llevan más de un día en cola`,
         detail: 'El ejecutor de Operations no las está tomando. Revisa que esté corriendo.',
+      });
+    }
+
+    // Huérfanas: nota generada que no llegó al historial del médico. Antes esto
+    // pasaba en silencio (24 acumuladas hasta el 2026-08-01) porque el puente
+    // vivía en el navegador. Ahora lo publica el servidor, y si aun así falla
+    // esta alerta lo dice el mismo día en vez de nunca.
+    const huerfanas = await this.countOrphanNotes();
+    if (huerfanas > 0) {
+      findings.push({
+        severity: 'critico',
+        title: `${huerfanas} nota(s) generadas que el médico no ve en su historial`,
+        detail:
+          'La consulta existe con su nota pero no llegó a la tabla de historial. El médico no la encuentra. Revisa el espejo del servidor.',
       });
     }
 
