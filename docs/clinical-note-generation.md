@@ -91,6 +91,23 @@ Límites defensivos: summary ≤ 2000 chars, content ≤ 8000, evidence ≤ 500.
 - Los mensajes de error al frontend no incluyen contenido clínico ni stack traces.
 - Datos clínicos viven solo en Supabase (`clinical_encounters`), con RLS por médico y acceso del backend vía service role (server-only).
 
+## Medir si la IA acierta
+
+`generate-note` guarda la nota **dos veces**: en `note_json` (la nota viva, que el médico edita) y en `note_json_ai` (congelada, más `note_generated_at`). El repositorio solo acepta escribir `note_json_ai` desde la generación: `PUT /note` nunca la manda, así que la versión original no se puede pisar.
+
+Con eso, la vista `public.clinical_note_edit_stats` responde la única pregunta que dice si un prompt sirve: **cuánto tiene que corregirle el médico a la IA, por especialidad**. Devuelve conteo de notas, cuántas se editaron y el cambio medio en porcentaje — solo longitudes y conteos, nunca contenido clínico.
+
+Ojo: los datos empiezan a acumularse **desde el despliegue**; no hay nada retroactivo, porque antes la versión de la IA simplemente se perdía.
+
+## Mantenimiento automático
+
+El cron diario (`/api/internal/maintenance/daily`, 07:00 Bogotá) hace dos cosas:
+
+1. **Limpia consultas abandonadas** con `purge_abandoned_encounters(dias)`: borra las que se crearon y nunca se usaron (sin transcripción, sin nota, sin versión IA). Una consulta con cualquier contenido del médico **nunca** se borra sola.
+2. **Avisa por correo** ([SystemHealthAlertService](../src/application/use-cases/SystemHealthAlertService.js)) si hay notas fallidas, consultas atascadas, exportaciones trabadas o el proveedor de IA sin configurar. Solo escribe cuando hay algo que contar: un correo diario que siempre dice "todo bien" se deja de leer.
+
+La ruta exige `CRON_SECRET`; sin él responde 503 en vez de quedar abierta. Cobertura: [scripts/verify-health-alerts.js](../scripts/verify-health-alerts.js) (`npm run test:health-alerts`).
+
 ## Nota editada por el médico (sin LLM)
 
 `PUT /api/clinical/encounters/:id/note` usa `validateEditedNote`, que es **estricta** (no repara): exige exactamente las keys del snapshot (faltante, extra o duplicada → `NOTE_JSON_INVALID`), `content` string por sección y `summary` string. `label`/orden se restauran del snapshot, `confidence` ausente se asume 1. Deja el encounter `completed`.
@@ -103,6 +120,6 @@ Transcripción de referencia (cefalea de 3 días) en [scripts/verify-clinical-wo
 
 - La generación es sincrónica (una llamada LLM por request); transcripciones muy largas dependen del límite de contexto del modelo configurado.
 - No hay verificación automática de que `evidence` sea cita literal de la transcripción (el prompt lo exige; el médico revisa).
-- No hay versionado histórico de notas (cada guardado sobreescribe `note_json`; el estado anterior no se archiva).
+- No hay versionado histórico completo: cada guardado sobreescribe `note_json`. Sí se conserva **la versión de la IA** (`note_json_ai`, congelada en la generación), así que se puede medir cuánto corrige el médico — pero no las ediciones intermedias.
 - No hay integración con HIS/EMR/GIS externos (fuera de alcance en esta fase, por diseño).
 - `confidence` es autoreportada por el modelo (clampeada); no es una probabilidad calibrada.

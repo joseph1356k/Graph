@@ -13,6 +13,12 @@
       "includeFiles": "bounded/miracle-ai/**"
     }
   },
+  "crons": [
+    {
+      "path": "/api/internal/maintenance/daily",
+      "schedule": "0 12 * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/miracle-runtime/:path*",

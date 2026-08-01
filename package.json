@@ -12,6 +12,7 @@
     "test:chrome-extension": "node scripts/verify-chrome-extension-auth.js",
     "test:clinical-workflow": "node scripts/verify-clinical-workflow.js",
     "test:note-fidelity": "node scripts/verify-note-fidelity.js",
+    "test:health-alerts": "node scripts/verify-health-alerts.js",
     "test:templates-catalog": "node scripts/verify-institutional-catalog.js",
     "test:clinical-assistant-api": "node scripts/verify-clinical-assistant.js",
     "test:clinical": "node scripts/verify-institutional-catalog.js && node scripts/verify-clinical-workflow.js && node scripts/verify-note-fidelity.js && node scripts/verify-clinical-assistant.js",
@@ -24,7 +25,7 @@
     "test:note-export-real": "node scripts/verify-note-export-real-postgres.js",
     "demo:note-export": "node scripts/demo-note-export-e2e.js",
     "simulate:operations": "node scripts/simulate-operations-executor.js",
-    "test": "node scripts/verify-tree-node-steps.js && node scripts/verify-dynamic-values.js && node scripts/verify-explicit-modes.js && node scripts/verify-institutional-catalog.js && node scripts/verify-clinical-workflow.js && node scripts/verify-note-fidelity.js && node scripts/verify-clinical-assistant.js && node scripts/verify-note-signature-hash.js && node scripts/verify-note-export-flow.js && node scripts/verify-note-exports-db.js"
+    "test": "node scripts/verify-tree-node-steps.js && node scripts/verify-dynamic-values.js && node scripts/verify-explicit-modes.js && node scripts/verify-institutional-catalog.js && node scripts/verify-clinical-workflow.js && node scripts/verify-note-fidelity.js && node scripts/verify-health-alerts.js && node scripts/verify-clinical-assistant.js && node scripts/verify-note-signature-hash.js && node scripts/verify-note-export-flow.js && node scripts/verify-note-exports-db.js"
   },
   "keywords": [],
   "author": "",

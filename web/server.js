@@ -59,6 +59,8 @@ const registerClinicalRoutes = require('./api/registerClinicalRoutes');
 const registerNoteExportRoutes = require('./api/registerNoteExportRoutes');
 const registerMedicalRoutes = require('./api/registerMedicalRoutes');
 const registerUsageRoutes = require('./api/registerUsageRoutes');
+const registerMaintenanceRoutes = require('./api/registerMaintenanceRoutes');
+const SystemHealthAlertService = require('../src/application/use-cases/SystemHealthAlertService');
 const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
 const registerAndroidPanelRoutes = require('./api/registerAndroidPanelRoutes');
 // Windows Live: core de telemetría/visualización por usuario del cliente Windows.
@@ -140,6 +142,8 @@ const rawTranscriptionService = new ClinicalRawTranscriptionService();
 // (assistantLlmProvider, above). Persistence is isolated in the Supabase REST
 // client + repos.
 const supabaseRestClient = new SupabaseRestClient();
+// Vigilancia del sistema: la usa el cron diario de mantenimiento.
+const systemHealthAlertService = new SystemHealthAlertService({ restClient: supabaseRestClient });
 const clinicalTemplateRepository = new SupabaseClinicalTemplateRepository(supabaseRestClient);
 const clinicalEncounterRepository = new SupabaseClinicalEncounterRepository(supabaseRestClient);
 const clinicalTemplateService = new ClinicalTemplateService(clinicalTemplateRepository);
@@ -1041,6 +1045,11 @@ registerMedicalRoutes(app, {
   usageDashboardService
 });
 registerUsageRoutes(app, { usageDashboardService });
+// Mantenimiento diario (cron de Vercel): limpieza + alerta de salud por correo.
+registerMaintenanceRoutes(app, {
+  healthAlertService: systemHealthAlertService,
+  restClient: supabaseRestClient
+});
 registerAndroidPanelRoutes(app, { androidPanelService });
 // Windows Live: ingesta bajo /api/v1 (X-API-Key) + lectura admin /api/windows/*.
 registerWindowsTelemetryRoutes(app, { windowsTelemetryService });

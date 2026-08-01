@@ -47,8 +47,14 @@ class ClinicalNoteGeneratorService {
       const parsed = this.llmProvider.parseJsonObject(content || '{}');
       const noteJson = this.validationService.validateAndRepair(parsed, encounter.template_snapshot);
 
+      // note_json_ai congela lo que produjo la IA. note_json es la nota viva: el
+      // médico la edita con PUT /note y ahí sí se sobrescribe. Guardar las dos es
+      // lo único que permite medir después cuánto hubo que corregirle a la IA
+      // (y por especialidad, que es donde se ve si un prompt sirve o estorba).
       const updated = await this.encounterRepository.update(encounter.id, {
         note_json: noteJson,
+        note_json_ai: noteJson,
+        note_generated_at: new Date().toISOString(),
         status: 'note_generated'
       });
       console.log(`[Clinical Note] Encounter ${encounter.id}: nota generada (${noteJson.sections.length} secciones, ${noteJson.warnings.length} warnings).`);
