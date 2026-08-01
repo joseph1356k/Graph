@@ -4,7 +4,14 @@ const { clinicalError, isClinicalError } = require('./ClinicalErrors');
 // from the template_snapshot, calls the configured LLM, validates/repairs the
 // JSON and persists the result. Never logs transcript or note contents (PHI).
 class ClinicalNoteGeneratorService {
-  constructor({ encounterService, encounterRepository, llmProvider, promptBuilder, validationService }) {
+  constructor({
+    encounterService,
+    encounterRepository,
+    llmProvider,
+    promptBuilder,
+    validationService,
+    consultationMirrorService = null
+  }) {
     if (!encounterService || !encounterRepository || !promptBuilder || !validationService) {
       throw new Error('ClinicalNoteGeneratorService requires encounterService, encounterRepository, promptBuilder and validationService');
     }
@@ -13,6 +20,9 @@ class ClinicalNoteGeneratorService {
     this.llmProvider = llmProvider || null;
     this.promptBuilder = promptBuilder;
     this.validationService = validationService;
+    // Opcional a propósito: los arneses de prueba generan notas sin base de
+    // datos detrás, y el espejo no debe ser un requisito para generar.
+    this.consultationMirrorService = consultationMirrorService;
   }
 
   hasLlm() {
@@ -58,6 +68,27 @@ class ClinicalNoteGeneratorService {
         status: 'note_generated'
       });
       console.log(`[Clinical Note] Encounter ${encounter.id}: nota generada (${noteJson.sections.length} secciones, ${noteJson.warnings.length} warnings).`);
+
+      // Publicar en el historial es responsabilidad del servidor, no del
+      // navegador: si esto dependiera del cliente, cerrar la pestaña dejaría la
+      // nota huérfana (así se perdieron 24 consultas hasta el 2026-08-01).
+      // Best-effort a propósito: la nota YA está guardada y devolverle un error
+      // al médico por un fallo del espejo sería mentirle sobre su trabajo. Si
+      // falla, queda en el log y la alerta diaria de huérfanas lo delata.
+      if (this.consultationMirrorService) {
+        try {
+          const mirror = await this.consultationMirrorService.publish(
+            { ...encounter, transcript },
+            noteJson
+          );
+          if (!mirror.published && mirror.reason !== 'ya_existe') {
+            console.warn(`[Clinical Note] Encounter ${encounter.id}: no se publicó en el historial (${mirror.reason}).`);
+          }
+        } catch (mirrorError) {
+          console.error(`[Clinical Note] Encounter ${encounter.id}: espejo falló: ${mirrorError.message}`);
+        }
+      }
+
       return updated;
     } catch (error) {
       try {

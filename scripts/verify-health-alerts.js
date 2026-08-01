@@ -122,6 +122,37 @@ async function main() {
     });
   });
 
+  await check('detecta notas huérfanas: generadas pero fuera del historial del médico', async () => {
+    await withEnv(ENV_LIMPIO, async () => {
+      const svc = new SystemHealthAlertService({
+        restClient: {
+          async select(table, query) {
+            if (table === 'clinical_encounters' && query.includes('status=eq.note_generated')) {
+              return [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+            }
+            // Solo una de las tres llegó al historial: quedan 2 huérfanas.
+            if (table === 'consultations' && query.includes('id=in.')) {
+              return [{ id: 'b' }];
+            }
+            return [];
+          },
+        },
+      });
+      const findings = await svc.collectFindings();
+      const f = findings.find((x) => /historial/i.test(x.title));
+      assert.ok(f, 'no detectó las huérfanas');
+      assert.strictEqual(f.severity, 'critico');
+      assert.match(f.title, /2 nota/);
+    });
+  });
+
+  await check('sin notas generadas no inventa huérfanas', async () => {
+    await withEnv(ENV_LIMPIO, async () => {
+      const svc = new SystemHealthAlertService({ restClient: fakeRestClient({}) });
+      assert.strictEqual(await svc.countOrphanNotes(), 0);
+    });
+  });
+
   await check('los críticos van primero en el correo', async () => {
     await withEnv(ENV_LIMPIO, async () => {
       const svc = new SystemHealthAlertService({
