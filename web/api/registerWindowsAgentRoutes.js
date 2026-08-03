@@ -22,7 +22,10 @@ function registerWindowsAgentRoutes(app, deps = {}) {
   // Devuelve { session, ...BrainTurn }. El cliente nunca ve prompt, catálogo
   // MCP, memoria ni la key del modelo.
   app.post('/api/v1/agent/turn', async (req, res) => {
-    const result = await agentTurnService.handleTurn(req.body || {});
+    // La identidad del aparato (requireApiKey: token per-install → vínculo →
+    // médico) decide qué catálogo ve el modelo — p.ej. las herramientas de
+    // Miracle Notes solo existen para equipos con vínculo clínico activo.
+    const result = await agentTurnService.handleTurn(req.body || {}, { apiClient: req.apiClient || null });
     return res.status(result.status).json(result.json);
   });
 

@@ -82,6 +82,11 @@ function registerClinicalRoutes(app, deps = {}) {
   const encounterService = deps.encounterService;
   const noteGeneratorService = deps.noteGeneratorService;
   const noteValidationService = deps.noteValidationService;
+  // Carril de aparatos (Operations): listado magro del historial y refresh del
+  // espejo tras ediciones del taller. Opcionales: sin ellos, las rutas clínicas
+  // funcionan igual que siempre.
+  const consultationQueryService = deps.consultationQueryService;
+  const consultationMirrorService = deps.consultationMirrorService;
 
   if (!app || !diagnosisSuggestionService) {
     throw new Error('registerClinicalRoutes requires app and diagnosisSuggestionService');
@@ -100,7 +105,9 @@ function registerClinicalRoutes(app, deps = {}) {
       templateService,
       encounterService,
       noteGeneratorService,
-      noteValidationService
+      noteValidationService,
+      consultationQueryService,
+      consultationMirrorService
     });
   }
 
@@ -139,7 +146,14 @@ function registerClinicalRoutes(app, deps = {}) {
 }
 
 function registerClinicalEngineRoutes(app, deps) {
-  const { templateService, encounterService, noteGeneratorService, noteValidationService } = deps;
+  const {
+    templateService,
+    encounterService,
+    noteGeneratorService,
+    noteValidationService,
+    consultationQueryService,
+    consultationMirrorService
+  } = deps;
 
   // ---- Plantillas clínicas ----
 
@@ -263,19 +277,67 @@ function registerClinicalEngineRoutes(app, deps) {
 
   app.put('/api/clinical/encounters/:encounterId/note', async (req, res) => {
     try {
+      const doctorId = resolveDoctorId(req);
+      // Solo el carril de aparatos refresca el espejo, y el CAS de contenido
+      // necesita saber qué había ANTES de esta edición: se lee primero.
+      let previousNoteJson = null;
+      const shouldMirror = Boolean(req.clinicalDevice && consultationMirrorService);
+      if (shouldMirror) {
+        const before = await encounterService.getOwnedEncounter(req.params.encounterId, { doctorId });
+        previousNoteJson = before?.note_json || null;
+      }
       const encounter = await encounterService.saveEditedNote(
         req.params.encounterId,
         req.body?.note_json,
-        { doctorId: resolveDoctorId(req) },
+        { doctorId },
         noteValidationService
       );
+      // Best-effort: el guardado en el taller ya ocurrió; si el historial no se
+      // pudo refrescar, la respuesta lo dice y nadie lo adivina.
+      let mirror = null;
+      if (shouldMirror) {
+        try {
+          mirror = await consultationMirrorService.refresh(encounter, encounter.note_json, {
+            previousNoteJson,
+            deviceLabel: `${req.clinicalDevice.label || req.clinicalDevice.deviceId || ''}`
+          });
+        } catch (mirrorError) {
+          console.error(`[Clinical Encounters] refresh del espejo falló: ${mirrorError.message}`);
+          mirror = { refreshed: false, reason: 'error' };
+        }
+      }
       res.json({
         encounter_id: encounter.id,
         status: encounter.status,
-        note_json: encounter.note_json
+        note_json: encounter.note_json,
+        ...(mirror ? { mirror } : {})
       });
     } catch (error) {
       respondClinicalError(res, error, '[Clinical Encounters] save note:');
+    }
+  });
+
+  // Listado magro del historial («qué llevo hoy»): id, fecha, estado y rótulos,
+  // nunca el cuerpo de la nota. Para el médico filtra por su identidad; para un
+  // aparato, además por la organización congelada en el vínculo.
+  app.get('/api/clinical/consultations', async (req, res) => {
+    if (!consultationQueryService) {
+      return res.status(503).json({
+        error: { code: 'SUPABASE_NOT_CONFIGURED', message: 'El historial no está configurado en este entorno.' }
+      });
+    }
+    try {
+      const consultations = await consultationQueryService.listForDoctor({
+        doctorId: resolveDoctorId(req),
+        organizationId: req.clinicalDevice?.organizationId || null,
+        estado: req.query.estado,
+        desde: req.query.desde,
+        hasta: req.query.hasta,
+        limit: req.query.limit
+      });
+      res.json({ consultations });
+    } catch (error) {
+      respondClinicalError(res, error, '[Clinical Consultations] list:');
     }
   });
 }

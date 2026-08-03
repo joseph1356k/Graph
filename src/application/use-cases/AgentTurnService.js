@@ -23,7 +23,7 @@
 // reemplaza al CLIENT_TOKEN Bearer del backend viejo.
 
 const { freshSession, encodeSession, decodeSession } = require('../../domain/agent/session');
-const { baseCatalog, catalogNames } = require('../../domain/agent/mcpCatalog');
+const { baseCatalog, notesCatalog, catalogNames } = require('../../domain/agent/mcpCatalog');
 const { learnedToMcp, workflowToMcp, InMemoryAgentLearningStore } = require('../../domain/agent/learning');
 const { runProviderTurn } = require('../../infrastructure/conscious-brain');
 const { resolveConsciousConfig } = require('../../infrastructure/conscious-brain/config');
@@ -56,14 +56,19 @@ class AgentTurnService {
    * es para el modelo; el cliente ejecuta por id (WorkflowPlayer), así que el
    * turno inyecta el id en los args de la llamada (ver handleTurn).
    */
-  async assembleTools(userId, apps, surface = null) {
+  async assembleTools(userId, apps, surface = null, context = {}) {
     const learned = await this.learningStore.learnedTools(userId, apps, surface);
     const workflows = await this.learningStore.workflows(userId, apps, surface);
     const workflowTools = workflows.map(workflowToMcp);
     const workflowIdByTool = new Map(
       workflowTools.map((tool, i) => [tool.name, `${workflows[i].id || workflows[i].name || ''}`])
     );
-    const tools = [...baseCatalog(), ...learned.map(learnedToMcp), ...workflowTools];
+    // El catálogo clínico (Miracle Notes por API) solo existe para turnos de
+    // aparatos con vínculo médico activo: la identidad viene de requireApiKey
+    // (token per-install → vínculo → médico). Sin vínculo, el modelo ni lo ve —
+    // no hay herramienta que negar porque no se declaró.
+    const clinicalTools = context?.apiClient?.clinicalLink ? notesCatalog() : [];
+    const tools = [...baseCatalog(), ...clinicalTools, ...learned.map(learnedToMcp), ...workflowTools];
     return { tools, workflowIdByTool };
   }
 
@@ -72,7 +77,7 @@ class AgentTurnService {
    * cual — misma matriz de códigos del backend viejo: 400 request inválido,
    * 500 provider sin configurar, 502 error del cerebro.
    */
-  async handleTurn(body = {}) {
+  async handleTurn(body = {}, context = {}) {
     const config = this.resolveConfig();
     if (!config.configured) {
       return { status: 500, json: { error: config.errorMessage } };
@@ -105,7 +110,7 @@ class AgentTurnService {
         origin: `${body.state.surfaceOrigin || ''}`.trim(),
         pathname: `${body.state.surfacePathname || ''}`.trim()
       };
-      const { tools, workflowIdByTool } = await this.assembleTools(userId, apps, surface);
+      const { tools, workflowIdByTool } = await this.assembleTools(userId, apps, surface, context);
       const memory = await this.memoryRepository.forPrompt(userId);
 
       const { session: next, turn } = await this.runProviderTurn({

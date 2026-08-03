@@ -57,6 +57,24 @@ function deriveMotivo(noteJson = {}) {
   return text.length > MAX_MOTIVO ? `${text.slice(0, MAX_MOTIVO - 1)}…` : text;
 }
 
+// Igualdad de contenido independiente del orden de claves: jsonb de Postgres NO
+// conserva el orden de los objetos, así que comparar con JSON.stringify directo
+// declararía «la web editó» en cada refresh aunque nadie haya tocado nada.
+function stableStringify(value) {
+  if (Array.isArray(value)) {
+    return `[${value.map(stableStringify).join(',')}]`;
+  }
+  if (value && typeof value === 'object') {
+    const keys = Object.keys(value).sort();
+    return `{${keys.map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function sameContent(left, right) {
+  return stableStringify(left ?? null) === stableStringify(right ?? null);
+}
+
 class ConsultationMirrorService {
   constructor(restClient) {
     if (!restClient) {
@@ -150,10 +168,88 @@ class ConsultationMirrorService {
 
     return { published: true, organizationId };
   }
+
+  /**
+   * Refresca en el historial lo que el taller acaba de editar — SOLO campos del
+   * servidor (note, resumen, motivo) y SOLO cuando quien edita es un aparato
+   * (carril Operations). El carril del navegador conserva su propiedad actual:
+   * la web escribe `consultations` directo bajo RLS y aquí no se interfiere.
+   *
+   * Tres candados, porque el médico edita el historial PRECISAMENTE en borrador:
+   *   1. estado=eq.borrador en el propio UPDATE (con el trigger de inmutabilidad
+   *      de Notes como último candado del lado de la base);
+   *   2. CAS de contenido: si `consultations.note` ya no es lo que el servidor
+   *      escribió la última vez (previousNoteJson), la web divergió y NO se
+   *      escribe — razón 'web_edito', el último que manda es el médico;
+   *   3. sin referencia previa no hay CAS posible → no se escribe.
+   *
+   * Devuelve { refreshed, reason } para que el llamador lo registre sin adivinar.
+   */
+  async refresh(encounter = {}, noteJson = {}, { previousNoteJson = null, deviceLabel = '' } = {}) {
+    if (!encounter.id) {
+      return { refreshed: false, reason: 'sin_encounter' };
+    }
+
+    const rows = await this.restClient.select(
+      'consultations',
+      `id=eq.${encodeURIComponent(encounter.id)}&select=id,estado,note,organization_id&limit=1`
+    );
+    const row = Array.isArray(rows) ? rows[0] : null;
+
+    if (!row) {
+      // Nunca se publicó (p. ej. el médico no tenía organización entonces):
+      // publicar es mejor que refrescar la nada.
+      const published = await this.publish(encounter, noteJson);
+      return { refreshed: published.published, reason: published.published ? 'publicada' : published.reason };
+    }
+
+    if (`${row.estado}` !== 'borrador') {
+      return { refreshed: false, reason: 'estado_no_borrador' };
+    }
+
+    if (!previousNoteJson) {
+      return { refreshed: false, reason: 'sin_referencia' };
+    }
+    if (!sameContent(row.note, noteJsonToSections(previousNoteJson))) {
+      return { refreshed: false, reason: 'web_edito' };
+    }
+
+    const updated = await this.restClient.update(
+      'consultations',
+      `id=eq.${encodeURIComponent(encounter.id)}&estado=eq.borrador`,
+      {
+        note: noteJsonToSections(noteJson),
+        resumen: `${noteJson.summary || ''}`,
+        motivo: deriveMotivo(noteJson)
+      }
+    );
+    if (!updated) {
+      // Perdió la carrera contra una firma entre la lectura y la escritura.
+      return { refreshed: false, reason: 'estado_no_borrador' };
+    }
+
+    try {
+      await this.restClient.insert('audit_events', {
+        consultation_id: encounter.id,
+        organization_id: row.organization_id,
+        actor_id: encounter.doctor_id || null,
+        accion: 'Nota actualizada con Miracle',
+        detalle: deviceLabel
+          ? `Actualizada desde el taller por el equipo «${deviceLabel}».`
+          : 'Actualizada desde el taller.'
+      });
+    } catch (error) {
+      console.error(`[Espejo] Auditoría de refresh no registrada para ${encounter.id}: ${error.message}`);
+    }
+
+    return { refreshed: true };
+  }
 }
 
 ConsultationMirrorService.noteJsonToSections = noteJsonToSections;
 ConsultationMirrorService.transcriptTextToTurns = transcriptTextToTurns;
+ConsultationMirrorService.stableStringify = stableStringify;
+ConsultationMirrorService.sameContent = sameContent;
 ConsultationMirrorService.deriveMotivo = deriveMotivo;
 ConsultationMirrorService.toStoreConsultationType = toStoreConsultationType;
 

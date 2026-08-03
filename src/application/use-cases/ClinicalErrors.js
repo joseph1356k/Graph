@@ -35,7 +35,20 @@ const CLINICAL_ERROR_STATUS = {
   EXPORT_LEASE_EXPIRED: 409,
   // El contenido no coincide con lo que el médico firmó: nunca se exporta.
   SIGNATURE_HASH_MISMATCH: 422,
-  WORKFLOW_NOT_CONFIGURED: 503
+  WORKFLOW_NOT_CONFIGURED: 503,
+
+  // Identidad por instalación (graph_windows_devices) y vínculo médico↔equipo.
+  ENROLL_FORBIDDEN: 401,
+  DEVICE_INVALID: 400,
+  // Token per-install válido pero sin médico vinculado: el cliente Windows usa
+  // este código para mostrar la pantalla del código de emparejamiento.
+  DEVICE_NOT_PAIRED: 403,
+  // Respuesta única para inexistente/caducado/usado/dispositivo revocado:
+  // no se le cuenta a nadie qué códigos existieron (anti-oráculo).
+  PAIRING_CODE_INVALID: 404,
+  DOCTOR_WITHOUT_ORGANIZATION: 409,
+  LINK_NOT_FOUND: 404,
+  CONSULTATION_QUERY_INVALID: 400
 };
 
 function clinicalError(code, message, statusCode = null) {

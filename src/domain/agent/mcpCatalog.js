@@ -203,4 +203,84 @@ function catalogNames(tools) {
   return new Set(tools.map((tool) => tool.name));
 }
 
-module.exports = { baseCatalog, catalogNames, WORKFLOW_VIA, LEARNED_VIA };
+/**
+ * MIRACLE NOTES POR API. Estas herramientas NO tocan la pantalla: el cliente
+ * las ejecuta llamando al carril clínico de Graph (/api/clinical/*) con su
+ * token per-install, actuando EN NOMBRE del médico vinculado al equipo. Por eso
+ * este catálogo solo se declara cuando el turno viene de un aparato CON vínculo
+ * activo (ver AgentTurnService.assembleTools): sin médico, el modelo ni las ve.
+ *
+ * Cosas que el modelo debe saber y las descripciones le dicen:
+ *   · el dictado NO se pasa como argumento — el cliente lo inyecta desde su
+ *     buffer de micrófono (fidelidad literal; la transcripción jamás pasa por
+ *     la pluma del modelo);
+ *   · firmar y exportar NO existen aquí: eso lo hace el médico en Miracle
+ *     Notes («no se envían consultas hasta que el médico le da enviar a HC»);
+ *   · para mostrarle una consulta al médico en pantalla está open_url con el
+ *     enlace que devuelven notes_estado y notes_listar_consultas.
+ */
+const NOTES_VIA = 'Miracle Notes por API (actúa en nombre del médico vinculado)';
+
+const notesTools = [
+  {
+    name: 'notes_listar_plantillas', via: NOTES_VIA,
+    description: 'Lista las plantillas clínicas disponibles del médico (id, nombre, especialidad). Úsala antes de crear una consulta para elegir plantilla.',
+    params: [{ name: 'especialidad', description: 'Filtrar por especialidad (opcional), p.ej. "medicina_general"' }]
+  },
+  {
+    name: 'notes_crear_plantilla', via: NOTES_VIA,
+    description: 'Crea una plantilla clínica personal del médico. Las secciones se dan como lista separada por "|", p.ej. "Motivo de consulta|Examen físico|Plan".',
+    params: [
+      { name: 'nombre', description: 'Nombre de la plantilla' },
+      { name: 'especialidad', description: 'Especialidad, p.ej. "medicina_general"' },
+      { name: 'secciones', description: 'Secciones separadas por "|", en orden' }
+    ]
+  },
+  {
+    name: 'notes_nueva_consulta', via: NOTES_VIA,
+    description: 'Abre una consulta nueva en Miracle Notes con la plantilla indicada y la deja como la consulta ACTUAL del equipo (el dictado y la nota irán a ella).',
+    params: [
+      { name: 'plantilla_id', description: 'Id de la plantilla (de notes_listar_plantillas)' },
+      { name: 'tipo', description: 'Tipo de consulta', options: ['presencial', 'telemedicina', 'audio_upload'] }
+    ]
+  },
+  {
+    name: 'notes_guardar_dictado', via: NOTES_VIA, params: [],
+    description: 'Guarda en la consulta actual TODO lo dictado al micrófono desde que se abrió. El texto lo pone el equipo desde su buffer de dictado, tal cual se oyó — no lo escribas tú ni lo resumas: llamar esta herramienta basta.'
+  },
+  {
+    name: 'notes_generar_nota', via: NOTES_VIA, params: [],
+    description: 'Genera la nota clínica estructurada de la consulta actual a partir del dictado guardado. Tarda hasta un par de minutos; el equipo espera y sondea solo. Al terminar, la consulta aparece como borrador en el portal del médico.'
+  },
+  {
+    name: 'notes_ajustar_nota', via: NOTES_VIA,
+    description: 'Ajusta la redacción de la nota generada según una instrucción («resume el plan», «tono más formal») y guarda el resultado. Solo redacción: no inventa datos clínicos.',
+    params: [
+      { name: 'instruccion', description: 'Qué ajustar, en lenguaje natural' },
+      { name: 'seccion', description: 'Key de la sección a ajustar (opcional; vacío = toda la nota)' }
+    ]
+  },
+  {
+    name: 'notes_estado', via: NOTES_VIA, params: [],
+    description: 'Estado de la consulta actual: fase (dictado/nota generada), secciones y el enlace para abrírsela al médico con open_url.'
+  },
+  {
+    name: 'notes_listar_consultas', via: NOTES_VIA,
+    description: 'Las consultas del médico en su historial (fecha, estado, motivo), las más recientes primero. Sin el cuerpo de la nota.',
+    params: [
+      { name: 'rango', description: 'Rango de tiempo', options: ['hoy', 'semana', 'todas'] },
+      { name: 'estado', description: 'Filtrar por estado (opcional)', options: ['borrador', 'revisada', 'aprobada', 'exportada'] }
+    ]
+  }
+];
+
+/**
+ * Catálogo clínico: SOLO para turnos de aparatos con vínculo médico activo.
+ * Se declara aparte de baseCatalog a propósito — quien lo ensambla decide si
+ * el actor tiene derecho a verlo.
+ */
+function notesCatalog() {
+  return [...notesTools];
+}
+
+module.exports = { baseCatalog, notesCatalog, catalogNames, WORKFLOW_VIA, LEARNED_VIA, NOTES_VIA };

@@ -373,31 +373,83 @@ function verifyApiKey(candidate) {
   return null;
 }
 
-// Auth for the public /api/v1 surface: a permanent client API key only
-// (from the MIRACLE_API_KEYS env var). No session-token fallback.
-function requireApiKey(req, res, next) {
+// Segunda fuente de credenciales de /api/v1: tokens per-install de
+// graph_windows_devices (plan de autenticacion-interna). Se inyecta desde
+// server.js; sin inyectar, requireApiKey funciona igual que siempre (solo env).
+let windowsDeviceServiceForApiKeys = null;
+function setWindowsDeviceService(service) {
+  windowsDeviceServiceForApiKeys = service;
+}
+
+// Auth for the public /api/v1 surface. DOS fuentes, en orden:
+//   1. Keys permanentes de env (MIRACLE_API_KEYS) — admin/flota sin enrolar.
+//   2. Tokens per-install de graph_windows_devices — la credencial real de cada
+//      instalación Windows enrolada, revocable una a una.
+// Las keys de env NUNCA llevan identidad clínica: req.apiClient.clinicalLink
+// solo existe para tokens de dispositivo con vínculo médico aprobado.
+async function requireApiKey(req, res, next) {
   const candidate = extractApiKey(req);
   const match = candidate ? verifyApiKey(candidate) : null;
-  if (!match) {
-    return res.status(401).json({ error: 'API key invalida o ausente.' });
+  if (match) {
+    req.user = {
+      id: `api-client:${match.label}`,
+      email: '',
+      username: match.label,
+      role: 'api-client',
+      token: '',
+      isAnonymous: false
+    };
+    req.apiClient = { label: match.label, deviceId: null, clinicalLink: null };
+    req.workflowAccess = { ownerId: req.user.id, includeGlobal: true, canManageGlobalWorkflows: false };
+    return next();
   }
-  req.user = {
-    id: `api-client:${match.label}`,
-    email: '',
-    username: match.label,
-    role: 'api-client',
-    token: '',
-    isAnonymous: false
-  };
-  req.apiClient = { label: match.label };
-  req.workflowAccess = { ownerId: req.user.id, includeGlobal: true, canManageGlobalWorkflows: false };
-  return next();
+
+  if (candidate && windowsDeviceServiceForApiKeys) {
+    try {
+      const device = await windowsDeviceServiceForApiKeys.deviceByToken(candidate);
+      if (device) {
+        const link = await windowsDeviceServiceForApiKeys.activeLink(device.id);
+        // Identidad de WORKFLOWS de la flota, no del equipo: los workflows se
+        // enseñan una vez y los reproduce cualquier instalación (visibilidad
+        // por ownerId en Neo4j). Migrar de la key compartida al token no debe
+        // esconder lo ya aprendido, así que el owner sigue siendo el de la
+        // primera key de env (o 'client', el default histórico).
+        const fleetLabel = getConfiguredApiKeys()[0]?.label || 'client';
+        req.user = {
+          id: `api-client:${fleetLabel}`,
+          email: '',
+          username: device.label || device.device_id,
+          role: 'api-client',
+          token: '',
+          isAnonymous: false
+        };
+        req.apiClient = {
+          label: device.label || device.device_id,
+          deviceId: device.device_id,
+          deviceRowId: device.id,
+          clinicalLink: link
+            ? { linkId: link.id, doctorId: link.doctor_id, organizationId: link.organization_id }
+            : null
+        };
+        req.workflowAccess = { ownerId: req.user.id, includeGlobal: true, canManageGlobalWorkflows: false };
+        return next();
+      }
+    } catch (error) {
+      // La base no contestó: 503 (reintentable), NO 401 — un 401 le diría al
+      // cliente que su token fue revocado y no es verdad.
+      console.error(`[ApiKey] Validación de token de dispositivo falló: ${error.message}`);
+      return res.status(503).json({ error: 'No se pudo validar la credencial. Reintenta.' });
+    }
+  }
+
+  return res.status(401).json({ error: 'API key invalida o ausente.' });
 }
 
 module.exports = {
   requireAuth,
   requireAccountAuth,
   requireApiKey,
+  setWindowsDeviceService,
   attachWorkflowAccess,
   verifyAccessToken,
   createLocalAdminSession,

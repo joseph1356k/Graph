@@ -34,6 +34,25 @@ Ahora [ConsultationMirrorService](../src/application/use-cases/ConsultationMirro
 - **Sin organización no escribe.** Una fila sin `organization_id` sería invisible por RLS; mejor no crearla y decirlo que dejar un registro roto.
 - **Best-effort.** Si el espejo falla, la nota ya está guardada y el médico no recibe un error falso sobre su trabajo. El fallo queda en el log y lo delata la alerta diaria.
 
+## Refrescar es del servidor SOLO en el carril de aparatos
+
+Cuando quien edita la nota es un **equipo de Operations** (token per-install con
+vínculo médico, ver `requireClinicalActor`), no hay navegador que refresque el
+historial. Para ese carril —y **solo** para ese carril— `ConsultationMirrorService.refresh()`
+actualiza los campos del taller (`note`, `resumen`, `motivo`) tras `PUT /note`, con tres candados:
+
+- **`estado = 'borrador'` en el propio UPDATE.** Una nota revisada o firmada no se toca
+  (el trigger de inmutabilidad de Notes es el último candado del lado de la base).
+- **CAS de contenido.** Antes de escribir compara `consultations.note` con lo que el
+  servidor escribió la última vez. Si difieren, la web divergió (el médico editó en el
+  portal) y **no escribe** — razón `web_edito`: el último que manda es el médico.
+- **Best-effort.** El guardado del taller nunca se bloquea por el espejo; la respuesta
+  de `PUT /note` trae `mirror: { refreshed, reason }` para que nadie adivine.
+
+El carril del navegador NO cambia con esto: la web sigue refrescando lo suyo como
+siempre (sección siguiente). Dos escritores sobre el mismo campo solo existen en el
+carril de aparatos, y ahí el CAS decide.
+
 ## El navegador sigue escribiendo, y está bien
 
 La web conserva su `upsertConsultation`. **No es duplicación inútil: es la red de seguridad.** Si el servidor no pudo publicar (por ejemplo, un médico sin organización asignada), el cliente crea la fila igual y la consulta no se pierde.

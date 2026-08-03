@@ -57,11 +57,14 @@ const registerContextRoutes = require('./api/registerContextRoutes');
 const registerExecutionIntelligenceRoutes = require('./api/registerExecutionIntelligenceRoutes');
 const registerClinicalRoutes = require('./api/registerClinicalRoutes');
 const registerNoteExportRoutes = require('./api/registerNoteExportRoutes');
+const registerDeviceRoutes = require('./api/registerDeviceRoutes');
 const registerMedicalRoutes = require('./api/registerMedicalRoutes');
 const registerUsageRoutes = require('./api/registerUsageRoutes');
 const registerMaintenanceRoutes = require('./api/registerMaintenanceRoutes');
 const SystemHealthAlertService = require('../src/application/use-cases/SystemHealthAlertService');
 const ConsultationMirrorService = require('../src/application/use-cases/ConsultationMirrorService');
+const WindowsDeviceService = require('../src/application/use-cases/WindowsDeviceService');
+const ConsultationQueryService = require('../src/application/use-cases/ConsultationQueryService');
 const NoteGenerationRescueService = require('../src/application/use-cases/NoteGenerationRescueService');
 const createOpportunisticRescue = require('./api/opportunisticRescue');
 const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
@@ -78,6 +81,7 @@ const registerWindowsDistributionRoutes = require('./api/registerWindowsDistribu
 const registerMcpRoutes = require('./api/registerMcpRoutes');
 const AgentWorkflowStore = require('../src/application/use-cases/AgentWorkflowStore');
 const requireClinicalAuth = require('./api/requireClinicalAuth');
+const createRequireClinicalActor = require('./api/requireClinicalActor');
 const MiracleWorkspaceStore = require('./api/miracleWorkspaceStore');
 const rateLimit = require('express-rate-limit');
 const {
@@ -90,7 +94,8 @@ const {
   extractToken,
   isLocalAnonymousAccessEnabled,
   isAuthBypassEnabled,
-  verifyAccessToken
+  verifyAccessToken,
+  setWindowsDeviceService
 } = require('./api/requireAuth');
 const { statusForError, publicErrorMessage } = require('./api/httpErrors');
 
@@ -167,6 +172,11 @@ const noteExportService = new NoteExportService({
   resolvePlan: null
 });
 const clinicalNoteValidationService = new ClinicalNoteValidationService();
+// El espejo taller→historial: publica al generar y refresca cuando un aparato
+// edita la nota (carril Operations). Compartido entre el generador y las rutas.
+const consultationMirrorService = new ConsultationMirrorService(supabaseRestClient);
+// Listado magro del historial para «qué llevo hoy» (aparatos y médicos).
+const consultationQueryService = new ConsultationQueryService(supabaseRestClient);
 const clinicalNoteGeneratorService = new ClinicalNoteGeneratorService({
   encounterService: clinicalEncounterService,
   encounterRepository: clinicalEncounterRepository,
@@ -175,11 +185,18 @@ const clinicalNoteGeneratorService = new ClinicalNoteGeneratorService({
   validationService: clinicalNoteValidationService,
   // El servidor publica la consulta en el historial: ya no depende de que el
   // navegador del médico complete la copia.
-  consultationMirrorService: new ConsultationMirrorService(supabaseRestClient),
+  consultationMirrorService,
   // Avisa en el momento si una nota no llega al historial, en vez de esperar
   // al resumen diario.
   healthAlertService: systemHealthAlertService
 });
+// Identidad por instalación del cliente Windows + vínculo médico↔equipo: la
+// credencial real de la flota (token per-install) y la delegación clínica que
+// deja a un equipo actuar en nombre del médico que lo vinculó.
+const windowsDeviceService = new WindowsDeviceService(supabaseRestClient);
+// Segunda fuente de credenciales de /api/v1: sin esta línea, requireApiKey
+// solo conoce las keys de env y ningún token per-install funcionaría.
+setWindowsDeviceService(windowsDeviceService);
 // Rescata las consultas que se quedaron con transcripción y sin nota porque la
 // cadena se rompió a mitad de camino. Lo dispara el cron de mantenimiento.
 const noteGenerationRescueService = new NoteGenerationRescueService({
@@ -429,16 +446,34 @@ function isMiracleMedicalProxyRequest(req) {
   });
 });
 
-// Stateful clinical module: Supabase Bearer auth, isolated from the surfaces
-// above and from /api/v1. Sets req.clinicalUser (never req.user).
+// Stateful clinical module, DOS puertas deliberadamente separadas:
+//
+// 1. Actor clínico (médico por JWT O aparato vinculado por token per-install).
+//    Es el corte que deja a Operations pilotar Miracle Notes por API: crear
+//    consultas, dictar, generar y ajustar notas EN NOMBRE del médico vinculado.
+//    La rama Bearer delega verbatim en requireClinicalAuth: el carril del
+//    navegador no cambia. Sets req.clinicalUser (never req.user);
+//    req.clinicalDevice solo cuando actúa un aparato.
 // '/api/clinical/encounters' also covers the nested diagnostic-suggestions route.
+const requireClinicalActor = createRequireClinicalActor({ windowsDeviceService });
 [
   '/api/clinical/templates',
   '/api/clinical/encounters',
   '/api/clinical/assistant',
+  // Listado magro del historial («qué llevo hoy») para el aparato y el médico.
+  '/api/clinical/consultations'
+].forEach((routePrefix) => {
+  app.use(routePrefix, requireClinicalActor);
+});
+// 2. Solo-médico (JWT, sin aparatos, sin cambios):
+[
   // Exportación a historia clínica: la pide el médico desde Miracle Notes con su
-  // JWT. El carril del ejecutor es otro (/api/v1/operations, X-API-Key).
-  '/api/clinical/exports'
+  // JWT. El carril del ejecutor es otro (/api/v1/operations, X-API-Key). «No se
+  // envían consultas hasta que el médico le da enviar a HC».
+  '/api/clinical/exports',
+  // Vincular/desvincular equipos es un acto del médico: SOLO JWT. Un aparato
+  // jamás gestiona sus propios vínculos.
+  '/api/clinical/devices'
 ].forEach((routePrefix) => {
   app.use(routePrefix, requireClinicalAuth);
 });
@@ -1055,12 +1090,15 @@ registerClinicalRoutes(app, {
   encounterService: clinicalEncounterService,
   noteGeneratorService: clinicalNoteGeneratorService,
   noteValidationService: clinicalNoteValidationService,
-  assistantService: clinicalAssistantService
+  assistantService: clinicalAssistantService,
+  consultationQueryService,
+  consultationMirrorService
 });
 // Dos carriles: /api/clinical/exports (JWT del médico) y
 // /api/v1/operations/exports (X-API-Key del ejecutor). Los middlewares de auth
 // ya están montados sobre esos prefijos.
 registerNoteExportRoutes(app, { noteExportService });
+registerDeviceRoutes(app, { windowsDeviceService });
 registerMedicalRoutes(app, {
   rawTranscriptionService,
   callMiracleRuntime,

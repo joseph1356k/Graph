@@ -1,7 +1,13 @@
 # Autenticación interna: enrolamiento por instalación (PLAN)
 
-> Estado: **planificado, no implementado.** Es la evolución natural de la key embebida
-> compartida (ver [Distribución conectada](#)). Aquí se analiza y se decide el enfoque.
+> Estado: **primer corte IMPLEMENTADO** (2026-08-03): tabla `graph_windows_devices`
+> (migración `20260803000000_windows_device_identity.sql`), `WindowsDeviceService`,
+> `POST /api/v1/enroll` (gated por `GRAPH_ENROLL_KEYS`), `requireApiKey` de doble fuente
+> (env + tokens de BD) y enrolamiento automático en el cliente Windows. Además se extendió
+> con lo que este plan dejaba fuera: el vínculo médico↔equipo que habilita el carril
+> clínico — ver [`docs/operations-notes-lane.md`](../../../docs/operations-notes-lane.md).
+> Pendiente del plan original: la card de Studio (listar/revocar) y el corte final de la
+> key compartida. Lo de abajo se conserva como el análisis que decidió el enfoque.
 
 ## El problema que resuelve
 
