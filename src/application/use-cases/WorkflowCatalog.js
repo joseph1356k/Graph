@@ -1,3 +1,4 @@
+// @ts-check
 const Workflow = require('../../domain/entities/Workflow');
 const Step = require('../../domain/entities/Step');
 

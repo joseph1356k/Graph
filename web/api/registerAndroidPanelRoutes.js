@@ -1,3 +1,4 @@
+// @ts-check
 // Routes for the "Android App" panel in Provider Studio: telemetry of the
 // Android installations plus the distributed client config. Every route is
 // admin-only, mirroring the /api/providers/* gate (workflowAccess is attached

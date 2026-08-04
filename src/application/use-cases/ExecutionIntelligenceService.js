@@ -1,3 +1,4 @@
+// @ts-check
 const runtimeExecutionPolicy = require('./RuntimeExecutionPolicy');
 
 class ExecutionIntelligenceService {

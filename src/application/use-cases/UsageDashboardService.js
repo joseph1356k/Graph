@@ -1,3 +1,4 @@
+// @ts-check
 const PRICING_SOURCE_URL = 'https://developers.openai.com/api/docs/pricing';
 const PRICING_CAPTURED_AT = '2026-06-17';
 

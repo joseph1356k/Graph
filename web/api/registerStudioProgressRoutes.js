@@ -1,3 +1,4 @@
+// @ts-check
 // Rutas de la BITÁCORA DE AVANCES del laboratorio (botón "Registrar avance").
 // Mismo gate solo-admin que el resto del panel Windows: quien puede ver el
 // laboratorio puede escribir en él.

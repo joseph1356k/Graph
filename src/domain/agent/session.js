@@ -1,3 +1,4 @@
+// @ts-check
 // Estado del cerebro consciente entre turnos, serializado como blob OPACO que el
 // cliente Windows reenvía sin leer. Port 1:1 de Android/backend/src/domain/session.ts.
 //

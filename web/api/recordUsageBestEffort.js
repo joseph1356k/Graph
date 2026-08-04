@@ -1,3 +1,4 @@
+// @ts-check
 function createUsageRecorder(usageDashboardService) {
   return function recordUsageBestEffort(payload, contextLabel) {
     if (!usageDashboardService) {

@@ -1,3 +1,4 @@
+// @ts-check
 class TransversalWorkflowComposer {
   normalizeText(value = '') {
     return `${value || ''}`

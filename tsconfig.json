@@ -1,0 +1,23 @@
+{
+  "// Nota": "El repo es JavaScript sin tipos. Esto NO es TypeScript estricto: usa el compilador para atrapar typos, propiedades inexistentes y firmas mal usadas. Adopción gradual: checkJs está APAGADO y un archivo entra al chequeo poniendo `// @ts-check` en su primera línea. Ejecutar con `npm run typecheck`.",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "target": "ES2022",
+    "module": "node18",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  "include": ["src/**/*.js", "web/api/**/*.js", "types/**/*.d.ts"],
+  "exclude": ["node_modules", "generated", "public", "dist", "build"]
+}

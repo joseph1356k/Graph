@@ -1,3 +1,4 @@
+// @ts-check
 // Distribución de la app de Windows (Ü) desde Provider Studio: dispara un
 // build en GitHub Actions del repo windows-app y resuelve el instalador
 // vigente, publicado por ese mismo workflow en el bucket público de Supabase

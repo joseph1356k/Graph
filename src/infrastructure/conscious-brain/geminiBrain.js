@@ -1,3 +1,4 @@
+// @ts-check
 // El cerebro sobre GEMINI (Google, API nativa generateContent). Port 1:1 de
 // Android/backend/src/brain/gemini.ts. Intercambiable con OpenAI sin que el
 // cliente Windows cambie: sigue recibiendo el mismo `Action[]`.

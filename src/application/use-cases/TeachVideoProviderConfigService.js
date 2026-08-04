@@ -1,3 +1,4 @@
+// @ts-check
 const VercelProjectEnvService = require('./VercelProjectEnvService');
 const { resolveTeachConfig } = require('../../infrastructure/conscious-brain/config');
 

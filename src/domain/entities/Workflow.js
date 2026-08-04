@@ -1,3 +1,4 @@
+// @ts-check
 const Step = require('./Step');
 
 class Workflow {

@@ -1,3 +1,4 @@
+// @ts-check
 const REVIEW_NOTICE = 'Sugerencias de IA para revisión médica. No constituyen diagnósticos confirmados.';
 
 function normalizeComparableText(value = '') {

@@ -1,3 +1,4 @@
+// @ts-check
 function buildRuntimeDecisionPrompt() {
   return [
     'You are Graph Runtime Execution Intelligence.',

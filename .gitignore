@@ -35,6 +35,9 @@ render.env
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+# Ajustes locales de Claude Code (por desarrollador; settings.json sí se versiona)
+.claude/settings.local.json
+
 # IDEs
 .idea/
 .vscode/
@@ -42,3 +45,4 @@ yarn-error.log*
 *.swo
 .vercel
 .env*
+!.env.example

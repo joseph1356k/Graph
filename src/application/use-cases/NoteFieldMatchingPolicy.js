@@ -1,3 +1,4 @@
+// @ts-check
 function buildNoteFieldMatchingPrompt() {
   return [
     'You are Miracle Note Field Matcher.',

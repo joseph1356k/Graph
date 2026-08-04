@@ -1,3 +1,4 @@
+// @ts-check
 // Memoria durable por usuario del agente de escritorio (Ü): la knowledge-base
 // personal que el cerebro inyecta en cada turno y que la enseñanza por video
 // alimenta. Sustituye al InMemoryMemoryStore del backend viejo, que se perdía

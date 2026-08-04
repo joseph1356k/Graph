@@ -1,3 +1,4 @@
+// @ts-check
 // Persists clinical encounters in Supabase (public.clinical_encounters).
 const TABLE = 'clinical_encounters';
 

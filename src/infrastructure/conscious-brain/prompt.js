@@ -1,3 +1,4 @@
+// @ts-check
 // El prompt del sistema y las reglas del cerebro consciente. Port de
 // Android/backend/src/brain/prompt.ts (a su vez portado del core Android),
 // adaptado a un PC con Windows.

@@ -1,3 +1,4 @@
+// @ts-check
 function normalizeText(value = '') {
   return `${value || ''}`.replace(/\s+/g, ' ').trim();
 }

@@ -1,3 +1,4 @@
+// @ts-check
 // El catálogo MCP del agente de escritorio: SOLO la declaración (nombre,
 // descripción, esquema de parámetros, `via`). Port de Android/backend/src/domain/mcp.ts.
 //

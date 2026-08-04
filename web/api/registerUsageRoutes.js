@@ -1,3 +1,4 @@
+// @ts-check
 function hasValidInternalKey(req) {
   const expected = `${process.env.GRAPH_USAGE_INGEST_KEY || ''}`.trim();
   if (!expected) {

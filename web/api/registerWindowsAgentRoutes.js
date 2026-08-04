@@ -1,3 +1,4 @@
+// @ts-check
 // Rutas públicas /api/v1 del agente de escritorio Ü (cliente Windows), absorbidas
 // del backend viejo (Android/backend/api/{agent,teach}/*). Se montan bajo el
 // prefijo /api/v1, que ya está gated con X-API-Key (requireApiKey en server.js),

@@ -1,3 +1,4 @@
+// @ts-check
 const VercelProjectEnvService = require('./VercelProjectEnvService');
 
 // Soniox context has a ~10k char limit; cap the custom vocabulary well under it.

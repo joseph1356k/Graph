@@ -1,3 +1,4 @@
+// @ts-check
 // Validates assistant outputs: diagnostic suggestions are normalized against
 // the real case evidence (transcript/note), definitive-diagnosis language is
 // degraded to tentative wording, and chat answers are sanitized.

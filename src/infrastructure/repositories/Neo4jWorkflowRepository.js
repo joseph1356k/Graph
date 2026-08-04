@@ -1,3 +1,4 @@
+// @ts-check
 class Neo4jWorkflowRepository {
   constructor(db) {
     this.db = db;

@@ -1,3 +1,4 @@
+// @ts-check
 const ClinicalTemplateService = require('./ClinicalTemplateService');
 
 // Builds the clinical context the assistant prompts consume. Pure module

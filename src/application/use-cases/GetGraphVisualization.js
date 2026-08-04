@@ -1,3 +1,4 @@
+// @ts-check
 class GetGraphVisualization {
   constructor(repository) {
     this.repository = repository;

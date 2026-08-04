@@ -1,3 +1,4 @@
+// @ts-check
 // Aprendizaje del agente de escritorio: herramientas aprendidas del árbol de UI
 // y workflows (el puente consciente ↔ subconsciente). Port de
 // Android/backend/src/learning/workflows.ts.

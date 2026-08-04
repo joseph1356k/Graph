@@ -1,3 +1,4 @@
+// @ts-check
 const crypto = require('crypto');
 const { isClinicalError } = require('../../src/application/use-cases/ClinicalErrors');
 

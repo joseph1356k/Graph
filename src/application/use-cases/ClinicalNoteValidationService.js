@@ -1,3 +1,4 @@
+// @ts-check
 const { clinicalError } = require('./ClinicalErrors');
 
 // Validates and repairs note_json against the encounter's template_snapshot.

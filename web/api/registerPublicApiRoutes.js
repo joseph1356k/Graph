@@ -1,3 +1,4 @@
+// @ts-check
 const crypto = require('crypto');
 const { statusForError, publicErrorMessage } = require('./httpErrors');
 const createUsageRecorder = require('./recordUsageBestEffort');
