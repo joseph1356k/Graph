@@ -717,3 +717,34 @@ values
   ('deepgram', 'nova-3', 'transcription', '2026-08-04', null, null, null, 0.0043, 'https://deepgram.com/pricing', '2026-08-04'),
   ('deepgram', 'nova-2', 'transcription', '2026-08-04', null, null, null, 0.0043, 'https://deepgram.com/pricing', '2026-08-04')
 on conflict (provider, model, api_family, version) do nothing;
+
+-- ---------------------------------------------------------------------------
+-- Defensa en profundidad: revocar los permisos de tabla que Supabase concede
+-- por defecto a anon/authenticated en `public`.
+--
+-- RLS ya bloquea las filas (no hay política de escritura, y el alcance devuelve
+-- 'none' para anónimos), pero dejar el GRANT puesto significaría que un fallo
+-- futuro en una política bastaría para escribir o leer. Dos cerraduras, no una.
+-- Se vuelve a conceder solo el SELECT que la política necesita.
+-- ---------------------------------------------------------------------------
+revoke all on table public.ai_usage_events from anon, authenticated;
+revoke all on table public.ai_model_prices from anon, authenticated;
+
+grant select on table public.ai_usage_events to authenticated;
+grant select on table public.ai_model_prices to authenticated;
+
+-- `revoke all ... from public` NO revoca de `anon`: Supabase le concede EXECUTE
+-- por separado con default privileges. Sin esto, cualquiera con la anon key
+-- podría invocar las RPC vía /rest/v1/rpc/... No devolverían datos —el alcance
+-- responde 'none' a los anónimos— pero eso dejaría la seguridad colgando de UNA
+-- sola comprobación dentro de la función. Se cierra también la puerta.
+revoke execute on function private.ai_usage_scope() from anon;
+revoke execute on function public.ai_usage_summary(
+  timestamptz, timestamptz, uuid, uuid, text[], text[], text[], text[], text[], text[]) from anon;
+revoke execute on function public.ai_usage_series(
+  text, timestamptz, timestamptz, uuid, uuid, text[], text[], text[], text[], text[], text[]) from anon;
+revoke execute on function public.ai_usage_breakdown(
+  text, timestamptz, timestamptz, uuid, uuid, text[], text[], text[], text[], text[], text[], integer) from anon;
+revoke execute on function public.ai_usage_events_page(
+  timestamptz, timestamptz, uuid, uuid, text[], text[], text[], text[], text[], text[], integer, integer) from anon;
+revoke execute on function public.ai_usage_missing_rates(timestamptz, timestamptz) from anon;

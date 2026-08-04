@@ -129,8 +129,24 @@ Es **puramente aditiva**: crea dos tablas, cinco funciones y sus políticas. No
 altera ni borra nada existente. Para revertir: `drop table public.ai_usage_events,
 public.ai_model_prices cascade;` más el `drop function` de las cinco RPC.
 
-> ⚠️ **Aún NO se ha aplicado a producción**, a la espera de autorización
-> explícita. Todo lo demás está listo y probado.
+> ✅ **Aplicada a producción** (`miracle-app`, ref `zyvfamlhlmztliexvmej`) el
+> 2026-08-04, en cuatro pasos: tablas → alcance+RLS+RPC de resumen/serie → RPC
+> de desglose/detalle/tarifas + semilla → endurecimiento de permisos.
+
+**Endurecimiento aplicado tras revisar el linter de seguridad.** Supabase
+concede permisos amplios por defecto en `public`, y dos de esos defaults
+quedaban abiertos sobre piezas nuevas:
+
+- `authenticated` tenía INSERT/UPDATE/DELETE sobre el ledger y `anon` tenía
+  SELECT. RLS ya bloqueaba las filas, pero se revocaron los GRANT igualmente.
+- `anon` podía **invocar** las cinco RPC vía `/rest/v1/rpc/...`: `revoke all
+  ... from public` no revoca de `anon`, que recibe EXECUTE por separado. No
+  devolvían datos (el alcance responde `'none'` a los anónimos), pero eso
+  dejaba la seguridad colgando de una sola comprobación dentro de la función.
+  Se revocó el EXECUTE.
+
+Estado final verificado: `anon` no lee, no escribe y no puede invocar nada;
+`authenticated` solo tiene SELECT y sus RPC, acotadas por su alcance.
 
 ---
 
@@ -292,9 +308,10 @@ hacen `openaiBrain` y `geminiBrain`.
    medición confiable empieza cuando se despliegue esto.** No se rellenan
    periodos anteriores con estimaciones: serían inventadas.
 
-2. **La migración no está aplicada** a producción (falta autorización). Hasta
-   entonces el backend escribe en el respaldo JSONL y el dashboard responde 503
-   con el mensaje «la telemetría no está configurada».
+2. **Quedan avisos del linter que NO son de este trabajo**: varias funciones
+   `superadmin_*`, `graph_upsert_*` y `agent_values_for_code` son
+   `security definer` invocables por `anon`/`authenticated`. Son anteriores y
+   quedan fuera de alcance; se dejan señaladas, no tocadas.
 
 3. **`GeminiVideoClient` (enseñanza por vídeo) no está instrumentado.** La API
    de Files + `generateContent` de vídeo no reporta tokens de forma comparable
