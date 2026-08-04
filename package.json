@@ -27,7 +27,9 @@
     "test:note-export-real": "node scripts/verify-note-export-real-postgres.js",
     "demo:note-export": "node scripts/demo-note-export-e2e.js",
     "simulate:operations": "node scripts/simulate-operations-executor.js",
-    "test": "node scripts/verify-tree-node-steps.js && node scripts/verify-dynamic-values.js && node scripts/verify-explicit-modes.js && node scripts/verify-institutional-catalog.js && node scripts/verify-clinical-workflow.js && node scripts/verify-note-fidelity.js && node scripts/verify-health-alerts.js && node scripts/verify-consultation-mirror.js && node scripts/verify-note-rescue.js && node scripts/verify-clinical-assistant.js && node scripts/verify-note-signature-hash.js && node scripts/verify-note-export-flow.js && node scripts/verify-note-exports-db.js"
+    "test": "node scripts/verify-ai-usage-telemetry.js && node scripts/verify-ai-usage-pricing.js && node scripts/verify-tree-node-steps.js && node scripts/verify-dynamic-values.js && node scripts/verify-explicit-modes.js && node scripts/verify-institutional-catalog.js && node scripts/verify-clinical-workflow.js && node scripts/verify-note-fidelity.js && node scripts/verify-health-alerts.js && node scripts/verify-consultation-mirror.js && node scripts/verify-note-rescue.js && node scripts/verify-clinical-assistant.js && node scripts/verify-note-signature-hash.js && node scripts/verify-note-export-flow.js && node scripts/verify-note-exports-db.js",
+    "test:ai-usage": "node scripts/verify-ai-usage-telemetry.js && node scripts/verify-ai-usage-pricing.js",
+    "test:ai-usage-rls": "psql \"$GRAPH_TEST_DATABASE_URL\" -v ON_ERROR_STOP=1 -f tests/sql/03-ai-usage-rls.sql"
   },
   "keywords": [],
   "author": "",

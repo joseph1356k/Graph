@@ -12,6 +12,9 @@
 //  - Las herramientas MCP, ask_user, speak y list_apps se declaran igual que en OpenAI.
 
 const { goalPrompt } = require('./prompt');
+const LLMProvider = require('../LLMProvider');
+const { fromGemini, toRecorderUsage } = require('../../domain/usage/providerUsage');
+const { API_FAMILIES, FEATURES } = require('../../domain/usage/vocabulary');
 
 const BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
@@ -31,19 +34,64 @@ function transient(code) {
   return code === 429 || (code >= 500 && code <= 599);
 }
 
+// Igual que en el cerebro de OpenAI: un evento por intento, con su número.
+// El modelo se saca de la URL porque Gemini lo lleva en la ruta
+// (/v1beta/models/<modelo>:generateContent), no en el cuerpo.
 async function gemHttp(url, body) {
   let wait = 800;
   for (let attempt = 1; ; attempt++) {
+    const startedAt = Date.now();
+    const occurredAt = new Date().toISOString();
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
     const text = await res.text();
+
+    recordGeminiBrainUsage({
+      requestedModel: modelFromGeminiUrl(url),
+      attempt,
+      statusCode: res.status,
+      latencyMs: Date.now() - startedAt,
+      occurredAt,
+      rawBody: text
+    });
+
     if (!transient(res.status) || attempt >= 4) return { code: res.status, body: text };
     await new Promise((resolve) => setTimeout(resolve, wait));
     wait = Math.min(wait * 2, 8000);
   }
+}
+
+function modelFromGeminiUrl(url = '') {
+  const match = /\/models\/([^:?/]+)/.exec(`${url}`);
+  return match ? match[1] : '';
+}
+
+function recordGeminiBrainUsage(input) {
+  const recorder = LLMProvider.getUsageRecorder();
+  if (!recorder) return;
+  let parsed = {};
+  try {
+    parsed = input.rawBody ? JSON.parse(input.rawBody) : {};
+  } catch (error) {
+    parsed = {};
+  }
+  const ok = input.statusCode >= 200 && input.statusCode < 300;
+  recorder.record({
+    provider: 'google',
+    apiFamily: API_FAMILIES.COMPUTER_USE,
+    feature: FEATURES.CONSCIOUS_BRIDGE,
+    requestedModel: input.requestedModel,
+    attempt: input.attempt,
+    occurredAt: input.occurredAt,
+    latencyMs: input.latencyMs,
+    status: ok ? 'ok' : 'error',
+    errorCode: ok ? '' : `http_${input.statusCode}`,
+    metadata: { httpStatus: input.statusCode, attempt: input.attempt },
+    ...toRecorderUsage(fromGemini(parsed))
+  });
 }
 
 /** Declaración de una función Gemini a partir de una McpTool (params STRING, enum en opciones). */

@@ -1,5 +1,7 @@
 const runtimeExecutionPolicy = require('./RuntimeExecutionPolicy');
 
+const { withFeature } = require('../../infrastructure/usage/UsageContext');
+const { FEATURES } = require('../../domain/usage/vocabulary');
 class ExecutionIntelligenceService {
   constructor(llmProvider = null) {
     this.llmProvider = llmProvider;
@@ -216,10 +218,10 @@ class ExecutionIntelligenceService {
     }
 
     try {
-      const content = await this.llmProvider.chatExpectingJson(
+      const content = await withFeature(FEATURES.EXECUTION_INTELLIGENCE, () => this.llmProvider.chatExpectingJson(
         this.buildMessages(workflow, payload),
         { type: 'json_object' }
-      );
+      ));
       return this.parseDecision(content);
     } catch (error) {
       return {

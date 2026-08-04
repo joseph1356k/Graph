@@ -13,6 +13,10 @@ const SupabaseClinicalEncounterRepository = require('../src/infrastructure/repos
 const SupabaseNoteExportRepository = require('../src/infrastructure/repositories/SupabaseNoteExportRepository');
 const MarkdownCatalogWriter = require('../src/infrastructure/file-system/MarkdownCatalogWriter');
 const UsageLedgerStore = require('../src/infrastructure/file-system/UsageLedgerStore');
+const SupabaseUsageEventStore = require('../src/infrastructure/usage/SupabaseUsageEventStore');
+const AiUsageRecorder = require('../src/application/use-cases/AiUsageRecorder');
+const UsageAttributionResolver = require('../src/application/use-cases/UsageAttributionResolver');
+const createUsageContextMiddleware = require('./api/attachUsageContext');
 
 const WorkflowCatalog = require('../src/application/use-cases/WorkflowCatalog');
 const WorkflowLearner = require('../src/application/use-cases/WorkflowLearner');
@@ -125,8 +129,6 @@ const assistantLlmProvider = new LLMProvider('MIRACLE_ASSISTANT');
 const biopsyLlmProvider = new LLMProvider('MIRACLE_BIOPSY');
 const repository = new Neo4jWorkflowRepository(db);
 const catalogWriter = new MarkdownCatalogWriter();
-const usageLedgerStore = new UsageLedgerStore(resolveGeneratedRoot('usage', 'ai-usage-events.jsonl'));
-const usageDashboardService = new UsageDashboardService(usageLedgerStore);
 
 const catalogService = new WorkflowCatalog(repository, catalogWriter);
 const workflowLearner = new WorkflowLearner(repository, llmProvider, catalogWriter, catalogService);
@@ -145,6 +147,26 @@ const rawTranscriptionService = new ClinicalRawTranscriptionService();
 // (assistantLlmProvider, above). Persistence is isolated in the Supabase REST
 // client + repos.
 const supabaseRestClient = new SupabaseRestClient();
+
+// ---- Telemetría de consumo de IA ------------------------------------------
+// El ledger vive en Postgres porque es el único almacenamiento compartido entre
+// invocaciones de Vercel; el JSONL se conserva como respaldo para desarrollo
+// local y por si falla la escritura remota (en /tmp era la ÚNICA vía, y por eso
+// el dashboard mostraba siempre cero).
+const usageLedgerStore = new UsageLedgerStore(resolveGeneratedRoot('usage', 'ai-usage-events.jsonl'));
+const usageEventStore = new SupabaseUsageEventStore({
+  supabaseClient: supabaseRestClient,
+  fallbackStore: usageLedgerStore
+});
+const usageRecorder = new AiUsageRecorder({ store: usageEventStore });
+// Se inyecta una sola vez para las seis instancias de LLMProvider y para los
+// clientes que no lo usan (cerebros conscientes, Deepgram, vídeo).
+LLMProvider.setUsageRecorder(usageRecorder);
+const usageAttributionResolver = new UsageAttributionResolver({
+  supabaseClient: supabaseRestClient
+});
+const usageDashboardService = new UsageDashboardService(usageEventStore);
+
 // Vigilancia del sistema: la usa el cron diario de mantenimiento.
 const systemHealthAlertService = new SystemHealthAlertService({ restClient: supabaseRestClient });
 const clinicalTemplateRepository = new SupabaseClinicalTemplateRepository(supabaseRestClient);
@@ -476,6 +498,13 @@ function isMiracleMedicalProxyRequest(req) {
 // Public API surface: authenticated only with a permanent client API key
 // (MIRACLE_API_KEYS). No session-token fallback.
 app.use('/api/v1', requireApiKey);
+
+// ---- Contexto de atribución del consumo de IA ------------------------------
+// Va AQUÍ, después de toda la autenticación y antes de cualquier ruta: para
+// entonces req.clinicalUser / req.apiClient / req.user ya están resueltos, y
+// cualquier llamada a un modelo que ocurra dentro de la petición hereda la
+// identidad sin que la ruta tenga que pasarla a mano.
+app.use('/api', createUsageContextMiddleware(usageAttributionResolver));
 
 function resolvePublicAppBaseUrl(req) {
   const forwardedProto = (req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
@@ -1038,7 +1067,7 @@ app.post('/api/providers/api-keys/revoke', async (req, res) => {
 });
 
 registerLearningRoutes(app, { learningSessionService });
-registerWorkflowRoutes(app, { catalogService, workflowExecutor, noteFieldMatcher, usageDashboardService });
+registerWorkflowRoutes(app, { catalogService, workflowExecutor, noteFieldMatcher });
 registerContextRoutes(app, {
   surfaceProfileService
 });
@@ -1064,9 +1093,9 @@ registerNoteExportRoutes(app, { noteExportService });
 registerMedicalRoutes(app, {
   rawTranscriptionService,
   callMiracleRuntime,
-  usageDashboardService
+  usageRecorder
 });
-registerUsageRoutes(app, { usageDashboardService });
+registerUsageRoutes(app, { usageDashboardService, usageRecorder });
 // Mantenimiento diario (cron de Vercel): limpieza + alerta de salud por correo.
 registerMaintenanceRoutes(app, {
   healthAlertService: systemHealthAlertService,
@@ -1087,7 +1116,7 @@ registerPublicApiRoutes(app, {
   learningSessionService,
   catalogService,
   workflowExecutor,
-  usageDashboardService,
+  usageRecorder,
   assistantService: clinicalAssistantService,
   biopsyService: biopsyExtractionService
 });

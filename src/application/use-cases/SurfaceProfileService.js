@@ -1,3 +1,6 @@
+const { withFeature } = require('../../infrastructure/usage/UsageContext');
+const { FEATURES } = require('../../domain/usage/vocabulary');
+
 class SurfaceProfileService {
   constructor(repository, llmProvider) {
     this.repository = repository;
@@ -294,7 +297,7 @@ class SurfaceProfileService {
     ];
 
     try {
-      const content = await this.llmProvider.chatExpectingJson(messages, { type: 'json_object' });
+      const content = await withFeature(FEATURES.SURFACE_PROFILE, () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }));
       const parsed = this.llmProvider.parseJsonObject(content);
       return this.sanitizeGeneratedProfile(context, parsed, fallback);
     } catch (error) {

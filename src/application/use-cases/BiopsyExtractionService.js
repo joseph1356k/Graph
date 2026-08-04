@@ -1,3 +1,6 @@
+const { withFeature } = require('../../infrastructure/usage/UsageContext');
+const { FEATURES } = require('../../domain/usage/vocabulary');
+
 // Biopsy / lab-sheet photo extraction: reads a photo of a hand-written
 // laboratory worksheet (bacteriology, pathology, clinical lab) and transcribes
 // it into the sections ("casillas") of the template the client sends.
@@ -263,7 +266,7 @@ ${guide}`;
     let content;
     let usage;
     try {
-      const result = await this.llmProvider.chatExpectingJsonWithUsage(messages, { type: 'json_object' });
+      const result = await withFeature(FEATURES.BIOPSIA, () => this.llmProvider.chatExpectingJsonWithUsage(messages, { type: 'json_object' }));
       content = result.content;
       usage = result.usage;
     } catch (error) {

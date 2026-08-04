@@ -1,294 +1,336 @@
-const PRICING_SOURCE_URL = 'https://developers.openai.com/api/docs/pricing';
-const PRICING_CAPTURED_AT = '2026-06-17';
+// Servicio del dashboard de consumo de IA.
+//
+// CAMBIO DE FONDO FRENTE A LA VERSIÓN ANTERIOR. Antes este archivo leía el
+// JSONL entero en memoria y agregaba en Node con tres Map. Con el ledger en
+// Postgres eso no escala y además obligaría a traerse todos los eventos al
+// backend solo para sumarlos. Ahora agrega la base de datos (RPC security
+// definer) y aquí solo se normalizan filtros y se da forma a la respuesta.
+//
+// AISLAMIENTO. Cuando la petición trae el JWT de un usuario del portal, la RPC
+// se ejecuta CON ESE TOKEN: es Postgres quien decide qué filas ve, con la misma
+// función de alcance que usa la política RLS. Este proceso no puede ampliar el
+// alcance aunque quisiera. Solo el operador interno (sesión de administrador de
+// Graph) consulta con service-role, y eso es explícito.
 
-const PRICING_CATALOG = [
-  {
-    provider: 'openai',
-    apiFamily: 'transcription',
-    model: 'gpt-4o-transcribe',
-    inputPer1MUsd: 2.5,
-    outputPer1MUsd: 10,
-    minuteUsd: 0.006,
-    sourceUrl: PRICING_SOURCE_URL,
-    sourceCapturedAt: PRICING_CAPTURED_AT
-  },
-  {
-    provider: 'openai',
-    apiFamily: 'transcription',
-    model: 'gpt-4o-mini-transcribe',
-    inputPer1MUsd: 1.25,
-    outputPer1MUsd: 5,
-    minuteUsd: 0.003,
-    sourceUrl: PRICING_SOURCE_URL,
-    sourceCapturedAt: PRICING_CAPTURED_AT
-  },
-  {
-    provider: 'openai',
-    apiFamily: 'responses',
-    model: 'gpt-4.1-mini',
-    inputPer1MUsd: 0.4,
-    cachedInputPer1MUsd: 0.1,
-    outputPer1MUsd: 1.6,
-    sourceUrl: PRICING_SOURCE_URL,
-    sourceCapturedAt: PRICING_CAPTURED_AT
-  },
-  {
-    provider: 'openai',
-    apiFamily: 'responses',
-    model: 'gpt-4o',
-    inputPer1MUsd: 2.5,
-    cachedInputPer1MUsd: 1.25,
-    outputPer1MUsd: 10,
-    sourceUrl: PRICING_SOURCE_URL,
-    sourceCapturedAt: PRICING_CAPTURED_AT
-  },
-  {
-    provider: 'openai',
-    apiFamily: 'responses',
-    model: 'gpt-4o-mini',
-    inputPer1MUsd: 0.15,
-    cachedInputPer1MUsd: 0.075,
-    outputPer1MUsd: 0.6,
-    sourceUrl: PRICING_SOURCE_URL,
-    sourceCapturedAt: PRICING_CAPTURED_AT
-  }
-];
+const { listRates, PRICING_VERSION } = require('../../domain/usage/pricing');
+const {
+  APP_VALUES,
+  FEATURE_VALUES,
+  STATUS_VALUES,
+  ENVIRONMENT_VALUES
+} = require('../../domain/usage/vocabulary');
 
-const MODEL_ALIASES = {};
+const RANGE_PRESETS = Object.freeze({
+  '1h': 60 * 60 * 1000,
+  '6h': 6 * 60 * 60 * 1000,
+  '24h': 24 * 60 * 60 * 1000,
+  '72h': 72 * 60 * 60 * 1000,
+  '7d': 7 * 24 * 60 * 60 * 1000,
+  '30d': 30 * 24 * 60 * 60 * 1000
+});
 
-function roundCurrency(value) {
-  return Math.round((Number(value) || 0) * 1000000) / 1000000;
+const BREAKDOWN_DIMENSIONS = Object.freeze([
+  'app', 'feature', 'provider', 'model', 'user', 'organization', 'status', 'environment', 'actor_type'
+]);
+
+function textList(value) {
+  if (value === undefined || value === null || value === '') return null;
+  const items = (Array.isArray(value) ? value : `${value}`.split(','))
+    .map((entry) => `${entry ?? ''}`.trim().toLowerCase())
+    .filter(Boolean)
+    .slice(0, 40);
+  return items.length ? items : null;
 }
 
-function normalizeNumber(value) {
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? numeric : 0;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function uuidOrNull(value) {
+  const candidate = `${value ?? ''}`.trim();
+  return UUID_RE.test(candidate) ? candidate.toLowerCase() : null;
 }
 
-function normalizeText(value) {
-  return `${value || ''}`.trim();
+function isoOrNull(value) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isFinite(parsed.getTime()) ? parsed.toISOString() : null;
 }
 
 class UsageDashboardService {
-  constructor(store) {
+  constructor(store, options = {}) {
     this.store = store;
+    this.now = options.now || (() => new Date());
   }
 
-  getPricingCatalog() {
-    return PRICING_CATALOG.map((entry) => ({ ...entry }));
-  }
+  /**
+   * Normaliza los filtros de la query. Todos son combinables; los que no vengan
+   * simplemente no filtran. `range` es azúcar sobre from/to: si vienen fechas
+   * explícitas, mandan ellas.
+   */
+  normalizeFilters(query = {}) {
+    const now = this.now();
+    let from = isoOrNull(query.from);
+    let to = isoOrNull(query.to);
 
-  recordEvent(input = {}) {
-    const occurredAt = normalizeText(input.occurredAt) || new Date().toISOString();
-    const provider = normalizeText(input.provider).toLowerCase() || 'internal';
-    const apiFamily = normalizeText(input.apiFamily).toLowerCase();
-    const model = MODEL_ALIASES[normalizeText(input.model)] || normalizeText(input.model);
-    const event = {
-      id: normalizeText(input.id) || `usage_${Date.now()}_${Math.random().toString(16).slice(2, 10)}`,
-      occurredAt,
-      sourceRepo: normalizeText(input.sourceRepo).toLowerCase() || 'graph',
-      eventType: normalizeText(input.eventType) || 'usage_event',
-      provider,
-      apiFamily,
-      model,
-      inputTokens: normalizeNumber(input.inputTokens),
-      outputTokens: normalizeNumber(input.outputTokens),
-      deepgramMinutes: normalizeNumber(input.deepgramMinutes),
-      requestId: normalizeText(input.requestId),
-      sessionId: normalizeText(input.sessionId),
-      workflowId: normalizeText(input.workflowId),
-      segmentId: normalizeText(input.segmentId),
-      stepOrder: Number.isFinite(Number(input.stepOrder)) ? Number(input.stepOrder) : null,
-      status: normalizeText(input.status),
-      durationMs: Number.isFinite(Number(input.durationMs)) ? Number(input.durationMs) : null,
-      feature: normalizeText(input.feature),
-      metadata: input.metadata && typeof input.metadata === 'object' ? input.metadata : {}
-    };
-
-    const pricing = this.findPricing(event);
-    event.pricing = pricing ? {
-      inputPer1MUsd: pricing.inputPer1MUsd ?? null,
-      outputPer1MUsd: pricing.outputPer1MUsd ?? null,
-      minuteUsd: pricing.minuteUsd ?? null,
-      sourceUrl: pricing.sourceUrl,
-      sourceCapturedAt: pricing.sourceCapturedAt
-    } : null;
-    event.estimatedCostUsd = this.estimateEventCost(event, pricing);
-
-    return this.store.append(event);
-  }
-
-  listEvents(filters = {}) {
-    const from = normalizeText(filters.from);
-    const to = normalizeText(filters.to);
-    const sourceRepo = normalizeText(filters.sourceRepo).toLowerCase();
-    const provider = normalizeText(filters.provider).toLowerCase();
-    const eventType = normalizeText(filters.eventType).toLowerCase();
-    const model = normalizeText(filters.model);
-
-    return this.store.readAll().filter((event) => {
-      if (from && `${event.occurredAt || ''}` < from) return false;
-      if (to && `${event.occurredAt || ''}` > to) return false;
-      if (sourceRepo && `${event.sourceRepo || ''}`.toLowerCase() !== sourceRepo) return false;
-      if (provider && `${event.provider || ''}`.toLowerCase() !== provider) return false;
-      if (eventType && `${event.eventType || ''}`.toLowerCase() !== eventType) return false;
-      if (model && `${event.model || ''}` !== model) return false;
-      return true;
-    });
-  }
-
-  buildSummary(filters = {}) {
-    const events = this.listEvents(filters).sort((left, right) => `${right.occurredAt || ''}`.localeCompare(`${left.occurredAt || ''}`));
-    const totals = {
-      inputTokens: 0,
-      outputTokens: 0,
-      deepgramMinutes: 0,
-      estimatedCostUsd: 0,
-      eventCount: events.length,
-      pricedEventCount: 0,
-      unpricedEventCount: 0
-    };
-    const byDayMap = new Map();
-    const byHourMap = new Map();
-    const byModelMap = new Map();
-
-    for (const event of events) {
-      totals.inputTokens += normalizeNumber(event.inputTokens);
-      totals.outputTokens += normalizeNumber(event.outputTokens);
-      totals.deepgramMinutes += normalizeNumber(event.deepgramMinutes);
-
-      const estimatedCost = normalizeNumber(event.estimatedCostUsd);
-      totals.estimatedCostUsd += estimatedCost;
-      if (estimatedCost > 0) {
-        totals.pricedEventCount += 1;
-      } else if ((event.inputTokens || event.outputTokens) && event.provider === 'openai') {
-        totals.unpricedEventCount += 1;
-      }
-
-      const dayKey = `${event.occurredAt || ''}`.slice(0, 10) || 'unknown';
-      const dayBucket = byDayMap.get(dayKey) || {
-        date: dayKey,
-        inputTokens: 0,
-        outputTokens: 0,
-        deepgramMinutes: 0,
-        estimatedCostUsd: 0,
-        eventCount: 0
-      };
-      dayBucket.inputTokens += normalizeNumber(event.inputTokens);
-      dayBucket.outputTokens += normalizeNumber(event.outputTokens);
-      dayBucket.deepgramMinutes += normalizeNumber(event.deepgramMinutes);
-      dayBucket.estimatedCostUsd += estimatedCost;
-      dayBucket.eventCount += 1;
-      byDayMap.set(dayKey, dayBucket);
-
-      const hourKey = `${event.occurredAt || ''}`.slice(0, 13) || 'unknown';
-      const hourBucket = byHourMap.get(hourKey) || {
-        hour: hourKey,
-        inputTokens: 0,
-        outputTokens: 0,
-        deepgramMinutes: 0,
-        estimatedCostUsd: 0,
-        eventCount: 0
-      };
-      hourBucket.inputTokens += normalizeNumber(event.inputTokens);
-      hourBucket.outputTokens += normalizeNumber(event.outputTokens);
-      hourBucket.deepgramMinutes += normalizeNumber(event.deepgramMinutes);
-      hourBucket.estimatedCostUsd += estimatedCost;
-      hourBucket.eventCount += 1;
-      byHourMap.set(hourKey, hourBucket);
-
-      const modelKey = [
-        event.sourceRepo || '',
-        event.provider || '',
-        event.apiFamily || '',
-        event.model || '',
-        event.eventType || ''
-      ].join('|');
-      const modelBucket = byModelMap.get(modelKey) || {
-        sourceRepo: event.sourceRepo || '',
-        provider: event.provider || '',
-        apiFamily: event.apiFamily || '',
-        model: event.model || '',
-        eventType: event.eventType || '',
-        inputTokens: 0,
-        outputTokens: 0,
-        deepgramMinutes: 0,
-        estimatedCostUsd: 0,
-        eventCount: 0
-      };
-      modelBucket.inputTokens += normalizeNumber(event.inputTokens);
-      modelBucket.outputTokens += normalizeNumber(event.outputTokens);
-      modelBucket.deepgramMinutes += normalizeNumber(event.deepgramMinutes);
-      modelBucket.estimatedCostUsd += estimatedCost;
-      modelBucket.eventCount += 1;
-      byModelMap.set(modelKey, modelBucket);
+    if (!from && !to) {
+      const rangeKey = `${query.range || '24h'}`.trim().toLowerCase();
+      const windowMs = RANGE_PRESETS[rangeKey] || RANGE_PRESETS['24h'];
+      from = new Date(now.getTime() - windowMs).toISOString();
+      to = now.toISOString();
+    } else if (from && !to) {
+      to = now.toISOString();
     }
 
     return {
-      totals: {
-        ...totals,
-        deepgramMinutes: roundCurrency(totals.deepgramMinutes),
-        estimatedCostUsd: roundCurrency(totals.estimatedCostUsd)
-      },
-      byDay: Array.from(byDayMap.values())
-        .map((bucket) => ({
-          ...bucket,
-          deepgramMinutes: roundCurrency(bucket.deepgramMinutes),
-          estimatedCostUsd: roundCurrency(bucket.estimatedCostUsd)
-        }))
-        .sort((left, right) => `${right.date}`.localeCompare(`${left.date}`)),
-      byHour: Array.from(byHourMap.values())
-        .map((bucket) => ({
-          ...bucket,
-          deepgramMinutes: roundCurrency(bucket.deepgramMinutes),
-          estimatedCostUsd: roundCurrency(bucket.estimatedCostUsd)
-        }))
-        .sort((left, right) => `${left.hour}`.localeCompare(`${right.hour}`)),
-      byModel: Array.from(byModelMap.values())
-        .map((bucket) => ({
-          ...bucket,
-          deepgramMinutes: roundCurrency(bucket.deepgramMinutes),
-          estimatedCostUsd: roundCurrency(bucket.estimatedCostUsd)
-        }))
-        .sort((left, right) => right.eventCount - left.eventCount),
-      recentEvents: events.slice(0, 200)
+      from,
+      to,
+      organizationId: uuidOrNull(query.organizationId || query.organization_id),
+      userId: uuidOrNull(query.userId || query.user_id),
+      apps: textList(query.app || query.apps),
+      features: textList(query.feature || query.features),
+      providers: textList(query.provider || query.providers),
+      models: textList(query.model || query.models),
+      statuses: textList(query.status || query.statuses),
+      environments: textList(query.environment || query.environments)
     };
   }
 
-  findPricing(event = {}) {
-    const model = normalizeText(event.model);
-    const provider = normalizeText(event.provider).toLowerCase();
-    const apiFamily = normalizeText(event.apiFamily).toLowerCase();
-    if (!model || !provider) {
-      return null;
-    }
-
-    const exact = PRICING_CATALOG.find((entry) =>
-      entry.provider === provider
-      && entry.model === model
-      && (!apiFamily || entry.apiFamily === apiFamily)
-    );
-    if (exact) {
-      return exact;
-    }
-
-    return PRICING_CATALOG.find((entry) => entry.provider === provider && entry.model === model) || null;
+  toRpcParams(filters) {
+    return {
+      p_from: filters.from,
+      p_to: filters.to,
+      p_organization_id: filters.organizationId,
+      p_user_id: filters.userId,
+      p_apps: filters.apps,
+      p_features: filters.features,
+      p_providers: filters.providers,
+      p_models: filters.models,
+      p_statuses: filters.statuses,
+      p_environments: filters.environments
+    };
   }
 
-  estimateEventCost(event = {}, pricing = null) {
-    if (!pricing) {
-      return 0;
+  // `viewer` decide con qué credencial se consulta. Si trae accessToken, manda
+  // el usuario y su alcance lo aplica Postgres. Si no, es el operador interno.
+  async call(name, params, viewer = {}) {
+    if (viewer.accessToken) {
+      return this.store.callRpcAsUser(name, params, viewer.accessToken);
     }
+    return this.store.callRpc(name, params);
+  }
 
-    const inputTokens = normalizeNumber(event.inputTokens);
-    const outputTokens = normalizeNumber(event.outputTokens);
-    const deepgramMinutes = normalizeNumber(event.deepgramMinutes);
+  /**
+   * Elige el tamaño de cubo de la serie según el rango, para no devolver ni
+   * cuatro puntos ni diez mil. Es la diferencia entre una gráfica legible y una
+   * que hay que interpretar.
+   */
+  bucketFor(filters) {
+    const from = new Date(filters.from).getTime();
+    const to = new Date(filters.to).getTime();
+    const spanMs = Math.max(to - from, 0);
+    if (spanMs <= 3 * 60 * 60 * 1000) return 'minute';
+    if (spanMs <= 4 * 24 * 60 * 60 * 1000) return 'hour';
+    return 'day';
+  }
 
-    const inputCost = pricing.inputPer1MUsd ? (inputTokens / 1000000) * pricing.inputPer1MUsd : 0;
-    const outputCost = pricing.outputPer1MUsd ? (outputTokens / 1000000) * pricing.outputPer1MUsd : 0;
-    const minuteCost = pricing.minuteUsd ? deepgramMinutes * pricing.minuteUsd : 0;
-    return roundCurrency(inputCost + outputCost + minuteCost);
+  async getSummary(query = {}, viewer = {}) {
+    const filters = this.normalizeFilters(query);
+    const rows = await this.call('ai_usage_summary', this.toRpcParams(filters), viewer);
+    const totals = Array.isArray(rows) && rows[0] ? rows[0] : {};
+    return {
+      filters,
+      totals: {
+        totalEvents: Number(totals.total_events || 0),
+        okEvents: Number(totals.ok_events || 0),
+        errorEvents: Number(totals.error_events || 0),
+        inputTokens: Number(totals.input_tokens || 0),
+        outputTokens: Number(totals.output_tokens || 0),
+        cachedInputTokens: Number(totals.cached_input_tokens || 0),
+        reasoningTokens: Number(totals.reasoning_tokens || 0),
+        totalTokens: Number(totals.total_tokens || 0),
+        audioSeconds: Number(totals.audio_seconds || 0),
+        costUsd: Number(totals.cost_usd || 0),
+        pricedEvents: Number(totals.priced_events || 0),
+        unpricedEvents: Number(totals.unpriced_events || 0),
+        activeUsers: Number(totals.active_users || 0),
+        activeOrganizations: Number(totals.active_organizations || 0),
+        avgTokensPerEvent: Number(totals.avg_tokens_per_event || 0),
+        avgLatencyMs: Number(totals.avg_latency_ms || 0),
+        errorRate: Number(totals.error_rate || 0),
+        firstEventAt: totals.first_event_at || null,
+        lastEventAt: totals.last_event_at || null
+      }
+    };
+  }
+
+  async getSeries(query = {}, viewer = {}) {
+    const filters = this.normalizeFilters(query);
+    const bucket = query.bucket || this.bucketFor(filters);
+    const rows = await this.call(
+      'ai_usage_series',
+      { p_bucket: bucket, ...this.toRpcParams(filters) },
+      viewer
+    );
+    return {
+      bucket,
+      filters,
+      points: (Array.isArray(rows) ? rows : []).map((row) => ({
+        at: row.bucket_at,
+        events: Number(row.events || 0),
+        inputTokens: Number(row.input_tokens || 0),
+        outputTokens: Number(row.output_tokens || 0),
+        totalTokens: Number(row.total_tokens || 0),
+        costUsd: Number(row.cost_usd || 0),
+        errorEvents: Number(row.error_events || 0)
+      }))
+    };
+  }
+
+  async getBreakdown(dimension, query = {}, viewer = {}) {
+    const requested = `${dimension || ''}`.trim().toLowerCase();
+    if (!BREAKDOWN_DIMENSIONS.includes(requested)) {
+      const error = new Error(`Dimensión no soportada: ${dimension}`);
+      error.statusCode = 400;
+      throw error;
+    }
+    const filters = this.normalizeFilters(query);
+    const rows = await this.call(
+      'ai_usage_breakdown',
+      {
+        p_dimension: requested,
+        ...this.toRpcParams(filters),
+        p_limit: Math.min(Math.max(Number(query.limit) || 25, 1), 200)
+      },
+      viewer
+    );
+    return {
+      dimension: requested,
+      filters,
+      rows: (Array.isArray(rows) ? rows : []).map((row) => ({
+        key: row.dimension_key,
+        id: row.dimension_id || null,
+        events: Number(row.events || 0),
+        inputTokens: Number(row.input_tokens || 0),
+        outputTokens: Number(row.output_tokens || 0),
+        totalTokens: Number(row.total_tokens || 0),
+        costUsd: Number(row.cost_usd || 0),
+        errorEvents: Number(row.error_events || 0),
+        avgLatencyMs: Number(row.avg_latency_ms || 0)
+      }))
+    };
+  }
+
+  async getEvents(query = {}, viewer = {}) {
+    const filters = this.normalizeFilters(query);
+    const limit = Math.min(Math.max(Number(query.limit) || 50, 1), 200);
+    const offset = Math.max(Number(query.offset) || 0, 0);
+    const rows = await this.call(
+      'ai_usage_events_page',
+      { ...this.toRpcParams(filters), p_limit: limit, p_offset: offset },
+      viewer
+    );
+    const list = Array.isArray(rows) ? rows : [];
+    return {
+      filters,
+      limit,
+      offset,
+      total: list.length ? Number(list[0].total_count || 0) : 0,
+      events: list.map((row) => ({
+        id: row.id,
+        occurredAt: row.occurred_at,
+        organizationId: row.organization_id,
+        userId: row.user_id,
+        actorType: row.actor_type,
+        attributionSource: row.attribution_source,
+        app: row.app,
+        feature: row.feature,
+        provider: row.provider,
+        requestedModel: row.requested_model,
+        servedModel: row.served_model,
+        inputTokens: Number(row.input_tokens || 0),
+        outputTokens: Number(row.output_tokens || 0),
+        cachedInputTokens: Number(row.cached_input_tokens || 0),
+        totalTokens: Number(row.total_tokens || 0),
+        audioSeconds: Number(row.audio_seconds || 0),
+        // null se preserva: es «sin tarifa», no cero.
+        costUsd: row.cost_usd === null || row.cost_usd === undefined
+          ? null
+          : Number(row.cost_usd),
+        costStatus: row.cost_status,
+        status: row.status,
+        errorCode: row.error_code,
+        latencyMs: row.latency_ms === null ? null : Number(row.latency_ms),
+        streamed: Boolean(row.streamed),
+        attempt: Number(row.attempt || 1),
+        environment: row.environment
+      }))
+    };
+  }
+
+  async getMissingRates(query = {}, viewer = {}) {
+    const filters = this.normalizeFilters(query);
+    const rows = await this.call(
+      'ai_usage_missing_rates',
+      { p_from: filters.from, p_to: filters.to },
+      viewer
+    );
+    return (Array.isArray(rows) ? rows : []).map((row) => ({
+      provider: row.provider,
+      apiFamily: row.api_family,
+      model: row.requested_model,
+      events: Number(row.events || 0),
+      totalTokens: Number(row.total_tokens || 0),
+      lastSeenAt: row.last_seen_at
+    }));
+  }
+
+  /** Todo lo que el dashboard necesita para pintarse, en una sola ida y vuelta. */
+  async getOverview(query = {}, viewer = {}) {
+    const filters = this.normalizeFilters(query);
+    const bucket = this.bucketFor(filters);
+
+    // Se lanzan en paralelo: son consultas independientes contra la misma
+    // ventana y encadenarlas multiplicaría la latencia por seis.
+    const [summary, series, byApp, byFeature, byModel, byUser, byProvider, missingRates] =
+      await Promise.all([
+        this.getSummary(query, viewer),
+        this.getSeries({ ...query, bucket }, viewer),
+        this.getBreakdown('app', query, viewer),
+        this.getBreakdown('feature', query, viewer),
+        this.getBreakdown('model', { ...query, limit: 10 }, viewer),
+        this.getBreakdown('user', { ...query, limit: 10 }, viewer),
+        this.getBreakdown('provider', query, viewer),
+        this.getMissingRates(query, viewer)
+      ]);
+
+    return {
+      generatedAt: this.now().toISOString(),
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+      pricingVersion: PRICING_VERSION,
+      filters,
+      totals: summary.totals,
+      series,
+      breakdowns: {
+        app: byApp.rows,
+        feature: byFeature.rows,
+        model: byModel.rows,
+        user: byUser.rows,
+        provider: byProvider.rows
+      },
+      missingRates,
+      // El dashboard no inventa las opciones de los filtros: se las damos.
+      vocabulary: {
+        apps: APP_VALUES,
+        features: FEATURE_VALUES,
+        statuses: STATUS_VALUES,
+        environments: ENVIRONMENT_VALUES
+      }
+    };
+  }
+
+  getPricingCatalog() {
+    return listRates();
   }
 }
 
 module.exports = UsageDashboardService;
+module.exports.RANGE_PRESETS = RANGE_PRESETS;
+module.exports.BREAKDOWN_DIMENSIONS = BREAKDOWN_DIMENSIONS;

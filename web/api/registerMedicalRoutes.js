@@ -1,4 +1,5 @@
-const createUsageRecorder = require('./recordUsageBestEffort');
+const createUpstreamUsageRecorder = require('./recordUsageBestEffort');
+const { FEATURES } = require('../../src/domain/usage/vocabulary');
 
 const MAX_AUDIO_BASE64_LENGTH = 15 * 1024 * 1024;
 const MAX_TRANSCRIPT_LENGTH = 40000;
@@ -6,13 +7,16 @@ const MAX_TRANSCRIPT_LENGTH = 40000;
 function registerMedicalRoutes(app, deps = {}) {
   const rawTranscriptionService = deps.rawTranscriptionService;
   const callMiracleRuntime = deps.callMiracleRuntime;
-  const usageDashboardService = deps.usageDashboardService || null;
+  const usageRecorder = deps.usageRecorder || null;
 
   if (!app || !rawTranscriptionService || typeof callMiracleRuntime !== 'function') {
     throw new Error('registerMedicalRoutes requires app, rawTranscriptionService, and callMiracleRuntime');
   }
 
-  const recordUsageBestEffort = createUsageRecorder(usageDashboardService);
+  // El runtime de Miracle (Python) llama al modelo por su cuenta y nos
+  // devuelve su `usage`: es el único consumo de esta ruta que no pasa por
+  // LLMProvider, así que es el único que se anota a mano aquí.
+  const recordUpstreamUsage = createUpstreamUsageRecorder(usageRecorder);
 
   app.post('/api/medical/transcriptions/raw', async (req, res) => {
     const audioBase64 = `${req.body?.audioBase64 || req.body?.audio_base64 || ''}`.trim();
@@ -70,20 +74,10 @@ function registerMedicalRoutes(app, deps = {}) {
       });
       const payload = orchestrated?.body || {};
 
-      if (payload.usage) {
-        recordUsageBestEffort({
-          sourceRepo: 'graph',
-          eventType: 'medical_notes_organized_usage',
-          provider: payload.usage.provider || 'miracle',
-          apiFamily: payload.usage.api_family || payload.usage.apiFamily || 'chat_completions',
-          model: payload.usage.model || '',
-          inputTokens: Number(payload.usage.input_tokens ?? payload.usage.inputTokens) || 0,
-          outputTokens: Number(payload.usage.output_tokens ?? payload.usage.outputTokens) || 0,
-          sessionId: voiceSessionId,
-          feature: 'medical_notes_organized',
-          status: 'ok'
-        }, 'medical notes organized usage');
-      }
+      recordUpstreamUsage(payload.usage, {
+        feature: FEATURES.CLINICAL_STRUCTURING,
+        sessionId: voiceSessionId
+      });
 
       return res.json({
         transcript,

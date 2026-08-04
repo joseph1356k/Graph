@@ -1,3 +1,6 @@
+const { withFeature } = require('../../infrastructure/usage/UsageContext');
+const { FEATURES } = require('../../domain/usage/vocabulary');
+
 // Resuelve los valores POR-EJECUCIÓN de los steps dynamic de un workflow a partir del `context`
 // que manda el agente ("paciente Juan Pérez, documento 12345678"). Es la pieza que faltaba del
 // modelo de coincidencia (fixed/dynamic/flexible, ver doc coincidencia-superficie-estado): la
@@ -94,10 +97,10 @@ class DynamicValueResolver {
       );
     }
 
-    const response = await this.llmProvider.chatExpectingJsonWithUsage(
+    const response = await withFeature(FEATURES.DYNAMIC_VALUES, () => this.llmProvider.chatExpectingJsonWithUsage(
       this.buildMessages({ context, steps }),
       buildResponseFormat()
-    );
+    ));
     const parsed = this.llmProvider.parseJsonObject(response.content || '{}') || {};
     const rows = Array.isArray(parsed.values) ? parsed.values : [];
 
