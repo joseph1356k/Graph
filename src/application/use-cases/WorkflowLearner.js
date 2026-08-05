@@ -1,6 +1,8 @@
 const Workflow = require('../../domain/entities/Workflow');
 const WorkflowExecutionGuideBuilder = require('./WorkflowExecutionGuideBuilder');
 
+const { withFeature } = require('../../infrastructure/usage/UsageContext');
+const { FEATURES } = require('../../domain/usage/vocabulary');
 class WorkflowLearner {
   constructor(repository, llmProvider, catalogWriter, catalogService) {
     this.repository = repository;
@@ -95,7 +97,7 @@ class WorkflowLearner {
           },
           { role: 'user', content: `Initial Description: ${initialDesc}\nSteps: ${JSON.stringify(steps)}` }
         ];
-        summary = await this.llmProvider.chat(messages);
+        summary = await withFeature(FEATURES.WORKFLOW_LEARNING, () => this.llmProvider.chat(messages));
       }
 
       executionGuide = await this.executionGuideBuilder.buildGuide({

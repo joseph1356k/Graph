@@ -1,5 +1,7 @@
 const { clinicalError, isClinicalError } = require('./ClinicalErrors');
 
+const { withFeature } = require('../../infrastructure/usage/UsageContext');
+const { FEATURES } = require('../../domain/usage/vocabulary');
 // Orchestrates note generation: loads the encounter, builds the strict prompt
 // from the template_snapshot, calls the configured LLM, validates/repairs the
 // JSON and persists the result. Never logs transcript or note contents (PHI).
@@ -66,7 +68,7 @@ class ClinicalNoteGeneratorService {
         transcript,
         templateSnapshot: encounter.template_snapshot
       });
-      const content = await this.llmProvider.chatExpectingJson(messages, { type: 'json_object' });
+      const content = await withFeature(FEATURES.NOTE_GENERATION, () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }));
       const parsed = this.llmProvider.parseJsonObject(content || '{}');
       const noteJson = this.validationService.validateAndRepair(parsed, encounter.template_snapshot);
 

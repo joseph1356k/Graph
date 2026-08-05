@@ -3,598 +3,688 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Uso de tokens | Miracle</title>
+  <title>Uso de tokens y costos de IA | Miracle</title>
   <link rel="icon" href="/icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/provider-studio.css">
   <style>
-    .usage-shell {
-      width: min(1100px, calc(100vw - 96px));
+    /* Paleta categórica sobre negro. Tonos de luminancia parecida entre sí y
+       contraste suficiente contra el panel, para que ninguna serie desaparezca
+       y para que el orden no sugiera jerarquía. El color nunca es el único
+       portador de significado: toda serie lleva etiqueta y todo valor, cifra. */
+    :root {
+      --cat-1: #8ab4f8;
+      --cat-2: #9df0ac;
+      --cat-3: #f7c66b;
+      --cat-4: #d7a3f5;
+      --cat-5: #7fd8d0;
+      --cat-6: #ff9a8b;
+      --usage-grid: rgba(255, 255, 255, 0.07);
     }
 
-    .usage-back {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
+    .usage-shell { width: min(1320px, calc(100vw - 64px)); margin: 0 auto; padding-bottom: 72px; }
+    @media (max-width: 780px) { .usage-shell { width: calc(100vw - 32px); } }
+
+    .usage-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap; padding: 28px 0 18px;
+    }
+    .usage-title { display: grid; gap: 4px; }
+    .usage-title h1 { margin: 0; font-size: 1.65rem; font-weight: 700; letter-spacing: -0.02em; }
+    .usage-title p { margin: 0; color: var(--dim); font-size: 0.84rem; }
+    .usage-back { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--muted); font-size: 0.85rem; }
+    .usage-back:hover { color: var(--ink); }
+
+    .usage-card {
+      border: 1px solid var(--line-soft); border-radius: 18px;
+      background: var(--panel); padding: 20px; margin-bottom: 18px;
+    }
+    .usage-card h2 {
+      margin: 0 0 14px; font-size: 0.76rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.09em; color: var(--dim);
     }
 
-    .usage-back-icon {
-      width: 17px;
-      height: 17px;
-      fill: none;
-      stroke: #fff;
-      stroke-width: 1.8;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .usage-range-pills {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .usage-range-pill {
-      height: 36px;
-      padding: 0 16px;
-      border: 1px solid var(--line-soft);
-      border-radius: 999px;
-      color: var(--muted);
-      background: var(--control);
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
+    /* ---- Filtros ---- */
+    .usage-filters { display: grid; gap: 14px; }
+    .usage-range-pills { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .usage-pill {
+      height: 34px; padding: 0 15px; border: 1px solid var(--line-soft); border-radius: 999px;
+      color: var(--muted); background: var(--control); font-size: 0.8rem; font-weight: 600; cursor: pointer;
       transition: border-color 140ms ease, color 140ms ease, background-color 140ms ease;
     }
+    .usage-pill:hover:not(:disabled) { color: var(--ink); border-color: rgba(255,255,255,0.34); }
+    .usage-pill:disabled { opacity: 0.4; cursor: default; }
+    .usage-pill.is-active { color: #050505; background: #f1f1ee; border-color: #f1f1ee; }
+    .usage-pill:focus-visible { outline: 2px solid var(--cat-1); outline-offset: 2px; }
 
-    .usage-range-pill:hover {
-      color: var(--ink);
-      border-color: rgba(255, 255, 255, 0.35);
+    .usage-filter-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); }
+    .usage-field { display: grid; gap: 5px; }
+    .usage-field label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--dim); }
+    .usage-field select, .usage-field input {
+      height: 36px; padding: 0 10px; border-radius: 10px;
+      border: 1px solid var(--line-soft); background: var(--control); color: var(--ink);
+      font-size: 0.83rem; font-family: inherit; width: 100%;
     }
+    .usage-field select:focus, .usage-field input:focus { outline: 2px solid var(--cat-1); outline-offset: 1px; }
+    .usage-filter-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
-    .usage-range-pill.is-active {
-      color: #050505;
-      background: #f1f1ee;
-      border-color: #f1f1ee;
-    }
+    /* ---- KPIs ---- */
+    .usage-hero { display: grid; gap: 18px; grid-template-columns: minmax(200px, 0.9fr) 3fr; align-items: start; }
+    @media (max-width: 900px) { .usage-hero { grid-template-columns: 1fr; } }
+    .usage-hero-stat strong { display: block; font-size: clamp(2.6rem, 5.4vw, 3.9rem); font-weight: 700; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+    .usage-hero-stat span { display: block; margin-top: 8px; color: var(--dim); font-size: 0.84rem; }
+    .usage-kpis { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(138px, 1fr)); }
+    .usage-kpi { padding: 12px 14px; border: 1px solid rgba(255,255,255,0.07); border-radius: 13px; background: rgba(255,255,255,0.025); }
+    .usage-kpi span { display: block; color: var(--dim); font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+    .usage-kpi strong { display: block; margin-top: 6px; font-size: 1.18rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .usage-kpi em { display: block; margin-top: 2px; font-style: normal; font-size: 0.7rem; color: var(--dim); min-height: 1em; }
 
-    .usage-hero-stat {
-      display: grid;
-      gap: 4px;
-      padding-top: 6px;
-    }
+    /* ---- Gráficas ---- */
+    .usage-charts { display: grid; gap: 18px; grid-template-columns: 1fr 1fr; }
+    @media (max-width: 1000px) { .usage-charts { grid-template-columns: 1fr; } }
+    .usage-chart-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
+    .usage-legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: 0.76rem; color: var(--muted); }
+    .usage-legend-swatch { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto; }
+    .usage-svg { width: 100%; height: 190px; display: block; }
+    .usage-axis-labels { display: flex; justify-content: space-between; margin-top: 6px; color: var(--dim); font-size: 0.68rem; font-variant-numeric: tabular-nums; }
 
-    .usage-hero-stat strong {
-      font-size: clamp(3rem, 6vw, 4.4rem);
-      font-weight: 700;
-      line-height: 1;
-      letter-spacing: -0.03em;
-    }
+    /* ---- Barras de desglose ---- */
+    .usage-bars { display: grid; gap: 9px; }
+    .usage-bar-row { display: grid; grid-template-columns: minmax(96px, 30%) 1fr auto; gap: 10px; align-items: center; font-size: 0.8rem; }
+    .usage-bar-label { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .usage-bar-track { height: 9px; border-radius: 999px; background: rgba(255,255,255,0.06); overflow: hidden; }
+    .usage-bar-fill { height: 100%; border-radius: 999px; }
+    .usage-bar-value { color: var(--ink); font-variant-numeric: tabular-nums; font-size: 0.78rem; min-width: 128px; text-align: right; }
 
-    .usage-hero-stat span {
-      color: var(--dim);
-      font-size: 0.88rem;
+    /* ---- Tabla ---- */
+    .usage-table-wrap { overflow-x: auto; }
+    table.usage-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; min-width: 980px; }
+    .usage-table th {
+      text-align: left; padding: 8px 10px; color: var(--dim); font-weight: 600;
+      font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--line-soft); white-space: nowrap;
     }
+    .usage-table td { padding: 9px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: var(--muted); white-space: nowrap; }
+    .usage-table td.num { font-variant-numeric: tabular-nums; text-align: right; color: var(--ink); }
+    .usage-table tbody tr:hover td { background: rgba(255,255,255,0.03); }
 
-    .usage-hero-substats {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-    }
+    .usage-tag { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.68rem; font-weight: 600; border: 1px solid var(--line-soft); }
+    .usage-tag.ok { color: var(--success); border-color: rgba(157,240,172,0.4); }
+    .usage-tag.error { color: var(--danger); border-color: rgba(255,154,139,0.45); }
+    .usage-tag.warn { color: var(--cat-3); border-color: rgba(247,198,107,0.45); }
 
-    .usage-substat {
-      padding: 14px 16px;
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.025);
-    }
+    .usage-pager { display: flex; gap: 10px; align-items: center; justify-content: flex-end; margin-top: 12px; font-size: 0.78rem; color: var(--dim); }
 
-    .usage-substat span {
-      display: block;
-      color: var(--dim);
-      font-size: 0.74rem;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .usage-substat strong {
-      display: block;
-      margin-top: 6px;
-      font-size: 1.3rem;
-      font-weight: 700;
-    }
-
-    .usage-chart-wrap {
-      display: grid;
-      gap: 8px;
-    }
-
-    .usage-chart {
-      height: 140px;
-      padding: 4px 2px 0;
-      display: flex;
-      align-items: flex-end;
-      gap: 3px;
-      position: relative;
-    }
-
-    .usage-chart-empty {
-      width: 100%;
-      align-self: center;
-      text-align: center;
-      color: var(--dim);
-      font-size: 0.85rem;
-    }
-
-    .usage-bar {
-      flex: 1 1 0;
-      min-width: 2px;
-      height: 3px;
-      border-radius: 3px 3px 1px 1px;
-      background: rgba(244, 244, 242, 0.22);
-      cursor: pointer;
-      transition: background-color 120ms ease, transform 120ms ease;
-      transform-origin: bottom;
-    }
-
-    .usage-bar:hover,
-    .usage-bar.is-active {
-      background: #f4f4f2;
-      transform: scaleX(1.05);
-    }
-
-    .usage-chart-axis {
-      display: flex;
-      justify-content: space-between;
-      color: var(--dim);
-      font-size: 0.68rem;
-    }
-
-    .usage-tooltip {
-      position: absolute;
-      bottom: calc(100% + 8px);
-      transform: translateX(-50%);
-      padding: 6px 10px;
-      border: 1px solid var(--line-soft);
-      border-radius: 8px;
-      background: #111;
-      color: var(--ink);
-      font-size: 0.74rem;
-      font-weight: 600;
-      white-space: nowrap;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 100ms ease;
-      z-index: 2;
-    }
-
-    .usage-tooltip.is-visible {
-      opacity: 1;
-    }
-
-    .usage-breakdown-board {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-    }
-
-    .usage-breakdown-card {
-      display: grid;
-      gap: 10px;
-      padding: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      border-radius: 16px;
-      background: rgba(255, 255, 255, 0.025);
-    }
-
-    .usage-breakdown-head {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .usage-breakdown-head h3 {
-      margin: 0;
-      font-size: 0.95rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-    }
-
-    .usage-breakdown-head strong {
-      font-size: 1.05rem;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .usage-breakdown-meter {
-      height: 6px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      overflow: hidden;
-    }
-
-    .usage-breakdown-meter i {
-      display: block;
-      height: 100%;
-      background: #f4f4f2;
-      border-radius: 999px;
-    }
-
-    .usage-breakdown-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      color: var(--dim);
-      font-size: 0.76rem;
-    }
-
-    .usage-empty {
-      padding: 24px;
-      text-align: center;
-      color: var(--dim);
-      font-size: 0.9rem;
-    }
-
-    .usage-detail-toggle {
-      justify-self: start;
-    }
-
-    .usage-detail-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.82rem;
-    }
-
-    .usage-detail-table th,
-    .usage-detail-table td {
-      padding: 9px 10px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-      text-align: left;
-      color: var(--muted);
-    }
-
-    .usage-detail-table th {
-      color: var(--dim);
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      font-weight: 600;
-    }
-
-    @media (max-width: 640px) {
-      .usage-hero-substats {
-        grid-template-columns: 1fr;
-      }
-    }
+    /* ---- Estados ---- */
+    .usage-state { padding: 30px 18px; text-align: center; color: var(--dim); font-size: 0.86rem; display: grid; gap: 8px; justify-items: center; }
+    .usage-state strong { color: var(--ink); font-size: 0.94rem; }
+    .usage-banner { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; font-size: 0.8rem; margin-bottom: 14px; border: 1px solid; line-height: 1.55; }
+    .usage-banner.warn { color: var(--cat-3); border-color: rgba(247,198,107,0.35); background: rgba(247,198,107,0.07); }
+    .usage-banner.error { color: var(--danger); border-color: rgba(255,154,139,0.4); background: rgba(255,154,139,0.07); }
+    .usage-banner code { color: inherit; font-size: 0.76rem; }
+    .is-hidden { display: none !important; }
+    .usage-skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.1), rgba(255,255,255,0.05)); background-size: 200% 100%; animation: usage-shimmer 1.3s linear infinite; border-radius: 8px; color: transparent !important; }
+    @keyframes usage-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+    @media (prefers-reduced-motion: reduce) { .usage-skeleton { animation: none; } }
+    .usage-meta { display: flex; gap: 14px; flex-wrap: wrap; color: var(--dim); font-size: 0.74rem; padding-top: 6px; }
   </style>
 </head>
 <body>
-  <main class="studio-shell usage-shell">
-    <header class="studio-hero">
-      <div class="studio-topbar">
-        <div class="studio-topbar-pill studio-account-pill">
-          <svg class="studio-topbar-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 20V7l5-3 5 3v13M14 10h6v10M7 9h2m-2 4h2m-2 4h2m8-3h2m-2 3h2M2 20h20"/>
-          </svg>
-          <div class="studio-topbar-copy">
-            <span class="studio-topbar-label">Sesion</span>
-            <strong id="usage-account-email">Cargando...</strong>
-          </div>
-        </div>
-        <div class="studio-topbar-right">
-          <a class="studio-topbar-pill studio-context-pill usage-back" href="/provider-studio.html">
-            <svg class="usage-back-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m10 19-7-7 7-7M3 12h18"/></svg>
-            <strong>Provider Studio</strong>
-          </a>
-        </div>
+  <main class="usage-shell">
+    <header class="usage-topbar">
+      <div class="usage-title">
+        <a class="usage-back" href="/provider-studio.html">&larr; Provider Studio</a>
+        <h1>Uso de tokens y costos de IA</h1>
+        <p>Consumo real de modelos por organización, usuario, aplicación y funcionalidad.</p>
       </div>
-      <div class="studio-hero-copy">
-        <div class="studio-hero-mark" aria-hidden="true">
-          <svg viewBox="0 0 60 54"><path d="M30 3 57 51H3Z"/></svg>
-        </div>
-        <h1>Uso de tokens</h1>
+      <div class="usage-filter-actions">
+        <button class="usage-pill" id="btn-refresh" type="button">Recargar</button>
+        <button class="usage-pill" id="btn-export" type="button">Exportar CSV</button>
       </div>
     </header>
 
-    <section class="studio-content">
-      <section class="studio-card">
-        <div class="usage-range-pills" id="usage-range-pills" role="group" aria-label="Rango de tiempo">
-          <button type="button" class="usage-range-pill" data-hours="1">1 h</button>
-          <button type="button" class="usage-range-pill" data-hours="6">6 h</button>
-          <button type="button" class="usage-range-pill is-active" data-hours="24">24 h</button>
-          <button type="button" class="usage-range-pill" data-hours="72">72 h</button>
-          <button type="button" class="button ghost" id="usage-reload" style="margin-left: auto;">Recargar</button>
-        </div>
+    <div id="banner-error" class="usage-banner error is-hidden" role="alert"></div>
+    <div id="banner-rates" class="usage-banner warn is-hidden" role="status"></div>
+    <div id="banner-unattributed" class="usage-banner warn is-hidden" role="status"></div>
 
-        <div class="usage-hero-stat">
-          <strong id="usage-total-tokens">0</strong>
-          <span id="usage-window-label">Tokens usados en las ultimas 24 horas</span>
+    <section class="usage-card">
+      <h2>Filtros</h2>
+      <div class="usage-filters">
+        <div class="usage-range-pills" id="range-pills" role="group" aria-label="Periodo">
+          <button class="usage-pill" data-range="1h" type="button">1 h</button>
+          <button class="usage-pill" data-range="6h" type="button">6 h</button>
+          <button class="usage-pill is-active" data-range="24h" type="button">24 h</button>
+          <button class="usage-pill" data-range="72h" type="button">72 h</button>
+          <button class="usage-pill" data-range="7d" type="button">7 d</button>
+          <button class="usage-pill" data-range="30d" type="button">30 d</button>
         </div>
-
-        <div class="usage-hero-substats">
-          <div class="usage-substat">
-            <span>Entrada</span>
-            <strong id="usage-input-tokens">0</strong>
-          </div>
-          <div class="usage-substat">
-            <span>Salida</span>
-            <strong id="usage-output-tokens">0</strong>
-          </div>
-          <div class="usage-substat">
-            <span>Costo estimado</span>
-            <strong id="usage-cost">$0.00</strong>
-          </div>
+        <div class="usage-filter-grid">
+          <div class="usage-field"><label for="f-from">Desde</label><input id="f-from" type="datetime-local"></div>
+          <div class="usage-field"><label for="f-to">Hasta</label><input id="f-to" type="datetime-local"></div>
+          <div class="usage-field"><label for="f-app">Aplicación</label><select id="f-app"></select></div>
+          <div class="usage-field"><label for="f-feature">Funcionalidad</label><select id="f-feature"></select></div>
+          <div class="usage-field"><label for="f-provider">Proveedor</label><select id="f-provider"></select></div>
+          <div class="usage-field"><label for="f-model">Modelo</label><select id="f-model"></select></div>
+          <div class="usage-field"><label for="f-status">Estado</label><select id="f-status"></select></div>
+          <div class="usage-field"><label for="f-environment">Entorno</label><select id="f-environment"></select></div>
+          <div class="usage-field"><label for="f-org">Organización (uuid)</label><input id="f-org" type="text" placeholder="todas" autocomplete="off"></div>
+          <div class="usage-field"><label for="f-user">Usuario (uuid)</label><input id="f-user" type="text" placeholder="todos" autocomplete="off"></div>
         </div>
-
-        <div class="usage-chart-wrap">
-          <div class="usage-chart" id="usage-chart">
-            <div class="usage-tooltip" id="usage-tooltip"></div>
-          </div>
-          <div class="usage-chart-axis" id="usage-chart-axis"></div>
+        <div class="usage-filter-actions">
+          <button class="usage-pill" id="btn-clear" type="button">Limpiar filtros</button>
+          <span class="usage-meta" id="filters-echo"></span>
         </div>
-      </section>
-
-      <section class="studio-card">
-        <div class="studio-card-head" style="cursor: default;">
-          <div>
-            <h2>Consumo por origen</h2>
-          </div>
-        </div>
-        <div class="usage-breakdown-board" id="usage-breakdown-board">
-          <p class="usage-empty">Cargando...</p>
-        </div>
-      </section>
-
-      <section class="studio-card">
-        <button type="button" class="button ghost usage-detail-toggle" id="usage-detail-toggle">Ver eventos recientes</button>
-        <div class="is-hidden" id="usage-detail-wrap" style="overflow-x: auto;">
-          <table class="usage-detail-table">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Evento</th>
-                <th>Modelo</th>
-                <th>Entrada</th>
-                <th>Salida</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody id="usage-detail-body"></tbody>
-          </table>
-        </div>
-      </section>
+      </div>
     </section>
+
+    <section class="usage-card">
+      <h2>Resumen</h2>
+      <div class="usage-hero">
+        <div class="usage-hero-stat">
+          <strong id="kpi-tokens">—</strong>
+          <span id="kpi-tokens-label">Tokens totales</span>
+        </div>
+        <div class="usage-kpis">
+          <div class="usage-kpi"><span>Entrada</span><strong id="kpi-input">—</strong><em id="kpi-cached"></em></div>
+          <div class="usage-kpi"><span>Salida</span><strong id="kpi-output">—</strong><em></em></div>
+          <div class="usage-kpi"><span>Costo estimado</span><strong id="kpi-cost">—</strong><em id="kpi-cost-note"></em></div>
+          <div class="usage-kpi"><span>Solicitudes</span><strong id="kpi-events">—</strong><em id="kpi-events-note"></em></div>
+          <div class="usage-kpi"><span>Usuarios activos</span><strong id="kpi-users">—</strong><em id="kpi-orgs"></em></div>
+          <div class="usage-kpi"><span>Tokens / solicitud</span><strong id="kpi-avg">—</strong><em></em></div>
+          <div class="usage-kpi"><span>Latencia media</span><strong id="kpi-latency">—</strong><em></em></div>
+          <div class="usage-kpi"><span>Tasa de error</span><strong id="kpi-errors">—</strong><em id="kpi-errors-note"></em></div>
+        </div>
+      </div>
+      <div class="usage-meta" id="summary-meta"></div>
+    </section>
+
+    <div class="usage-charts">
+      <section class="usage-card">
+        <h2>Tokens en el tiempo</h2>
+        <div class="usage-chart-legend">
+          <span class="usage-legend-item"><span class="usage-legend-swatch" style="background:var(--cat-1)"></span>Entrada</span>
+          <span class="usage-legend-item"><span class="usage-legend-swatch" style="background:var(--cat-2)"></span>Salida</span>
+        </div>
+        <svg class="usage-svg" id="chart-tokens" role="img" aria-label="Tokens de entrada y salida a lo largo del tiempo"></svg>
+        <div class="usage-axis-labels" id="axis-tokens"></div>
+      </section>
+      <section class="usage-card">
+        <h2>Costo en el tiempo</h2>
+        <div class="usage-chart-legend">
+          <span class="usage-legend-item"><span class="usage-legend-swatch" style="background:var(--cat-3)"></span>Costo estimado (USD)</span>
+        </div>
+        <svg class="usage-svg" id="chart-cost" role="img" aria-label="Costo estimado a lo largo del tiempo"></svg>
+        <div class="usage-axis-labels" id="axis-cost"></div>
+      </section>
+    </div>
+
+    <div class="usage-charts">
+      <section class="usage-card"><h2>Por aplicación</h2><div class="usage-bars" id="bars-app"></div></section>
+      <section class="usage-card"><h2>Por funcionalidad</h2><div class="usage-bars" id="bars-feature"></div></section>
+      <section class="usage-card"><h2>Modelos con mayor costo</h2><div class="usage-bars" id="bars-model"></div></section>
+      <section class="usage-card"><h2>Usuarios con mayor consumo</h2><div class="usage-bars" id="bars-user"></div></section>
+    </div>
+
+    <section class="usage-card">
+      <h2>Detalle de eventos</h2>
+      <div class="usage-table-wrap">
+        <table class="usage-table">
+          <thead>
+            <tr>
+              <th scope="col">Fecha</th><th scope="col">Usuario</th><th scope="col">Organización</th>
+              <th scope="col">App</th><th scope="col">Funcionalidad</th><th scope="col">Proveedor</th>
+              <th scope="col">Modelo</th><th scope="col">Entrada</th><th scope="col">Salida</th>
+              <th scope="col">Total</th><th scope="col">Costo</th><th scope="col">Estado</th><th scope="col">Latencia</th>
+            </tr>
+          </thead>
+          <tbody id="events-body"></tbody>
+        </table>
+      </div>
+      <div id="events-state" class="usage-state is-hidden"></div>
+      <div class="usage-pager">
+        <span id="events-count"></span>
+        <button class="usage-pill" id="btn-prev" type="button">Anterior</button>
+        <button class="usage-pill" id="btn-next" type="button">Siguiente</button>
+      </div>
+    </section>
+
+    <p class="usage-meta" id="footer-meta"></p>
   </main>
 
   <script src="/auth-gate.js"></script>
   <script>
-    (function () {
-      const SOURCE_LABELS = {
-        dynamic_fill_note_field_match_usage: 'Graph · Dynamic fill (autofill)',
-        api_v1_pipeline_autofill_usage: 'Graph · Pipeline API (autofill)',
-        api_v1_autofill_match_usage: 'Graph · API publica (autofill)',
-        api_v1_pipeline_note_usage: 'Miracle · Organizador LLM (pipeline)',
-        medical_notes_organized_usage: 'Miracle · Organizador LLM (medical API)'
-      };
+  (function () {
+    'use strict';
 
-      const dom = {
-        accountEmail: document.getElementById('usage-account-email'),
-        rangePills: document.getElementById('usage-range-pills'),
-        reload: document.getElementById('usage-reload'),
-        total: document.getElementById('usage-total-tokens'),
-        windowLabel: document.getElementById('usage-window-label'),
-        input: document.getElementById('usage-input-tokens'),
-        output: document.getElementById('usage-output-tokens'),
-        cost: document.getElementById('usage-cost'),
-        chart: document.getElementById('usage-chart'),
-        chartAxis: document.getElementById('usage-chart-axis'),
-        tooltip: document.getElementById('usage-tooltip'),
-        breakdownBoard: document.getElementById('usage-breakdown-board'),
-        detailToggle: document.getElementById('usage-detail-toggle'),
-        detailWrap: document.getElementById('usage-detail-wrap'),
-        detailBody: document.getElementById('usage-detail-body')
-      };
+    // La zona horaria se muestra siempre: un panel de costos que no dice en qué
+    // huso agrupa sus buckets invita a conclusiones erróneas al compararlo con
+    // la factura del proveedor, que viene en UTC.
+    var TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    var state = { range: '24h', offset: 0, limit: 50, total: 0 };
 
-      const state = { hours: 24 };
+    function $(id) { return document.getElementById(id); }
+    function esc(value) {
+      return String(value === null || value === undefined ? '' : value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
 
-      function formatNumber(value) {
-        return Number(value || 0).toLocaleString('es-CO');
+    function authHeaders() {
+      var headers = { Accept: 'application/json' };
+      try {
+        var token = (window.MiracleAuth && window.MiracleAuth.getAccessToken)
+          ? window.MiracleAuth.getAccessToken() : '';
+        if (token) headers.Authorization = 'Bearer ' + token;
+      } catch (error) { /* sin sesión de Supabase: sirve la cookie de admin */ }
+      return headers;
+    }
+
+    // ---- Formato -----------------------------------------------------------
+    var nfInt = new Intl.NumberFormat('es-CO');
+    function fmtInt(value) { return nfInt.format(Math.round(Number(value) || 0)); }
+    function fmtCompact(value) {
+      var n = Number(value) || 0;
+      if (n >= 1e9) return (n / 1e9).toFixed(2) + ' B';
+      if (n >= 1e6) return (n / 1e6).toFixed(2) + ' M';
+      if (n >= 1e3) return (n / 1e3).toFixed(1) + ' k';
+      return fmtInt(n);
+    }
+    // Redondear el costo a dos decimales convertiría en «$0.00» todo el consumo
+    // de los modelos baratos y daría la impresión de que no cuestan nada.
+    function fmtCost(value) {
+      if (value === null || value === undefined) return 'sin tarifa';
+      var n = Number(value) || 0;
+      if (n === 0) return '$0';
+      if (n < 0.01) return '$' + n.toFixed(6);
+      if (n < 1) return '$' + n.toFixed(4);
+      return '$' + n.toFixed(2);
+    }
+    function fmtDate(iso) {
+      if (!iso) return '—';
+      var d = new Date(iso);
+      return isNaN(d.getTime()) ? '—' : d.toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'medium' });
+    }
+    function shortId(value) { return value ? String(value).slice(0, 8) + '…' : '—'; }
+
+    // ---- Filtros -----------------------------------------------------------
+    var SELECTS = { 'f-app': 'app', 'f-feature': 'feature', 'f-provider': 'provider',
+                    'f-model': 'model', 'f-status': 'status', 'f-environment': 'environment' };
+
+    function currentQuery() {
+      var params = new URLSearchParams();
+      var from = $('f-from').value;
+      var to = $('f-to').value;
+      if (from && to) {
+        params.set('from', new Date(from).toISOString());
+        params.set('to', new Date(to).toISOString());
+      } else {
+        params.set('range', state.range);
+      }
+      Object.keys(SELECTS).forEach(function (id) {
+        if ($(id).value) params.set(SELECTS[id], $(id).value);
+      });
+      if ($('f-org').value.trim()) params.set('organizationId', $('f-org').value.trim());
+      if ($('f-user').value.trim()) params.set('userId', $('f-user').value.trim());
+      return params;
+    }
+
+    function fillSelect(select, values, label) {
+      var previous = select.value;
+      select.innerHTML = '';
+      var all = document.createElement('option');
+      all.value = ''; all.textContent = label;
+      select.appendChild(all);
+      values.forEach(function (value) {
+        var option = document.createElement('option');
+        option.value = value; option.textContent = value;
+        select.appendChild(option);
+      });
+      if (previous && values.indexOf(previous) >= 0) select.value = previous;
+    }
+
+    // ---- Gráficas ----------------------------------------------------------
+    // SVG a mano, sin librerías: la página se sirve del mismo backend y no debe
+    // depender de un CDN. Son dos gráficas simples; no justifican el peso.
+    var SVG_NS = 'http://www.w3.org/2000/svg';
+
+    function drawBars(svg, axisNode, points, series) {
+      svg.innerHTML = '';
+      axisNode.innerHTML = '';
+      if (!points.length) return;
+
+      var W = 1000, H = 190, PAD = 4;
+      svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+      svg.setAttribute('preserveAspectRatio', 'none');
+
+      var max = 0;
+      points.forEach(function (point) {
+        series.forEach(function (serie) { max = Math.max(max, Number(point[serie.key]) || 0); });
+      });
+      if (max <= 0) max = 1;
+
+      for (var g = 1; g <= 4; g += 1) {
+        var line = document.createElementNS(SVG_NS, 'line');
+        var y = (H - PAD) * (1 - g / 4);
+        line.setAttribute('x1', 0); line.setAttribute('x2', W);
+        line.setAttribute('y1', y); line.setAttribute('y2', y);
+        line.setAttribute('stroke', 'rgba(255,255,255,0.07)');
+        line.setAttribute('stroke-width', '1');
+        line.setAttribute('vector-effect', 'non-scaling-stroke');
+        svg.appendChild(line);
       }
 
-      function formatCurrency(value) {
-        return `$${Number(value || 0).toFixed(4)}`;
-      }
+      var slot = W / points.length;
+      var barW = Math.max(Math.min(slot / series.length - 1, 26), 1);
+      points.forEach(function (point, index) {
+        series.forEach(function (serie, sIndex) {
+          var value = Number(point[serie.key]) || 0;
+          if (value <= 0) return;
+          var h = Math.max(((H - PAD) * value) / max, 1.5);
+          var rect = document.createElementNS(SVG_NS, 'rect');
+          rect.setAttribute('x', index * slot + sIndex * (barW + 1) + (slot - series.length * barW) / 2);
+          rect.setAttribute('y', H - PAD - h);
+          rect.setAttribute('width', barW);
+          rect.setAttribute('height', h);
+          rect.setAttribute('fill', serie.color);
+          var title = document.createElementNS(SVG_NS, 'title');
+          title.textContent = fmtDate(point.at) + ' · ' + serie.label + ': ' + serie.format(value);
+          rect.appendChild(title);
+          svg.appendChild(rect);
+        });
+      });
 
-      function friendlySourceLabel(row) {
-        const key = row.eventType || '';
-        if (SOURCE_LABELS[key]) return SOURCE_LABELS[key];
-        const provider = row.provider || 'sin proveedor';
-        const model = row.model || row.apiFamily || 'sin modelo';
-        return `${provider} · ${model}`;
-      }
+      [points[0], points[Math.floor(points.length / 2)], points[points.length - 1]]
+        .forEach(function (point) {
+          var span = document.createElement('span');
+          span.textContent = new Date(point.at).toLocaleString('es-CO',
+            { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+          axisNode.appendChild(span);
+        });
+    }
 
-      async function authenticatedFetch(url) {
-        if (window.MiracleAuth && typeof window.MiracleAuth.whenAuthenticated === 'function') {
-          try { await window.MiracleAuth.whenAuthenticated(); } catch (error) {}
+    var PALETTE = ['var(--cat-1)', 'var(--cat-2)', 'var(--cat-3)', 'var(--cat-4)', 'var(--cat-5)', 'var(--cat-6)'];
+
+    function renderBars(node, rows, options) {
+      node.innerHTML = '';
+      if (!rows || !rows.length) {
+        node.innerHTML = '<div class="usage-state">Sin datos en este rango.</div>';
+        return;
+      }
+      var metric = options.metric || 'totalTokens';
+      var max = rows.reduce(function (acc, row) { return Math.max(acc, Number(row[metric]) || 0); }, 0) || 1;
+      rows.forEach(function (row, index) {
+        var wrap = document.createElement('div');
+        wrap.className = 'usage-bar-row';
+        var text = options.label ? options.label(row) : row.key;
+        wrap.innerHTML =
+          '<div class="usage-bar-label" title="' + esc(text) + '">' + esc(text) + '</div>' +
+          '<div class="usage-bar-track"><div class="usage-bar-fill" style="width:' +
+            Math.max((Number(row[metric]) || 0) / max * 100, 1) + '%;background:' +
+            PALETTE[index % PALETTE.length] + '"></div></div>' +
+          '<div class="usage-bar-value">' + esc(options.format(row)) + '</div>';
+        node.appendChild(wrap);
+      });
+    }
+
+    // ---- Estados -----------------------------------------------------------
+    var KPI_IDS = ['kpi-tokens', 'kpi-input', 'kpi-output', 'kpi-cost', 'kpi-events',
+                   'kpi-users', 'kpi-avg', 'kpi-latency', 'kpi-errors'];
+
+    function setLoading(loading) {
+      KPI_IDS.forEach(function (id) { $(id).classList.toggle('usage-skeleton', loading); });
+      $('btn-refresh').disabled = loading;
+      $('btn-refresh').textContent = loading ? 'Cargando…' : 'Recargar';
+    }
+    function showError(message, detail) {
+      var banner = $('banner-error');
+      banner.classList.remove('is-hidden');
+      banner.innerHTML = '<div><strong>' + esc(message) + '</strong>' +
+        (detail ? '<br><code>' + esc(detail) + '</code>' : '') + '</div>';
+    }
+
+    async function fetchJson(url) {
+      var response = await fetch(url, { headers: authHeaders(), credentials: 'same-origin' });
+      var payload = null;
+      try { payload = await response.json(); } catch (error) { payload = null; }
+      if (!response.ok) {
+        var error = new Error((payload && payload.error) || ('HTTP ' + response.status));
+        error.status = response.status;
+        error.code = payload && payload.code;
+        throw error;
+      }
+      return payload;
+    }
+
+    async function loadOverview() {
+      setLoading(true);
+      $('banner-error').classList.add('is-hidden');
+      try {
+        var data = await fetchJson('/api/usage/overview?' + currentQuery().toString());
+        renderOverview(data);
+        state.offset = 0;
+        await loadEvents();
+      } catch (error) {
+        if (error.status === 401) {
+          showError('Sesión expirada.', 'Vuelve a iniciar sesión para consultar el consumo.');
+        } else if (error.code === 'SUPABASE_NOT_CONFIGURED') {
+          showError('La telemetría no está configurada en este entorno.',
+            'Faltan SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY en el servidor.');
+        } else {
+          showError('No fue posible cargar el consumo.', error.message);
         }
-        const headers = {};
-        const token = window.MiracleAuth && typeof window.MiracleAuth.getAccessToken === 'function'
-          ? window.MiracleAuth.getAccessToken()
-          : '';
-        if (token) headers.Authorization = `Bearer ${token}`;
-        return fetch(url, { headers });
+        renderEmpty();
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function renderEmpty() {
+      KPI_IDS.forEach(function (id) { $(id).textContent = '—'; });
+      ['bars-app', 'bars-feature', 'bars-model', 'bars-user'].forEach(function (id) {
+        $(id).innerHTML = '<div class="usage-state">Sin datos.</div>';
+      });
+      $('chart-tokens').innerHTML = '';
+      $('chart-cost').innerHTML = '';
+    }
+
+    function renderOverview(data) {
+      var totals = data.totals || {};
+      var breakdowns = data.breakdowns || {};
+
+      $('kpi-tokens').textContent = fmtCompact(totals.totalTokens);
+      $('kpi-tokens-label').textContent = 'Tokens totales · ' +
+        (data.filters ? fmtDate(data.filters.from) + ' → ' + fmtDate(data.filters.to) : '');
+      $('kpi-input').textContent = fmtCompact(totals.inputTokens);
+      $('kpi-cached').textContent = totals.cachedInputTokens ? fmtCompact(totals.cachedInputTokens) + ' en caché' : '';
+      $('kpi-output').textContent = fmtCompact(totals.outputTokens);
+      $('kpi-cost').textContent = fmtCost(totals.costUsd);
+      $('kpi-cost-note').textContent = totals.unpricedEvents ? fmtInt(totals.unpricedEvents) + ' sin tarifa' : '';
+      $('kpi-events').textContent = fmtInt(totals.totalEvents);
+      $('kpi-events-note').textContent = totals.audioSeconds ? Math.round(totals.audioSeconds / 60) + ' min de audio' : '';
+      $('kpi-users').textContent = fmtInt(totals.activeUsers);
+      $('kpi-orgs').textContent = fmtInt(totals.activeOrganizations) + ' organización(es)';
+      $('kpi-avg').textContent = fmtInt(totals.avgTokensPerEvent);
+      $('kpi-latency').textContent = totals.avgLatencyMs ? Math.round(totals.avgLatencyMs) + ' ms' : '—';
+      $('kpi-errors').textContent = (Number(totals.errorRate) || 0).toFixed(1) + ' %';
+      $('kpi-errors-note').textContent = totals.errorEvents ? fmtInt(totals.errorEvents) + ' con error' : '';
+
+      $('summary-meta').innerHTML =
+        '<span>Zona horaria: ' + esc(TZ) + '</span>' +
+        '<span>Versión de tarifas: ' + esc(data.pricingVersion || '—') + '</span>' +
+        '<span>Actualizado: ' + esc(fmtDate(data.generatedAt)) + '</span>' +
+        '<span>Alcance: ' + (data.viewer && data.viewer.kind === 'internal_operator'
+          ? 'operador interno (todas las organizaciones)' : 'limitado a tu sesión') + '</span>';
+
+      var points = (data.series && data.series.points) || [];
+      drawBars($('chart-tokens'), $('axis-tokens'), points, [
+        { key: 'inputTokens', label: 'Entrada', color: 'var(--cat-1)', format: fmtCompact },
+        { key: 'outputTokens', label: 'Salida', color: 'var(--cat-2)', format: fmtCompact }
+      ]);
+      drawBars($('chart-cost'), $('axis-cost'), points, [
+        { key: 'costUsd', label: 'Costo', color: 'var(--cat-3)', format: fmtCost }
+      ]);
+
+      var tokensAndCost = function (row) { return fmtCompact(row.totalTokens) + ' · ' + fmtCost(row.costUsd); };
+      renderBars($('bars-app'), breakdowns.app, { format: tokensAndCost });
+      renderBars($('bars-feature'), breakdowns.feature, { format: tokensAndCost });
+      renderBars($('bars-model'), breakdowns.model, {
+        metric: 'costUsd',
+        format: function (row) { return fmtCost(row.costUsd) + ' · ' + fmtInt(row.events) + ' req'; }
+      });
+      renderBars($('bars-user'), breakdowns.user, {
+        label: function (row) { return row.id ? shortId(row.id) : row.key; },
+        format: tokensAndCost
+      });
+
+      var vocabulary = data.vocabulary || {};
+      fillSelect($('f-app'), vocabulary.apps || [], 'Todas');
+      fillSelect($('f-feature'), vocabulary.features || [], 'Todas');
+      fillSelect($('f-status'), vocabulary.statuses || [], 'Todos');
+      fillSelect($('f-environment'), vocabulary.environments || [], 'Todos');
+      fillSelect($('f-provider'), (breakdowns.provider || []).map(function (r) { return r.key; }), 'Todos');
+      fillSelect($('f-model'), (breakdowns.model || []).map(function (r) { return r.key; }), 'Todos');
+
+      // «Tarifa no configurada»: se nombra el proveedor/modelo concreto, porque
+      // un aviso genérico no dice qué hay que arreglar.
+      var missing = data.missingRates || [];
+      var ratesBanner = $('banner-rates');
+      if (missing.length) {
+        ratesBanner.classList.remove('is-hidden');
+        ratesBanner.innerHTML = '<div><strong>Hay consumo sin tarifa configurada.</strong> ' +
+          'Su costo NO está sumado en el total.<br>' +
+          missing.slice(0, 6).map(function (row) {
+            return '<code>' + esc(row.provider) + ' · ' + esc(row.model || '(sin modelo)') + '</code> — ' +
+              fmtInt(row.events) + ' evento(s), ' + fmtCompact(row.totalTokens) + ' tokens';
+          }).join('<br>') + '</div>';
+      } else {
+        ratesBanner.classList.add('is-hidden');
       }
 
-      async function loadAccount() {
-        try {
-          const response = await authenticatedFetch('/api/account/me');
-          const payload = await response.json();
-          dom.accountEmail.textContent = payload?.user?.email || 'Cuenta activa';
-        } catch (error) {
-          dom.accountEmail.textContent = 'Cuenta activa';
+      // «Usuario sin atribución»: puede ser trabajo interno legítimo o una ruta
+      // sin cablear. Se dice que hay que distinguirlo en vez de esconderlo.
+      var orphan = (breakdowns.user || []).filter(function (row) { return !row.id; })[0];
+      var attrBanner = $('banner-unattributed');
+      if (orphan && orphan.events) {
+        attrBanner.classList.remove('is-hidden');
+        attrBanner.innerHTML = '<div><strong>Hay consumo sin usuario atribuido:</strong> ' +
+          fmtInt(orphan.events) + ' evento(s), ' + fmtCost(orphan.costUsd) + '. ' +
+          'Puede ser trabajo interno del sistema (legítimo) o una ruta sin instrumentar (a revisar). ' +
+          'Míralo por actor en el desglose para distinguirlo.</div>';
+      } else {
+        attrBanner.classList.add('is-hidden');
+      }
+
+      var active = [];
+      ['apps', 'features', 'providers', 'models', 'statuses', 'environments'].forEach(function (key) {
+        if (data.filters && data.filters[key] && data.filters[key].length) {
+          active.push(key + ': ' + data.filters[key].join(', '));
         }
-      }
+      });
+      if (data.filters && data.filters.organizationId) active.push('org: ' + shortId(data.filters.organizationId));
+      if (data.filters && data.filters.userId) active.push('usuario: ' + shortId(data.filters.userId));
+      $('filters-echo').textContent = active.length
+        ? 'Filtros activos → ' + active.join(' · ') : 'Sin filtros adicionales';
+    }
 
-      function hourKeyAt(date) {
-        return date.toISOString().slice(0, 13);
-      }
+    async function loadEvents() {
+      var body = $('events-body');
+      var stateNode = $('events-state');
+      try {
+        var params = currentQuery();
+        params.set('limit', String(state.limit));
+        params.set('offset', String(state.offset));
+        var data = await fetchJson('/api/usage/events?' + params.toString());
+        state.total = data.total || 0;
+        body.innerHTML = '';
 
-      function hourLabel(point) {
-        return point.offsetHours === 0 ? 'ahora' : `-${point.offsetHours}h`;
-      }
-
-      function buildHourSeries(summary, hours) {
-        const byHour = new Map((summary.byHour || []).map((row) => [row.hour, row]));
-        const now = new Date();
-        const series = [];
-        for (let i = hours - 1; i >= 0; i -= 1) {
-          const bucketDate = new Date(now.getTime() - i * 60 * 60 * 1000);
-          const key = hourKeyAt(bucketDate);
-          const row = byHour.get(key);
-          series.push({
-            hour: key,
-            offsetHours: i,
-            inputTokens: row ? Number(row.inputTokens) || 0 : 0,
-            outputTokens: row ? Number(row.outputTokens) || 0 : 0
+        if (!data.events.length) {
+          stateNode.classList.remove('is-hidden');
+          stateNode.innerHTML = '<strong>Sin consumo registrado en este rango.</strong>' +
+            '<span>La medición confiable empieza después de desplegar la instrumentación. ' +
+            'No se rellenan periodos anteriores con estimaciones.</span>';
+        } else {
+          stateNode.classList.add('is-hidden');
+          data.events.forEach(function (event) {
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+              '<td>' + esc(fmtDate(event.occurredAt)) + '</td>' +
+              '<td title="' + esc(event.userId || '') + '">' + (event.userId
+                ? esc(shortId(event.userId))
+                : '<span class="usage-tag warn">' + esc(event.actorType) + '</span>') + '</td>' +
+              '<td title="' + esc(event.organizationId || '') + '">' +
+                (event.organizationId ? esc(shortId(event.organizationId)) : '—') + '</td>' +
+              '<td>' + esc(event.app) + '</td>' +
+              '<td>' + esc(event.feature) + '</td>' +
+              '<td>' + esc(event.provider) + '</td>' +
+              '<td title="' + esc(event.servedModel || '') + '">' + esc(event.requestedModel || '—') + '</td>' +
+              '<td class="num">' + fmtInt(event.inputTokens) + '</td>' +
+              '<td class="num">' + fmtInt(event.outputTokens) + '</td>' +
+              '<td class="num">' + fmtInt(event.totalTokens) + '</td>' +
+              '<td class="num">' + (event.costStatus === 'unpriced_no_rate'
+                ? '<span class="usage-tag warn">sin tarifa</span>'
+                : esc(fmtCost(event.costUsd))) + '</td>' +
+              '<td><span class="usage-tag ' + (event.status === 'ok' ? 'ok' : 'error') + '">' +
+                esc(event.status) + (event.attempt > 1 ? ' · int ' + event.attempt : '') + '</span></td>' +
+              '<td class="num">' + (event.latencyMs === null ? '—' : fmtInt(event.latencyMs) + ' ms') + '</td>';
+            body.appendChild(tr);
           });
         }
-        return series;
+
+        var from = state.total ? state.offset + 1 : 0;
+        var to = Math.min(state.offset + state.limit, state.total);
+        $('events-count').textContent = from + '–' + to + ' de ' + fmtInt(state.total);
+        $('btn-prev').disabled = state.offset <= 0;
+        $('btn-next').disabled = state.offset + state.limit >= state.total;
+      } catch (error) {
+        body.innerHTML = '';
+        stateNode.classList.remove('is-hidden');
+        stateNode.innerHTML = '<strong>No fue posible cargar el detalle.</strong><span>' +
+          esc(error.message) + '</span>';
       }
+    }
 
-      function renderChart(series) {
-        dom.chart.querySelectorAll('.usage-bar').forEach((el) => el.remove());
-        dom.chartAxis.innerHTML = '';
-
-        const totals = series.map((point) => point.inputTokens + point.outputTokens);
-        const max = Math.max(1, ...totals);
-        const hasData = totals.some((value) => value > 0);
-
-        if (!hasData) {
-          const empty = document.createElement('div');
-          empty.className = 'usage-chart-empty';
-          empty.textContent = 'Sin consumo registrado en este rango.';
-          dom.chart.appendChild(empty);
-        }
-
-        series.forEach((point) => {
-          const total = point.inputTokens + point.outputTokens;
-          const bar = document.createElement('div');
-          bar.className = 'usage-bar';
-          bar.style.height = `${Math.max(3, (total / max) * 100)}%`;
-          bar.addEventListener('mouseenter', () => showTooltip(bar, point, total));
-          bar.addEventListener('mouseleave', hideTooltip);
-          dom.chart.appendChild(bar);
-        });
-
-        const step = Math.max(1, Math.floor(series.length / 6));
-        series.forEach((point, index) => {
-          if (index % step !== 0 && index !== series.length - 1) return;
-          const label = document.createElement('span');
-          label.textContent = hourLabel(point);
-          dom.chartAxis.appendChild(label);
-        });
-      }
-
-      function showTooltip(bar, point, total) {
-        dom.tooltip.textContent = `${hourLabel(point)} · ${formatNumber(total)} tokens`;
-        const barRect = bar.getBoundingClientRect();
-        const chartRect = dom.chart.getBoundingClientRect();
-        dom.tooltip.style.left = `${barRect.left - chartRect.left + barRect.width / 2}px`;
-        dom.tooltip.classList.add('is-visible');
-      }
-
-      function hideTooltip() {
-        dom.tooltip.classList.remove('is-visible');
-      }
-
-      function renderBreakdown(summary) {
-        const rows = (summary.byModel || [])
-          .map((row) => ({ ...row, totalTokens: Number(row.inputTokens || 0) + Number(row.outputTokens || 0) }))
-          .filter((row) => row.totalTokens > 0 || row.deepgramMinutes > 0)
-          .sort((left, right) => right.totalTokens - left.totalTokens);
-
-        if (!rows.length) {
-          dom.breakdownBoard.innerHTML = '<p class="usage-empty">Sin consumo registrado en este rango.</p>';
-          return;
-        }
-
-        const max = Math.max(1, ...rows.map((row) => row.totalTokens));
-        dom.breakdownBoard.innerHTML = rows.map((row) => {
-          const width = Math.max(4, Math.round((row.totalTokens / max) * 100));
-          return `
-            <article class="usage-breakdown-card">
-              <div class="usage-breakdown-head">
-                <h3>${friendlySourceLabel(row)}</h3>
-                <strong>${formatNumber(row.totalTokens)}</strong>
-              </div>
-              <div class="usage-breakdown-meter"><i style="width:${width}%"></i></div>
-              <div class="usage-breakdown-meta">
-                <span>${formatNumber(row.inputTokens)} entrada</span>
-                <span>${formatNumber(row.outputTokens)} salida</span>
-                <span>${row.eventCount} eventos</span>
-                <span>${formatCurrency(row.estimatedCostUsd)}</span>
-              </div>
-            </article>
-          `;
-        }).join('');
-      }
-
-      function renderDetail(summary) {
-        dom.detailBody.innerHTML = (summary.recentEvents || []).slice(0, 50).map((row) => `
-          <tr>
-            <td>${row.occurredAt || '-'}</td>
-            <td>${friendlySourceLabel(row)}</td>
-            <td>${row.model || '-'}</td>
-            <td>${formatNumber(row.inputTokens)}</td>
-            <td>${formatNumber(row.outputTokens)}</td>
-            <td>${row.status || '-'}</td>
-          </tr>
-        `).join('') || '<tr><td colspan="6">Sin eventos recientes.</td></tr>';
-      }
-
-      function renderSummary(summary, hours) {
-        const totalTokens = Number(summary.totals.inputTokens || 0) + Number(summary.totals.outputTokens || 0);
-        dom.total.textContent = formatNumber(totalTokens);
-        dom.windowLabel.textContent = `Tokens usados en las ultimas ${hours} horas`;
-        dom.input.textContent = formatNumber(summary.totals.inputTokens);
-        dom.output.textContent = formatNumber(summary.totals.outputTokens);
-        dom.cost.textContent = formatCurrency(summary.totals.estimatedCostUsd);
-        renderChart(buildHourSeries(summary, hours));
-        renderBreakdown(summary);
-        renderDetail(summary);
-      }
-
-      async function load() {
-        const hours = state.hours;
-        const from = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
-        const response = await authenticatedFetch(`/api/usage/summary?from=${encodeURIComponent(from)}`);
-        const summary = await response.json();
-        renderSummary(summary, hours);
-      }
-
-      dom.rangePills.addEventListener('click', (event) => {
-        const button = event.target.closest('.usage-range-pill');
-        if (!button) return;
-        state.hours = Number(button.dataset.hours) || 24;
-        dom.rangePills.querySelectorAll('.usage-range-pill').forEach((el) => el.classList.toggle('is-active', el === button));
-        load().catch((error) => console.error(error));
+    // ---- Interacción --------------------------------------------------------
+    $('range-pills').addEventListener('click', function (event) {
+      var button = event.target.closest('[data-range]');
+      if (!button) return;
+      state.range = button.dataset.range;
+      Array.prototype.forEach.call(this.querySelectorAll('[data-range]'), function (node) {
+        node.classList.toggle('is-active', node === button);
       });
+      $('f-from').value = '';
+      $('f-to').value = '';
+      loadOverview();
+    });
 
-      dom.reload.addEventListener('click', () => {
-        load().catch((error) => console.error(error));
-      });
+    Object.keys(SELECTS).concat(['f-org', 'f-user', 'f-from', 'f-to']).forEach(function (id) {
+      $(id).addEventListener('change', loadOverview);
+    });
 
-      dom.detailToggle.addEventListener('click', () => {
-        const hidden = dom.detailWrap.classList.toggle('is-hidden');
-        dom.detailToggle.textContent = hidden ? 'Ver eventos recientes' : 'Ocultar eventos recientes';
-      });
+    $('btn-refresh').addEventListener('click', loadOverview);
+    $('btn-clear').addEventListener('click', function () {
+      Object.keys(SELECTS).forEach(function (id) { $(id).value = ''; });
+      $('f-org').value = ''; $('f-user').value = '';
+      $('f-from').value = ''; $('f-to').value = '';
+      loadOverview();
+    });
+    $('btn-prev').addEventListener('click', function () {
+      state.offset = Math.max(state.offset - state.limit, 0);
+      loadEvents();
+    });
+    $('btn-next').addEventListener('click', function () {
+      state.offset += state.limit;
+      loadEvents();
+    });
+    $('btn-export').addEventListener('click', function () {
+      var params = currentQuery();
+      params.set('offset', String(state.offset));
+      window.open('/api/usage/export.csv?' + params.toString(), '_blank', 'noopener');
+    });
 
-      loadAccount();
-      load().catch((error) => console.error(error));
-    })();
+    $('footer-meta').textContent =
+      'Este panel no muestra prompts, respuestas ni contenido clínico: el ledger solo guarda ' +
+      'metadatos técnicos de cada llamada. Zona horaria del navegador: ' + TZ + '.';
+
+    loadOverview();
+  })();
   </script>
 </body>
 </html>

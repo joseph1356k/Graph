@@ -1,6 +1,32 @@
+const LLMProvider = require('../../infrastructure/LLMProvider');
+const { fromDeepgram, toRecorderUsage } = require('../../domain/usage/providerUsage');
+const { API_FAMILIES, FEATURES } = require('../../domain/usage/vocabulary');
+
 class ClinicalRawTranscriptionService {
   constructor(options = {}) {
     this.fetchImpl = options.fetchImpl || fetch;
+  }
+
+  // Registra el consumo de audio. Nunca lanza: si la telemetría falla, la
+  // transcripción del médico tiene que seguir su camino.
+  recordUsage(input = {}) {
+    try {
+      const recorder = LLMProvider.getUsageRecorder();
+      if (!recorder) return;
+      recorder.record({
+        provider: 'deepgram',
+        apiFamily: API_FAMILIES.TRANSCRIPTION,
+        feature: FEATURES.TRANSCRIPTION,
+        requestedModel: input.model || '',
+        occurredAt: input.occurredAt,
+        latencyMs: input.latencyMs,
+        status: input.status,
+        errorCode: input.errorCode || '',
+        ...toRecorderUsage(fromDeepgram(input.payload || {}))
+      });
+    } catch (error) {
+      // Silencio deliberado: ver arriba.
+    }
   }
 
   async transcribe(payload = {}) {
@@ -44,6 +70,12 @@ class ClinicalRawTranscriptionService {
       smart_format: 'true'
     });
 
+    // Deepgram factura por DURACIÓN de audio, no por tokens. El evento se
+    // registra igual que los de texto para poder sumar el costo total del
+    // producto en una sola cuenta; lo que cambia es la unidad.
+    const usageStartedAt = Date.now();
+    const usageOccurredAt = new Date().toISOString();
+
     let response;
     try {
       response = await this.fetchImpl(`https://api.deepgram.com/v1/listen?${query.toString()}`, {
@@ -55,6 +87,16 @@ class ClinicalRawTranscriptionService {
         body: audioBuffer
       });
     } catch (error) {
+      // Una caída de red antes de recibir respuesta: no sabemos si Deepgram
+      // llegó a procesar. Se anota como error sin consumo en vez de omitirlo.
+      this.recordUsage({
+        model,
+        status: 'error',
+        errorCode: 'network_error',
+        occurredAt: usageOccurredAt,
+        latencyMs: Date.now() - usageStartedAt,
+        payload: null
+      });
       const upstreamError = new Error(`No fue posible conectar con Deepgram: ${error.message}`);
       upstreamError.statusCode = 502;
       throw upstreamError;
@@ -71,11 +113,28 @@ class ClinicalRawTranscriptionService {
     }
 
     if (!response.ok) {
+      this.recordUsage({
+        model,
+        status: 'error',
+        errorCode: `http_${response.status || 0}`,
+        occurredAt: usageOccurredAt,
+        latencyMs: Date.now() - usageStartedAt,
+        payload: decoded
+      });
       const detail = decoded?.err_msg || decoded?.error || decoded?.message || 'Deepgram rechazo la transcripcion.';
       const upstreamError = new Error(`${detail}`);
       upstreamError.statusCode = response.status || 502;
       throw upstreamError;
     }
+
+    this.recordUsage({
+      model,
+      status: 'ok',
+      errorCode: '',
+      occurredAt: usageOccurredAt,
+      latencyMs: Date.now() - usageStartedAt,
+      payload: decoded
+    });
 
     const transcript = `${decoded?.results?.channels?.[0]?.alternatives?.[0]?.transcript || ''}`.trim();
 

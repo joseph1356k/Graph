@@ -1,6 +1,7 @@
 const WorkflowBranchLearning = require('../../src/application/use-cases/WorkflowBranchLearning');
 const { statusForError, publicErrorMessage } = require('./httpErrors');
-const createUsageRecorder = require('./recordUsageBestEffort');
+const { withFeature } = require('../../src/infrastructure/usage/UsageContext');
+const { FEATURES } = require('../../src/domain/usage/vocabulary');
 
 function registerWorkflowRoutes(app, deps = {}) {
   const catalogService = deps.catalogService;
@@ -15,7 +16,6 @@ function registerWorkflowRoutes(app, deps = {}) {
   const workflowBranchLearning = deps.workflowBranchLearning
     || new WorkflowBranchLearning(catalogService.repository, catalogService);
 
-  const recordUsageBestEffort = createUsageRecorder(usageDashboardService);
 
   function buildPermissions(req) {
     return {
@@ -111,7 +111,6 @@ function registerWorkflowRoutes(app, deps = {}) {
   });
 
   app.post('/api/workflows/:id/note-field-matches', async (req, res) => {
-    const startedAt = Date.now();
     try {
       if (!noteFieldMatcher) {
         return res.status(503).json({ error: 'Note field matcher not configured' });
@@ -121,55 +120,14 @@ function registerWorkflowRoutes(app, deps = {}) {
       if (!workflow) {
         return res.status(404).json({ error: 'Workflow not found' });
       }
-      const result = await noteFieldMatcher.match({
+      // El consumo lo anota LLMProvider; aquí solo se declara QUÉ módulo es,
+      // que es lo único que esta ruta sabe y la capa de abajo no.
+      const result = await withFeature(FEATURES.FIELD_MATCHING, () => noteFieldMatcher.match({
         noteContent: req.body?.noteContent || '',
         fields: req.body?.fields || [],
         alreadyFulfilled: req.body?.alreadyFulfilled || [],
         pageUrl: req.body?.pageUrl || ''
-      });
-      const durationMs = Date.now() - startedAt;
-      recordUsageBestEffort({
-        sourceRepo: 'graph',
-        eventType: 'dynamic_fill_note_field_match_request',
-        provider: 'graph',
-        apiFamily: 'internal',
-        workflowId,
-        sessionId: req.body?.voiceSessionId || '',
-        durationMs,
-        feature: 'dynamic_fill',
-        status: 'ok',
-        metadata: {
-          pageUrl: req.body?.pageUrl || '',
-          fieldCount: Array.isArray(req.body?.fields) ? req.body.fields.length : 0,
-          noteLength: `${req.body?.noteContent || ''}`.length,
-          matchCount: Array.isArray(result?.matches) ? result.matches.length : 0,
-          readyToSubmit: Boolean(result?.readyToSubmit)
-        }
-      }, 'dynamic fill match request');
-      if (result?.usage) {
-        recordUsageBestEffort({
-          sourceRepo: 'graph',
-          eventType: 'dynamic_fill_note_field_match_usage',
-          provider: result.usage.provider || 'openai',
-          apiFamily: result.usage.apiFamily || 'chat_completions',
-          model: result.usage.model || '',
-          inputTokens: Number(result.usage.inputTokens) || 0,
-          outputTokens: Number(result.usage.outputTokens) || 0,
-          workflowId,
-          sessionId: req.body?.voiceSessionId || '',
-          durationMs,
-          feature: 'dynamic_fill',
-          status: 'ok',
-          metadata: {
-            pageUrl: req.body?.pageUrl || '',
-            fieldCount: Array.isArray(req.body?.fields) ? req.body.fields.length : 0,
-            noteLength: `${req.body?.noteContent || ''}`.length,
-            matchCount: Array.isArray(result?.matches) ? result.matches.length : 0,
-            readyToSubmit: Boolean(result?.readyToSubmit),
-            totalTokens: Number(result.usage.totalTokens) || 0
-          }
-        }, 'dynamic fill match usage');
-      }
+      }), { workflowId });
       res.json(result);
     } catch (err) {
       console.error(`[Workflows] Note Field Match Error: ${err.message}`);

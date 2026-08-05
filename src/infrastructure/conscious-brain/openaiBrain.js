@@ -13,6 +13,9 @@
 //    Windows captura a resolución real, así que la escala es 1.
 
 const { goalPrompt } = require('./prompt');
+const LLMProvider = require('../LLMProvider');
+const { fromOpenAiCompatible, toRecorderUsage } = require('../../domain/usage/providerUsage');
+const { API_FAMILIES, FEATURES } = require('../../domain/usage/vocabulary');
 
 const OA_BASE = 'https://api.openai.com';
 
@@ -53,19 +56,66 @@ function transient(code) {
 }
 
 // Reintento con backoff para 429/5xx: un bache de demanda no debe tirar el turno.
+//
+// Cada intento se registra por separado y con su número: un reintento que llega
+// al modelo SÍ es consumo facturable, así que colapsarlos en un solo evento
+// subestimaría el costo. Los 429 no gastan tokens y quedan como evento de error
+// sin consumo, que es exactamente lo que pasó.
 async function oaHttp(url, apiKey, body) {
   let wait = 800;
   for (let attempt = 1; ; attempt++) {
+    const startedAt = Date.now();
+    const occurredAt = new Date().toISOString();
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify(body)
     });
     const text = await res.text();
+
+    recordBrainUsage({
+      provider: 'openai',
+      apiFamily: API_FAMILIES.COMPUTER_USE,
+      feature: FEATURES.CONSCIOUS_BRIDGE,
+      requestedModel: body?.model || '',
+      attempt,
+      statusCode: res.status,
+      latencyMs: Date.now() - startedAt,
+      occurredAt,
+      rawBody: text
+    });
+
     if (!transient(res.status) || attempt >= 4) return { code: res.status, body: text };
     await new Promise((resolve) => setTimeout(resolve, wait));
     wait = Math.min(wait * 2, 8000);
   }
+}
+
+// El cerebro no comparte el LLMProvider, así que tampoco comparte su
+// instrumentación: se anota aquí, contra el mismo grabador.
+function recordBrainUsage(input) {
+  const recorder = LLMProvider.getUsageRecorder();
+  if (!recorder) return;
+  let parsed = {};
+  try {
+    parsed = input.rawBody ? JSON.parse(input.rawBody) : {};
+  } catch (error) {
+    parsed = {};
+  }
+  const ok = input.statusCode >= 200 && input.statusCode < 300;
+  recorder.record({
+    provider: input.provider,
+    apiFamily: input.apiFamily,
+    feature: input.feature,
+    requestedModel: input.requestedModel,
+    attempt: input.attempt,
+    occurredAt: input.occurredAt,
+    latencyMs: input.latencyMs,
+    status: ok ? 'ok' : 'error',
+    errorCode: ok ? '' : `http_${input.statusCode}`,
+    metadata: { httpStatus: input.statusCode, attempt: input.attempt },
+    ...toRecorderUsage(fromOpenAiCompatible(parsed))
+  });
 }
 
 const asStr = (v) => (typeof v === 'string' ? v : v == null ? '' : String(v));

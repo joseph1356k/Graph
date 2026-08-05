@@ -1,3 +1,6 @@
+const { withFeature } = require('../../infrastructure/usage/UsageContext');
+const { FEATURES } = require('../../domain/usage/vocabulary');
+
 const REVIEW_NOTICE = 'Sugerencias de IA para revisión médica. No constituyen diagnósticos confirmados.';
 
 function normalizeComparableText(value = '') {
@@ -74,10 +77,10 @@ class ClinicalDiagnosisSuggestionService {
       throw error;
     }
 
-    const content = await this.llmProvider.chatExpectingJson(
+    const content = await withFeature(FEATURES.DIAGNOSIS_SUGGESTION, () => this.llmProvider.chatExpectingJson(
       this.buildMessages(noteContent),
       { type: 'json_object' }
-    );
+    ));
     const parsed = this.llmProvider.parseJsonObject(content || '{}');
     return this.normalizeResult(parsed, noteContent);
   }

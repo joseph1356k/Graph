@@ -1,6 +1,23 @@
 const axios = require('axios');
+const { fromOpenAiCompatible, toRecorderUsage } = require('../domain/usage/providerUsage');
+const { currentContext } = require('./usage/UsageContext');
+const { API_FAMILIES } = require('../domain/usage/vocabulary');
+
+// Grabador de consumo compartido por todas las instancias. Se inyecta una vez
+// desde el arranque (`LLMProvider.setUsageRecorder`) en vez de pasarlo por
+// constructor: este archivo se instancia en seis sitios distintos y con el
+// setter no hay ninguno que pueda quedarse sin instrumentar por olvido.
+let usageRecorder = null;
 
 class LLMProvider {
+  static setUsageRecorder(recorder) {
+    usageRecorder = recorder;
+  }
+
+  static getUsageRecorder() {
+    return usageRecorder;
+  }
+
   // envPrefix picks which *_LLM_PROVIDER/_API_KEY/_BASE_URL/_MODEL env vars this
   // instance reads (e.g. "GRAPH" -> GRAPH_LLM_*, "MIRACLE_ASSISTANT" ->
   // MIRACLE_ASSISTANT_LLM_*). This lets independent features (Graph field
@@ -150,19 +167,58 @@ class LLMProvider {
     return headers;
   }
 
-  async postChatCompletions(payload) {
-    try {
-      const response = await axios.post(`${this.baseUrl}/chat/completions`, payload, {
-        headers: this.getHeaders()
-      });
-      return response.data;
-    } catch (error) {
-      const status = error.response?.status;
-      const details = typeof error.response?.data === 'string'
-        ? error.response.data
-        : JSON.stringify(error.response?.data || {});
-      throw new Error(`LLM request failed (${status || 'unknown'}): ${details}`);
+  // Toda llamada facturable de texto pasa por aquí, así que aquí es donde se
+  // mide. Instrumentar en los ~15 servicios que la usan habría dejado huecos:
+  // la versión anterior anotaba consumo en 8 rutas y siempre con status 'ok',
+  // de modo que AgentChat, SurfaceProfile, ClinicalNoteGenerator, las
+  // sugerencias diagnósticas y todos los fallos no aparecían en el ledger.
+  async postChatCompletions(payload, usageOptions = {}) {
+    const descriptor = {
+      provider: this.provider || 'unknown',
+      apiFamily: API_FAMILIES.CHAT_COMPLETIONS,
+      requestedModel: payload?.model || this.model || '',
+      attempt: usageOptions.attempt || 1,
+      fallbackFromModel: usageOptions.fallbackFromModel || '',
+      // El módulo lo pone el contexto de la petición; `usageOptions.feature`
+      // solo lo afina cuando el llamador sabe más que el contexto.
+      ...(usageOptions.feature ? { feature: usageOptions.feature } : {}),
+      metadata: {
+        messageCount: Array.isArray(payload?.messages) ? payload.messages.length : 0,
+        ...(payload?.response_format?.type
+          ? { responseFormat: `${payload.response_format.type}` }
+          : {})
+      }
+    };
+
+    const run = async () => {
+      try {
+        const response = await axios.post(`${this.baseUrl}/chat/completions`, payload, {
+          headers: this.getHeaders()
+        });
+        return response.data;
+      } catch (error) {
+        const status = error.response?.status;
+        const details = typeof error.response?.data === 'string'
+          ? error.response.data
+          : JSON.stringify(error.response?.data || {});
+        const wrapped = new Error(`LLM request failed (${status || 'unknown'}): ${details}`);
+        // Se conserva la respuesta cruda para que el grabador pueda leer el
+        // `usage` de un error que sí gastó tokens (p. ej. context_length).
+        wrapped.response = error.response;
+        wrapped.statusCode = status;
+        throw wrapped;
+      }
+    };
+
+    if (!usageRecorder) {
+      return run();
     }
+
+    return usageRecorder.measure(
+      descriptor,
+      run,
+      (data) => toRecorderUsage(fromOpenAiCompatible(data))
+    );
   }
 
   async translateToCypher(prompt, schema) {
@@ -183,7 +239,7 @@ class LLMProvider {
     const data = await this.postChatCompletions({
       model: options.model || this.model,
       messages
-    });
+    }, options.usage);
 
     return {
       content: data.choices?.[0]?.message?.content?.trim() || '',
@@ -203,7 +259,7 @@ class LLMProvider {
       model: options.model || this.model,
       messages,
       response_format: responseFormat
-    });
+    }, options.usage);
 
     return {
       content: data.choices?.[0]?.message?.content?.trim() || '{}',

@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 const { statusForError, publicErrorMessage } = require('./httpErrors');
-const createUsageRecorder = require('./recordUsageBestEffort');
+const createUpstreamUsageRecorder = require('./recordUsageBestEffort');
+const { withFeature } = require('../../src/infrastructure/usage/UsageContext');
+const { FEATURES } = require('../../src/domain/usage/vocabulary');
 
 // Public, versioned API surface for client apps (Chrome extension, Windows app,
 // web app). This layer keeps external contracts stable while delegating to the
@@ -46,23 +48,12 @@ function registerPublicApiRoutes(app, deps = {}) {
     throw new Error('registerPublicApiRoutes requires app and callMiracleRuntime');
   }
 
-  const recordUsageBestEffort = createUsageRecorder(usageDashboardService);
-
-  function recordPassthroughUsage(usage, event) {
-    if (!usage || typeof usage !== 'object') {
-      return;
-    }
-    recordUsageBestEffort({
-      sourceRepo: 'graph',
-      provider: usage.provider || 'miracle',
-      apiFamily: usage.api_family || usage.apiFamily || 'chat_completions',
-      model: usage.model || '',
-      inputTokens: Number(usage.input_tokens ?? usage.inputTokens) || 0,
-      outputTokens: Number(usage.output_tokens ?? usage.outputTokens) || 0,
-      status: 'ok',
-      ...event
-    }, event.eventType);
-  }
+  // Solo para el consumo que reporta el runtime de Miracle (Python): esa
+  // llamada al modelo no pasa por LLMProvider, así que no la ve nadie más.
+  // Todo lo demás de este archivo (autofill, asistente, biopsia) sí pasa por
+  // LLMProvider y ya queda anotado allí — volver a anotarlo aquí lo contaría
+  // dos veces.
+  const recordUpstreamUsage = createUpstreamUsageRecorder(deps.usageRecorder || null);
 
   function workflowAccess(req) {
     return req.workflowAccess || null;
@@ -194,10 +185,9 @@ function registerPublicApiRoutes(app, deps = {}) {
             backend_status: payload.backend_status || '',
             usage: payload.usage || null,
           };
-          recordPassthroughUsage(payload.usage, {
-            eventType: 'api_v1_pipeline_note_usage',
-            sessionId,
-            feature: 'pipeline_note'
+          recordUpstreamUsage(payload.usage, {
+            feature: FEATURES.CLINICAL_STRUCTURING,
+            sessionId
           });
         } catch (error) {
           if (error.code === 'MIRACLE_RUNTIME_NOT_CONFIGURED') {
@@ -220,13 +210,13 @@ function registerPublicApiRoutes(app, deps = {}) {
         result.autofill = { status: 'skipped', reason: 'no_note_content' };
       } else {
         try {
-          const matched = await noteFieldMatcher.match({
+          const matched = await withFeature(FEATURES.FIELD_MATCHING, () => noteFieldMatcher.match({
             noteContent,
             fields,
             alreadyFulfilled: pickArray(body.already_fulfilled, pickArray(body.alreadyFulfilled)),
             pageUrl: body.page_url || body.pageUrl || '',
             voiceSessionId: sessionId,
-          });
+          }));
           result.autofill = {
             matches: matched.matches || [],
             readyToSubmit: Boolean(matched.readyToSubmit),
@@ -234,26 +224,6 @@ function registerPublicApiRoutes(app, deps = {}) {
             submit_reason: matched.submitReason || '',
             usage: matched.usage || null,
           };
-          if (matched.usage) {
-            recordUsageBestEffort({
-              sourceRepo: 'graph',
-              eventType: 'api_v1_pipeline_autofill_usage',
-              provider: matched.usage.provider || 'openai',
-              apiFamily: matched.usage.apiFamily || 'chat_completions',
-              model: matched.usage.model || '',
-              inputTokens: Number(matched.usage.inputTokens) || 0,
-              outputTokens: Number(matched.usage.outputTokens) || 0,
-              sessionId,
-              feature: 'pipeline_autofill',
-              status: 'ok',
-              metadata: {
-                fieldCount: fields.length,
-                matchCount: Array.isArray(matched.matches) ? matched.matches.length : 0,
-                readyToSubmit: Boolean(matched.readyToSubmit),
-                totalTokens: Number(matched.usage.totalTokens) || 0
-              }
-            }, 'api v1 pipeline autofill usage');
-          }
         } catch (error) {
           result.autofill = { status: 'error', error: error.message || 'autofill_failed' };
         }
@@ -271,33 +241,13 @@ function registerPublicApiRoutes(app, deps = {}) {
       const body = req.body || {};
       const noteContent = body.note_content || body.noteContent || body.note?.content || '';
       const sessionId = body.session_id || body.voiceSessionId || '';
-      const matched = await noteFieldMatcher.match({
+      const matched = await withFeature(FEATURES.FIELD_MATCHING, () => noteFieldMatcher.match({
         noteContent,
         fields: pickArray(body.fields),
         alreadyFulfilled: pickArray(body.already_fulfilled, pickArray(body.alreadyFulfilled)),
         pageUrl: body.page_url || body.pageUrl || '',
         voiceSessionId: sessionId
-      });
-      if (matched.usage) {
-        recordUsageBestEffort({
-          sourceRepo: 'graph',
-          eventType: 'api_v1_autofill_match_usage',
-          provider: matched.usage.provider || 'openai',
-          apiFamily: matched.usage.apiFamily || 'chat_completions',
-          model: matched.usage.model || '',
-          inputTokens: Number(matched.usage.inputTokens) || 0,
-          outputTokens: Number(matched.usage.outputTokens) || 0,
-          sessionId,
-          feature: 'autofill_match',
-          status: 'ok',
-          metadata: {
-            fieldCount: pickArray(body.fields).length,
-            matchCount: Array.isArray(matched.matches) ? matched.matches.length : 0,
-            readyToSubmit: Boolean(matched.readyToSubmit),
-            totalTokens: Number(matched.usage.totalTokens) || 0
-          }
-        }, 'api v1 autofill match usage');
-      }
+      }));
       return res.json({
         autofill: {
           matches: matched.matches || [],
@@ -323,27 +273,11 @@ function registerPublicApiRoutes(app, deps = {}) {
     }
     try {
       const body = req.body || {};
-      const result = await assistantService.chat({
+      const result = await withFeature(FEATURES.ASISTENTE, () => assistantService.chat({
         message: body.message,
         specialty: body.specialty,
         history: pickArray(body.history)
-      }, {});
-      if (result.usage) {
-        recordUsageBestEffort({
-          sourceRepo: 'graph',
-          eventType: 'api_v1_assistant_chat_usage',
-          provider: result.usage.provider || '',
-          apiFamily: result.usage.api_family || 'chat_completions',
-          model: result.usage.model || '',
-          inputTokens: Number(result.usage.input_tokens) || 0,
-          outputTokens: Number(result.usage.output_tokens) || 0,
-          feature: 'assistant_chat',
-          status: 'ok',
-          metadata: {
-            totalTokens: Number(result.usage.total_tokens) || 0
-          }
-        }, 'api v1 assistant chat usage');
-      }
+      }, {}));
       return res.json({
         answer: result.answer,
         specialty: result.specialty,
@@ -367,29 +301,12 @@ function registerPublicApiRoutes(app, deps = {}) {
     }
     try {
       const body = req.body || {};
-      const result = await biopsyService.extract({
+      const result = await withFeature(FEATURES.BIOPSIA, () => biopsyService.extract({
         image: body.image,
         mediaType: body.media_type,
         template: body.template,
         mode: body.mode
-      });
-      if (result.usage) {
-        recordUsageBestEffort({
-          sourceRepo: 'graph',
-          eventType: 'api_v1_biopsy_extract_usage',
-          provider: result.usage.provider || '',
-          apiFamily: result.usage.api_family || 'chat_completions',
-          model: result.usage.model || '',
-          inputTokens: Number(result.usage.input_tokens) || 0,
-          outputTokens: Number(result.usage.output_tokens) || 0,
-          feature: 'biopsy_extract',
-          status: 'ok',
-          metadata: {
-            totalTokens: Number(result.usage.total_tokens) || 0,
-            sections: Array.isArray(result.sections) ? result.sections.length : 0
-          }
-        }, 'api v1 biopsy extract usage');
-      }
+      }));
       return res.json({
         template: result.template,
         sections: result.sections,

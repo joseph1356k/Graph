@@ -2,6 +2,8 @@ const { clinicalError, isClinicalError } = require('./ClinicalErrors');
 const contextBuilder = require('./ClinicalAssistantContextBuilder');
 const ClinicalAssistantValidationService = require('./ClinicalAssistantValidationService');
 
+const { withFeature } = require('../../infrastructure/usage/UsageContext');
+const { FEATURES } = require('../../domain/usage/vocabulary');
 // Miracle Clinical Assistant: contextual clinical chat, encounter-based
 // diagnostic suggestions and note adjustments. One service, three use cases —
 // they share encounter loading (with ownership), context building and the
@@ -66,7 +68,7 @@ class ClinicalAssistantService {
         message: cleanMessage,
         history: clinicalContext.history
       });
-      const { content: rawAnswer, usage } = await this.llmProvider.chatWithUsage(messages);
+      const { content: rawAnswer, usage } = await withFeature(FEATURES.ASISTENTE, () => this.llmProvider.chatWithUsage(messages));
       return {
         answer: this.validationService.sanitizeAnswer(rawAnswer),
         mode: 'clinical_chat',
@@ -110,7 +112,7 @@ class ClinicalAssistantService {
 
     try {
       const messages = this.promptBuilder.buildDiagnosticMessages({ clinicalContext });
-      const content = await this.llmProvider.chatExpectingJson(messages, { type: 'json_object' });
+      const content = await withFeature(FEATURES.ASISTENTE, () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }));
       const parsed = this.llmProvider.parseJsonObject(content || '{}');
       const result = this.validationService.normalizeSuggestions(parsed, {
         transcript: fullTranscript,
@@ -156,7 +158,7 @@ class ClinicalAssistantService {
         instruction: cleanInstruction,
         sectionKey: cleanSectionKey
       });
-      const content = await this.llmProvider.chatExpectingJson(messages, { type: 'json_object' });
+      const content = await withFeature(FEATURES.ASISTENTE, () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }));
       const parsed = this.llmProvider.parseJsonObject(content || '{}');
       const modelNote = parsed?.note_json && typeof parsed.note_json === 'object' ? parsed.note_json : parsed;
 

@@ -1,6 +1,8 @@
 const workflowAssistantPolicy = require('./WorkflowAssistantPolicy');
 const WorkflowDecisionNormalizer = require('./WorkflowDecisionNormalizer');
 
+const { withFeature } = require('../../infrastructure/usage/UsageContext');
+const { FEATURES } = require('../../domain/usage/vocabulary');
 class AgentChat {
   constructor(llmProvider, catalogService, executor) {
     this.llmProvider = llmProvider;
@@ -322,7 +324,7 @@ class AgentChat {
       }
     ];
 
-    const content = await this.llmProvider.chatExpectingJson(messages, { type: 'json_object' });
+    const content = await withFeature(FEATURES.AGENT_CHAT, () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }));
     return this.llmProvider.parseJsonObject(content);
   }
 

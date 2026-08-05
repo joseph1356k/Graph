@@ -1,3 +1,6 @@
+const { withFeature } = require('../../infrastructure/usage/UsageContext');
+const { FEATURES } = require('../../domain/usage/vocabulary');
+
 const {
   buildNoteFieldMatchingPrompt,
   buildNoteFieldMatchingResponseFormat
@@ -70,10 +73,10 @@ class NoteFieldMatcher {
     }
 
     try {
-      const response = await this.llmProvider.chatExpectingJsonWithUsage(
+      const response = await withFeature(FEATURES.FIELD_MATCHING, () => this.llmProvider.chatExpectingJsonWithUsage(
         this.buildMessages(payload),
         buildNoteFieldMatchingResponseFormat()
-      );
+      ));
       const parsed = this.llmProvider.parseJsonObject(response.content || '{}');
       const usage = response.usage ? {
         provider: response.provider || this.llmProvider?.provider || '',
