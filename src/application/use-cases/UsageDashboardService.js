@@ -207,6 +207,11 @@ class UsageDashboardService {
       rows: (Array.isArray(rows) ? rows : []).map((row) => ({
         key: row.dimension_key,
         id: row.dimension_id || null,
+        // El nombre lo resuelve la base al leer, dentro del alcance de quien
+        // consulta. Si no hay perfil que resolver, `display_name` ya viene con
+        // un respaldo legible: aquí no se inventa nada.
+        label: row.display_name || row.dimension_key,
+        detail: row.display_detail || '',
         events: Number(row.events || 0),
         inputTokens: Number(row.input_tokens || 0),
         outputTokens: Number(row.output_tokens || 0),
@@ -215,6 +220,35 @@ class UsageDashboardService {
         errorEvents: Number(row.error_events || 0),
         avgLatencyMs: Number(row.avg_latency_ms || 0)
       }))
+    };
+  }
+
+  /**
+   * Personas y organizaciones elegibles en los filtros, con su nombre.
+   *
+   * Salen del consumo que quien consulta ya puede ver, no del directorio: un
+   * desplegable poblado desde `profiles` sería una forma de enumerar la
+   * plantilla de otra institución sin haber visto ni un evento suyo.
+   */
+  async getFacets(query = {}, viewer = {}) {
+    const filters = this.normalizeFilters(query);
+    const rows = await this.call(
+      'ai_usage_facets',
+      { p_from: filters.from, p_to: filters.to },
+      viewer
+    );
+    const list = Array.isArray(rows) ? rows : [];
+    const shape = (row) => ({
+      id: row.id,
+      label: row.label,
+      detail: row.detail || '',
+      events: Number(row.events || 0),
+      totalTokens: Number(row.total_tokens || 0),
+      costUsd: Number(row.cost_usd || 0)
+    });
+    return {
+      users: list.filter((row) => row.kind === 'user').map(shape),
+      organizations: list.filter((row) => row.kind === 'organization').map(shape)
     };
   }
 
@@ -240,6 +274,9 @@ class UsageDashboardService {
         userId: row.user_id,
         actorType: row.actor_type,
         attributionSource: row.attribution_source,
+        userName: row.user_name || '',
+        userEmail: row.user_email || '',
+        organizationName: row.organization_name || '',
         app: row.app,
         feature: row.feature,
         provider: row.provider,
@@ -289,7 +326,7 @@ class UsageDashboardService {
 
     // Se lanzan en paralelo: son consultas independientes contra la misma
     // ventana y encadenarlas multiplicaría la latencia por seis.
-    const [summary, series, byApp, byFeature, byModel, byUser, byProvider, missingRates] =
+    const [summary, series, byApp, byFeature, byModel, byUser, byProvider, missingRates, facets] =
       await Promise.all([
         this.getSummary(query, viewer),
         this.getSeries({ ...query, bucket }, viewer),
@@ -298,7 +335,8 @@ class UsageDashboardService {
         this.getBreakdown('model', { ...query, limit: 10 }, viewer),
         this.getBreakdown('user', { ...query, limit: 10 }, viewer),
         this.getBreakdown('provider', query, viewer),
-        this.getMissingRates(query, viewer)
+        this.getMissingRates(query, viewer),
+        this.getFacets(query, viewer)
       ]);
 
     return {
@@ -316,6 +354,10 @@ class UsageDashboardService {
         provider: byProvider.rows
       },
       missingRates,
+      // Las facetas se piden solo con la ventana temporal, NO con el resto de
+      // filtros: si al elegir a una persona la lista se redujera a esa persona,
+      // no habría forma de volver a cambiarla sin limpiar todo.
+      facets,
       // El dashboard no inventa las opciones de los filtros: se las damos.
       vocabulary: {
         apps: APP_VALUES,

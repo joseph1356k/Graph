@@ -113,6 +113,31 @@ Migración: **`supabase/migrations/20260804000000_ai_usage_telemetry.sql`**
 - **Índices**: por tiempo, y por (organización|usuario|app|feature|modelo) +
   tiempo. Parcial para las tarifas faltantes.
 
+Migración: **`supabase/migrations/20260806000000_ai_usage_identity.sql`**
+
+Resuelve el nombre de la persona y de la organización **en lectura**, y añade
+`ai_usage_facets` para poblar los filtros.
+
+- `ai_usage_breakdown` devuelve además `display_name` y `display_detail`
+  (correo · app dominante de esa fila).
+- `ai_usage_events_page` devuelve además `user_name`, `user_email` y
+  `organization_name`.
+- `ai_usage_facets(from, to)` lista las personas y organizaciones **con consumo
+  visible** en la ventana, con su nombre.
+
+**El nombre no se guarda en el evento.** Se busca en `profiles` al consultar,
+con tres consecuencias buscadas: el ledger sigue sin datos personales; un cambio
+de nombre no obliga a reescribir el histórico; y borrar un perfil no borra el
+consumo — queda con su UUID y se lee «Usuario a1b2c3d4».
+
+El `join` ocurre **después** del filtro de alcance, sobre filas que quien
+consulta ya podía ver, así que resolver el nombre no amplía nada. Y las facetas
+salen del consumo visible, no del directorio: un desplegable poblado desde
+`profiles` sería una forma de enumerar la plantilla de otra institución sin
+haber visto ni un evento suyo. Comprobado contra la base real: un médico del
+Hospital Demo pidiendo el desglose con el UUID del Hospital General, y con el
+UUID de un médico ajeno, recibe **0 filas** en ambos casos.
+
 ### Ejecutar la migración
 
 ```bash
@@ -238,6 +263,13 @@ clínico. Objetos y arrays anidados se descartan aunque la clave esté permitida
 No se almacena: prompts, respuestas, transcripciones, notas, audio, nombres de
 paciente, documentos, credenciales ni llaves. Verificado en el test
 «el evento persistido no lleva ningún campo de contenido».
+
+**Nombres del personal.** El panel muestra el nombre de quien consumió, porque
+sin eso no responde la pregunta que lo justifica. No es contenido clínico ni
+dato de paciente: es identidad de plataforma, la misma que ya se ve en cualquier
+pantalla de administración. Se resuelve en lectura y dentro del alcance, nunca
+se copia al ledger, y el correo se muestra solo dentro del panel — el CSV lleva
+nombre y UUID, no correo, porque un CSV se reenvía.
 
 ---
 

@@ -169,6 +169,11 @@ function registerUsageRoutes(app, deps = {}) {
   app.get('/api/usage/events', query((req, viewer) =>
     usageDashboardService.getEvents(req.query || {}, viewer)));
 
+  // Quién y qué organización se pueden elegir en los filtros. Va por el mismo
+  // alcance: la lista sale del consumo visible, no del directorio de usuarios.
+  app.get('/api/usage/facets', query((req, viewer) =>
+    usageDashboardService.getFacets(req.query || {}, viewer)));
+
   app.get('/api/usage/missing-rates', query(async (req, viewer) => ({
     missingRates: await usageDashboardService.getMissingRates(req.query || {}, viewer)
   })));
@@ -190,10 +195,15 @@ function registerUsageRoutes(app, deps = {}) {
         { ...(req.query || {}), limit: 200, offset: Number(req.query?.offset) || 0 },
         viewer
       );
+      // Va el nombre además del UUID: quien abre el CSV para repartir costos
+      // necesita leer a quién corresponde cada línea, y el UUID se queda para
+      // poder cruzarlo con otros sistemas. El correo NO se exporta: dentro del
+      // panel sirve para desempatar homónimos, pero un CSV se reenvía.
       const columns = [
-        'occurredAt', 'organizationId', 'userId', 'actorType', 'app', 'feature',
-        'provider', 'requestedModel', 'servedModel', 'inputTokens', 'outputTokens',
-        'totalTokens', 'costUsd', 'costStatus', 'status', 'latencyMs', 'environment'
+        'occurredAt', 'organizationName', 'organizationId', 'userName', 'userId',
+        'actorType', 'app', 'feature', 'provider', 'requestedModel', 'servedModel',
+        'inputTokens', 'outputTokens', 'totalTokens', 'costUsd', 'costStatus',
+        'status', 'latencyMs', 'environment'
       ];
       const lines = [columns.join(',')];
       for (const event of page.events) {

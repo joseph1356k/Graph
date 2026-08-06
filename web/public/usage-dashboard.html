@@ -56,14 +56,26 @@
     .usage-pill.is-active { color: #050505; background: #f1f1ee; border-color: #f1f1ee; }
     .usage-pill:focus-visible { outline: 2px solid var(--cat-1); outline-offset: 2px; }
 
-    .usage-filter-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); }
-    .usage-field { display: grid; gap: 5px; }
-    .usage-field label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--dim); }
+    .usage-filter-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .usage-field { display: grid; gap: 5px; min-width: 0; }
+    .usage-field label {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--dim);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
     .usage-field select, .usage-field input {
       height: 36px; padding: 0 10px; border-radius: 10px;
       border: 1px solid var(--line-soft); background: var(--control); color: var(--ink);
-      font-size: 0.83rem; font-family: inherit; width: 100%;
+      font-size: 0.83rem; font-family: inherit; width: 100%; min-width: 0;
+      /* Sin esto el navegador pinta el icono del calendario en claro sobre el
+         panel negro, y el desplegable nativo sale blanco. */
+      color-scheme: dark;
     }
+    /* Un `datetime-local` no cabe en la misma columna que un desplegable: el
+       texto «dd/mm/aaaa --:--» más el icono del calendario necesitan casi el
+       doble, y al no caber se montaban uno encima del otro. Ocupa dos huecos
+       de la rejilla; si solo hay uno, el navegador lo limita a ese. */
+    .usage-field--date { grid-column: span 2; }
+    .usage-field--date input { padding-right: 6px; }
     .usage-field select:focus, .usage-field input:focus { outline: 2px solid var(--cat-1); outline-offset: 1px; }
     .usage-filter-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
@@ -85,15 +97,24 @@
     .usage-legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: 0.76rem; color: var(--muted); }
     .usage-legend-swatch { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto; }
     .usage-svg { width: 100%; height: 190px; display: block; }
-    .usage-axis-labels { display: flex; justify-content: space-between; margin-top: 6px; color: var(--dim); font-size: 0.68rem; font-variant-numeric: tabular-nums; }
+    .usage-axis-labels { display: flex; justify-content: flex-start; margin-top: 4px; color: var(--dim); font-size: 0.68rem; font-variant-numeric: tabular-nums; }
 
     /* ---- Barras de desglose ---- */
     .usage-bars { display: grid; gap: 9px; }
-    .usage-bar-row { display: grid; grid-template-columns: minmax(96px, 30%) 1fr auto; gap: 10px; align-items: center; font-size: 0.8rem; }
-    .usage-bar-label { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .usage-bar-row { display: grid; grid-template-columns: minmax(110px, 32%) 1fr auto; gap: 10px; align-items: center; font-size: 0.8rem; }
+    .usage-bar-label { color: var(--ink); min-width: 0; }
+    .usage-bar-label, .usage-bar-value { display: grid; min-width: 0; }
+    .usage-bar-label > span, .usage-bar-label > em,
+    .usage-bar-value > strong, .usage-bar-value > em {
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .usage-bar-value > strong { font-weight: 600; }
+    .usage-bar-label > em, .usage-bar-value > em {
+      font-style: normal; color: var(--dim); font-size: 0.68rem;
+    }
     .usage-bar-track { height: 9px; border-radius: 999px; background: rgba(255,255,255,0.06); overflow: hidden; }
     .usage-bar-fill { height: 100%; border-radius: 999px; }
-    .usage-bar-value { color: var(--ink); font-variant-numeric: tabular-nums; font-size: 0.78rem; min-width: 128px; text-align: right; }
+    .usage-bar-value { color: var(--ink); font-variant-numeric: tabular-nums; font-size: 0.78rem; min-width: 132px; text-align: right; }
 
     /* ---- Tabla ---- */
     .usage-table-wrap { overflow-x: auto; }
@@ -158,16 +179,16 @@
           <button class="usage-pill" data-range="30d" type="button">30 d</button>
         </div>
         <div class="usage-filter-grid">
-          <div class="usage-field"><label for="f-from">Desde</label><input id="f-from" type="datetime-local"></div>
-          <div class="usage-field"><label for="f-to">Hasta</label><input id="f-to" type="datetime-local"></div>
+          <div class="usage-field usage-field--date"><label for="f-from">Desde</label><input id="f-from" type="datetime-local"></div>
+          <div class="usage-field usage-field--date"><label for="f-to">Hasta</label><input id="f-to" type="datetime-local"></div>
+          <div class="usage-field"><label for="f-user">Usuario</label><select id="f-user"></select></div>
+          <div class="usage-field"><label for="f-org">Organización</label><select id="f-org"></select></div>
           <div class="usage-field"><label for="f-app">Aplicación</label><select id="f-app"></select></div>
           <div class="usage-field"><label for="f-feature">Funcionalidad</label><select id="f-feature"></select></div>
           <div class="usage-field"><label for="f-provider">Proveedor</label><select id="f-provider"></select></div>
           <div class="usage-field"><label for="f-model">Modelo</label><select id="f-model"></select></div>
           <div class="usage-field"><label for="f-status">Estado</label><select id="f-status"></select></div>
           <div class="usage-field"><label for="f-environment">Entorno</label><select id="f-environment"></select></div>
-          <div class="usage-field"><label for="f-org">Organización (uuid)</label><input id="f-org" type="text" placeholder="todas" autocomplete="off"></div>
-          <div class="usage-field"><label for="f-user">Usuario (uuid)</label><input id="f-user" type="text" placeholder="todos" autocomplete="off"></div>
         </div>
         <div class="usage-filter-actions">
           <button class="usage-pill" id="btn-clear" type="button">Limpiar filtros</button>
@@ -297,6 +318,16 @@
       if (n < 1) return '$' + n.toFixed(4);
       return '$' + n.toFixed(2);
     }
+    // Variante corta para el eje y para la cifra sobre la barra: ahí solo hay
+    // sitio para unos ocho caracteres, y una escala que se desborda tapa la
+    // gráfica que venía a explicar.
+    function fmtCostAxis(value) {
+      var n = Number(value) || 0;
+      if (n === 0) return '$0';
+      if (n >= 1) return '$' + n.toFixed(2);
+      if (n >= 0.01) return '$' + n.toFixed(3);
+      return '$' + n.toFixed(5);
+    }
     function fmtDate(iso) {
       if (!iso) return '—';
       var d = new Date(iso);
@@ -326,18 +357,41 @@
       return params;
     }
 
+    // `values` admite cadenas o {value, label, detail}. Si lo que había elegido
+    // ya no está en la lista nueva (pasa al cambiar de rango: esa persona no
+    // consumió nada en la ventana nueva), la opción se conserva marcada como
+    // «sin consumo en el rango». Borrarla en silencio dejaría el panel filtrado
+    // por alguien que el desplegable ya no muestra — un filtro invisible.
     function fillSelect(select, values, label) {
       var previous = select.value;
+      var previousText = select.selectedOptions && select.selectedOptions[0]
+        ? select.selectedOptions[0].dataset.plain || select.selectedOptions[0].textContent : '';
       select.innerHTML = '';
       var all = document.createElement('option');
       all.value = ''; all.textContent = label;
       select.appendChild(all);
-      values.forEach(function (value) {
+
+      var found = false;
+      (values || []).forEach(function (entry) {
+        var value = typeof entry === 'string' ? entry : entry.value;
+        var text = typeof entry === 'string' ? entry : entry.label;
         var option = document.createElement('option');
-        option.value = value; option.textContent = value;
+        option.value = value;
+        option.textContent = text;
+        option.dataset.plain = text;
+        if (entry && entry.detail) option.title = entry.detail;
         select.appendChild(option);
+        if (value === previous) found = true;
       });
-      if (previous && values.indexOf(previous) >= 0) select.value = previous;
+
+      if (previous && !found) {
+        var ghost = document.createElement('option');
+        ghost.value = previous;
+        ghost.textContent = (previousText || previous) + ' (sin consumo en el rango)';
+        ghost.dataset.plain = previousText || previous;
+        select.appendChild(ghost);
+      }
+      if (previous) select.value = previous;
     }
 
     // ---- Gráficas ----------------------------------------------------------
@@ -345,60 +399,155 @@
     // depender de un CDN. Son dos gráficas simples; no justifican el peso.
     var SVG_NS = 'http://www.w3.org/2000/svg';
 
+    function svgEl(name, attrs) {
+      var node = document.createElementNS(SVG_NS, name);
+      Object.keys(attrs || {}).forEach(function (key) { node.setAttribute(key, attrs[key]); });
+      return node;
+    }
+
+    // Cuatro marcas «redondas» para el eje: 84 437 sube a 100 k, no a 84 437.
+    // Un eje con cifras arbitrarias se lee peor que uno sin cifras.
+    function niceCeil(value) {
+      if (value <= 0) return 1;
+      var exp = Math.pow(10, Math.floor(Math.log10(value)));
+      var norm = value / exp;
+      var step = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10;
+      return step * exp;
+    }
+
+    // POR QUÉ SE DIBUJA EN PÍXELES REALES Y NO CON viewBox ESCALADO.
+    // La versión anterior usaba `preserveAspectRatio="none"`, que estira el
+    // lienzo hasta el ancho del panel. Con solo barras se nota poco; en cuanto
+    // entra texto, las cifras salen deformadas horizontalmente. Por eso ahora se
+    // mide el ancho disponible y se dibuja 1:1, y se redibuja al redimensionar.
     function drawBars(svg, axisNode, points, series) {
       svg.innerHTML = '';
       axisNode.innerHTML = '';
       if (!points.length) return;
 
-      var W = 1000, H = 190, PAD = 4;
+      var W = Math.max(Math.round(svg.getBoundingClientRect().width) || 0, 320);
+      var H = 190;
+      var PAD_L = 54;   // sitio para las cifras del eje
+      var PAD_R = 8;
+      var PAD_T = 14;   // sitio para la cifra encima de la barra más alta
+      var PAD_B = 20;   // sitio para las fechas
+      var plotW = Math.max(W - PAD_L - PAD_R, 40);
+      var plotH = Math.max(H - PAD_T - PAD_B, 40);
+
       svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-      svg.setAttribute('preserveAspectRatio', 'none');
+      svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
-      var max = 0;
+      var rawMax = 0;
       points.forEach(function (point) {
-        series.forEach(function (serie) { max = Math.max(max, Number(point[serie.key]) || 0); });
+        series.forEach(function (serie) { rawMax = Math.max(rawMax, Number(point[serie.key]) || 0); });
       });
-      if (max <= 0) max = 1;
+      var max = niceCeil(rawMax);
+      // El formato del tooltip puede permitirse seis decimales; el del eje no,
+      // porque «$0.027300» no cabe en el margen y se comería la gráfica.
+      var fmtAxis = series[0].axisFormat || series[0].format;
 
-      for (var g = 1; g <= 4; g += 1) {
-        var line = document.createElementNS(SVG_NS, 'line');
-        var y = (H - PAD) * (1 - g / 4);
-        line.setAttribute('x1', 0); line.setAttribute('x2', W);
-        line.setAttribute('y1', y); line.setAttribute('y2', y);
-        line.setAttribute('stroke', 'rgba(255,255,255,0.07)');
-        line.setAttribute('stroke-width', '1');
-        line.setAttribute('vector-effect', 'non-scaling-stroke');
-        svg.appendChild(line);
+      // Rejilla con su cifra. Es la mitad del pedido: sin escala, una barra alta
+      // no dice si son mil tokens o un millón.
+      for (var g = 0; g <= 4; g += 1) {
+        var y = PAD_T + plotH * (1 - g / 4);
+        svg.appendChild(svgEl('line', {
+          x1: PAD_L, x2: PAD_L + plotW, y1: y, y2: y,
+          stroke: g === 0 ? 'rgba(255,255,255,0.16)' : 'var(--usage-grid)', 'stroke-width': 1
+        }));
+        var tick = svgEl('text', {
+          x: PAD_L - 8, y: y + 3.5, 'text-anchor': 'end',
+          fill: 'var(--dim)', 'font-size': '10', 'font-family': 'inherit'
+        });
+        tick.textContent = fmtAxis(max * g / 4);
+        svg.appendChild(tick);
       }
 
-      var slot = W / points.length;
+      var slot = plotW / points.length;
       var barW = Math.max(Math.min(slot / series.length - 1, 26), 1);
+      var groupW = series.length * barW + (series.length - 1);
+      // Solo se rotula si la cifra cabe en el hueco. Rotular siempre produce
+      // números encimados, que es peor que no tenerlos.
+      var labelEvery = Math.max(1, Math.ceil((points.length * 34) / plotW));
+
       points.forEach(function (point, index) {
+        var slotX = PAD_L + index * slot;
+        var groupX = slotX + (slot - groupW) / 2;
+        var tallest = 0;
+
         series.forEach(function (serie, sIndex) {
           var value = Number(point[serie.key]) || 0;
+          tallest = Math.max(tallest, value);
           if (value <= 0) return;
-          var h = Math.max(((H - PAD) * value) / max, 1.5);
-          var rect = document.createElementNS(SVG_NS, 'rect');
-          rect.setAttribute('x', index * slot + sIndex * (barW + 1) + (slot - series.length * barW) / 2);
-          rect.setAttribute('y', H - PAD - h);
-          rect.setAttribute('width', barW);
-          rect.setAttribute('height', h);
-          rect.setAttribute('fill', serie.color);
+          var h = Math.max((plotH * value) / max, 1.5);
+          var rect = svgEl('rect', {
+            x: groupX + sIndex * (barW + 1), y: PAD_T + plotH - h,
+            width: barW, height: h, fill: serie.color, rx: 1.5
+          });
           var title = document.createElementNS(SVG_NS, 'title');
           title.textContent = fmtDate(point.at) + ' · ' + serie.label + ': ' + serie.format(value);
           rect.appendChild(title);
           svg.appendChild(rect);
         });
+
+        if (tallest > 0 && index % labelEvery === 0) {
+          var h2 = Math.max((plotH * tallest) / max, 1.5);
+          var label = svgEl('text', {
+            x: groupX + groupW / 2, y: PAD_T + plotH - h2 - 4, 'text-anchor': 'middle',
+            fill: 'var(--muted)', 'font-size': '9.5', 'font-family': 'inherit'
+          });
+          label.textContent = fmtAxis(tallest);
+          svg.appendChild(label);
+        }
+
+        // Franja invisible por bucket: da el detalle exacto de TODAS las series
+        // a la vez, que es lo que no se puede leer de la barra.
+        var hit = svgEl('rect', {
+          x: slotX, y: PAD_T, width: slot, height: plotH, fill: 'transparent'
+        });
+        var hitTitle = document.createElementNS(SVG_NS, 'title');
+        hitTitle.textContent = fmtDate(point.at) + '\n' + series.map(function (serie) {
+          return serie.label + ': ' + serie.format(Number(point[serie.key]) || 0);
+        }).join('\n') + '\n' + fmtInt(point.events || 0) + ' solicitud(es)';
+        hit.appendChild(hitTitle);
+        svg.appendChild(hit);
       });
 
-      [points[0], points[Math.floor(points.length / 2)], points[points.length - 1]]
-        .forEach(function (point) {
-          var span = document.createElement('span');
-          span.textContent = new Date(point.at).toLocaleString('es-CO',
-            { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-          axisNode.appendChild(span);
+      var stamps = [points[0], points[Math.floor(points.length / 2)], points[points.length - 1]];
+      stamps.forEach(function (point, index) {
+        var x = index === 0 ? PAD_L : index === 1 ? PAD_L + plotW / 2 : PAD_L + plotW;
+        var text = svgEl('text', {
+          x: x, y: H - 6,
+          'text-anchor': index === 0 ? 'start' : index === 1 ? 'middle' : 'end',
+          fill: 'var(--dim)', 'font-size': '10', 'font-family': 'inherit'
         });
+        text.textContent = new Date(point.at).toLocaleString('es-CO',
+          { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        svg.appendChild(text);
+      });
+
+      axisNode.textContent = 'Máximo del eje: ' + fmtAxis(max) +
+        ' · ' + points.length + ' intervalos';
     }
+
+    // El último dibujo se guarda para poder repetirlo al cambiar el ancho: sin
+    // esto, redimensionar dejaría las gráficas con la escala de antes.
+    var lastDraw = [];
+    function drawAndRemember(svg, axisNode, points, series) {
+      lastDraw = lastDraw.filter(function (entry) { return entry.svg !== svg; });
+      lastDraw.push({ svg: svg, axisNode: axisNode, points: points, series: series });
+      drawBars(svg, axisNode, points, series);
+    }
+    var redrawPending = false;
+    window.addEventListener('resize', function () {
+      if (redrawPending) return;
+      redrawPending = true;
+      window.requestAnimationFrame(function () {
+        redrawPending = false;
+        lastDraw.forEach(function (entry) {
+          drawBars(entry.svg, entry.axisNode, entry.points, entry.series);
+        });
+      });
+    });
 
     var PALETTE = ['var(--cat-1)', 'var(--cat-2)', 'var(--cat-3)', 'var(--cat-4)', 'var(--cat-5)', 'var(--cat-6)'];
 
@@ -410,16 +559,34 @@
       }
       var metric = options.metric || 'totalTokens';
       var max = rows.reduce(function (acc, row) { return Math.max(acc, Number(row[metric]) || 0); }, 0) || 1;
+      // El total de lo listado, para poder dar el peso de cada fila. Un «84,4 k»
+      // sin referencia no dice si es mucho o poco.
+      var sum = rows.reduce(function (acc, row) { return acc + (Number(row[metric]) || 0); }, 0);
+
       rows.forEach(function (row, index) {
         var wrap = document.createElement('div');
         wrap.className = 'usage-bar-row';
-        var text = options.label ? options.label(row) : row.key;
+        // `label` lo resuelve la base: nombre de la persona o de la
+        // organización. Para el resto de dimensiones es la clave misma.
+        var text = options.label ? options.label(row) : (row.label || row.key);
+        var value = Number(row[metric]) || 0;
+        var share = sum > 0 ? (value / sum) * 100 : 0;
+        // En el desglose POR APLICACIÓN el detalle sería la app otra vez; en el
+        // de funcionalidad o modelo dice desde qué app se gastó, que es justo lo
+        // que hacía falta cruzar a ojo entre dos paneles.
+        var detail = row.detail && row.detail !== text ? row.detail : '';
+        var hint = [detail, fmtInt(row.events) + ' solicitud(es)', row.key]
+          .filter(Boolean).join(' · ');
         wrap.innerHTML =
-          '<div class="usage-bar-label" title="' + esc(text) + '">' + esc(text) + '</div>' +
-          '<div class="usage-bar-track"><div class="usage-bar-fill" style="width:' +
-            Math.max((Number(row[metric]) || 0) / max * 100, 1) + '%;background:' +
+          '<div class="usage-bar-label" title="' + esc(hint) + '">' +
+            '<span>' + esc(text) + '</span>' +
+            (detail ? '<em>' + esc(detail) + '</em>' : '') + '</div>' +
+          '<div class="usage-bar-track" title="' + esc(share.toFixed(1)) + ' % del total listado">' +
+            '<div class="usage-bar-fill" style="width:' +
+            Math.max(value / max * 100, 1) + '%;background:' +
             PALETTE[index % PALETTE.length] + '"></div></div>' +
-          '<div class="usage-bar-value">' + esc(options.format(row)) + '</div>';
+          '<div class="usage-bar-value"><strong>' + esc(options.format(row)) + '</strong>' +
+            '<em>' + share.toFixed(1) + ' % · ' + fmtInt(row.events) + ' req</em></div>';
         node.appendChild(wrap);
       });
     }
@@ -514,12 +681,12 @@
           ? 'operador interno (todas las organizaciones)' : 'limitado a tu sesión') + '</span>';
 
       var points = (data.series && data.series.points) || [];
-      drawBars($('chart-tokens'), $('axis-tokens'), points, [
+      drawAndRemember($('chart-tokens'), $('axis-tokens'), points, [
         { key: 'inputTokens', label: 'Entrada', color: 'var(--cat-1)', format: fmtCompact },
         { key: 'outputTokens', label: 'Salida', color: 'var(--cat-2)', format: fmtCompact }
       ]);
-      drawBars($('chart-cost'), $('axis-cost'), points, [
-        { key: 'costUsd', label: 'Costo', color: 'var(--cat-3)', format: fmtCost }
+      drawAndRemember($('chart-cost'), $('axis-cost'), points, [
+        { key: 'costUsd', label: 'Costo', color: 'var(--cat-3)', format: fmtCost, axisFormat: fmtCostAxis }
       ]);
 
       var tokensAndCost = function (row) { return fmtCompact(row.totalTokens) + ' · ' + fmtCost(row.costUsd); };
@@ -527,20 +694,26 @@
       renderBars($('bars-feature'), breakdowns.feature, { format: tokensAndCost });
       renderBars($('bars-model'), breakdowns.model, {
         metric: 'costUsd',
-        format: function (row) { return fmtCost(row.costUsd) + ' · ' + fmtInt(row.events) + ' req'; }
+        format: function (row) { return fmtCost(row.costUsd); }
       });
-      renderBars($('bars-user'), breakdowns.user, {
-        label: function (row) { return row.id ? shortId(row.id) : row.key; },
-        format: tokensAndCost
-      });
+      renderBars($('bars-user'), breakdowns.user, { format: tokensAndCost });
 
       var vocabulary = data.vocabulary || {};
+      var facets = data.facets || {};
       fillSelect($('f-app'), vocabulary.apps || [], 'Todas');
       fillSelect($('f-feature'), vocabulary.features || [], 'Todas');
       fillSelect($('f-status'), vocabulary.statuses || [], 'Todos');
       fillSelect($('f-environment'), vocabulary.environments || [], 'Todos');
       fillSelect($('f-provider'), (breakdowns.provider || []).map(function (r) { return r.key; }), 'Todos');
       fillSelect($('f-model'), (breakdowns.model || []).map(function (r) { return r.key; }), 'Todos');
+      // Personas y organizaciones por NOMBRE. Antes había que pegar un UUID a
+      // mano, con lo que el filtro existía pero no se podía usar.
+      fillSelect($('f-user'), (facets.users || []).map(function (row) {
+        return { value: row.id, label: row.label, detail: row.detail };
+      }), 'Todos');
+      fillSelect($('f-org'), (facets.organizations || []).map(function (row) {
+        return { value: row.id, label: row.label, detail: row.detail };
+      }), 'Todas');
 
       // «Tarifa no configurada»: se nombra el proveedor/modelo concreto, porque
       // un aviso genérico no dice qué hay que arreglar.
@@ -578,8 +751,18 @@
           active.push(key + ': ' + data.filters[key].join(', '));
         }
       });
-      if (data.filters && data.filters.organizationId) active.push('org: ' + shortId(data.filters.organizationId));
-      if (data.filters && data.filters.userId) active.push('usuario: ' + shortId(data.filters.userId));
+      // Con nombre, no con UUID: el eco existe para poder comprobar de un
+      // vistazo por qué el total bajó, y «0f380786…» no sirve para eso.
+      function nameOf(list, id) {
+        var hit = (list || []).filter(function (row) { return row.id === id; })[0];
+        return hit ? hit.label : shortId(id);
+      }
+      if (data.filters && data.filters.organizationId) {
+        active.push('organización: ' + nameOf(facets.organizations, data.filters.organizationId));
+      }
+      if (data.filters && data.filters.userId) {
+        active.push('usuario: ' + nameOf(facets.users, data.filters.userId));
+      }
       $('filters-echo').textContent = active.length
         ? 'Filtros activos → ' + active.join(' · ') : 'Sin filtros adicionales';
     }
@@ -606,11 +789,16 @@
             var tr = document.createElement('tr');
             tr.innerHTML =
               '<td>' + esc(fmtDate(event.occurredAt)) + '</td>' +
-              '<td title="' + esc(event.userId || '') + '">' + (event.userId
-                ? esc(shortId(event.userId))
-                : '<span class="usage-tag warn">' + esc(event.actorType) + '</span>') + '</td>' +
+              // El UUID no desaparece: se queda en el `title`, que es donde hace
+              // falta para cruzar con otros sistemas. Lo que se lee es el nombre.
+              '<td title="' + esc([event.userEmail, event.userId].filter(Boolean).join(' · ')) + '">' +
+                (event.userId
+                  ? esc(event.userName || shortId(event.userId))
+                  : '<span class="usage-tag warn">' + esc(event.actorType) + '</span>') + '</td>' +
               '<td title="' + esc(event.organizationId || '') + '">' +
-                (event.organizationId ? esc(shortId(event.organizationId)) : '—') + '</td>' +
+                (event.organizationId
+                  ? esc(event.organizationName || shortId(event.organizationId))
+                  : '—') + '</td>' +
               '<td>' + esc(event.app) + '</td>' +
               '<td>' + esc(event.feature) + '</td>' +
               '<td>' + esc(event.provider) + '</td>' +
