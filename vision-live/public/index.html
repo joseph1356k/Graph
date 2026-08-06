@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vision Live · Capa de visión</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="dot" id="statusDot"></span>
+    <h1>Vision Live</h1>
+    <span class="sub" id="statusText">desconectado</span>
+  </div>
+  <div class="actions">
+    <button id="micBtn" class="btn ghost" title="Activar/desactivar micrófono">
+      <span class="ico">🎙</span> <span id="micLabel">Micrófono off</span>
+    </button>
+    <button id="startBtn" class="btn primary">Iniciar prueba</button>
+    <button id="stopBtn" class="btn danger" disabled>Detener</button>
+  </div>
+</header>
+
+<main class="grid">
+
+  <!-- ============ Configuración ============ -->
+  <aside class="panel config">
+    <div class="panel-head">
+      <h2>Configuración</h2>
+      <button id="saveCfgBtn" class="btn tiny">Guardar</button>
+    </div>
+    <div class="panel-body">
+
+      <label class="field">
+        <span>Modelo</span>
+        <select id="cfgModel">
+          <option value="gemini-3.1-flash-live-preview">gemini-3.1-flash-live-preview</option>
+          <option value="gemini-2.5-flash-native-audio-latest">gemini-2.5-flash-native-audio-latest</option>
+          <option value="gemini-2.5-flash-native-audio-preview-12-2025">gemini-2.5-flash-native-audio-preview-12-2025</option>
+          <option value="gemini-omni-flash-preview">gemini-omni-flash-preview</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Voz</span>
+        <select id="cfgVoice">
+          <option>Puck</option><option>Charon</option><option>Kore</option>
+          <option>Fenrir</option><option>Aoede</option><option>Leda</option>
+          <option>Orus</option><option>Zephyr</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Idioma</span>
+        <select id="cfgLanguage">
+          <option value="es-ES">Español (ES)</option>
+          <option value="es-US">Español (US)</option>
+          <option value="en-US">English (US)</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Temperatura <b id="tempVal">0.7</b></span>
+        <input type="range" id="cfgTemperature" min="0" max="2" step="0.05" />
+      </label>
+
+      <label class="field">
+        <span>Frames por segundo <b id="fpsVal">1</b></span>
+        <input type="range" id="cfgFps" min="0.25" max="2" step="0.25" />
+        <small>La API acepta hasta 1 FPS de forma fiable. Más FPS = más tokens.</small>
+      </label>
+
+      <label class="field">
+        <span>Calidad JPEG <b id="qVal">0.7</b></span>
+        <input type="range" id="cfgJpegQuality" min="0.3" max="0.95" step="0.05" />
+      </label>
+
+      <label class="field">
+        <span>Ancho máx. de frame <b id="wVal">1152</b>px</span>
+        <input type="range" id="cfgMaxFrameWidth" min="640" max="1920" step="64" />
+      </label>
+
+      <label class="field">
+        <span>Resolución de medios</span>
+        <select id="cfgMediaResolution">
+          <option value="MEDIA_RESOLUTION_LOW">Baja</option>
+          <option value="MEDIA_RESOLUTION_MEDIUM">Media</option>
+          <option value="MEDIA_RESOLUTION_HIGH">Alta</option>
+        </select>
+      </label>
+
+      <label class="check">
+        <input type="checkbox" id="cfgEnableAffectiveDialog" />
+        <span>Diálogo afectivo (detecta emoción en la voz)</span>
+      </label>
+
+      <label class="check">
+        <input type="checkbox" id="cfgProactive" />
+        <span>Proactividad (puede decidir no responder)</span>
+      </label>
+
+      <label class="field grow">
+        <span>Instrucción de sistema</span>
+        <textarea id="cfgSystemInstruction" rows="14"></textarea>
+      </label>
+
+      <button id="resetCfgBtn" class="btn ghost tiny">Restaurar valores por defecto</button>
+      <div id="cfgStatus" class="hint"></div>
+    </div>
+  </aside>
+
+  <!-- ============ Centro: pantalla + narración ============ -->
+  <section class="panel center">
+    <div class="panel-head">
+      <h2>Pantalla observada</h2>
+      <span class="hint" id="captureInfo">sin captura</span>
+    </div>
+
+    <div class="stage">
+      <video id="preview" autoplay muted playsinline></video>
+      <div class="stage-empty" id="stageEmpty">
+        <p>Sin captura activa</p>
+        <small>Pulsa <b>Iniciar prueba</b> y elige la ventana o pantalla a observar.</small>
+      </div>
+      <canvas id="frameCanvas" hidden></canvas>
+    </div>
+
+    <div class="panel-head sub-head">
+      <h2>Pensando en voz alta</h2>
+      <label class="check inline">
+        <input type="checkbox" id="autoscroll" checked />
+        <span>Auto-scroll</span>
+      </label>
+    </div>
+    <div class="transcript" id="transcript">
+      <div class="empty">La narración del modelo aparecerá aquí.</div>
+    </div>
+
+    <form class="composer" id="composer">
+      <input id="textInput" placeholder="Escribe para darle contexto o corregirlo…" autocomplete="off" />
+      <button class="btn" type="submit">Enviar</button>
+    </form>
+  </section>
+
+  <!-- ============ Derecha: prueba ============ -->
+  <aside class="panel right">
+    <div class="panel-head">
+      <h2>Prueba</h2>
+      <span class="pill" id="verdictPill">—</span>
+    </div>
+    <div class="panel-body">
+
+      <label class="field">
+        <span>Nombre de la prueba</span>
+        <input id="testLabel" placeholder="Ej. Login + carga de historia clínica" />
+      </label>
+
+      <label class="field">
+        <span>Qué debería pasar</span>
+        <textarea id="testContext" rows="4"
+          placeholder="Describe el flujo esperado. Se le envía al modelo al arrancar."></textarea>
+      </label>
+
+      <div class="timeline-head">
+        <h3>Línea de tiempo</h3>
+        <span class="hint" id="timerLabel">00:00</span>
+      </div>
+      <div class="timeline" id="timeline">
+        <div class="empty">Sin eventos.</div>
+      </div>
+
+      <h3>Llamadas a funciones</h3>
+      <div class="calls" id="calls">
+        <div class="empty">Ninguna todavía.</div>
+      </div>
+    </div>
+  </aside>
+
+</main>
+
+<script type="module" src="/app.js"></script>
+</body>
+</html>

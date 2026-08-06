@@ -1,0 +1,19 @@
+{
+  "name": "vision-live",
+  "version": "1.0.0",
+  "description": "Capa de visión en vivo: Gemini Live API observa pruebas de UI y piensa en voz alta.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "build": "esbuild node_modules/@google/genai/dist/web/index.mjs --bundle --format=esm --platform=browser --outfile=public/vendor/genai.bundle.js",
+    "prestart": "npm run build",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@google/genai": "^1.52.0",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
+  }
+}

@@ -17,6 +17,14 @@
         "web/server.js"
       ],
       "port": 3000
+    },
+    {
+      "name": "vision-live",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "vision-live/server.js"
+      ],
+      "port": 5178
     }
   ]
 }
