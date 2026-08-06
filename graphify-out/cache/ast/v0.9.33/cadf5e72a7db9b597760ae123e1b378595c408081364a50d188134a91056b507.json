@@ -1,0 +1,1 @@
+{"nodes": [{"id": "$graphify-root$_supabase_migrations_20260727033327_graph_note_exports_revoke_client_writes_sql", "label": "20260727033327_graph_note_exports_revoke_client_writes.sql", "file_type": "code", "source_file": "supabase/migrations/20260727033327_graph_note_exports_revoke_client_writes.sql", "source_location": null}], "edges": []}

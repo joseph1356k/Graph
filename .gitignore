@@ -42,3 +42,6 @@ yarn-error.log*
 *.swo
 .vercel
 .env*
+
+# graphify: respaldos automaticos del grafo (no se comparten)
+graphify-out/20*/
