@@ -130,6 +130,34 @@ function findRate(input = {}, catalog = RATE_CARDS) {
     .sort((a, b) => new Date(b.effectiveFrom) - new Date(a.effectiveFrom))[0];
 }
 
+/**
+ * Tarifa a partir del modelo SOLO, para cuando quien pregunta no tiene el
+ * proveedor a mano — el desglose por modelo del dashboard, por ejemplo.
+ *
+ * Devuelve `null` si el nombre está en más de un proveedor, en vez de elegir
+ * uno. Adivinar aquí significaría atribuirle a un modelo el precio de otro, y
+ * una cifra de ahorro con el precio equivocado es peor que no dar la cifra:
+ * la primera se cree, la segunda se investiga.
+ */
+function findRateByModel(model, catalog = RATE_CARDS, at = new Date()) {
+  const canonical = canonicalModelName(model);
+  if (!canonical) return null;
+  const atMs = at instanceof Date && Number.isFinite(at.getTime()) ? at.getTime() : Date.now();
+
+  const vigentes = catalog.filter((entry) => {
+    if (canonicalModelName(entry.model) !== canonical) return false;
+    const from = new Date(entry.effectiveFrom).getTime();
+    const to = entry.effectiveTo ? new Date(entry.effectiveTo).getTime() : Infinity;
+    return atMs >= from && atMs < to;
+  });
+  if (!vigentes.length) return null;
+
+  const proveedores = new Set(vigentes.map((entry) => entry.provider));
+  if (proveedores.size > 1) return null;
+
+  return vigentes.sort((a, b) => new Date(b.effectiveFrom) - new Date(a.effectiveFrom))[0];
+}
+
 function toNumber(value) {
   const numeric = Number(value);
   return Number.isFinite(numeric) && numeric > 0 ? numeric : 0;
@@ -240,6 +268,7 @@ module.exports = {
   RATE_CARDS,
   calculateCost,
   findRate,
+  findRateByModel,
   canonicalModelName,
   listRates,
   roundUsd

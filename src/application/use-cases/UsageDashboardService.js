@@ -12,7 +12,7 @@
 // alcance aunque quisiera. Solo el operador interno (sesión de administrador de
 // Graph) consulta con service-role, y eso es explícito.
 
-const { listRates, PRICING_VERSION } = require('../../domain/usage/pricing');
+const { listRates, findRateByModel, PRICING_VERSION } = require('../../domain/usage/pricing');
 const {
   APP_VALUES,
   FEATURE_VALUES,
@@ -30,8 +30,31 @@ const RANGE_PRESETS = Object.freeze({
 });
 
 const BREAKDOWN_DIMENSIONS = Object.freeze([
-  'app', 'feature', 'provider', 'model', 'user', 'organization', 'status', 'environment', 'actor_type'
+  'app', 'feature', 'provider', 'model', 'user', 'organization', 'status', 'environment',
+  'actor_type', 'error_code'
 ]);
+
+const HOUR_MS = 60 * 60 * 1000;
+
+/**
+ * Variación relativa entre dos periodos.
+ *
+ * El caso «antes 0, ahora algo» no tiene porcentaje: dividir por cero daría
+ * Infinity y pintar «+∞ %» sería ruido. Se devuelve `null` y el panel lo dice
+ * con palabras («sin consumo antes») en vez de con una cifra falsa.
+ */
+function deltaOf(current, previous) {
+  const now = Number(current) || 0;
+  const before = Number(previous) || 0;
+  if (before === 0) {
+    return { absolute: now, percent: null, basis: now === 0 ? 'both_zero' : 'no_baseline' };
+  }
+  return {
+    absolute: now - before,
+    percent: ((now - before) / before) * 100,
+    basis: 'ok'
+  };
+}
 
 function textList(value) {
   if (value === undefined || value === null || value === '') return null;
@@ -216,9 +239,17 @@ class UsageDashboardService {
         inputTokens: Number(row.input_tokens || 0),
         outputTokens: Number(row.output_tokens || 0),
         totalTokens: Number(row.total_tokens || 0),
+        cachedInputTokens: Number(row.cached_input_tokens || 0),
         costUsd: Number(row.cost_usd || 0),
         errorEvents: Number(row.error_events || 0),
-        avgLatencyMs: Number(row.avg_latency_ms || 0)
+        avgLatencyMs: Number(row.avg_latency_ms || 0),
+        // La media esconde las colas: si nueve llamadas van rápidas y una se
+        // queda colgada, solo el p95 lo enseña.
+        p50LatencyMs: Number(row.p50_latency_ms || 0),
+        p95LatencyMs: Number(row.p95_latency_ms || 0),
+        errorRate: Number(row.events) > 0
+          ? (Number(row.error_events || 0) / Number(row.events)) * 100
+          : 0
       }))
     };
   }
@@ -319,6 +350,88 @@ class UsageDashboardService {
     }));
   }
 
+  /**
+   * El mismo resumen para la ventana INMEDIATAMENTE anterior, de igual duración.
+   *
+   * Sin esto el panel dice cuánto se gastó pero no si eso es mucho: la única
+   * pregunta que de verdad se hace quien lo abre es «¿va subiendo?». La ventana
+   * anterior se calcula desplazando el rango vigente por su propia duración,
+   * así que compara 24 h contra las 24 h de antes, no contra un día natural.
+   */
+  async getPreviousSummary(query = {}, viewer = {}) {
+    const filters = this.normalizeFilters(query);
+    const from = new Date(filters.from).getTime();
+    const to = new Date(filters.to).getTime();
+    const span = to - from;
+    if (!Number.isFinite(span) || span <= 0) return null;
+
+    const previous = await this.getSummary(
+      {
+        ...query,
+        range: undefined,
+        from: new Date(from - span).toISOString(),
+        to: new Date(from).toISOString()
+      },
+      viewer
+    );
+    return { window: previous.filters, totals: previous.totals };
+  }
+
+  /**
+   * Ritmo de gasto y economía unitaria.
+   *
+   * PROYECCIÓN: se extrapola el costo por hora de la ventana observada. Es una
+   * regla de tres, no un pronóstico: si el rango es una noche sin actividad,
+   * proyectará de menos. Por eso se devuelve también en qué se basa (`basisHours`)
+   * y el panel lo dice, para que nadie confunda una extrapolación con un dato.
+   *
+   * AHORRO POR CACHÉ: se calcula con la tarifa real de cada modelo —la
+   * diferencia entre lo que habrían costado esos tokens a precio de entrada y
+   * lo que costaron a precio de caché—, no con un porcentaje inventado. Los
+   * modelos sin tarifa se cuentan aparte en vez de sumar cero en silencio.
+   */
+  economicsFrom(totals, filters, modelRows) {
+    const from = new Date(filters.from).getTime();
+    const to = new Date(filters.to).getTime();
+    const hours = Number.isFinite(to - from) && to > from ? (to - from) / HOUR_MS : 0;
+    const costPerHour = hours > 0 ? totals.costUsd / hours : 0;
+
+    let cacheSavingsUsd = 0;
+    let cachedTokensWithoutRate = 0;
+    for (const row of modelRows || []) {
+      const cached = Number(row.cachedInputTokens) || 0;
+      if (cached <= 0) continue;
+      // Por modelo solo: el desglose no trae el proveedor. La búsqueda se
+      // niega a resolver nombres ambiguos, así que un modelo compartido por
+      // dos proveedores cae en «sin tarifa» en vez de cobrarse al precio del
+      // que no es.
+      const rate = findRateByModel(row.key);
+      if (!rate || rate.inputPerMTok === null || rate.cachedInputPerMTok === null) {
+        cachedTokensWithoutRate += cached;
+        continue;
+      }
+      cacheSavingsUsd += (cached / 1e6) * (rate.inputPerMTok - rate.cachedInputPerMTok);
+    }
+
+    return {
+      basisHours: Math.round(hours * 100) / 100,
+      costPerHour,
+      projectedDailyUsd: costPerHour * 24,
+      projectedMonthlyUsd: costPerHour * 24 * 30,
+      // Solo cuentan las solicitudes que llegaron a facturarse: dividir el
+      // costo entre TODAS incluiría los 429, que no gastan nada, y abarataría
+      // artificialmente cada nota.
+      costPerPricedRequest: totals.pricedEvents > 0 ? totals.costUsd / totals.pricedEvents : null,
+      costPerActiveUser: totals.activeUsers > 0 ? totals.costUsd / totals.activeUsers : null,
+      tokensPerPricedRequest: totals.pricedEvents > 0 ? totals.totalTokens / totals.pricedEvents : null,
+      cacheHitRate: totals.inputTokens > 0
+        ? (totals.cachedInputTokens / (totals.inputTokens + totals.cachedInputTokens)) * 100
+        : 0,
+      cacheSavingsUsd,
+      cachedTokensWithoutRate
+    };
+  }
+
   /** Todo lo que el dashboard necesita para pintarse, en una sola ida y vuelta. */
   async getOverview(query = {}, viewer = {}) {
     const filters = this.normalizeFilters(query);
@@ -326,18 +439,26 @@ class UsageDashboardService {
 
     // Se lanzan en paralelo: son consultas independientes contra la misma
     // ventana y encadenarlas multiplicaría la latencia por seis.
-    const [summary, series, byApp, byFeature, byModel, byUser, byProvider, missingRates, facets] =
-      await Promise.all([
-        this.getSummary(query, viewer),
-        this.getSeries({ ...query, bucket }, viewer),
-        this.getBreakdown('app', query, viewer),
-        this.getBreakdown('feature', query, viewer),
-        this.getBreakdown('model', { ...query, limit: 10 }, viewer),
-        this.getBreakdown('user', { ...query, limit: 10 }, viewer),
-        this.getBreakdown('provider', query, viewer),
-        this.getMissingRates(query, viewer),
-        this.getFacets(query, viewer)
-      ]);
+    const [
+      summary, series, byApp, byFeature, byModel, byUser, byProvider,
+      byOrganization, byActorType, byErrorCode, missingRates, facets, previous
+    ] = await Promise.all([
+      this.getSummary(query, viewer),
+      this.getSeries({ ...query, bucket }, viewer),
+      this.getBreakdown('app', query, viewer),
+      this.getBreakdown('feature', query, viewer),
+      this.getBreakdown('model', { ...query, limit: 10 }, viewer),
+      this.getBreakdown('user', { ...query, limit: 10 }, viewer),
+      this.getBreakdown('provider', query, viewer),
+      this.getBreakdown('organization', { ...query, limit: 10 }, viewer),
+      this.getBreakdown('actor_type', query, viewer),
+      this.getBreakdown('error_code', { ...query, limit: 10 }, viewer),
+      this.getMissingRates(query, viewer),
+      this.getFacets(query, viewer),
+      // Si la ventana anterior falla no se tumba el panel entero: la
+      // comparación es un extra, el consumo de hoy es lo que se vino a ver.
+      this.getPreviousSummary(query, viewer).catch(() => null)
+    ]);
 
     return {
       generatedAt: this.now().toISOString(),
@@ -351,8 +472,25 @@ class UsageDashboardService {
         feature: byFeature.rows,
         model: byModel.rows,
         user: byUser.rows,
-        provider: byProvider.rows
+        provider: byProvider.rows,
+        organization: byOrganization.rows,
+        actorType: byActorType.rows,
+        errorCode: byErrorCode.rows
       },
+      // Comparación con la ventana anterior de igual duración.
+      previous: previous ? {
+        window: previous.window,
+        totals: previous.totals,
+        deltas: {
+          totalTokens: deltaOf(summary.totals.totalTokens, previous.totals.totalTokens),
+          costUsd: deltaOf(summary.totals.costUsd, previous.totals.costUsd),
+          totalEvents: deltaOf(summary.totals.totalEvents, previous.totals.totalEvents),
+          activeUsers: deltaOf(summary.totals.activeUsers, previous.totals.activeUsers),
+          errorRate: deltaOf(summary.totals.errorRate, previous.totals.errorRate),
+          avgLatencyMs: deltaOf(summary.totals.avgLatencyMs, previous.totals.avgLatencyMs)
+        }
+      } : null,
+      economics: this.economicsFrom(summary.totals, summary.filters, byModel.rows),
       missingRates,
       // Las facetas se piden solo con la ventana temporal, NO con el resto de
       // filtros: si al elegir a una persona la lista se redujera a esa persona,
@@ -376,3 +514,4 @@ class UsageDashboardService {
 module.exports = UsageDashboardService;
 module.exports.RANGE_PRESETS = RANGE_PRESETS;
 module.exports.BREAKDOWN_DIMENSIONS = BREAKDOWN_DIMENSIONS;
+module.exports.deltaOf = deltaOf;

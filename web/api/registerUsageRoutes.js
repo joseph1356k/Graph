@@ -191,10 +191,28 @@ function registerUsageRoutes(app, deps = {}) {
       return res.status(401).json({ error: 'Se requiere una sesión para exportar el consumo.' });
     }
     try {
-      const page = await usageDashboardService.getEvents(
-        { ...(req.query || {}), limit: 200, offset: Number(req.query?.offset) || 0 },
-        viewer
-      );
+      // ANTES SE EXPORTABA UNA SOLA PÁGINA. `getEvents` está topado a 200 filas
+      // por la RPC, así que el CSV salía cortado en la fila 200 sin decirlo —
+      // y un reporte de costos truncado en silencio es peor que no tenerlo,
+      // porque cuadra con nada y nadie sabe por qué. Ahora se pagina hasta
+      // agotar el rango, con un tope duro para no tumbar la lambda, y si se
+      // alcanza se DECLARA dentro del propio archivo.
+      const PAGE = 200;
+      const MAX_ROWS = 10000;
+      const events = [];
+      let offset = Number(req.query?.offset) || 0;
+      let total = 0;
+      for (;;) {
+        const page = await usageDashboardService.getEvents(
+          { ...(req.query || {}), limit: PAGE, offset },
+          viewer
+        );
+        total = page.total;
+        events.push(...page.events);
+        offset += PAGE;
+        if (page.events.length < PAGE || events.length >= MAX_ROWS || offset >= total) break;
+      }
+      const truncated = events.length < total;
       // Va el nombre además del UUID: quien abre el CSV para repartir costos
       // necesita leer a quién corresponde cada línea, y el UUID se queda para
       // poder cruzarlo con otros sistemas. El correo NO se exporta: dentro del
@@ -206,11 +224,20 @@ function registerUsageRoutes(app, deps = {}) {
         'status', 'latencyMs', 'environment'
       ];
       const lines = [columns.join(',')];
-      for (const event of page.events) {
+      for (const event of events) {
         lines.push(columns.map((column) => csvEscape(event[column])).join(','));
+      }
+      if (truncated) {
+        lines.push('');
+        lines.push(csvEscape(
+          `AVISO: exportadas ${events.length} de ${total} filas (tope de ${MAX_ROWS}). ` +
+          'Acota el rango o añade filtros para obtener el resto.'
+        ));
       }
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
       res.setHeader('Content-Disposition', 'attachment; filename="miracle-ai-usage.csv"');
+      res.setHeader('X-Miracle-Exported-Rows', String(events.length));
+      res.setHeader('X-Miracle-Total-Rows', String(total));
       return res.send(`${lines.join('\n')}\n`);
     } catch (error) {
       const status = error.statusCode || 500;

@@ -84,6 +84,7 @@
     @media (max-width: 900px) { .usage-hero { grid-template-columns: 1fr; } }
     .usage-hero-stat strong { display: block; font-size: clamp(2.6rem, 5.4vw, 3.9rem); font-weight: 700; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
     .usage-hero-stat span { display: block; margin-top: 8px; color: var(--dim); font-size: 0.84rem; }
+    .usage-delta { display: block; margin-top: 6px; font-size: 0.8rem; font-weight: 600; }
     .usage-kpis { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(138px, 1fr)); }
     .usage-kpi { padding: 12px 14px; border: 1px solid rgba(255,255,255,0.07); border-radius: 13px; background: rgba(255,255,255,0.025); }
     .usage-kpi span { display: block; color: var(--dim); font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
@@ -203,19 +204,35 @@
         <div class="usage-hero-stat">
           <strong id="kpi-tokens">—</strong>
           <span id="kpi-tokens-label">Tokens totales</span>
+          <span id="delta-tokens" class="usage-delta"></span>
         </div>
         <div class="usage-kpis">
           <div class="usage-kpi"><span>Entrada</span><strong id="kpi-input">—</strong><em id="kpi-cached"></em></div>
           <div class="usage-kpi"><span>Salida</span><strong id="kpi-output">—</strong><em></em></div>
-          <div class="usage-kpi"><span>Costo estimado</span><strong id="kpi-cost">—</strong><em id="kpi-cost-note"></em></div>
-          <div class="usage-kpi"><span>Solicitudes</span><strong id="kpi-events">—</strong><em id="kpi-events-note"></em></div>
-          <div class="usage-kpi"><span>Usuarios activos</span><strong id="kpi-users">—</strong><em id="kpi-orgs"></em></div>
+          <div class="usage-kpi"><span>Costo estimado</span><strong id="kpi-cost">—</strong><em id="kpi-cost-note"></em><em id="delta-cost"></em></div>
+          <div class="usage-kpi"><span>Solicitudes</span><strong id="kpi-events">—</strong><em id="kpi-events-note"></em><em id="delta-events"></em></div>
+          <div class="usage-kpi"><span>Usuarios activos</span><strong id="kpi-users">—</strong><em id="kpi-orgs"></em><em id="delta-users"></em></div>
           <div class="usage-kpi"><span>Tokens / solicitud</span><strong id="kpi-avg">—</strong><em></em></div>
-          <div class="usage-kpi"><span>Latencia media</span><strong id="kpi-latency">—</strong><em></em></div>
-          <div class="usage-kpi"><span>Tasa de error</span><strong id="kpi-errors">—</strong><em id="kpi-errors-note"></em></div>
+          <div class="usage-kpi"><span>Latencia media</span><strong id="kpi-latency">—</strong><em id="delta-latency"></em></div>
+          <div class="usage-kpi"><span>Tasa de error</span><strong id="kpi-errors">—</strong><em id="kpi-errors-note"></em><em id="delta-errors"></em></div>
         </div>
       </div>
       <div class="usage-meta" id="summary-meta"></div>
+    </section>
+
+    <section class="usage-card">
+      <h2>Ritmo de gasto y economía unitaria</h2>
+      <div class="usage-kpis">
+        <div class="usage-kpi"><span>Costo por hora</span><strong id="eco-hour">—</strong><em id="eco-basis"></em></div>
+        <div class="usage-kpi"><span>Proyección a 24 h</span><strong id="eco-daily">—</strong><em>a este ritmo</em></div>
+        <div class="usage-kpi"><span>Proyección a 30 d</span><strong id="eco-monthly">—</strong><em>a este ritmo</em></div>
+        <div class="usage-kpi"><span>Costo por solicitud</span><strong id="eco-per-req">—</strong><em id="eco-per-req-note"></em></div>
+        <div class="usage-kpi"><span>Costo por usuario</span><strong id="eco-per-user">—</strong><em></em></div>
+        <div class="usage-kpi"><span>Aciertos de caché</span><strong id="eco-cache-rate">—</strong><em id="eco-cache-note"></em></div>
+        <div class="usage-kpi"><span>Ahorro por caché</span><strong id="eco-cache-savings">—</strong><em id="eco-cache-gap"></em></div>
+        <div class="usage-kpi"><span>Tokens de razonamiento</span><strong id="eco-reasoning">—</strong><em></em></div>
+      </div>
+      <p class="usage-meta" id="eco-warning"></p>
     </section>
 
     <div class="usage-charts">
@@ -243,7 +260,36 @@
       <section class="usage-card"><h2>Por funcionalidad</h2><div class="usage-bars" id="bars-feature"></div></section>
       <section class="usage-card"><h2>Modelos con mayor costo</h2><div class="usage-bars" id="bars-model"></div></section>
       <section class="usage-card"><h2>Usuarios con mayor consumo</h2><div class="usage-bars" id="bars-user"></div></section>
+      <section class="usage-card"><h2>Por proveedor</h2><div class="usage-bars" id="bars-provider"></div></section>
+      <section class="usage-card"><h2>Por organización</h2><div class="usage-bars" id="bars-organization"></div></section>
+      <section class="usage-card">
+        <h2>Por tipo de actor</h2>
+        <div class="usage-bars" id="bars-actor"></div>
+        <p class="usage-meta">Distingue el consumo de personas del de procesos internos y del que llegó sin atribuir.</p>
+      </section>
+      <section class="usage-card">
+        <h2>Distribución de errores</h2>
+        <div class="usage-bars" id="bars-errors"></div>
+        <p class="usage-meta">Solo llamadas fallidas, ordenadas por frecuencia. Un error barato que pasa a todas horas cuesta más que uno caro y raro.</p>
+      </section>
     </div>
+
+    <section class="usage-card">
+      <h2>Latencia por modelo</h2>
+      <div class="usage-table-wrap">
+        <table class="usage-table" id="table-latency">
+          <thead>
+            <tr>
+              <th scope="col">Modelo</th><th scope="col">Proveedor / app</th><th scope="col">Solicitudes</th>
+              <th scope="col">Mediana (p50)</th><th scope="col">p95</th><th scope="col">Media</th>
+              <th scope="col">Errores</th>
+            </tr>
+          </thead>
+          <tbody id="latency-body"></tbody>
+        </table>
+      </div>
+      <p class="usage-meta">El p95 es el que importa: la media de una decena de llamadas rápidas y una colgada parece razonable, y el médico que esperó no lo diría.</p>
+    </section>
 
     <section class="usage-card">
       <h2>Detalle de eventos</h2>
@@ -281,6 +327,7 @@
     // la factura del proveedor, que viene en UTC.
     var TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
     var state = { range: '24h', offset: 0, limit: 50, total: 0 };
+    var RANGES = ['1h', '6h', '24h', '72h', '7d', '30d'];
 
     function $(id) { return document.getElementById(id); }
     function esc(value) {
@@ -334,6 +381,31 @@
       return isNaN(d.getTime()) ? '—' : d.toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'medium' });
     }
     function shortId(value) { return value ? String(value).slice(0, 8) + '…' : '—'; }
+    function fmtMs(value) {
+      var n = Number(value) || 0;
+      if (!n) return '—';
+      return n >= 1000 ? (n / 1000).toFixed(1) + ' s' : Math.round(n) + ' ms';
+    }
+
+    // Variación frente al periodo anterior. Para el costo y los tokens subir es
+    // malo; para nada más de lo que se compara aquí subir es bueno, así que el
+    // color se decide por dimensión, no por signo — pintar de verde un 40 % más
+    // de gasto sería exactamente el mensaje contrario.
+    function renderDelta(node, delta, options) {
+      if (!node) return;
+      if (!delta || delta.basis === 'both_zero') { node.textContent = ''; node.removeAttribute('style'); return; }
+      if (delta.basis === 'no_baseline') {
+        node.textContent = 'sin consumo antes';
+        node.style.color = 'var(--dim)';
+        return;
+      }
+      var pct = delta.percent;
+      var arrow = pct > 0.05 ? '▲' : pct < -0.05 ? '▼' : '=';
+      var worse = (options && options.upIsBad) ? pct > 0.05 : pct < -0.05;
+      var better = (options && options.upIsBad) ? pct < -0.05 : pct > 0.05;
+      node.textContent = arrow + ' ' + Math.abs(pct).toFixed(1) + ' % vs. periodo anterior';
+      node.style.color = worse ? 'var(--danger)' : better ? 'var(--success)' : 'var(--dim)';
+    }
 
     // ---- Filtros -----------------------------------------------------------
     var SELECTS = { 'f-app': 'app', 'f-feature': 'feature', 'f-provider': 'provider',
@@ -620,8 +692,54 @@
       return payload;
     }
 
+    // ---- La URL es el estado ----------------------------------------------
+    // Sin esto, una vista filtrada no se puede pasar a nadie ni sobrevive a
+    // recargar: el filtro se pierde y quien recibe el enlace ve otra cosa que
+    // quien lo mandó — que en una discusión sobre costos es justo lo peor.
+    var URL_FIELDS = ['f-app', 'f-feature', 'f-provider', 'f-model', 'f-status',
+                      'f-environment', 'f-user', 'f-org', 'f-from', 'f-to'];
+
+    function syncUrlFromFilters() {
+      var params = new URLSearchParams();
+      if (!$('f-from').value || !$('f-to').value) params.set('range', state.range);
+      URL_FIELDS.forEach(function (id) {
+        if ($(id).value) params.set(id.replace('f-', ''), $(id).value);
+      });
+      var query = params.toString();
+      window.history.replaceState(null, '', query ? '?' + query : window.location.pathname);
+    }
+
+    function applyFiltersFromUrl() {
+      var params = new URLSearchParams(window.location.search);
+      if (!params.toString()) return;
+      var range = params.get('range');
+      if (range && RANGES.indexOf(range) >= 0) {
+        state.range = range;
+        Array.prototype.forEach.call($('range-pills').querySelectorAll('[data-range]'), function (node) {
+          node.classList.toggle('is-active', node.dataset.range === range);
+        });
+      }
+      URL_FIELDS.forEach(function (id) {
+        var value = params.get(id.replace('f-', ''));
+        if (!value) return;
+        var node = $(id);
+        // Los desplegables se llenan al recibir la respuesta, así que aquí
+        // todavía no tienen la opción: se inserta provisional para que el valor
+        // sobreviva a este primer render y `fillSelect` la reconcilie después.
+        if (node.tagName === 'SELECT' && !Array.prototype.some.call(
+          node.options, function (option) { return option.value === value; })) {
+          var placeholder = document.createElement('option');
+          placeholder.value = value;
+          placeholder.textContent = value;
+          node.appendChild(placeholder);
+        }
+        node.value = value;
+      });
+    }
+
     async function loadOverview() {
       setLoading(true);
+      syncUrlFromFilters();
       $('banner-error').classList.add('is-hidden');
       try {
         var data = await fetchJson('/api/usage/overview?' + currentQuery().toString());
@@ -645,11 +763,74 @@
 
     function renderEmpty() {
       KPI_IDS.forEach(function (id) { $(id).textContent = '—'; });
-      ['bars-app', 'bars-feature', 'bars-model', 'bars-user'].forEach(function (id) {
+      ['bars-app', 'bars-feature', 'bars-model', 'bars-user', 'bars-provider',
+       'bars-organization', 'bars-actor', 'bars-errors'].forEach(function (id) {
         $(id).innerHTML = '<div class="usage-state">Sin datos.</div>';
       });
       $('chart-tokens').innerHTML = '';
       $('chart-cost').innerHTML = '';
+    }
+
+    function renderEconomics(data) {
+      var eco = data.economics || {};
+      var totals = data.totals || {};
+      $('eco-hour').textContent = fmtCost(eco.costPerHour);
+      $('eco-basis').textContent = eco.basisHours
+        ? 'medido sobre ' + eco.basisHours + ' h' : '';
+      $('eco-daily').textContent = fmtCost(eco.projectedDailyUsd);
+      $('eco-monthly').textContent = fmtCost(eco.projectedMonthlyUsd);
+      $('eco-per-req').textContent = eco.costPerPricedRequest === null
+        ? 'sin datos' : fmtCost(eco.costPerPricedRequest);
+      // Se aclara el denominador: si no, un rango con muchos 429 parecería
+      // barato solo porque los fallos no cuestan.
+      $('eco-per-req-note').textContent = fmtInt(totals.pricedEvents) + ' facturadas' +
+        (totals.totalEvents > totals.pricedEvents
+          ? ' de ' + fmtInt(totals.totalEvents) : '');
+      $('eco-per-user').textContent = eco.costPerActiveUser === null
+        ? 'sin datos' : fmtCost(eco.costPerActiveUser);
+      $('eco-cache-rate').textContent = (Number(eco.cacheHitRate) || 0).toFixed(1) + ' %';
+      $('eco-cache-note').textContent = totals.cachedInputTokens
+        ? fmtCompact(totals.cachedInputTokens) + ' tokens' : 'sin caché';
+      $('eco-cache-savings').textContent = fmtCost(eco.cacheSavingsUsd);
+      $('eco-cache-gap').textContent = eco.cachedTokensWithoutRate
+        ? fmtCompact(eco.cachedTokensWithoutRate) + ' sin tarifa' : '';
+      $('eco-reasoning').textContent = totals.reasoningTokens
+        ? fmtCompact(totals.reasoningTokens) : '0';
+
+      // La proyección es una regla de tres sobre lo observado, no un pronóstico.
+      // Decirlo evita que una noche tranquila se lea como «bajó el gasto».
+      $('eco-warning').textContent = 'Las proyecciones extrapolan el ritmo de la ventana elegida: ' +
+        'un rango corto o sin actividad las distorsiona. El ahorro por caché se calcula con la ' +
+        'tarifa real de cada modelo (versión ' + esc(data.pricingVersion || '—') + '), no con una estimación.';
+    }
+
+    function renderLatency(modelRows) {
+      var body = $('latency-body');
+      body.innerHTML = '';
+      if (!modelRows || !modelRows.length) {
+        body.innerHTML = '<tr><td colspan="7">Sin datos en este rango.</td></tr>';
+        return;
+      }
+      // Se ordena por p95 descendente: la tabla existe para encontrar al lento,
+      // no para repetir el orden de consumo que ya dan las barras.
+      modelRows.slice().sort(function (a, b) {
+        return (Number(b.p95LatencyMs) || 0) - (Number(a.p95LatencyMs) || 0);
+      }).forEach(function (row) {
+        var tr = document.createElement('tr');
+        var errorTag = row.errorEvents
+          ? '<span class="usage-tag error">' + fmtInt(row.errorEvents) + ' · ' +
+            (Number(row.errorRate) || 0).toFixed(0) + ' %</span>'
+          : '<span class="usage-tag ok">0</span>';
+        tr.innerHTML =
+          '<td>' + esc(row.label || row.key) + '</td>' +
+          '<td>' + esc(row.detail || '—') + '</td>' +
+          '<td class="num">' + fmtInt(row.events) + '</td>' +
+          '<td class="num">' + fmtMs(row.p50LatencyMs) + '</td>' +
+          '<td class="num">' + fmtMs(row.p95LatencyMs) + '</td>' +
+          '<td class="num">' + fmtMs(row.avgLatencyMs) + '</td>' +
+          '<td>' + errorTag + '</td>';
+        body.appendChild(tr);
+      });
     }
 
     function renderOverview(data) {
@@ -697,6 +878,25 @@
         format: function (row) { return fmtCost(row.costUsd); }
       });
       renderBars($('bars-user'), breakdowns.user, { format: tokensAndCost });
+      renderBars($('bars-provider'), breakdowns.provider, { format: tokensAndCost });
+      renderBars($('bars-organization'), breakdowns.organization, { format: tokensAndCost });
+      renderBars($('bars-actor'), breakdowns.actorType, { format: tokensAndCost });
+      renderBars($('bars-errors'), breakdowns.errorCode, {
+        metric: 'events',
+        format: function (row) { return fmtInt(row.events) + ' fallo(s)'; }
+      });
+
+      renderEconomics(data);
+      renderLatency(breakdowns.model);
+
+      // Variación contra el periodo anterior de igual duración.
+      var deltas = (data.previous && data.previous.deltas) || {};
+      renderDelta($('delta-tokens'), deltas.totalTokens, { upIsBad: true });
+      renderDelta($('delta-cost'), deltas.costUsd, { upIsBad: true });
+      renderDelta($('delta-events'), deltas.totalEvents, { upIsBad: false });
+      renderDelta($('delta-users'), deltas.activeUsers, { upIsBad: false });
+      renderDelta($('delta-errors'), deltas.errorRate, { upIsBad: true });
+      renderDelta($('delta-latency'), deltas.avgLatencyMs, { upIsBad: true });
 
       var vocabulary = data.vocabulary || {};
       var facets = data.facets || {};
@@ -851,6 +1051,9 @@
       Object.keys(SELECTS).forEach(function (id) { $(id).value = ''; });
       $('f-org').value = ''; $('f-user').value = '';
       $('f-from').value = ''; $('f-to').value = '';
+      // También se limpia la URL: si no, recargar resucitaría los filtros que
+      // el botón acaba de quitar.
+      window.history.replaceState(null, '', window.location.pathname);
       loadOverview();
     });
     $('btn-prev').addEventListener('click', function () {
@@ -871,6 +1074,7 @@
       'Este panel no muestra prompts, respuestas ni contenido clínico: el ledger solo guarda ' +
       'metadatos técnicos de cada llamada. Zona horaria del navegador: ' + TZ + '.';
 
+    applyFiltersFromUrl();
     loadOverview();
   })();
   </script>

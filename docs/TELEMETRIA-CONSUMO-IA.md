@@ -138,6 +138,19 @@ haber visto ni un evento suyo. Comprobado contra la base real: un médico del
 Hospital Demo pidiendo el desglose con el UUID del Hospital General, y con el
 UUID de un médico ajeno, recibe **0 filas** en ambos casos.
 
+Migración: **`supabase/migrations/20260806120000_ai_usage_latency_and_errors.sql`**
+
+- `ai_usage_breakdown` devuelve además `p50_latency_ms`, `p95_latency_ms` y
+  `cached_input_tokens`.
+- Admite la dimensión **`error_code`**, acotada por dentro a `status = 'error'`.
+
+El p95 responde algo que la media tapa: si noventa llamadas tardan 800 ms y
+diez tardan doce segundos, la media dice 1,9 s y nadie se entera de que hay un
+modelo dejando colgado al médico. Los códigos de error van en su propia
+dimensión porque agrupar *todos* los eventos por código dejaría el 97 % en un
+cajón vacío — la pregunta no es cómo se reparte el consumo, es de qué se está
+muriendo.
+
 ### Ejecutar la migración
 
 ```bash
@@ -250,6 +263,40 @@ token**: el aislamiento lo aplica Postgres y el backend no puede ampliarlo
 aunque quisiera. Filtrar por otra organización dentro de un alcance restringido
 **no amplía** el alcance: devuelve vacío (probado en
 `tests/sql/03-ai-usage-rls.sql`).
+
+---
+
+## 7 bis. Qué contesta el panel
+
+| Bloque | Pregunta que responde |
+|---|---|
+| Resumen + variación | ¿Cuánto se gastó, y **va subiendo o bajando** frente al periodo anterior de igual duración? |
+| Ritmo y economía unitaria | ¿Cuánto cuesta una hora, un día, un mes a este ritmo? ¿Cuánto cuesta **cada solicitud** y cada usuario? ¿Cuánto ahorra la caché? |
+| Tokens y costo en el tiempo | ¿Cuándo se concentra el gasto? (con eje numerado, no solo barras) |
+| Por app / funcionalidad / proveedor / modelo / organización / usuario | ¿De dónde sale el gasto, en cada eje por separado? |
+| Por tipo de actor | ¿Cuánto es de personas, cuánto de procesos internos, cuánto llegó sin atribuir? |
+| Distribución de errores | ¿De qué se está muriendo? Solo fallos, por frecuencia. |
+| Latencia por modelo | ¿Quién es el lento? p50, **p95** y media, ordenado por p95. |
+| Detalle de eventos | La fila concreta, con nombre, para auditar. |
+
+Dos cautelas que el propio panel dice en pantalla:
+
+- **La proyección es una regla de tres**, no un pronóstico: extrapola el ritmo
+  de la ventana elegida. Un rango corto o una noche sin actividad la distorsiona,
+  y por eso se muestra sobre cuántas horas se midió.
+- **El costo por solicitud usa las facturadas, no todas.** Dividir entre todas
+  incluiría los `429`, que no gastan nada, y abarataría artificialmente cada
+  nota.
+
+El **ahorro por caché** se calcula con la tarifa real de cada modelo (la
+diferencia entre precio de entrada y precio de caché), no con un porcentaje
+inventado. La búsqueda por nombre de modelo **se niega a resolver ambigüedades**:
+si dos proveedores tienen un modelo con el mismo nombre, esos tokens se cuentan
+como «sin tarifa» en vez de cobrarse al precio del que no es.
+
+**Los filtros viajan en la URL.** Una vista filtrada se puede pasar a alguien y
+sobrevive a recargar; antes el enlace mostraba una cosa distinta a quien lo
+recibía que a quien lo mandó.
 
 ---
 

@@ -662,6 +662,103 @@ function fakeStore() {
     assert.strictEqual(totalTokens, 1500 + 950 + 490);
   });
 
+  // -------------------------------------------------------------------------
+  section('8 · Comparación, proyección y economía unitaria');
+  // -------------------------------------------------------------------------
+  {
+    const UsageDashboardService = require('../src/application/use-cases/UsageDashboardService');
+    const service = new UsageDashboardService(null, { now: () => new Date('2026-08-06T12:00:00Z') });
+
+    check('la ventana anterior es del mismo largo, pegada al inicio de la actual', () => {
+      const filters = service.normalizeFilters({ range: '24h' });
+      const from = new Date(filters.from).getTime();
+      const to = new Date(filters.to).getTime();
+      assert.strictEqual(to - from, 24 * 3600 * 1000);
+      // getPreviousSummary desplaza [from-span, from); se comprueba la
+      // aritmética sin tocar la base.
+      const prevFrom = new Date(from - (to - from)).toISOString();
+      assert.strictEqual(prevFrom, '2026-08-04T12:00:00.000Z');
+    });
+
+    check('crecer desde cero NO produce un porcentaje (nada de «+∞ %»)', () => {
+      const { deltaOf } = require('../src/application/use-cases/UsageDashboardService');
+      const delta = deltaOf(120, 0);
+      assert.strictEqual(delta.percent, null);
+      assert.strictEqual(delta.basis, 'no_baseline');
+      assert.strictEqual(delta.absolute, 120);
+    });
+
+    check('cero contra cero se distingue de «no hay base»', () => {
+      const { deltaOf } = require('../src/application/use-cases/UsageDashboardService');
+      assert.strictEqual(deltaOf(0, 0).basis, 'both_zero');
+    });
+
+    check('una caída se reporta con signo negativo y su magnitud exacta', () => {
+      const { deltaOf } = require('../src/application/use-cases/UsageDashboardService');
+      const delta = deltaOf(75, 100);
+      assert.strictEqual(delta.absolute, -25);
+      assert.ok(Math.abs(delta.percent - -25) < 1e-9);
+    });
+
+    const totals = {
+      costUsd: 12, totalTokens: 600000, totalEvents: 100, pricedEvents: 80,
+      activeUsers: 4, inputTokens: 400000, cachedInputTokens: 100000
+    };
+    const filters = { from: '2026-08-05T12:00:00Z', to: '2026-08-06T12:00:00Z' };
+
+    check('la proyección es una regla de tres sobre las horas observadas', () => {
+      const eco = service.economicsFrom(totals, filters, []);
+      assert.strictEqual(eco.basisHours, 24);
+      assert.strictEqual(eco.costPerHour, 0.5);
+      assert.strictEqual(eco.projectedDailyUsd, 12);
+      assert.strictEqual(eco.projectedMonthlyUsd, 360);
+    });
+
+    check('el costo por solicitud usa las FACTURADAS, no todas', () => {
+      const eco = service.economicsFrom(totals, filters, []);
+      // 12 / 80, no 12 / 100: los fallos que no gastan abaratarían la cifra.
+      assert.strictEqual(eco.costPerPricedRequest, 0.15);
+      assert.strictEqual(eco.costPerActiveUser, 3);
+    });
+
+    check('el ahorro por caché sale de la tarifa real del modelo', () => {
+      // gpt-4.1-mini: entrada 0,40 y caché 0,10 por millón ⇒ ahorro 0,30/M.
+      const eco = service.economicsFrom(totals, filters, [
+        { key: 'gpt-4.1-mini', cachedInputTokens: 1000000 }
+      ]);
+      assert.ok(Math.abs(eco.cacheSavingsUsd - 0.30) < 1e-9);
+      assert.strictEqual(eco.cachedTokensWithoutRate, 0);
+    });
+
+    check('un modelo sin tarifa NO suma cero en silencio: se cuenta aparte', () => {
+      const eco = service.economicsFrom(totals, filters, [
+        { key: 'modelo-inventado-9000', cachedInputTokens: 500000 }
+      ]);
+      assert.strictEqual(eco.cacheSavingsUsd, 0);
+      assert.strictEqual(eco.cachedTokensWithoutRate, 500000);
+    });
+
+    check('una ventana sin duración no divide por cero', () => {
+      const eco = service.economicsFrom(totals, { from: filters.to, to: filters.to }, []);
+      assert.strictEqual(eco.basisHours, 0);
+      assert.strictEqual(eco.costPerHour, 0);
+      assert.strictEqual(eco.projectedMonthlyUsd, 0);
+    });
+
+    check('error_code es una dimensión válida de desglose', () => {
+      assert.ok(UsageDashboardService.BREAKDOWN_DIMENSIONS.includes('error_code'));
+      assert.ok(UsageDashboardService.BREAKDOWN_DIMENSIONS.includes('actor_type'));
+      assert.ok(UsageDashboardService.BREAKDOWN_DIMENSIONS.includes('organization'));
+    });
+
+    await checkAsync('una dimensión inventada se rechaza con 400, no se ignora', async () => {
+      await assert.rejects(
+        () => service.getBreakdown('lo-que-sea', {}, {}),
+        (error) => error.statusCode === 400
+      );
+    });
+  }
+
   console.log(`\n✅ Telemetría de consumo de IA: ${checks} comprobaciones OK.`);
 })().catch((error) => {
   console.error(`\n❌ ${error.message}`);
