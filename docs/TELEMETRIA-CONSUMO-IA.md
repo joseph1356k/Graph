@@ -354,13 +354,24 @@ hacen `openaiBrain` y `geminiBrain`.
    de Graph consume respuestas en streaming del proveedor — cuando se añada,
    la pieza ya está.
 
-5. **El costo es una estimación**, no la factura. No modela descuentos por
+5. **Tres llamadas a Gemini viven fuera del punto único y no se miden:**
+   - `windows-client/src/Voice/GeminiLive.cs` — la voz en vivo abre un
+     WebSocket directo a Google desde el PC del usuario, sin pasar por Graph.
+   - `vision-live/` — herramienta suelta (su propio servidor y `package.json`,
+     no forma parte del despliegue) que usa la Live API desde el navegador.
+   - `GeminiVideoClient` — el punto 3.
+
+   Las tres son gasto real que el panel no verá. Se pueden tapar: las dos
+   primeras ya saben quién es el operador, así que les falta reportar, no
+   averiguar. Se dejan declaradas antes que estimadas.
+
+6. **El costo es una estimación**, no la factura. No modela descuentos por
    volumen, créditos, ni precios negociados.
 
-6. **Android** no tiene medición propia de consumo local; solo se ve lo que pasa
+7. **Android** no tiene medición propia de consumo local; solo se ve lo que pasa
    por Graph.
 
-7. **La caché de perfiles dura 5 minutos**: un cambio de organización de un
+8. **La caché de perfiles dura 5 minutos**: un cambio de organización de un
    usuario tarda hasta ese tiempo en reflejarse en la atribución.
 
 ---
