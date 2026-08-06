@@ -1,0 +1,581 @@
+<title>Guía de instalación — graphify + Obsidian</title>
+
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --surface-2: #eef0f4;
+    --border: #dde1e8;
+    --text: #171a21;
+    --muted: #5d6474;
+    --accent: #a8660c;
+    --accent-soft: rgba(168, 102, 12, 0.09);
+    --accent-line: rgba(168, 102, 12, 0.28);
+    --violet: #5b41c9;
+    --violet-soft: rgba(91, 65, 201, 0.08);
+    --danger: #b53430;
+    --danger-soft: rgba(181, 52, 48, 0.07);
+    --ok: #1f7a4d;
+    --code-bg: #1b1e26;
+    --code-text: #e6e8ee;
+
+    --f-display: "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --f-body: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    --f-mono: "Cascadia Mono", "Cascadia Code", "JetBrains Mono", Consolas, "SF Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101219;
+      --surface: #171a22;
+      --surface-2: #1e222c;
+      --border: #2a2f3c;
+      --text: #e3e6ed;
+      --muted: #8e95a6;
+      --accent: #e8a33d;
+      --accent-soft: rgba(232, 163, 61, 0.11);
+      --accent-line: rgba(232, 163, 61, 0.32);
+      --violet: #9b8cf8;
+      --violet-soft: rgba(155, 140, 248, 0.10);
+      --danger: #e8706b;
+      --danger-soft: rgba(232, 112, 107, 0.09);
+      --ok: #4cc38a;
+      --code-bg: #0b0d12;
+      --code-text: #e0e3ea;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #101219;
+    --surface: #171a22;
+    --surface-2: #1e222c;
+    --border: #2a2f3c;
+    --text: #e3e6ed;
+    --muted: #8e95a6;
+    --accent: #e8a33d;
+    --accent-soft: rgba(232, 163, 61, 0.11);
+    --accent-line: rgba(232, 163, 61, 0.32);
+    --violet: #9b8cf8;
+    --violet-soft: rgba(155, 140, 248, 0.10);
+    --danger: #e8706b;
+    --danger-soft: rgba(232, 112, 107, 0.09);
+    --ok: #4cc38a;
+    --code-bg: #0b0d12;
+    --code-text: #e0e3ea;
+  }
+
+  :root[data-theme="light"] {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --surface-2: #eef0f4;
+    --border: #dde1e8;
+    --text: #171a21;
+    --muted: #5d6474;
+    --accent: #a8660c;
+    --accent-soft: rgba(168, 102, 12, 0.09);
+    --accent-line: rgba(168, 102, 12, 0.28);
+    --violet: #5b41c9;
+    --violet-soft: rgba(91, 65, 201, 0.08);
+    --danger: #b53430;
+    --danger-soft: rgba(181, 52, 48, 0.07);
+    --ok: #1f7a4d;
+    --code-bg: #1b1e26;
+    --code-text: #e6e8ee;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--f-body);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  /* ---- header ---- */
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  h1 {
+    font-family: var(--f-display);
+    font-size: clamp(30px, 5vw, 42px);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+    margin-bottom: 16px;
+  }
+
+  .lede {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 60ch;
+  }
+
+  .lede strong { color: var(--text); font-weight: 600; }
+
+  /* ---- what you get ---- */
+  .pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  @media (max-width: 560px) {
+    .pair { grid-template-columns: 1fr; }
+  }
+
+  .pair > div {
+    background: var(--surface);
+    padding: 20px 22px;
+  }
+
+  .pair h3 {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .pair .g h3 { color: var(--accent); }
+  .pair .o h3 { color: var(--violet); }
+
+  .pair p { font-size: 14.5px; color: var(--muted); }
+
+  /* ---- phase heading ---- */
+  .phase {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--accent-line);
+    margin-bottom: -8px;
+  }
+
+  .phase.violet { border-bottom-color: var(--violet); }
+
+  .phase h2 {
+    font-family: var(--f-display);
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
+
+  .phase span {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  /* ---- steps ---- */
+  .step {
+    display: grid;
+    grid-template-columns: 38px 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+
+  @media (max-width: 560px) {
+    .step { grid-template-columns: 1fr; gap: 10px; }
+  }
+
+  .num {
+    font-family: var(--f-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    border-radius: 3px;
+    width: 38px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .step.violet .num {
+    color: var(--violet);
+    background: var(--violet-soft);
+    border-color: var(--violet);
+  }
+
+  .step-body { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+  .step h3 {
+    font-family: var(--f-display);
+    font-size: 17.5px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    line-height: 1.35;
+  }
+
+  .step p { font-size: 15px; color: var(--muted); max-width: 62ch; }
+  .step p strong { color: var(--text); font-weight: 600; }
+
+  /* ---- code ---- */
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    border-radius: 4px;
+    padding: 13px 16px;
+    overflow-x: auto;
+    font-family: var(--f-mono);
+    font-size: 13.5px;
+    line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+
+  pre.out {
+    background: var(--surface-2);
+    color: var(--text);
+    border-style: dashed;
+  }
+
+  code { font-family: var(--f-mono); font-size: 0.92em; }
+
+  p code, li code, td code {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 5px;
+  }
+
+  /* ---- callouts ---- */
+  .warn, .note {
+    border-left: 3px solid var(--danger);
+    background: var(--danger-soft);
+    padding: 12px 16px;
+    border-radius: 0 3px 3px 0;
+    font-size: 14.5px;
+  }
+
+  .note { border-left-color: var(--accent); background: var(--accent-soft); }
+
+  .warn strong { color: var(--danger); }
+  .note strong { color: var(--accent); }
+
+  /* ---- checkpoint ---- */
+  .check {
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 14px 16px;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .check-label {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--ok);
+  }
+
+  /* ---- tables ---- */
+  .scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 3px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+
+  th {
+    text-align: left;
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    padding: 11px 14px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    background: var(--surface);
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  /* ---- misc ---- */
+  h2.plain {
+    font-family: var(--f-display);
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    margin-bottom: 14px;
+  }
+
+  .section { display: flex; flex-direction: column; gap: 14px; }
+
+  ul { padding-left: 20px; display: flex; flex-direction: column; gap: 7px; font-size: 15px; color: var(--muted); }
+  ul strong { color: var(--text); font-weight: 600; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding-top: 22px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Guía de instalación · Windows</div>
+    <h1>graphify + Obsidian</h1>
+    <p class="lede">Dos herramientas que trabajan juntas. Al terminar vas a poder preguntarle a la IA
+      <strong>“¿dónde se maneja el audio?”</strong> y recibir archivos y líneas exactas — y navegar todo el
+      proyecto como un mapa visual. <strong>Tiempo estimado: 15 minutos.</strong></p>
+  </header>
+
+  <div class="pair">
+    <div class="g">
+      <h3>graphify</h3>
+      <p>El motor. Analiza el código y arma un mapa de qué existe y cómo se conecta. Es lo esencial —
+        sin esto no hay nada.</p>
+    </div>
+    <div class="o">
+      <h3>Obsidian</h3>
+      <p>El visor. Convierte ese mapa en algo navegable con clics, y te deja escribir tus propias notas
+        encima. Es opcional.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Buena noticia:</strong> el mapa ya está hecho y subido al repo. No necesitas API key ni escanear
+    nada — con un <code>git pull</code> te llega listo.
+  </div>
+
+  <div class="phase">
+    <h2>Parte 1 — graphify</h2>
+    <span>pasos 1–5</span>
+  </div>
+
+  <div class="step">
+    <div class="num">01</div>
+    <div class="step-body">
+      <h3>Verificar Python</h3>
+      <pre>python --version</pre>
+      <p>Necesitas <strong>3.10 o superior</strong>. Si no aparece nada, instálalo desde
+        <a href="https://python.org">python.org</a> y marca la casilla
+        <strong>“Add Python to PATH”</strong> durante la instalación.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">02</div>
+    <div class="step-body">
+      <h3>Instalar uv</h3>
+      <pre>pip install uv</pre>
+      <div class="warn">
+        <strong>Cierra la terminal y abre una nueva.</strong> Windows solo detecta los comandos nuevos al
+        abrir una terminal fresca. Si te saltas esto, el paso 3 falla con <em>“uv no se reconoce”</em>.
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">03</div>
+    <div class="step-body">
+      <h3>Instalar graphify</h3>
+      <pre>uv tool install graphifyy</pre>
+      <p>Ojo con el nombre: el paquete es <code>graphifyy</code> con <strong>doble y</strong>. El comando
+        después se llama <code>graphify</code> con una sola.</p>
+      <div class="warn">
+        <strong>Cierra y abre la terminal otra vez.</strong> Mismo motivo que antes.
+      </div>
+      <div class="check">
+        <div class="check-label">Comprobar</div>
+        <pre>graphify --help</pre>
+        <p>Si lista un montón de comandos, vas bien.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">04</div>
+    <div class="step-body">
+      <h3>Registrar la skill</h3>
+      <pre>graphify install</pre>
+      <p>Esto le enseña a Claude Code a usar el mapa. Verás un banner naranja de graphify si funcionó.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">05</div>
+    <div class="step-body">
+      <h3>Traer el mapa y activar los hooks</h3>
+      <p>Entra a la carpeta del repo donde vas a trabajar y corre los dos comandos:</p>
+      <pre>cd "C:\ruta\a\tu\repo"
+git pull
+graphify hook install</pre>
+      <div class="warn">
+        <strong>Este paso no se puede saltar.</strong> Los hooks de git viven en <code>.git/</code>, que
+        nunca se sube a GitHub — por eso cada persona los instala en su máquina. Lo que instalan es un
+        <em>merge driver</em>: sin él, el día que dos personas modifiquen el mapa el mismo día, git arma un
+        conflicto de 100.000 líneas imposible de resolver a mano.
+      </div>
+      <p>Hay que repetir este paso <strong>en cada repo</strong> donde vayas a trabajar:</p>
+      <div class="scroll">
+        <table>
+          <tr><th>Repo</th><th>Qué es</th></tr>
+          <tr><td><code>Graph</code></td><td>Backend</td></tr>
+          <tr><td><code>Pagina-web-clientes-final</code></td><td>Frontend</td></tr>
+          <tr><td><code>U-Windows-App</code></td><td>Cliente de Windows</td></tr>
+        </table>
+      </div>
+      <div class="check">
+        <div class="check-label">Comprobar que todo quedó</div>
+        <pre>graphify god-nodes --top 5</pre>
+        <p>Debe listar los archivos más conectados del proyecto. Si los ves, <strong>graphify ya
+          funciona</strong> — el resto de esta guía es opcional.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase violet">
+    <h2>Parte 2 — Obsidian</h2>
+    <span>pasos 6–8 · opcional</span>
+  </div>
+
+  <div class="step violet">
+    <div class="num">06</div>
+    <div class="step-body">
+      <h3>Instalar Obsidian</h3>
+      <pre>winget install Obsidian.Obsidian</pre>
+      <p>O descárgalo de <a href="https://obsidian.md">obsidian.md</a> si prefieres el instalador normal.</p>
+    </div>
+  </div>
+
+  <div class="step violet">
+    <div class="num">07</div>
+    <div class="step-body">
+      <h3>Generar la bóveda</h3>
+      <p>Desde la carpeta del repo:</p>
+      <pre>graphify export obsidian --dir C:\mi-vault</pre>
+      <div class="warn">
+        <strong>Usa una ruta corta, sí o sí.</strong> Windows limita las rutas a 260 caracteres, y algunos
+        nodos generan nombres de archivo larguísimos. Con <code>C:\mi-vault</code> funciona; con
+        <code>C:\Users\TuNombre\Documents\Proyectos\...</code> falla con
+        <code>FileNotFoundError</code> a media exportación.
+      </div>
+      <p>Si trabajas en varios repos, dale una carpeta a cada uno
+        (<code>C:\mi-vault\backend</code>, <code>C:\mi-vault\windows</code>) y luego abre la carpeta padre.</p>
+    </div>
+  </div>
+
+  <div class="step violet">
+    <div class="num">08</div>
+    <div class="step-body">
+      <h3>Abrir la bóveda</h3>
+      <ul>
+        <li>Abre Obsidian y elige <strong>“Abrir una carpeta como bóveda”</strong> — <em>no</em> “Crear”,
+          que haría una vacía.</li>
+        <li>Selecciona <code>C:\mi-vault</code>.</li>
+        <li>Presiona <strong>Ctrl+G</strong> para la vista de grafo.</li>
+      </ul>
+      <div class="note">
+        <strong>Sale todo gris.</strong> Es normal: Obsidian no sabe qué significan tus notas. Para darle
+        color, en el panel de la derecha despliega <strong>Grupos → Nuevo grupo</strong> y escribe
+        <code>path:backend</code> con un color; repite con <code>path:frontend</code> y
+        <code>path:windows</code>.
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="plain">El día a día</h2>
+    <p style="color:var(--muted); font-size:15px;">No cambia nada de lo que ya haces. El mapa se mantiene solo.</p>
+    <div class="scroll">
+      <table>
+        <tr><th>Cuando haces…</th><th>Pasa esto</th></tr>
+        <tr><td><code>git pull</code></td><td>Recibes el código y el mapa actualizado del equipo</td></tr>
+        <tr><td>Preguntas en Claude Code</td><td>Consulta el mapa antes de responder, sin que hagas nada</td></tr>
+        <tr><td><code>git commit</code></td><td>El hook actualiza el mapa con tus cambios, automáticamente</td></tr>
+        <tr><td><code>git push</code></td><td>Tu mapa actualizado sube para los demás</td></tr>
+      </table>
+    </div>
+    <p style="color:var(--muted); font-size:15px;">Y si prefieres preguntar desde la terminal:</p>
+    <pre>graphify query "como funciona la autenticacion"</pre>
+  </div>
+
+  <div class="section">
+    <h2 class="plain">Si algo falla</h2>
+    <p style="color:var(--muted); font-size:15px;">Estos son los errores reales que aparecieron al montarlo.
+      Si te topas con alguno, ya está resuelto.</p>
+    <div class="scroll">
+      <table>
+        <tr><th>Error</th><th>Solución</th></tr>
+        <tr>
+          <td><code>graphify</code> no se reconoce</td>
+          <td>Corre <code>uv tool update-shell</code> y abre una terminal nueva</td>
+        </tr>
+        <tr>
+          <td><code>uv trampoline failed to canonicalize script path</code></td>
+          <td>La instalación quedó a medias. Reinstala con <code>uv tool install graphifyy --force</code></td>
+        </tr>
+        <tr>
+          <td>Conflicto de git en <code>graph.json</code></td>
+          <td>Te faltó el paso 5. Corre <code>graphify hook install</code> en ese repo</td>
+        </tr>
+        <tr>
+          <td><code>FileNotFoundError</code> al exportar a Obsidian</td>
+          <td>Ruta demasiado larga. Exporta a <code>C:\mi-vault</code> (paso 7)</td>
+        </tr>
+        <tr>
+          <td>La exportación se queda pegada o falla con imágenes</td>
+          <td>Agrega <code>--code-only</code> para saltarte documentos e imágenes</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="plain">Qué no hacer</h2>
+    <ul>
+      <li><strong>No edites <code>graphify-out/</code> a mano</strong> — se regenera solo y perderías el cambio.</li>
+      <li><strong>No escribas notas propias dentro de la bóveda generada</strong> — la próxima exportación las
+        borra. Si quieres notas tuyas, ponlas en una subcarpeta aparte que graphify no toque.</li>
+      <li><strong>No te saltes <code>graphify hook install</code></strong> — es lo único que evita los
+        conflictos de merge.</li>
+    </ul>
+  </div>
+
+  <footer>
+    <p>¿Necesitas API key o cuenta de Claude? <strong>Para consultar el mapa, no.</strong> Ya viene hecho en
+      el repo. Solo haría falta si agregas documentación <code>.md</code> nueva y quieres meterla al mapa —
+      ahí sí se necesita Claude Code autenticado (<code>claude auth login</code>) o una API key con saldo.</p>
+  </footer>
+
+</div>
