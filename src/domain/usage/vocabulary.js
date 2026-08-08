@@ -42,6 +42,8 @@ const FEATURES = Object.freeze({
   DYNAMIC_VALUES: 'dynamic_values',
   CONSCIOUS_BRIDGE: 'conscious_bridge',
   TEACH_VIDEO: 'teach_video',
+  LIVE_VOICE: 'live_voice',
+  LIVE_VISION: 'live_vision',
   AGENT_CHAT: 'agent_chat',
   PROVIDER_TEST: 'provider_test',
   UNKNOWN: 'unknown'
@@ -87,6 +89,9 @@ const API_FAMILIES = Object.freeze({
   TRANSCRIPTION: 'transcription',
   VIDEO: 'video',
   COMPUTER_USE: 'computer_use',
+  // Sesión bidireccional por WebSocket (Gemini Live). No es una petición con
+  // su respuesta: es una conversación que va acumulando consumo mientras dura.
+  LIVE: 'live',
   UNKNOWN: 'unknown'
 });
 

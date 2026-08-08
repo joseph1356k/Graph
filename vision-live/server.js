@@ -171,6 +171,69 @@ app.post("/api/token", async (req, res) => {
   }
 });
 
+/**
+ * Reporta al ledger central lo que consumió una sesión de visión en vivo.
+ *
+ * POR QUÉ HACE FALTA. Esta capa habla por WebSocket DIRECTO con la Live API de
+ * Gemini desde el navegador: el servidor solo firma el token efímero y nunca ve
+ * la conversación. Sin este reporte, el gasto existe en la factura de Google y
+ * no existe en el panel — y un panel que no cuadra con la factura deja de
+ * usarse a la tercera vez que no cuadra.
+ *
+ * SIN CONFIGURAR, NO HACE NADA. `vision-live` se ejecuta suelto, en la máquina
+ * de quien prueba, y no tiene por qué conocer el ledger. Si faltan las dos
+ * variables, se calla — pero lo dice UNA vez al arrancar, para que «no aparece
+ * nada» no se confunda con «no se ha usado».
+ *
+ * ATRIBUCIÓN: `system`. No hay un médico detrás, hay una herramienta interna.
+ * Inventarle un usuario sería peor que dejarlo sin usuario, y descartarlo sería
+ * perder gasto real. `system` es exactamente lo que es.
+ */
+let avisoLedgerDado = false;
+async function reportSessionUsage(session) {
+  const base = (process.env.GRAPH_BASE_URL || "").replace(/\/+$/, "");
+  const key = (process.env.GRAPH_USAGE_INGEST_KEY || "").trim();
+  if (!base || !key) {
+    if (!avisoLedgerDado) {
+      avisoLedgerDado = true;
+      console.warn(
+        "[uso] GRAPH_BASE_URL / GRAPH_USAGE_INGEST_KEY sin definir: " +
+        "el consumo de esta sesión NO se reporta al panel de costos."
+      );
+    }
+    return;
+  }
+  const usage = session.usage;
+  if (!usage || !(usage.totalTokens > 0)) return;
+
+  try {
+    await fetch(`${base}/api/internal/usage/events`, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-graph-usage-key": key },
+      body: JSON.stringify({
+        provider: "google",
+        apiFamily: "live",
+        requestedModel: usage.model || "",
+        servedModel: usage.model || "",
+        inputTokens: usage.inputTokens || 0,
+        outputTokens: usage.outputTokens || 0,
+        totalTokens: usage.totalTokens || 0,
+        status: "ok",
+        actorType: "system",
+        attributionSource: "internal",
+        app: "system",
+        feature: "live_vision",
+        sessionId: session.id,
+        metadata: { usageSource: "client_reported" },
+      }),
+      signal: AbortSignal.timeout(4000),
+    });
+  } catch (error) {
+    // La telemetría no puede impedir que se guarde el informe de la prueba.
+    console.warn(`[uso] no se pudo reportar el consumo: ${error.message}`);
+  }
+}
+
 app.post("/api/session/start", (req, res) => {
   const s = newSession(req.body || {});
   res.json({ id: s.id, startedAt: s.startedAt, label: s.label });
@@ -188,9 +251,32 @@ app.post("/api/session/:id/narration", (req, res) => {
   res.json({ ok: true });
 });
 
+// El navegador manda aquí lo que la Live API le fue reportando. Se guarda en la
+// sesión y se envía al ledger al terminar, en un solo evento: una conversación
+// de voz no son N llamadas, es una sesión con un consumo acumulado.
+app.post("/api/session/:id/usage", (req, res) => {
+  const s = sessions.get(req.params.id);
+  if (!s) return res.status(404).json({ error: "Sesión no encontrada" });
+  const intOf = (value) => {
+    const n = Math.trunc(Number(value));
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  };
+  // La Live API reporta TOTALES ACUMULADOS de la sesión, no incrementos: se
+  // queda el último, no se suman. Sumarlos multiplicaría el consumo por el
+  // número de mensajes recibidos.
+  s.usage = {
+    model: `${req.body?.model || ""}`.trim(),
+    inputTokens: intOf(req.body?.inputTokens),
+    outputTokens: intOf(req.body?.outputTokens),
+    totalTokens: intOf(req.body?.totalTokens),
+  };
+  res.json({ ok: true });
+});
+
 app.post("/api/session/:id/stop", async (req, res) => {
   const s = sessions.get(req.params.id);
   if (!s) return res.status(404).json({ error: "Sesión no encontrada" });
+  await reportSessionUsage(s);
   if (!s.endedAt) {
     s.endedAt = new Date().toISOString();
     s.verdict = s.verdict || "aborted";

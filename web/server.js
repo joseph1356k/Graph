@@ -1107,7 +1107,7 @@ registerAndroidPanelRoutes(app, { androidPanelService });
 registerWindowsTelemetryRoutes(app, { windowsTelemetryService });
 registerWindowsPanelRoutes(app, { windowsPanelService });
 registerStudioProgressRoutes(app, { studioProgressService });
-registerWindowsAgentRoutes(app, { agentTurnService, teachVideoService });
+registerWindowsAgentRoutes(app, { agentTurnService, teachVideoService, usageRecorder });
 registerWindowsDistributionRoutes(app, { windowsAppReleaseService });
 registerMcpRoutes(app, { agentWorkflowStore, workflowExecutor });
 registerPublicApiRoutes(app, {

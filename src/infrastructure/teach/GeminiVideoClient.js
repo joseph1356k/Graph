@@ -16,7 +16,57 @@
 //     4. `processVideo` — el backend hace el generateContent CON la key.
 //   Resultado: el video nunca toca Vercel y la key nunca toca el cliente.
 
+const LLMProvider = require('../LLMProvider');
+const { fromGemini, toRecorderUsage } = require('../../domain/usage/providerUsage');
+const { FEATURES, API_FAMILIES } = require('../../domain/usage/vocabulary');
+
 const BASE = 'https://generativelanguage.googleapis.com';
+
+/**
+ * Consumo del vídeo de enseñanza.
+ *
+ * DURANTE UN TIEMPO ESTO ESTUVO DECLARADO COMO «NO MEDIBLE», con el argumento
+ * de que el vídeo no reporta tokens de forma comparable al resto. Era falso, y
+ * era una deducción, no una comprobación: `generateContent` devuelve el mismo
+ * bloque `usageMetadata` que cualquier otra llamada a Gemini — los fotogramas
+ * ya vienen contados dentro de `promptTokenCount`. El código simplemente tiraba
+ * la respuesta entera salvo el texto.
+ *
+ * Se registra UN EVENTO POR INTENTO. `processVideo` reintenta hasta cinco veces
+ * cuando Gemini responde que está saturado, y cada intento que llega a hablar
+ * con el proveedor es consumo real aunque acabe fallando.
+ */
+/** El cuerpo puede no ser JSON (una página de error de un proxy, por ejemplo). */
+function safeJson(text) {
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    return {};
+  }
+}
+
+function recordVideoUsage(input) {
+  const recorder = LLMProvider.getUsageRecorder();
+  if (!recorder) return;
+  const ok = input.statusCode >= 200 && input.statusCode < 300;
+  recorder.record({
+    provider: 'google',
+    apiFamily: API_FAMILIES.VIDEO,
+    feature: FEATURES.TEACH_VIDEO,
+    requestedModel: input.model,
+    attempt: input.attempt,
+    occurredAt: input.occurredAt,
+    latencyMs: input.latencyMs,
+    status: ok ? 'ok' : 'error',
+    errorCode: ok ? '' : (input.errorCode || `http_${input.statusCode || 0}`),
+    metadata: {
+      httpStatus: input.statusCode || 0,
+      attempt: input.attempt,
+      usageSource: 'server_measured'
+    },
+    ...toRecorderUsage(fromGemini(input.body || {}))
+  });
+}
 
 /** Paso 1 del resumable upload: reserva el archivo en Gemini y devuelve la URL de subida. */
 async function startUpload(apiKey, displayName, contentLength) {
@@ -124,28 +174,50 @@ async function processVideo(apiKey, fileUri, model) {
 
   // Backoff exponencial 0.8s → 6.4s, igual que la versión Android (GeminiHttp.withRetry).
   let res = null;
+  let bodyText = '';
+  let body = {};
   for (let attempt = 0; attempt < 5; attempt++) {
     if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, 800 * 2 ** (attempt - 1)));
 
-    res = await fetch(`${BASE}/v1beta/models/${model}:generateContent`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-      body: JSON.stringify(req)
+    const startedAt = Date.now();
+    try {
+      res = await fetch(`${BASE}/v1beta/models/${model}:generateContent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+        body: JSON.stringify(req)
+      });
+    } catch (error) {
+      // Un fallo de red también se anota: puede haber gastado en el proveedor
+      // aunque no llegara la respuesta, y un hueco silencioso en la serie se
+      // confunde con «ese día no se enseñó nada».
+      recordVideoUsage({
+        model, attempt: attempt + 1, statusCode: 0, body: {},
+        occurredAt: new Date(startedAt).toISOString(), latencyMs: Date.now() - startedAt,
+        errorCode: 'network_error'
+      });
+      throw error;
+    }
+
+    // El cuerpo se lee UNA vez: `fetch` lo consume al leerlo, y hace falta tanto
+    // para las cifras de consumo como para el texto que se devuelve arriba.
+    bodyText = await res.text().catch(() => '');
+    body = safeJson(bodyText);
+    recordVideoUsage({
+      model, attempt: attempt + 1, statusCode: res.status, body,
+      occurredAt: new Date(startedAt).toISOString(), latencyMs: Date.now() - startedAt
     });
+
     if (res.ok) break;
     if (!isTransient(res.status)) {
-      const body = await res.text().catch(() => '');
-      throw new Error(`generateContent HTTP ${res.status}: ${body.slice(0, 200)}`);
+      throw new Error(`generateContent HTTP ${res.status}: ${bodyText.slice(0, 200)}`);
     }
   }
   if (!res || !res.ok) {
-    const body = res ? await res.text().catch(() => '') : '';
     throw new Error(
-      `generateContent HTTP ${res?.status} tras 5 intentos (sigue saturado): ${body.slice(0, 200)}`
+      `generateContent HTTP ${res?.status} tras 5 intentos (sigue saturado): ${bodyText.slice(0, 200)}`
     );
   }
 
-  const body = await res.json();
   const text = body.candidates?.[0]?.content?.parts?.find((part) => typeof part.text === 'string')?.text;
   if (!text) throw new Error('Gemini no devolvió texto en la respuesta');
 

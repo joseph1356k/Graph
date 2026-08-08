@@ -392,25 +392,29 @@ hacen `openaiBrain` y `geminiBrain`.
    `security definer` invocables por `anon`/`authenticated`. Son anteriores y
    quedan fuera de alcance; se dejan señaladas, no tocadas.
 
-3. **`GeminiVideoClient` (enseñanza por vídeo) no está instrumentado.** La API
-   de Files + `generateContent` de vídeo no reporta tokens de forma comparable
-   con el resto; medirlo bien exige decidir antes la unidad. Queda declarado
-   como hueco en vez de fabricar una cifra.
+3. ~~`GeminiVideoClient` no está instrumentado.~~ **Resuelto.** La razón que
+   se dio aquí —«no reporta tokens de forma comparable»— era una deducción, no
+   una comprobación, y era falsa: `generateContent` devuelve el mismo bloque
+   `usageMetadata` que cualquier otra llamada a Gemini, con los fotogramas ya
+   contados dentro de `promptTokenCount`. El código simplemente tiraba la
+   respuesta salvo el texto. Ahora registra un evento por intento.
 
 4. **Streaming**: el acumulador está construido y probado, pero hoy ninguna ruta
    de Graph consume respuestas en streaming del proveedor — cuando se añada,
    la pieza ya está.
 
-5. **Tres llamadas a Gemini viven fuera del punto único y no se miden:**
-   - `windows-client/src/Voice/GeminiLive.cs` — la voz en vivo abre un
-     WebSocket directo a Google desde el PC del usuario, sin pasar por Graph.
-   - `vision-live/` — herramienta suelta (su propio servidor y `package.json`,
-     no forma parte del despliegue) que usa la Live API desde el navegador.
-   - `GeminiVideoClient` — el punto 3.
+5. **Las cifras de la voz en vivo las reporta el cliente, no el servidor.**
+   `GeminiLive` (Windows) y `vision-live` hablan por WebSocket DIRECTO con
+   Google — es lo que les da latencia de conversación. El precio es que Graph
+   no ve la llamada y el único testigo del consumo es el cliente. Se acepta lo
+   que reporte, porque la alternativa es que ese gasto no aparezca en ninguna
+   parte, pero queda marcado con `usageSource: 'client_reported'` para poder
+   separarlo de lo que midió el servidor. La atribución NO se acepta del
+   cliente: el usuario y la organización los resuelve Graph contra la sesión
+   autenticada.
 
-   Las tres son gasto real que el panel no verá. Se pueden tapar: las dos
-   primeras ya saben quién es el operador, así que les falta reportar, no
-   averiguar. Se dejan declaradas antes que estimadas.
+   Estas dos son también las únicas que pueden perderse por completo: si el
+   proceso muere antes de cerrar la sesión, esa conversación no se reporta.
 
 6. **El costo es una estimación**, no la factura. No modela descuentos por
    volumen, créditos, ni precios negociados.

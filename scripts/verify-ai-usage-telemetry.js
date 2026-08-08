@@ -759,6 +759,95 @@ function fakeStore() {
     });
   }
 
+  // -------------------------------------------------------------------------
+  section('9 · Consumo reportado por el cliente (voz en vivo)');
+  // -------------------------------------------------------------------------
+  {
+    const { FEATURES, API_FAMILIES, normalizeFeature } =
+      require('../src/domain/usage/vocabulary');
+
+    check('existe un módulo para la voz en vivo y otro para la visión', () => {
+      assert.strictEqual(FEATURES.LIVE_VOICE, 'live_voice');
+      assert.strictEqual(FEATURES.LIVE_VISION, 'live_vision');
+      assert.strictEqual(normalizeFeature('live_voice'), 'live_voice');
+    });
+
+    check('existe la familia de API de sesión bidireccional', () => {
+      assert.strictEqual(API_FAMILIES.LIVE, 'live');
+    });
+
+    check('la procedencia de las cifras es un campo permitido de metadata', () => {
+      const evento = buildUsageEvent({
+        provider: 'google',
+        requestedModel: 'gemini-2.5-flash',
+        inputTokens: 100,
+        outputTokens: 50,
+        metadata: { usageSource: 'client_reported', liveSessionTurns: 7 }
+      });
+      assert.strictEqual(evento.metadata.usageSource, 'client_reported');
+      assert.strictEqual(evento.metadata.liveSessionTurns, 7);
+    });
+
+    check('lo reportado por el cliente NO puede colar contenido de la conversación', () => {
+      const evento = buildUsageEvent({
+        provider: 'google',
+        requestedModel: 'gemini-2.5-flash',
+        inputTokens: 10,
+        metadata: {
+          usageSource: 'client_reported',
+          transcript: 'el paciente Juan Pérez refiere dolor',
+          audio: 'base64...'
+        }
+      });
+      assert.strictEqual(evento.metadata.transcript, undefined);
+      assert.strictEqual(evento.metadata.audio, undefined);
+    });
+
+    check('dos envíos de la MISMA sesión no se cuentan dos veces', () => {
+      const base = {
+        provider: 'google',
+        apiFamily: 'live',
+        requestedModel: 'gemini-2.5-flash',
+        feature: 'live_voice',
+        inputTokens: 900,
+        outputTokens: 400,
+        sessionId: 'sesion-viva-1',
+        occurredAt: '2026-08-06T18:00:00.000Z'
+      };
+      const a = buildUsageEvent(base);
+      const b = buildUsageEvent({ ...base });
+      assert.strictEqual(a.idempotencyKey, b.idempotencyKey);
+    });
+
+    check('dos sesiones distintas SÍ son dos eventos', () => {
+      const base = {
+        provider: 'google',
+        apiFamily: 'live',
+        requestedModel: 'gemini-2.5-flash',
+        feature: 'live_voice',
+        inputTokens: 900,
+        outputTokens: 400,
+        occurredAt: '2026-08-06T18:00:00.000Z'
+      };
+      const a = buildUsageEvent({ ...base, sessionId: 'sesion-viva-1' });
+      const b = buildUsageEvent({ ...base, sessionId: 'sesion-viva-2' });
+      assert.notStrictEqual(a.idempotencyKey, b.idempotencyKey);
+    });
+
+    check('el vídeo de enseñanza normaliza el usageMetadata de Gemini', () => {
+      const { fromGemini } = require('../src/domain/usage/providerUsage');
+      const usage = fromGemini({
+        usageMetadata: { promptTokenCount: 120000, candidatesTokenCount: 800, totalTokenCount: 120800 },
+        modelVersion: 'gemini-2.5-flash'
+      });
+      // Los fotogramas ya vienen contados dentro de promptTokenCount: no hay
+      // ninguna unidad especial que decidir, que era la excusa para no medirlo.
+      assert.strictEqual(usage.hasUsage, true);
+      assert.strictEqual(usage.inputTokens, 120000);
+      assert.strictEqual(usage.totalTokens, 120800);
+    });
+  }
+
   console.log(`\n✅ Telemetría de consumo de IA: ${checks} comprobaciones OK.`);
 })().catch((error) => {
   console.error(`\n❌ ${error.message}`);

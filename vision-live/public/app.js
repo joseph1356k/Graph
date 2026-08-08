@@ -10,6 +10,7 @@ const state = {
   declarations: [],
   session: null,          // sesión Live API
   testId: null,           // id de la prueba en el servidor
+  usage: null,            // último total acumulado que reportó la Live API
   screenStream: null,
   micStream: null,
   frameTimer: null,
@@ -441,6 +442,24 @@ async function handleToolCall(toolCall) {
 /* ================================================================== */
 
 function handleMessage(msg) {
+  // Consumo de la sesión. La Live API lo manda como TOTAL ACUMULADO, así que se
+  // reemplaza en vez de sumarse — sumar multiplicaría el gasto por el número de
+  // mensajes. Se guarda en memoria y se envía una sola vez, al parar: es el
+  // único sitio desde el que se ve, porque el WebSocket va directo a Google y el
+  // servidor de vision-live no lo atraviesa.
+  if (msg.usageMetadata) {
+    const u = msg.usageMetadata;
+    const total = Number(u.totalTokenCount) || 0;
+    if (total > 0) {
+      state.usage = {
+        model: state.config?.model || "",
+        inputTokens: Number(u.promptTokenCount) || 0,
+        outputTokens: Number(u.responseTokenCount ?? u.candidatesTokenCount) || 0,
+        totalTokens: total,
+      };
+    }
+  }
+
   if (msg.setupComplete) {
     setStatus("en vivo", "live");
     return;
@@ -645,6 +664,17 @@ async function stopTest({ keepVerdict = false } = {}) {
   }
 
   if (state.testId) {
+    // El consumo va ANTES del stop: `stop` es quien lo reenvía al ledger, así
+    // que mandarlo después llegaría tarde y se perdería la sesión entera.
+    if (state.usage) {
+      try {
+        await fetch(`/api/session/${state.testId}/usage`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(state.usage),
+        });
+      } catch { /* la telemetría nunca impide guardar el informe */ }
+    }
     try {
       const r = await fetch(`/api/session/${state.testId}/stop`, { method: "POST" })
         .then((x) => x.json());

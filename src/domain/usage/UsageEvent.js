@@ -56,7 +56,16 @@ const METADATA_ALLOWLIST = Object.freeze(new Set([
   'cacheHit',
   'clientVersion',
   'osVersion',
-  'deviceModel'
+  'deviceModel',
+  // PROCEDENCIA DE LAS CIFRAS. Casi todo lo que hay en el ledger lo midió el
+  // servidor al hacer la llamada. Hay tres sitios donde no puede: la voz en
+  // vivo del cliente Windows y vision-live hablan por WebSocket DIRECTO con
+  // Google, así que el único testigo del consumo es el cliente. Esas cifras
+  // valen —el proveedor las factura igual— pero no se pueden auditar del mismo
+  // modo, y mezclarlas sin marca haría creer que todo el ledger tiene la misma
+  // solidez. `usageSource` distingue 'server_measured' de 'client_reported'.
+  'usageSource',
+  'liveSessionTurns'
 ]));
 
 const MAX_METADATA_STRING = 120;
