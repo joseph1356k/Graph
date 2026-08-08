@@ -674,6 +674,47 @@ graphify hook install</pre>
   </div>
 
   <div class="section">
+    <h2 class="plain">Mantenimiento — una vez por semana</h2>
+    <p style="color:var(--muted); font-size:15px; max-width:62ch;">El hook mantiene el mapa al día solo,
+      pero hay una cosa que <strong style="color:var(--text)">no</strong> mantiene: los nombres de los
+      grupos.</p>
+
+    <p style="color:var(--muted); font-size:15px; max-width:62ch;">Cada grupo del mapa tiene un nombre en
+      castellano llano — <em>“Exportación de notas clínicas”</em>, <em>“Motor de voz”</em>. Esos nombres los
+      escribe una IA. Pero la reconstrucción automática del hook es rápida y gratis justamente
+      <strong style="color:var(--text)">porque no usa IA</strong>: recalcula los grupos y, al no poder
+      nombrarlos, los rebautiza con el archivo más grande de cada uno.</p>
+
+    <p style="color:var(--muted); font-size:15px; max-width:62ch;">O sea, con el tiempo los nombres se
+      degradan así:</p>
+
+    <div class="scroll">
+      <table>
+        <tr><th>Nombre bueno</th><th>En qué se degrada</th></tr>
+        <tr><td>Superadmin Dashboard &amp; Export</td><td><code>supabase/server.ts</code></td></tr>
+        <tr><td>App Layout &amp; Login Auth</td><td><code>useStore</code></td></tr>
+        <tr><td>Clinical Audit UI Panels</td><td><code>note-review.ts</code></td></tr>
+      </table>
+    </div>
+
+    <p style="color:var(--muted); font-size:15px; max-width:62ch;">Sigue funcionando igual para buscar y
+      consultar — solo se vuelve más difícil de leer. Para devolverles los nombres:</p>
+
+    <pre>graphify label . --backend claude-cli --batch-size 20</pre>
+
+    <div class="note">
+      <strong>El <code>--batch-size 20</code> importa.</strong> Por defecto graphify manda 100 grupos en una
+      sola consulta al modelo, y los nombres salen genéricos. Con 20 son más consultas y tarda más, pero
+      cada grupo se analiza con contexto real.
+    </div>
+
+    <p style="color:var(--muted); font-size:15px; max-width:62ch;">Este comando sí necesita Claude Code
+      autenticado (<code>claude auth login</code>) o una API key. Basta con que
+      <strong style="color:var(--text)">una persona del equipo</strong> lo corra y haga commit — a los
+      demás les llega con <code>git pull</code>.</p>
+  </div>
+
+  <div class="section">
     <h2 class="plain">Si algo falla</h2>
     <p style="color:var(--muted); font-size:15px;">Estos son los errores reales que aparecieron al montarlo.
       Si te topas con alguno, ya está resuelto.</p>

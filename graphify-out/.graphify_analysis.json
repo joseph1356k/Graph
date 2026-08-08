@@ -3555,12 +3555,12 @@
     },
     {
       "type": "bridge_node",
-      "question": "Why does `clinicalError()` connect `Clinical Note Export Service` to `Note Fidelity Verification`, `Note Signature Hash Verification`, `Clinical Note Validation`, `Clinical Template Service`, `Clinical Assistant Service`, `Clinical Workflow Verification`, `Clinical JWT Auth Middleware`?",
+      "question": "Why does `clinicalError()` connect `Clinical Note Export` to `Clinical Note Fidelity Verification`, `Note Signature Hash Verification`, `Clinical Note Validation`, `Clinical Template Management`, `Clinical Assistant Service`, `Clinical Workflow Verification Script`, `Clinical Auth Middleware`?",
       "why": "High betweenness centrality (0.012) - this node is a cross-community bridge."
     },
     {
       "type": "bridge_node",
-      "question": "Why does `POST /api/v1/pipeline` connect `Public API Documentation` to `Usage Dashboard Frontend`, `Python Runtime Feature Modules`, `Notes App Shell UI`?",
+      "question": "Why does `POST /api/v1/pipeline` connect `Backend API Documentation` to `Account and Usage Dashboard`, `Voice Notes Python Runtime`, `Notes App Shell UI`?",
       "why": "High betweenness centrality (0.011) - this node is a cross-community bridge."
     },
     {
