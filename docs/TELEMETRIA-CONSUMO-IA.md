@@ -233,6 +233,19 @@ reporte del runtime de Miracle (Python), que llama al modelo por su cuenta.
 - `GraphConfig.OperatorEmail` (nuevo) + cabeceras en `GraphClient` y
   `BackendClient`: `X-Miracle-App: windows_app`, `X-Miracle-Feature`,
   `X-Miracle-User-Email` / `X-Miracle-Device-Id`.
+- `GeminiLive` acumula el `usageMetadata` de la Live API y lo manda a
+  `POST /api/v1/agent/usage` al cerrar la sesión.
+
+> **Estos cambios solo llegan al operador con un `.exe` nuevo.** Se distribuye
+> con el workflow `windows-release`, que empaqueta con Velopack y sube al bucket
+> `windows` de Supabase; desde ahí el cliente instalado se actualiza solo.
+>
+> Ese workflow **nunca había llegado a publicar**: los seis intentos reales
+> desde el 2026-07-22 morían en el último paso, porque `vpk upload s3` rechaza
+> `--region` y `--endpoint` juntos. Compilar, publicar y empaquetar terminaban
+> bien, así que desde fuera parecía un fallo de build. El bucket estaba vacío.
+> Corregido el 2026-08-08 quitando `--region`: Supabase se identifica por
+> endpoint, no por región.
 
 **Android App** — escribe directo a Supabase con la anon key y no llama a
 modelos por sí misma; su consumo pasa por `/api/v1` de Graph y se atribuye con
