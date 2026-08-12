@@ -11,6 +11,7 @@ const SupabaseRestClient = require('../src/infrastructure/SupabaseRestClient');
 const SupabaseClinicalTemplateRepository = require('../src/infrastructure/repositories/SupabaseClinicalTemplateRepository');
 const SupabaseClinicalEncounterRepository = require('../src/infrastructure/repositories/SupabaseClinicalEncounterRepository');
 const SupabaseNoteExportRepository = require('../src/infrastructure/repositories/SupabaseNoteExportRepository');
+const SupabaseOrganizerProfileRepository = require('../src/infrastructure/repositories/SupabaseOrganizerProfileRepository');
 const MarkdownCatalogWriter = require('../src/infrastructure/file-system/MarkdownCatalogWriter');
 const UsageLedgerStore = require('../src/infrastructure/file-system/UsageLedgerStore');
 const SupabaseUsageEventStore = require('../src/infrastructure/usage/SupabaseUsageEventStore');
@@ -45,6 +46,7 @@ const MiracleSttProviderConfigService = require('../src/application/use-cases/Mi
 const MiracleAssistantProviderConfigService = require('../src/application/use-cases/MiracleAssistantProviderConfigService');
 const BiopsyPhotoProviderConfigService = require('../src/application/use-cases/BiopsyPhotoProviderConfigService');
 const BiopsyExtractionService = require('../src/application/use-cases/BiopsyExtractionService');
+const OrganizerProfileService = require('../src/application/use-cases/OrganizerProfileService');
 const ApiKeyService = require('../src/application/use-cases/ApiKeyService');
 const AndroidPanelService = require('../src/application/use-cases/AndroidPanelService');
 // Módulo Windows App (agente de escritorio Ü, absorbido del backend viejo de
@@ -69,6 +71,7 @@ const ConsultationMirrorService = require('../src/application/use-cases/Consulta
 const NoteGenerationRescueService = require('../src/application/use-cases/NoteGenerationRescueService');
 const createOpportunisticRescue = require('./api/opportunisticRescue');
 const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
+const registerOrganizerRoutes = require('./api/registerOrganizerRoutes');
 const registerAndroidPanelRoutes = require('./api/registerAndroidPanelRoutes');
 // Windows Live: core de telemetría/visualización por usuario del cliente Windows.
 const WindowsTelemetryService = require('../src/application/use-cases/WindowsTelemetryService');
@@ -222,6 +225,15 @@ const miracleSttProviderConfigService = new MiracleSttProviderConfigService();
 const miracleAssistantProviderConfigService = new MiracleAssistantProviderConfigService(assistantLlmProvider);
 const biopsyExtractionService = new BiopsyExtractionService({ llmProvider: biopsyLlmProvider });
 const miracleBiopsyProviderConfigService = new BiopsyPhotoProviderConfigService(biopsyLlmProvider);
+// "Hoja en blanco" para quien NO es médico (app Android): su system prompt se
+// genera a partir de lo que cuenta por voz y de capturas de sus reportes
+// actuales. Usa el proveedor de producto para escribir/aplicar el prompt y el
+// de visión (el mismo de Biopsia) para leer las capturas.
+const organizerProfileService = new OrganizerProfileService({
+  repository: new SupabaseOrganizerProfileRepository(supabaseRestClient),
+  llmProvider,
+  visionLlmProvider: biopsyLlmProvider
+});
 const apiKeyService = new ApiKeyService();
 // Android panel (Provider Studio): telemetry + distributed client config,
 // same Supabase project/service-role client as the clinical module.
@@ -414,6 +426,12 @@ app.use('/api/clinical/assistant', costlyLimiter);
 app.use('/api/v1/pipeline', costlyLimiter);
 app.use('/api/v1/autofill/match', costlyLimiter);
 app.use('/api/v1/biopsy/extract', costlyLimiter);
+// Generar el system prompt de un usuario cuesta una llamada de visión por
+// captura más una de texto; organizar un reporte, una de texto. Solo los POST:
+// el GET del perfil es una lectura barata que la app hace en cada arranque.
+app.post('/api/v1/organizer/profiles', costlyLimiter);
+app.post('/api/v1/organizer/profiles/:deviceId/samples', costlyLimiter);
+app.post('/api/v1/organizer/organize', costlyLimiter);
 app.use('/api/providers/biopsy/test-extract', costlyLimiter);
 function isMiracleMedicalProxyRequest(req) {
   const method = `${req.method || ''}`.toUpperCase();
@@ -1118,8 +1136,10 @@ registerPublicApiRoutes(app, {
   workflowExecutor,
   usageRecorder,
   assistantService: clinicalAssistantService,
-  biopsyService: biopsyExtractionService
+  biopsyService: biopsyExtractionService,
+  organizerService: organizerProfileService
 });
+registerOrganizerRoutes(app, { organizerProfileService });
 
 app.post('/api/agent/chat', costlyLimiter, async (req, res) => {
   try {

@@ -43,6 +43,10 @@ function registerPublicApiRoutes(app, deps = {}) {
   const usageDashboardService = deps.usageDashboardService || null;
   const assistantService = deps.assistantService || null;
   const biopsyService = deps.biopsyService || null;
+  // Solo para el manifiesto: las rutas del organizador las registra
+  // registerOrganizerRoutes. Aquí se declara para que un cliente que descubra
+  // el API por GET /api/v1 sepa que existe.
+  const organizerService = deps.organizerService || null;
 
   if (!app || typeof callMiracleRuntime !== 'function') {
     throw new Error('registerPublicApiRoutes requires app and callMiracleRuntime');
@@ -116,6 +120,16 @@ function registerPublicApiRoutes(app, deps = {}) {
         available: Boolean(assistantService),
         endpoint: 'POST /api/v1/assistant/chat',
         description: 'Chat con el asistente clinico de Miracle (preguntas medicas generales, sin contexto de un paciente especifico).',
+      },
+      organizer: {
+        available: Boolean(organizerService),
+        endpoints: [
+          'POST /api/v1/organizer/profiles',
+          'GET /api/v1/organizer/profiles/:deviceId',
+          'POST /api/v1/organizer/profiles/:deviceId/samples',
+          'POST /api/v1/organizer/organize'
+        ],
+        description: 'Hoja en blanco para quien no es medico: genera un system prompt a medida desde lo que la persona cuenta por voz (y capturas de sus reportes actuales) y con el organiza cada transcripcion.',
       },
       biopsy: {
         available: Boolean(biopsyService),
