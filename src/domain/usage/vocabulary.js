@@ -31,6 +31,10 @@ const FEATURES = Object.freeze({
   NOTE_GENERATION: 'note_generation',
   NOTE_RESCUE: 'note_rescue',
   CLINICAL_STRUCTURING: 'clinical_structuring',
+  // "Hoja en blanco" para quien no es médico: generar su system prompt a
+  // medida (setup) y organizar cada reporte con él (structuring).
+  ORGANIZER_SETUP: 'organizer_setup',
+  ORGANIZER_STRUCTURING: 'organizer_structuring',
   DIAGNOSIS_SUGGESTION: 'diagnosis_suggestion',
   TRANSCRIPTION: 'transcription',
   AUDIO_PROCESSING: 'audio_processing',

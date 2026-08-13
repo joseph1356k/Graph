@@ -8,7 +8,10 @@
 // so this backend is the only reader of telemetry.
 
 const MASK_PREFIX = '••••'; // "••••"
-const KEY_FIELDS = ['openai_key', 'gemini_key', 'deepgram_key'];
+// Secretos: se enmascaran al leer y solo se sobrescriben si llegan en claro.
+// `miracle_api_key` es la key con la que la app Android consume /api/v1 del
+// propio Graph (organizador y pipeline), igual de secreta que las de proveedor.
+const KEY_FIELDS = ['openai_key', 'gemini_key', 'deepgram_key', 'miracle_api_key'];
 const ALLOWED_PROVIDERS = ['OPENAI', 'GEMINI'];
 // In-memory join cap for the users list: enough for the panel's aggregate
 // (prompt count + last prompt) without unbounded payloads.
@@ -134,6 +137,8 @@ class AndroidPanelService {
       openai_key: maskKey(row.openai_key),
       gemini_key: maskKey(row.gemini_key),
       deepgram_key: maskKey(row.deepgram_key),
+      miracle_api_key: maskKey(row.miracle_api_key),
+      miracle_api_base: row.miracle_api_base || '',
       default_provider: row.default_provider || 'OPENAI',
       default_openai_model: row.default_openai_model || '',
       default_gemini_model: row.default_gemini_model || '',
@@ -160,7 +165,8 @@ class AndroidPanelService {
       next.default_provider = provider;
     }
 
-    ['default_openai_model', 'default_gemini_model'].forEach((field) => {
+    // No es un secreto: es la URL base del backend que la app debe consumir.
+    ['default_openai_model', 'default_gemini_model', 'miracle_api_base'].forEach((field) => {
       const value = `${patch[field] == null ? '' : patch[field]}`.trim();
       if (value) {
         next[field] = value;
