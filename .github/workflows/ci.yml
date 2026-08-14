@@ -12,14 +12,14 @@ on:
   # 1. Cuando alguien propone un cambio (Pull Request).
   pull_request:
 
-  # 2. Cuando alguien sube directo a main o develop.
-  #    Esta es la parte que cubre el PUENTE 2: si se rompe el vidrio
-  #    y se publica sin pasar por la propuesta, el portero corre igual
-  #    y deja constancia de que reviso y que encontro.
+  # 2. Cuando alguien sube a CUALQUIER rama, incluida main.
+  #    Sin lista de ramas = todas.
+  #
+  #    Esto es lo que sostiene el modelo: nunca hay que pedir permiso ni
+  #    configurar nada. Trabajes donde trabajes, el portero revisa y avisa.
+  #    Y si se sube directo a main saltandose todo, tambien revisa: no
+  #    detiene a nadie, pero deja el reporte de que entro.
   push:
-    branches:
-      - main
-      - develop
 
   # 3. Boton manual, por si alguien quiere correrlo cuando quiera.
   workflow_dispatch:
