@@ -1,7 +1,18 @@
+// El .env se carga ANTES que cualquier modulo propio. Varios modulos leen
+// process.env al importarse (por ejemplo requireAuth.js lee LOCAL_ADMIN_USERS
+// y LOCAL_ADMIN_PASSWORD en constantes de nivel de modulo). Si dotenv corriera
+// despues de esos require, esas constantes quedarian vacias y el login local
+// nunca funcionaria, sin importar lo que dijera el .env.
+const path = require('path');
+require('dotenv').config({
+  path: path.resolve(__dirname, '..', '.env.local'),
+  quiet: true
+});
+require('dotenv').config({ quiet: true });
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const http = require('http');
-const path = require('path');
 
 const Neo4jDriver = require('../src/infrastructure/Neo4jDriver');
 const LLMProvider = require('../src/infrastructure/LLMProvider');
@@ -103,11 +114,6 @@ const { statusForError, publicErrorMessage } = require('./api/httpErrors');
 
 const GetGraphVisualization = require('../src/application/use-cases/GetGraphVisualization');
 
-require('dotenv').config({
-  path: path.resolve(__dirname, '..', '.env.local'),
-  quiet: true
-});
-require('dotenv').config({ quiet: true });
 
 const app = express();
 app.set('trust proxy', process.env.VERCEL ? 1 : false);
