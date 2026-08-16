@@ -1,9 +1,19 @@
 // Distribución de la app de Windows (Ü) desde Provider Studio: dispara un
 // build en GitHub Actions del repo windows-app y resuelve el instalador
-// vigente, publicado por ese mismo workflow en el bucket público de Supabase
-// (windows/releases.win.json vía `vpk upload s3`, ver windows-app/RELEASING-WINDOWS.md).
-// El repo de GitHub es privado, así que solo el trigger/polling usan el PAT;
-// la descarga en sí lee el bucket público sin credenciales.
+// vigente, publicado por ese mismo workflow como una RELEASE de ese repo
+// (ver windows-app/RELEASING-WINDOWS.md).
+//
+// ANTES SE LEÍA DE UN BUCKET PÚBLICO DE SUPABASE y por eso la descarga no
+// necesitaba credenciales. Aquello no podía funcionar: el plan gratuito corta
+// las subidas en 50 MB —tope global, por encima del ajuste del bucket— y el
+// paquete pesa 80, así que el bucket estuvo siempre vacío y este endpoint
+// respondía 404 «todavía no hay ningún instalador» aunque sí lo hubiera
+// (2026-08-16).
+//
+// El repo es privado, así que ahora la descarga TAMBIÉN necesita el PAT. Pero
+// el navegador no lo tiene ni debe tenerlo: se le pide a GitHub la URL firmada
+// del asset —que caduca sola y no lleva credenciales— y se le redirige ahí. El
+// token no sale nunca del servidor y el enlace público sigue siendo público.
 const crypto = require('crypto');
 
 class WindowsAppReleaseService {
@@ -27,14 +37,6 @@ class WindowsAppReleaseService {
     throw error;
   }
 
-  releasesFeedUrl() {
-    if (!this.supabaseUrl) {
-      const error = new Error('Falta configurar SUPABASE_URL en el servidor.');
-      error.statusCode = 503;
-      throw error;
-    }
-    return `${this.supabaseUrl}/storage/v1/object/public/windows/releases.win.json`;
-  }
 
   githubHeaders() {
     return {
@@ -46,21 +48,46 @@ class WindowsAppReleaseService {
 
   // Best-effort: el bucket no tiene nada publicado hasta el primer release real.
   async readLatestReleaseInfo() {
+    if (!this.isConfigured()) return { version: null, assets: [] };
     try {
-      const response = await this.fetchImpl(this.releasesFeedUrl(), { cache: 'no-store' });
-      if (!response.ok) {
-        return { version: null, assets: [] };
-      }
+      const response = await this.fetchImpl(
+        `https://api.github.com/repos/${this.repo}/releases/latest`,
+        { headers: this.githubHeaders(), cache: 'no-store' }
+      );
+      if (!response.ok) return { version: null, assets: [] };
       const payload = await response.json();
-      const assets = Array.isArray(payload?.Assets) ? payload.Assets : [];
-      const current = assets.find((asset) => asset?.Version === payload?.CurrentReleaseVersion) || assets[assets.length - 1] || null;
+      const assets = Array.isArray(payload?.assets) ? payload.assets : [];
       return {
-        version: current?.Version || payload?.CurrentReleaseVersion || null,
-        assets
+        // El tag es `v1.2.3`; fuera la v para que siga siendo comparable con
+        // computeNextVersion, que espera SemVer pelado.
+        version: `${payload?.tag_name || ''}`.replace(/^v/i, '') || null,
+        assets: assets.map((a) => ({ FileName: a?.name, AssetId: a?.id, Size: a?.size }))
       };
     } catch (error) {
       return { version: null, assets: [] };
     }
+  }
+
+  // La URL firmada con la que un navegador SIN credenciales puede bajarse un
+  // asset de un repo privado. GitHub la entrega como un 302 al pedir el asset
+  // con Accept: application/octet-stream; hay que NO seguir el redirect para
+  // poder quedarse con el destino, porque es ahí donde va la firma.
+  async signedAssetUrl(assetId) {
+    const response = await this.fetchImpl(
+      `https://api.github.com/repos/${this.repo}/releases/assets/${assetId}`,
+      {
+        headers: { ...this.githubHeaders(), Accept: 'application/octet-stream' },
+        redirect: 'manual',
+        cache: 'no-store'
+      }
+    );
+    const location = response.headers?.get?.('location');
+    if (!location) {
+      const error = new Error('GitHub no devolvió el enlace de descarga del instalador.');
+      error.statusCode = 502;
+      throw error;
+    }
+    return location;
   }
 
   computeNextVersion(currentVersion) {
@@ -154,10 +181,7 @@ class WindowsAppReleaseService {
       error.statusCode = 404;
       throw error;
     }
-    return {
-      version,
-      url: `${this.supabaseUrl}/storage/v1/object/public/windows/${setupAsset.FileName}`
-    };
+    return { version, url: await this.signedAssetUrl(setupAsset.AssetId) };
   }
 
   // Distingue builds reales de pruebas dry-run por el tag que el propio
