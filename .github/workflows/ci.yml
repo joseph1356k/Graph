@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# Ejecuta los 15 revisores de scripts/verify-*.js en cada cambio.
+# Ejecuta los 16 revisores de scripts/verify-*.js en cada cambio.
 #
 # Este archivo SOLO revisa e informa. Nunca bloquea por si mismo.
 # El bloqueo se configura aparte, en Settings > Branches de GitHub,
@@ -32,9 +32,26 @@ concurrency:
 
 jobs:
   revisores:
-    name: 15 revisores
+    name: 16 revisores
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
+    # Postgres de usar y tirar. Sin esto, verify-note-exports-db.js se salta solo
+    # ("no hay cliente psql instalado") y ese pedazo no lo revisa nadie, ni en tu
+    # Mac ni aqui. GitHub lo levanta gratis en un contenedor.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: graph_note_exports_it
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       # Descarga el codigo del repositorio en la maquina prestada.
@@ -53,6 +70,10 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      # El mismo comando que corriste en tu terminal y te dio los 37 ok.
-      - name: Correr los 15 revisores
+      # El mismo comando que corriste en tu terminal.
+      # GRAPH_TEST_DATABASE_URL hace que verify-note-exports-db.js SI corra,
+      # en vez de saltarse.
+      - name: Correr los 16 revisores
+        env:
+          GRAPH_TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/graph_note_exports_it
         run: npm test
