@@ -284,7 +284,7 @@ begin
   assert v_res->>'status' = 'pending', 'tras retry el status debe ser pending';
 
   select * into v_job from public.graph_note_exports where id = v_id;
-  assert v_job.attempts = 1, 'attempts se conserva como historia, fue ' || v_job.attempts;
+  assert v_job.attempts = 0, 'el retry devuelve el presupuesto de intentos, fue ' || v_job.attempts;
   assert v_job.error_code is null, 'el retry limpia error_code';
   assert v_job.result is null, 'el retry limpia result';
   assert v_job.claimed_by is null, 'el retry libera el ejecutor';
@@ -292,7 +292,33 @@ begin
     'el historial debe registrar el retry';
   assert jsonb_array_length(v_job.attempt_history) = 3,
     'historial esperado de 3 entradas (claim, result, retry), fue ' || jsonb_array_length(v_job.attempt_history);
-  raise notice 'ok  retry reencola la MISMA fila, conserva attempts y acumula historial';
+  raise notice 'ok  retry reencola la MISMA fila, devuelve los intentos y acumula historial';
+
+  -- LA REGRESIÓN QUE COSTÓ UNA MAÑANA (2026-08-25). Un trabajo con los intentos
+  -- agotados volvía a 'pending' con attempts intacto, y graph_claim_next_note_export
+  -- solo reparte lo que cumple `attempts < p_max_attempts`: quedaba en cola para
+  -- siempre, invisible para todo ejecutor, mientras la web culpaba al equipo de
+  -- escritorio de estar apagado. Reencolar sin poder repartir no es reencolar.
+  update public.graph_note_exports
+     set status = 'failed', attempts = 3, error_code = 'EXECUTOR_ERROR'
+   where id = v_id;
+
+  v_res := public.graph_retry_note_export(v_id, null);
+  assert (v_res->>'ok')::boolean = true, 'el retry con los intentos agotados debe funcionar';
+
+  select * into v_job from public.graph_note_exports where id = v_id;
+  assert v_job.attempts = 0, 'tras el retry los intentos vuelven a 0, fue ' || v_job.attempts;
+  assert v_job.attempt_history @> '[{"event":"retry","attempts_so_far":3}]'::jsonb,
+    'el historial debe recordar que se habían agotado 3 intentos';
+
+  -- Lo que de verdad importa: que alguien pueda cogerlo. Es la promesa que el
+  -- test viejo no hacía, y por eso el bug pasó.
+  assert exists (
+    select 1 from public.graph_note_exports e
+     where e.id = v_id and e.kind = 'note_export'
+       and e.attempts < 3 and e.status = 'pending'
+  ), 'tras el retry el trabajo tiene que ser RECLAMABLE, no solo estar en pending';
+  raise notice 'ok  retry con intentos agotados deja el trabajo reclamable de verdad';
 
   -- Idempotente: reintentar algo ya en cola no rompe.
   v_res := public.graph_retry_note_export(v_id, null);
