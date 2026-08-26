@@ -24,7 +24,8 @@ const SOURCES = Object.freeze({
   openai: 'https://developers.openai.com/api/docs/pricing',
   anthropic: 'https://platform.claude.com/docs/en/pricing',
   google: 'https://ai.google.dev/gemini-api/docs/pricing',
-  deepgram: 'https://deepgram.com/pricing'
+  deepgram: 'https://deepgram.com/pricing',
+  soniox: 'https://soniox.com/pricing'
 });
 
 // Precios en USD por millón de tokens (per_minute_usd en USD por minuto de audio).
@@ -54,7 +55,16 @@ const RATE_CARDS = Object.freeze([
 
   // ---- Deepgram · audio por minuto ----
   rate('deepgram', 'nova-3', 'transcription', { perMinute: 0.0043 }),
-  rate('deepgram', 'nova-2', 'transcription', { perMinute: 0.0043 })
+  rate('deepgram', 'nova-2', 'transcription', { perMinute: 0.0043 }),
+
+  // ---- Soniox · audio por minuto ----
+  // $0.12/hora en streaming (el async, que no usamos, va a $0.10). La tarifa
+  // ya incluye diarizacion, timestamps y confianza: pedir hablantes para medir
+  // el interrogatorio no cuesta un centavo mas.
+  // Solo la version que el backend configura por defecto. Si alguien pone otra
+  // por MIRACLE_STT_MODEL, sus eventos salen sin tarifar y la consola lo dice
+  // — mejor eso que cobrarle el precio de una version que no uso.
+  rate('soniox', 'stt-rt-v5', 'transcription', { perMinute: 0.002 })
 ]);
 
 function rate(provider, model, apiFamily, prices) {

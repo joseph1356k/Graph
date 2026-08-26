@@ -715,7 +715,8 @@ values
   ('google', 'gemini-2.5-flash',    'chat_completions', '2026-08-04', 0.30, 0.075, 2.50, null, 'https://ai.google.dev/gemini-api/docs/pricing', '2026-08-04'),
   ('google', 'gemini-2.5-pro',      'chat_completions', '2026-08-04', 1.25, 0.3125, 10.00, null, 'https://ai.google.dev/gemini-api/docs/pricing', '2026-08-04'),
   ('deepgram', 'nova-3', 'transcription', '2026-08-04', null, null, null, 0.0043, 'https://deepgram.com/pricing', '2026-08-04'),
-  ('deepgram', 'nova-2', 'transcription', '2026-08-04', null, null, null, 0.0043, 'https://deepgram.com/pricing', '2026-08-04')
+  ('deepgram', 'nova-2', 'transcription', '2026-08-04', null, null, null, 0.0043, 'https://deepgram.com/pricing', '2026-08-04'),
+  ('soniox', 'stt-rt-v5', 'transcription', '2026-08-04', null, null, null, 0.002, 'https://soniox.com/pricing', '2026-08-26')
 on conflict (provider, model, api_family, version) do nothing;
 
 -- ---------------------------------------------------------------------------
