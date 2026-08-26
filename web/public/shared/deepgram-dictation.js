@@ -92,6 +92,10 @@
       // Soniox streams token-by-token; we accumulate confirmed (is_final) text here
       // until an <end>/<fin> boundary token flushes it as one final segment.
       sonioxFinalBuffer: "",
+      // Timing/hablante de esos mismos tokens finales: [{speaker, start_ms,
+      // end_ms}] paralelo a sonioxFinalBuffer. Sin texto — quien mide la
+      // consulta no debe recibir PHI por este canal.
+      sonioxFinalTokens: [],
     };
 
     function resetFinalizeQuietTimer() {
@@ -142,6 +146,7 @@
       state.streamSession = null;
       state.provider = "deepgram";
       state.sonioxFinalBuffer = "";
+      state.sonioxFinalTokens = [];
       state.isRecording = false;
       releaseMicrophone();
       void closeSocket();
@@ -168,6 +173,8 @@
     function flushSonioxSegment() {
       const transcript = state.sonioxFinalBuffer.trim();
       state.sonioxFinalBuffer = "";
+      const tokens = state.sonioxFinalTokens;
+      state.sonioxFinalTokens = [];
       if (!transcript) {
         return;
       }
@@ -176,6 +183,7 @@
         segmentId: `seg_${state.finalSegmentCount}`,
         transcript,
         language: (state.streamSession && state.streamSession.language) || null,
+        tokens,
       });
     }
 
@@ -202,6 +210,21 @@
             continue;
           }
           state.sonioxFinalBuffer += text;
+          // Timing + hablante del token (solo numeros). Con
+          // enable_speaker_diarization activo, `speaker` distingue al medico
+          // del paciente; sin ella llega 0 y quien mide lo reporta como
+          // "sin diarizacion" en vez de inventarse los turnos.
+          const startMs = Number(token.start_ms);
+          const endMs = Number(
+            token.end_ms != null ? token.end_ms : startMs + Number(token.duration_ms)
+          );
+          if (Number.isFinite(startMs) && Number.isFinite(endMs) && endMs > startMs) {
+            state.sonioxFinalTokens.push({
+              speaker: Number(token.speaker) || 0,
+              start_ms: startMs,
+              end_ms: endMs,
+            });
+          }
         } else {
           nonFinalText += text;
         }
@@ -248,10 +271,31 @@
       }
       if (payload.is_final) {
         state.finalSegmentCount += 1;
+        // Deepgram trae el timing en `words` (segundos), no en tokens sueltos.
+        const words =
+          payload.channel &&
+          payload.channel.alternatives &&
+          payload.channel.alternatives[0] &&
+          Array.isArray(payload.channel.alternatives[0].words)
+            ? payload.channel.alternatives[0].words
+            : [];
+        const tokens = [];
+        for (const word of words) {
+          const startMs = Math.round(Number(word && word.start) * 1000);
+          const endMs = Math.round(Number(word && word.end) * 1000);
+          if (Number.isFinite(startMs) && Number.isFinite(endMs) && endMs > startMs) {
+            tokens.push({
+              speaker: Number(word.speaker != null ? word.speaker : 0) || 0,
+              start_ms: startMs,
+              end_ms: endMs,
+            });
+          }
+        }
         onFinalTranscript({
           segmentId: `seg_${state.finalSegmentCount}`,
           transcript,
           language: (state.streamSession && state.streamSession.language) || null,
+          tokens,
         });
       } else {
         onPartialTranscript(transcript);
@@ -294,6 +338,7 @@
       state.streamSession = session;
       state.provider = (session && session.provider) || "deepgram";
       state.sonioxFinalBuffer = "";
+      state.sonioxFinalTokens = [];
       state.timesliceMs = Number(session && session.timeslice_ms) || 250;
       const soniox = isSonioxSession(session);
       onDebug("deepgram.session.created", {
@@ -432,6 +477,7 @@
         state.streamSession = null;
         state.provider = "deepgram";
         state.sonioxFinalBuffer = "";
+        state.sonioxFinalTokens = [];
         state.isRecording = false;
         releaseMicrophone();
       }

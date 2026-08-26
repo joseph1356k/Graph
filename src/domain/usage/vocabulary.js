@@ -37,6 +37,11 @@ const FEATURES = Object.freeze({
   ORGANIZER_STRUCTURING: 'organizer_structuring',
   DIAGNOSIS_SUGGESTION: 'diagnosis_suggestion',
   TRANSCRIPTION: 'transcription',
+  // Minutos de la transcripción EN VIVO de una consulta. El audio va del
+  // navegador al proveedor sin pasar por aquí, así que estos eventos los
+  // reporta el portal (con session_id = encounter_id) y no la capa de
+  // proveedor: es el único testigo de cuánto duró.
+  LIVE_TRANSCRIPTION: 'live_transcription',
   AUDIO_PROCESSING: 'audio_processing',
   SCHEDULE_PARSING: 'schedule_parsing',
   WORKFLOW_LEARNING: 'workflow_learning',
@@ -81,6 +86,7 @@ const PROVIDERS = Object.freeze({
   ANTHROPIC: 'anthropic',
   GOOGLE: 'google',
   DEEPGRAM: 'deepgram',
+  SONIOX: 'soniox',
   AZURE_FOUNDRY: 'azure-foundry',
   OPENROUTER: 'openrouter',
   UNKNOWN: 'unknown'

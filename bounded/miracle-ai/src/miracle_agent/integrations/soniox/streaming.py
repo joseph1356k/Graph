@@ -128,6 +128,15 @@ def _build_soniox_start_message(
         "enable_endpoint_detection": True,
         "max_endpoint_delay_ms": settings.soniox_stream_endpoint_delay_ms,
     }
+    if settings.voice_stt_diarization:
+        # Cada token vuelve etiquetado con su hablante. El texto transcrito no
+        # cambia (el cliente sigue concatenando `text` igual), pero con esto la
+        # consulta se puede medir: quien habla cuando es lo unico que permite
+        # separar el interrogatorio medico-paciente del dictado del medico.
+        # Ojo: las etiquetas NO son estables entre sockets — una reconexion
+        # puede renumerar a los hablantes, y quien las consuma debe tratarlas
+        # por stream (asi lo hace encounter_metrics en el portal).
+        message["enable_speaker_diarization"] = True
     normalized_language = (language or "").strip()
     if normalized_language:
         message["language_hints"] = [normalized_language]

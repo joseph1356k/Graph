@@ -68,7 +68,15 @@ class ClinicalNoteGeneratorService {
         transcript,
         templateSnapshot: encounter.template_snapshot
       });
-      const content = await withFeature(FEATURES.NOTE_GENERATION, () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }));
+      // `sessionId` = el encounter: es lo que ata este gasto a UNA consulta en
+      // el ledger, y sin eso el costo solo se puede leer en agregado (ver
+      // encounter_metrics en el portal). No es un dato del cliente: sale del
+      // encounter que este servicio ya cargó y verificó como propio.
+      const content = await withFeature(
+        FEATURES.NOTE_GENERATION,
+        () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }),
+        { sessionId: encounter.id }
+      );
       const parsed = this.llmProvider.parseJsonObject(content || '{}');
       const noteJson = this.validationService.validateAndRepair(parsed, encounter.template_snapshot);
 
