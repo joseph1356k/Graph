@@ -848,6 +848,97 @@ function fakeStore() {
     });
   }
 
+  // ------------------------------------------------------------------------
+  // Atribución a UNA consulta. El portal cruza ai_usage_events con
+  // encounter_metrics por session_id = encounter_id; si esta cadena se rompe,
+  // el costo por consulta deja de existir en silencio (los agregados siguen
+  // cuadrando, que es lo que lo hace difícil de notar).
+  // ------------------------------------------------------------------------
+  {
+    section('Consumo atribuido a una consulta');
+    const ENCOUNTER = 'c0ffee00-1111-4222-8333-444455556666';
+    // uuid real: buildUsageEvent descarta identidades que no lo sean.
+    const MEDICO = 'a1b2c3d4-1111-4222-8333-999900001111';
+    const ORG = 'b2c3d4e5-2222-4333-8444-999900002222';
+
+    const recorderFor = (events) => new AiUsageRecorder({
+      enabled: true,
+      store: { append: async (event) => { events.push(event); return { ok: true }; } }
+    });
+
+    await (async () => {
+      const events = [];
+      const recorder = recorderFor(events);
+      await runWithContext(
+        {
+          userId: MEDICO,
+          organizationId: ORG,
+          actorType: ACTOR_TYPES.USER,
+          attributionSource: ATTRIBUTION_SOURCES.SESSION,
+          app: APPS.WEB_APP
+        },
+        () => withFeature(
+          FEATURES.NOTE_GENERATION,
+          () => recorder.record({
+            provider: 'openai',
+            apiFamily: 'chat_completions',
+            requestedModel: 'gpt-4.1-mini',
+            inputTokens: 1000,
+            outputTokens: 200
+          }),
+          { sessionId: ENCOUNTER }
+        )
+      );
+      await recorder.flush?.();
+
+      check('generar la nota deja el evento atado al encounter', () => {
+        assert.strictEqual(events.length, 1);
+        assert.strictEqual(events[0].sessionId, ENCOUNTER);
+        assert.strictEqual(events[0].feature, FEATURES.NOTE_GENERATION);
+        // La sesión NO puede pisar al usuario ni a la organización: son cosas
+        // distintas y la atribución de dinero sigue saliendo de la sesión.
+        assert.strictEqual(events[0].userId, MEDICO);
+        assert.strictEqual(events[0].organizationId, ORG);
+      });
+
+      check('la fila que va a Postgres lleva el session_id', () => {
+        assert.strictEqual(toDatabaseRow(events[0]).session_id, ENCOUNTER);
+      });
+    })();
+
+    await (async () => {
+      const events = [];
+      const recorder = recorderFor(events);
+      // El asistente en modo A (chat general, sin encounter) no debe inventarse
+      // una sesión: un costo sin consulta tiene que verse como tal.
+      await runWithContext(
+        {
+          userId: MEDICO,
+          actorType: ACTOR_TYPES.USER,
+          attributionSource: ATTRIBUTION_SOURCES.SESSION,
+          app: APPS.WEB_APP
+        },
+        () => withFeature(
+          FEATURES.ASISTENTE,
+          () => recorder.record({
+            provider: 'openai',
+            apiFamily: 'chat_completions',
+            requestedModel: 'gpt-4.1-mini',
+            inputTokens: 300,
+            outputTokens: 100
+          }),
+          {}
+        )
+      );
+      await recorder.flush?.();
+
+      check('el chat sin consulta se queda sin sesión, no con una inventada', () => {
+        assert.strictEqual(events.length, 1);
+        assert.strictEqual(events[0].sessionId, '');
+      });
+    })();
+  }
+
   console.log(`\n✅ Telemetría de consumo de IA: ${checks} comprobaciones OK.`);
 })().catch((error) => {
   console.error(`\n❌ ${error.message}`);

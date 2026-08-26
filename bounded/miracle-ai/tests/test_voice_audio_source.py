@@ -130,6 +130,29 @@ class TestSonioxStartMessage:
         session = SonioxStreamingAdapter(_settings()).create_stream_session(audio_source=source)
         serialized = json.dumps(session.to_dict())
         assert PERMANENT_KEY not in serialized
+
+
+class TestSonioxDiarizacion:
+    """La diarizacion es lo que permite medir el interrogatorio medico-paciente.
+
+    Sin `enable_speaker_diarization` los tokens llegan sin hablante y el portal
+    muestra el interrogatorio como "no disponible" (nunca inventa un numero).
+    """
+
+    @pytest.mark.parametrize("source", ["browser_microphone", "omi"])
+    def test_pide_hablantes_por_defecto(self, source: str) -> None:
+        session = SonioxStreamingAdapter(_settings()).create_stream_session(audio_source=source)
+        assert session.start_message["enable_speaker_diarization"] is True
+
+    def test_se_puede_apagar_sin_tocar_nada_mas(self) -> None:
+        apagada = _settings()
+        object.__setattr__(apagada, "voice_stt_diarization", False)
+        session = SonioxStreamingAdapter(apagada).create_stream_session()
+        assert "enable_speaker_diarization" not in session.start_message
+        # Apagarla no cambia el resto de la sesion: mismo modelo y formato.
+        encendida = SonioxStreamingAdapter(_settings()).create_stream_session()
+        assert session.model == encendida.model
+        assert session.start_message["audio_format"] == encendida.start_message["audio_format"]
         assert session.start_message["api_key"] == TEMPORARY_KEY
 
 

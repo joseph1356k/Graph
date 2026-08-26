@@ -68,7 +68,14 @@ class ClinicalAssistantService {
         message: cleanMessage,
         history: clinicalContext.history
       });
-      const { content: rawAnswer, usage } = await withFeature(FEATURES.ASISTENTE, () => this.llmProvider.chatWithUsage(messages));
+      // Atado a la consulta SOLO en el modo B (con encounter). En el modo A
+      // —chat clínico general— no hay consulta a la que imputarlo, y ponerle
+      // una sesión inventada haría que un costo sin dueño pareciera de alguien.
+      const { content: rawAnswer, usage } = await withFeature(
+        FEATURES.ASISTENTE,
+        () => this.llmProvider.chatWithUsage(messages),
+        encounter ? { sessionId: encounter.id } : {}
+      );
       return {
         answer: this.validationService.sanitizeAnswer(rawAnswer),
         mode: 'clinical_chat',
@@ -112,7 +119,11 @@ class ClinicalAssistantService {
 
     try {
       const messages = this.promptBuilder.buildDiagnosticMessages({ clinicalContext });
-      const content = await withFeature(FEATURES.ASISTENTE, () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }));
+      const content = await withFeature(
+        FEATURES.ASISTENTE,
+        () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }),
+        { sessionId: encounter.id }
+      );
       const parsed = this.llmProvider.parseJsonObject(content || '{}');
       const result = this.validationService.normalizeSuggestions(parsed, {
         transcript: fullTranscript,
@@ -158,7 +169,11 @@ class ClinicalAssistantService {
         instruction: cleanInstruction,
         sectionKey: cleanSectionKey
       });
-      const content = await withFeature(FEATURES.ASISTENTE, () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }));
+      const content = await withFeature(
+        FEATURES.ASISTENTE,
+        () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }),
+        { sessionId: encounter.id }
+      );
       const parsed = this.llmProvider.parseJsonObject(content || '{}');
       const modelNote = parsed?.note_json && typeof parsed.note_json === 'object' ? parsed.note_json : parsed;
 

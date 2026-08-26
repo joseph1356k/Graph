@@ -39,6 +39,11 @@ class MiracleSettings:
     voice_stt_domain: str = "general"
     voice_stt_specialty: str = "general"
     voice_stt_custom_terms: tuple[str, ...] = field(default_factory=tuple)
+    # Diarizacion: etiqueta cada token con su hablante. Es lo que permite medir
+    # el tiempo de interrogatorio medico-paciente en la telemetria de consulta
+    # del portal (encounter_metrics). No cambia el texto transcrito ni lo que
+    # cuesta; se deja apagable por si un proveedor la tarifa aparte manana.
+    voice_stt_diarization: bool = True
 
     @classmethod
     def from_env(cls, workspace_root: Path | None = None, *, override: bool = False) -> "MiracleSettings":
@@ -101,4 +106,8 @@ class MiracleSettings:
             voice_stt_domain=os.getenv("MIRACLE_STT_DOMAIN", "general").strip().lower() or "general",
             voice_stt_specialty=os.getenv("MIRACLE_STT_SPECIALTY", "general").strip().lower() or "general",
             voice_stt_custom_terms=_parse_custom_terms_env(os.getenv("MIRACLE_STT_CUSTOM_TERMS", "")),
+            voice_stt_diarization=(
+                os.getenv("MIRACLE_STT_DIARIZATION", "1").strip().lower()
+                not in {"0", "false", "no", "off"}
+            ),
         )
