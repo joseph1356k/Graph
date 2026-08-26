@@ -5,19 +5,35 @@ from urllib.error import HTTPError
 from urllib import request
 
 from ...config import MiracleSettings
-from ...features.voice.contracts import VoiceStreamSession
+from ...features.voice.contracts import (
+    DEFAULT_AUDIO_SOURCE,
+    OMI_SOURCE,
+    VoiceStreamSession,
+)
 from .context import build_soniox_context
 
 SONIOX_WEBSOCKET_URL = "wss://stt-rt.soniox.com/transcribe-websocket"
 SONIOX_TEMPORARY_KEY_URL = "https://api.soniox.com/v1/auth/temporary-api-key"
 DEFAULT_SONIOX_MODEL = "stt-rt-v5"
 
+# El Omi entrega SIEMPRE 16 kHz mono, cualquiera que sea su codec de aire
+# (PCM16, PCM8, Opus 160 u Opus FS320: los cuatro son 16 kHz segun PROTOCOL.md).
+# El navegador decodifica a PCM16 little-endian y manda eso crudo, sin
+# contenedor, asi que aqui hay que decirle a Soniox exactamente que esperar.
+OMI_AUDIO_FORMAT = "pcm_s16le"
+OMI_SAMPLE_RATE = 16000
+OMI_NUM_CHANNELS = 1
+
 
 class SonioxStreamingAdapter:
     def __init__(self, settings: MiracleSettings) -> None:
         self._settings = settings
 
-    def create_stream_session(self) -> VoiceStreamSession:
+    def create_stream_session(
+        self,
+        *,
+        audio_source: str = DEFAULT_AUDIO_SOURCE,
+    ) -> VoiceStreamSession:
         if not self._settings.soniox_api_key:
             raise RuntimeError("Soniox streaming is not configured. Set SONIOX_API_KEY first.")
 
@@ -32,6 +48,7 @@ class SonioxStreamingAdapter:
             api_key=temporary_key,
             model=model,
             language=language,
+            audio_source=audio_source,
         )
         return VoiceStreamSession(
             provider="soniox",
@@ -47,6 +64,7 @@ class SonioxStreamingAdapter:
             timeslice_ms=self._settings.voice_stream_timeslice_ms,
             endpointing_ms=self._settings.soniox_stream_endpoint_delay_ms,
             start_message=start_message,
+            audio_source=audio_source,
         )
 
 
@@ -118,16 +136,25 @@ def _build_soniox_start_message(
     api_key: str,
     model: str,
     language: str,
+    audio_source: str = DEFAULT_AUDIO_SOURCE,
 ) -> dict[str, object]:
     message: dict[str, object] = {
         "api_key": api_key,
         "model": model,
-        # "auto" lets Soniox detect the container the browser MediaRecorder
-        # produces (webm/opus), matching the Deepgram flow's raw audio frames.
-        "audio_format": "auto",
         "enable_endpoint_detection": True,
         "max_endpoint_delay_ms": settings.soniox_stream_endpoint_delay_ms,
     }
+    if audio_source == OMI_SOURCE:
+        # PCM crudo: no hay contenedor que autodetectar. Si estos tres campos no
+        # van, Soniox intenta adivinar sobre bytes sin cabecera y devuelve
+        # silencio o basura.
+        message["audio_format"] = OMI_AUDIO_FORMAT
+        message["sample_rate"] = OMI_SAMPLE_RATE
+        message["num_channels"] = OMI_NUM_CHANNELS
+    else:
+        # "auto" lets Soniox detect the container the browser MediaRecorder
+        # produces (webm/opus), matching the Deepgram flow's raw audio frames.
+        message["audio_format"] = "auto"
     normalized_language = (language or "").strip()
     if normalized_language:
         message["language_hints"] = [normalized_language]

@@ -5,14 +5,23 @@ from urllib.error import HTTPError
 from urllib import parse, request
 
 from ...config import MiracleSettings
-from ...features.voice.contracts import VoiceStreamSession
+from ...features.voice.contracts import DEFAULT_AUDIO_SOURCE, VoiceStreamSession
 
 
 class DeepgramStreamingAdapter:
     def __init__(self, settings: MiracleSettings) -> None:
         self._settings = settings
 
-    def create_stream_session(self) -> VoiceStreamSession:
+    def create_stream_session(
+        self,
+        *,
+        audio_source: str = DEFAULT_AUDIO_SOURCE,
+    ) -> VoiceStreamSession:
+        # Deepgram es el camino legacy y solo se usa con el microfono del
+        # navegador: acepta el parametro para cumplir el Protocol comun, pero no
+        # lo interpreta. La combinacion Omi+Deepgram la rechaza antes
+        # VoiceStreamingService, que es donde se ve el proveedor configurado.
+        del audio_source
         if not self._settings.deepgram_api_key:
             raise RuntimeError("Deepgram streaming is not configured. Set DEEPGRAM_API_KEY first.")
 

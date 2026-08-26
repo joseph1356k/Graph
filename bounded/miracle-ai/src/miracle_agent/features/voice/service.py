@@ -5,11 +5,11 @@ from typing import Protocol
 from ...config import MiracleSettings
 from ...integrations.deepgram.streaming import DeepgramStreamingAdapter
 from ...integrations.soniox.streaming import SonioxStreamingAdapter
-from .contracts import VoiceStreamSession
+from .contracts import DEFAULT_AUDIO_SOURCE, OMI_SOURCE, VoiceStreamSession
 
 
 class VoiceStreamingProvider(Protocol):
-    def create_stream_session(self) -> VoiceStreamSession:
+    def create_stream_session(self, *, audio_source: str = ...) -> VoiceStreamSession:
         ...
 
 
@@ -38,11 +38,26 @@ class VoiceStreamingService:
             provider = SonioxStreamingAdapter(settings)
         return cls(settings, provider=provider)
 
-    def create_stream_session(self) -> VoiceStreamSession:
+    def create_stream_session(
+        self,
+        *,
+        audio_source: str = DEFAULT_AUDIO_SOURCE,
+    ) -> VoiceStreamSession:
         if self._provider is None:
             raise VoiceStreamingError(self._missing_provider_message())
+        # Omi entrega PCM crudo. Deepgram aqui esta configurado para el webm del
+        # MediaRecorder, asi que aceptar la combinacion significaria abrir el
+        # socket y grabar la consulta entera contra un decodificador que no
+        # entiende esos bytes. Se corta antes, con un mensaje que dice por que,
+        # en vez de degradar en silencio a otra fuente.
+        if audio_source == OMI_SOURCE and self._settings.voice_stt_provider != "soniox":
+            raise VoiceStreamingError(
+                "El microfono Omi requiere el proveedor Soniox. "
+                f"Este entorno usa '{self._settings.voice_stt_provider}'.",
+                status_code=503,
+            )
         try:
-            return self._provider.create_stream_session()
+            return self._provider.create_stream_session(audio_source=audio_source)
         except RuntimeError as exc:
             raise VoiceStreamingError(str(exc), status_code=503) from exc
 
