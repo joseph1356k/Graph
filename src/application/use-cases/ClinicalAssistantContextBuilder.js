@@ -22,6 +22,43 @@ const SCREEN_CONTEXT_FIELDS = [
   'user_intent_surface'
 ];
 
+// Who the doctor is and how they asked to be spoken to (web app: Configuración
+// > Asistente). Kept OUT of screen_context on purpose: that object describes
+// what is on screen right now and the prompt tells the model it may be stale,
+// while this is a stable preference the model should honour.
+//
+// Same whitelist discipline as screen_context, plus closed enums: the values
+// end up inside the system prompt, so an unbounded string here would be a
+// prompt-injection surface handed straight to the model. `display_name` is the
+// only free text and it is capped and stripped of line breaks.
+const MAX_DOCTOR_NAME_LENGTH = 80;
+const DOCTOR_ADDRESS_VALUES = new Set(['tu', 'usted']);
+const DOCTOR_DETAIL_VALUES = new Set(['breve', 'equilibrado', 'detallado']);
+
+function sanitizeDoctor(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return null;
+  }
+  const sanitized = {};
+
+  const name = typeof raw.display_name === 'string' ? raw.display_name : '';
+  // Newlines would let a crafted "name" open a new instruction line inside the
+  // system prompt; they are collapsed, never forwarded.
+  const cleanName = name.replace(/\s+/g, ' ').trim().slice(0, MAX_DOCTOR_NAME_LENGTH);
+  if (cleanName) {
+    sanitized.display_name = cleanName;
+  }
+
+  if (typeof raw.address === 'string' && DOCTOR_ADDRESS_VALUES.has(raw.address)) {
+    sanitized.address = raw.address;
+  }
+  if (typeof raw.detail === 'string' && DOCTOR_DETAIL_VALUES.has(raw.detail)) {
+    sanitized.detail = raw.detail;
+  }
+
+  return Object.keys(sanitized).length > 0 ? sanitized : null;
+}
+
 function sanitizeScreenContext(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     return null;
@@ -66,9 +103,10 @@ function resolveSpecialty(encounter, specialtyInput) {
   return { specialty: DEFAULT_SPECIALTY, source: 'fallback' };
 }
 
-function build({ encounter = null, specialtyInput = '', screenContext = null, history = [] } = {}) {
+function build({ encounter = null, specialtyInput = '', screenContext = null, history = [], doctor = null } = {}) {
   const { specialty, source: specialtySource } = resolveSpecialty(encounter, specialtyInput);
   const sanitizedScreen = sanitizeScreenContext(screenContext);
+  const sanitizedDoctor = sanitizeDoctor(doctor);
   const sanitizedHistory = sanitizeHistory(history);
 
   const fullTranscript = `${encounter?.transcript || ''}`.trim();
@@ -113,6 +151,7 @@ function build({ encounter = null, specialtyInput = '', screenContext = null, hi
       }
       : null,
     screen_context: sanitizedScreen,
+    doctor: sanitizedDoctor,
     history: sanitizedHistory
   };
 
@@ -120,7 +159,8 @@ function build({ encounter = null, specialtyInput = '', screenContext = null, hi
     encounter: Boolean(encounter),
     transcript: Boolean(fullTranscript),
     note_json: Boolean(noteJson),
-    screen_context: Boolean(sanitizedScreen)
+    screen_context: Boolean(sanitizedScreen),
+    doctor: Boolean(sanitizedDoctor)
   };
 
   return { clinicalContext, usedContext, fullTranscript };
@@ -129,6 +169,7 @@ function build({ encounter = null, specialtyInput = '', screenContext = null, hi
 module.exports = {
   build,
   sanitizeScreenContext,
+  sanitizeDoctor,
   sanitizeHistory,
   resolveSpecialty,
   DEFAULT_SPECIALTY,

@@ -291,7 +291,11 @@ function registerClinicalAssistantRoutes(app, deps) {
         encounterId: req.body?.encounter_id,
         specialty: req.body?.specialty,
         screenContext: req.body?.screen_context,
-        history: req.body?.history
+        history: req.body?.history,
+        // Nombre y preferencias de trato del médico (web: Configuración >
+        // Asistente). Se sanean en ClinicalAssistantContextBuilder antes de
+        // tocar el prompt: whitelist de tres campos y enums cerrados.
+        doctor: req.body?.doctor
       }, { doctorId: resolveDoctorId(req) });
       res.json(result);
     } catch (error) {
@@ -304,7 +308,10 @@ function registerClinicalAssistantRoutes(app, deps) {
       const result = await assistantService.adjustNote({
         encounterId: req.body?.encounter_id,
         instruction: req.body?.instruction,
-        sectionKey: req.body?.section_key
+        sectionKey: req.body?.section_key,
+        // Aquí las preferencias solo alcanzan al campo "explanation", que es el
+        // único texto que el médico lee de esta respuesta.
+        doctor: req.body?.doctor
       }, { doctorId: resolveDoctorId(req) });
       res.json(result);
     } catch (error) {
