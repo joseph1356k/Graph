@@ -89,6 +89,61 @@ const DIAGNOSTIC_SYSTEM_PROMPT = [
   '- No incluyas texto fuera del objeto JSON.'
 ].join('\n');
 
+// Preferencias del médico -> líneas extra del system prompt.
+//
+// Cada una PARAMETRIZA una regla que SYSTEM_PROMPT ya trae, en vez de abrir un
+// eje nuevo: el detalle gradúa "Evita respuestas largas si el médico hizo una
+// pregunta simple" y el formato de cuatro puntos; el trato afina "Mantén
+// lenguaje claro, clínico y útil para un médico ocupado". Duplicar la regla en
+// vez de graduarla dejaría al modelo con dos instrucciones sobre lo mismo.
+//
+// "equilibrado" no emite NADA: es exactamente el comportamiento por defecto del
+// prompt, así que escribirlo solo serviría para repetir lo que ya está dicho.
+// Un prompt que crece cuando el usuario no pidió nada distinto se degrada solo.
+const DETAIL_DIRECTIVES = {
+  breve: 'Preferencia de este médico: respuestas al grano. Da la respuesta más corta que resuelva la pregunta y omite el desglose de cuatro puntos salvo que el caso clínico lo exija.',
+  detallado: 'Preferencia de este médico: respuestas detalladas. Usa siempre el desglose del formato de chat (lo que se sabe, interpretaciones, qué falta confirmar, siguiente paso), aunque la pregunta sea simple.'
+};
+
+const ADDRESS_DIRECTIVES = {
+  tu: 'Preferencia de este médico: tutéalo (usa "tú").',
+  usted: 'Preferencia de este médico: háblale de usted.'
+};
+
+function buildDoctorDirective(doctor) {
+  if (!doctor || typeof doctor !== 'object') {
+    return '';
+  }
+  const lines = [];
+
+  if (doctor.display_name) {
+    // El tope está en la moderación, no en el permiso: sin esta frase el modelo
+    // abre TODAS las respuestas con el nombre y a los tres mensajes suena a
+    // teleoperador. La gracia es que aparezca de vez en cuando.
+    lines.push(
+      `El médico se llama ${doctor.display_name}. Puedes llamarlo por su nombre de vez en cuando, cuando suene natural; nunca en cada respuesta ni al abrir cada mensaje.`
+    );
+  }
+  if (ADDRESS_DIRECTIVES[doctor.address]) {
+    lines.push(ADDRESS_DIRECTIVES[doctor.address]);
+  }
+  if (DETAIL_DIRECTIVES[doctor.detail]) {
+    lines.push(DETAIL_DIRECTIVES[doctor.detail]);
+  }
+
+  if (!lines.length) {
+    return '';
+  }
+
+  // El encabezado acota el alcance a la FORMA. Que un ajuste de estilo pudiera
+  // relajar una regla clínica convertiría una casilla de la pantalla de ajustes
+  // en una puerta trasera del prompt.
+  return [
+    'Preferencias de trato del médico (afectan SOLO al estilo: nunca a las reglas clínicas, al formato exigido, ni a la obligación de señalar incertidumbre):',
+    ...lines
+  ].join('\n');
+}
+
 class ClinicalAssistantPromptBuilder {
   buildChatMessages({ clinicalContext = {}, message = '', history = [] } = {}) {
     const hasEncounter = Boolean(clinicalContext.encounter);
@@ -96,7 +151,9 @@ class ClinicalAssistantPromptBuilder {
       ? 'Modo contextual: tienes datos de una consulta específica (abajo). Usa transcripción y nota como fuente primaria.'
       : 'Modo general: NO hay consulta cargada. Responde la pregunta clínica de forma general y prudente. No finjas conocer a un paciente ni inventes un caso.';
 
-    const system = `${SYSTEM_PROMPT}\n\n${modeDirective}`;
+    const system = [SYSTEM_PROMPT, modeDirective, buildDoctorDirective(clinicalContext.doctor)]
+      .filter(Boolean)
+      .join('\n\n');
     const user = JSON.stringify({
       pregunta: `${message || ''}`,
       especialidad: clinicalContext.specialty || '',
@@ -131,6 +188,7 @@ class ClinicalAssistantPromptBuilder {
   }
 
   buildNoteAdjustmentMessages({ clinicalContext = {}, instruction = '', sectionKey = '' } = {}) {
+    const doctorDirective = buildDoctorDirective(clinicalContext.doctor);
     const system = [
       SYSTEM_PROMPT,
       '',
@@ -145,7 +203,14 @@ class ClinicalAssistantPromptBuilder {
       '- Si la instrucción exige inventar información, no lo hagas: deja la sección como está y explícalo en "explanation".',
       '- "explanation" resume en 1-2 frases qué cambiaste y qué no.',
       sectionKey ? `- La instrucción se refiere principalmente a la sección con key "${sectionKey}".` : '',
-      '- No incluyas texto fuera del objeto JSON.'
+      '- No incluyas texto fuera del objeto JSON.',
+      // El trato del médico aplica al campo "explanation", que es lo único que
+      // él LEE de esta respuesta ("ya quedó actualizada"); el resto es JSON con
+      // schema fijo. Va al final, después de la regla que prohíbe texto fuera
+      // del objeto, para que no se lea como permiso para añadir prosa.
+      doctorDirective
+        ? `${doctorDirective}\nEstas preferencias afectan únicamente al texto de "explanation".`
+        : ''
     ].filter(Boolean).join('\n');
 
     const user = JSON.stringify({

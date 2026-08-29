@@ -44,7 +44,7 @@ class ClinicalAssistantService {
   }
 
   // ---- Chat clínico contextual (modos A: general, B: con encounter) ----
-  async chat({ message, encounterId = '', specialty = '', screenContext = null, history = [] } = {}, { doctorId = null } = {}) {
+  async chat({ message, encounterId = '', specialty = '', screenContext = null, history = [], doctor = null } = {}, { doctorId = null } = {}) {
     const cleanMessage = typeof message === 'string' ? message.trim() : '';
     if (!cleanMessage) {
       throw clinicalError('ASSISTANT_INVALID', 'El mensaje para el asistente no puede estar vacío.');
@@ -59,7 +59,8 @@ class ClinicalAssistantService {
       encounter,
       specialtyInput: specialty,
       screenContext,
-      history
+      history,
+      doctor
     });
 
     try {
@@ -141,7 +142,7 @@ class ClinicalAssistantService {
   }
 
   // ---- Ajuste de nota clínica (modo C) — propone, nunca persiste ----
-  async adjustNote({ encounterId = '', instruction = '', sectionKey = '' } = {}, { doctorId = null } = {}) {
+  async adjustNote({ encounterId = '', instruction = '', sectionKey = '', doctor = null } = {}, { doctorId = null } = {}) {
     if (!this.noteValidationService) {
       throw new Error('adjustNote requires the noteValidationService dependency');
     }
@@ -160,7 +161,7 @@ class ClinicalAssistantService {
     }
     this.requireLlm();
 
-    const { clinicalContext } = contextBuilder.build({ encounter });
+    const { clinicalContext } = contextBuilder.build({ encounter, doctor });
     const cleanSectionKey = `${sectionKey || ''}`.trim();
 
     try {
