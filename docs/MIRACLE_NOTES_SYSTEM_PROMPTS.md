@@ -1,6 +1,6 @@
 # Miracle Notes — Inventario completo de system prompts
 
-Extracción literal de **todos** los prompts de sistema que hoy gobiernan a las IAs de Miracle,
+Extracción literal de los **29** prompts de sistema que hoy gobiernan a las IAs de Miracle,
 recogidos de los dos repositorios del producto, más un análisis de errores y recomendaciones.
 
 - Repos revisados: `Graph` (backend Node + bounded context Python + vision-live) y
@@ -44,6 +44,7 @@ recogidos de los dos repositorios del producto, más un análisis de errores y r
 | 26 | **Extractor de agenda** (visión) | `app/api/parse-schedule/route.ts` | Web | ES |
 | 27 | **Organizador de biblioteca de atajos** | `app/api/snippets/categorize/route.ts` | Web | ES |
 | 28 | **Extractor de estructura de plantilla** (visión) | `app/api/clinical/template-from-image/route.ts` | Web | ES |
+| 29 | **Enseñanza por video** (extrae conocimiento del HIS) | `src/infrastructure/teach/GeminiVideoClient.js` | Graph | ES |
 
 > **Los dos que te importan más.** «El asistente que organiza las notas» son en realidad **tres motores distintos**:
 > el **#1** (nota clínica desde transcripción, médicos), el **#25** (orquestador de voz en tiempo real, Python) y el
@@ -889,6 +890,60 @@ Reglas:
 
 ---
 
+## 29. Enseñanza por video — MEDICAL_TEACH_PROMPT
+
+`Graph/src/infrastructure/teach/GeminiVideoClient.js` → `MEDICAL_TEACH_PROMPT`.
+Se envía a Gemini como **parte de usuario** junto al `fileData` del vídeo, no como `system_instruction`.
+Endpoint: `POST /api/v1/teach/process-video` (app Windows, botón «Enseñar»).
+
+```text
+Eres Ü, un asistente que ayudará a operar el sistema informático de un hospital (HIS/EHR u otro
+software clínico). Un MÉDICO acaba de grabar su pantalla mientras USA ese sistema, narrando en voz
+alta lo que hace — te está ENSEÑANDO cómo se opera, para que después tú puedas ayudar a otros
+usuarios con las mismas tareas.
+
+Mira TODO el video (imagen + audio) y extrae CONOCIMIENTO SOBRE EL SISTEMA, organizado POR
+APLICACIÓN/MÓDULO. Buscamos hechos operativos reutilizables, NO datos de un caso concreto. Ejemplos
+del tipo de nota que sí sirve:
+- "Para admitir un paciente se usa el botón 'Nuevo ingreso' en la pantalla principal, no el menú
+  'Pacientes'."
+- "El campo 'Diagnóstico principal' solo acepta códigos CIE-10; hay un buscador si se escribe texto."
+- "Las órdenes de laboratorio se firman digitalmente desde la pestaña 'Pendientes', abajo a la
+  derecha."
+
+REGLA DE PRIVACIDAD, ABSOLUTA Y SIN EXCEPCIÓN:
+NUNCA registres en una nota ningún dato que identifique o describa a una persona concreta: nombres
+de pacientes, números de historia clínica o documento, fechas de nacimiento, diagnósticos
+específicos de un caso, resultados de laboratorio, medicaciones recetadas, o cualquier dato clínico
+ligado a un caso real que aparezca en pantalla durante la demostración. Si un ejemplo en el video
+usa datos de un paciente (real o de prueba), IGNORA esos datos por completo y quédate solo con EL
+PROCEDIMIENTO — cómo se navega, qué botón se pulsa, qué significa cada campo, en qué orden se hace
+algo. Ante cualquier duda de si un dato es identificable, OMÍTELO.
+
+REGLAS ESTRICTAS (calidad sobre cantidad):
+- Cada nota: UNA frase, auto-contenida, sobre CÓMO FUNCIONA o CÓMO SE USA el sistema.
+- Incluye SOLO lo que entiendas con certeza muy alta y tenga valor real para operar el sistema
+  después. Ante la duda, fuera. No inventes procedimientos que no viste.
+- "app": el nombre visible del sistema o módulo al que aplica la nota (p.ej. "HIS - Admisiones",
+  "Laboratorio"). Si la nota es general y no pertenece a un módulo concreto, usa "".
+- Si algo importante quedó ambiguo y conviene confirmarlo con el médico, agrégalo en "questions"
+  (pregunta corta y natural). Máximo 3. Si no hace falta preguntar nada, deja la lista vacía.
+- Si el video no contiene nada confiable que guardar (o todo lo mostrado es dato de paciente sin
+  procedimiento reutilizable), devuelve items y questions vacíos.
+
+Además, escribe un "summary": un resumen CORTO (1-3 frases), en primera persona y en tono
+profesional, de lo que ENTENDISTE sobre cómo se usa el sistema — para mostrárselo al médico. Si no
+aprendiste nada útil (o todo era dato clínico que debiste descartar), dilo con naturalidad.
+
+Responde SOLO JSON:
+{"summary": "...", "items": [{"app": "HIS - Admisiones", "note": "..."}], "questions": ["..."]}
+```
+
+> Las notas que produce se guardan en la memoria del usuario y se **reinyectan en cada turno de Ü**
+> (`memoryBlock`, prompt #21). Es la cadena vídeo → memoria → system prompt.
+
+---
+
 ## Anexo — no son prompts, pero condicionan la salida
 
 - **Contexto de STT (Soniox)**: `bounded/miracle-ai/.../soniox/context.py` — glosario médico base +
@@ -1404,3 +1459,115 @@ todas son calculables sin juicio clínico.
 | 12 | `PromptClauses.js` y unificación de motores (E-07, E-14, R-1, R-3) | 3–5 días | Alto a medio plazo |
 | 13 | `openaiBrain` → `instructions` (E-13) | 30 min | Medio |
 | 14 | Validación de salida en #28 y migración del portal a `LLMProvider` (E-17) | 1 día | Medio |
+
+---
+---
+
+# PARTE III — Dónde llega cada prompt y en qué estado está
+
+Cableado real (endpoint → superficie de la app) y veredicto por prompt.
+Versión navegable: <https://claude.ai/code/artifact/10ffe023-8503-41d8-a8c1-4d143869faa6>
+
+**Escala.** `Sólido` = referencia, no tocar · `Pulir` = correcto, detalles menores ·
+`Mejorable` = defecto real acotado · `Choque` = duplica o contradice a otro prompt, o promete algo que
+nadie verifica · `Riesgo alto` = tal como está puede producir daño real (un dato clínico erróneo escrito
+en el sistema del hospital, o una acción irreversible en el PC del médico). No es una escala de calidad de
+redacción: varios de los `Riesgo alto` están bien escritos.
+
+Recuento: **4** sólidos · **12** a pulir · **6** mejorables · **5** choques · **2** de riesgo alto.
+
+## A. Portal web del médico — 9 prompts
+
+Lo que el médico toca a diario. El portal Next.js llama a Graph, salvo #26/#27/#28 que hablan directo con Anthropic.
+
+| # | Prompt | Llega a | Estado |
+|---|---|---|---|
+| 01 | Clinical Note Generator | `POST /api/clinical/encounters/:id/generate-note` | **Mejorable** — la mejor idea del sistema, cuatro defectos concretos (E-01, E-02, E-03, E-19) |
+| 02 | Clinical Assistant | `POST /api/clinical/assistant/chat`, `/api/v1/assistant/chat`, assistant-lab | **Pulir** — muy completo; falta jerarquía de reglas y la cláusula dato-no-instrucción |
+| 04 | Ajuste de nota | `POST /api/clinical/assistant/note-adjustment` | **Mejorable** — antepone las ~700 palabras del prompt de chat a una tarea que sólo devuelve JSON |
+| 05 | Preferencias de trato | inyectado en #02 y #04 | **Sólido** — el mejor fragmento del repo y el modelo a seguir |
+| 07 | Biopsia con plantilla | `POST /api/v1/biopsy/extract` ← `/api/clinical/note-from-photo` | **Pulir** — buen saneo posterior; falta idioma y `temperature` |
+| 08 | Biopsia dinámica | `POST /api/v1/biopsy/extract` (`mode:"dynamic"`) | **Pulir** — buena idea; `template_name` sin estabilizar |
+| 26 | Agenda desde foto | `POST /api/parse-schedule` | **Pulir** — acotado y bien saneado; fuera de Provider Studio |
+| 27 | Biblioteca de atajos | `POST /api/snippets/categorize` | **Sólido** — calibrado exactamente para lo que hace |
+| 28 | Plantilla desde foto | `POST /api/clinical/template-from-image` | **Choque** — buena regla de privacidad que nadie verifica; PHI puede persistirse como plantilla |
+
+## B. App Miracle Notes (dictado en vivo) — 1 prompt
+
+Cliente de voz en `web/public/miracle/` → runtime Python vía Graph.
+
+| # | Prompt | Llega a | Estado |
+|---|---|---|---|
+| 25 | Orquestador de voz (product LLM) | `POST /api/voice/orchestrator/events`, `/api/medical/notes/organized` | **Choque con #01** — segundo organizador de notas, estructura fija de 8 secciones, ignora la plantilla |
+
+## C. Endpoints sin cliente en estos repos — 5 prompts
+
+Existen y cuestan mantenimiento, pero ninguna pantalla del portal ni del cliente de voz los llama.
+
+| # | Prompt | Llega a | Estado |
+|---|---|---|---|
+| 03 | Miracle Diagnostic Support | `POST /api/clinical/encounters/:id/diagnostic-suggestions` | **Choque** — el mejor de los dos motores, hoy huérfano |
+| 06 | Clinical Differential (EN) | `POST /api/clinical/diagnosis-suggestions` | **Choque** — duplica #03 en inglés con menos contexto; rescatar su verificación de evidencia |
+| 09 | Diseñador de asistentes | `POST /api/v1/organizer/profiles` (cliente Windows/Android) | **Choque** — concepto excelente, riesgo de inyección indirecta a rol de sistema permanente |
+| 10 | Lector de capturas de formato | interno de #09 | **Pulir** — buena regla de privacidad con ejemplo; falta la anti-instrucción |
+| 11 | Contrato de salida | anexado en `POST /api/v1/organizer/organize` | **Pulir** — fija forma y no-invención; falta fijar también el rol |
+
+## D. Plugin en el EMR del hospital — 9 prompts
+
+| # | Prompt | Llega a | Estado |
+|---|---|---|---|
+| 12 | Note Field Matcher | `POST /api/workflows/:id/note-field-matches`, `/api/v1/autofill/match` | **Pulir** — las mejores reglas de datos del repo; `.join(' ')` y umbral sin escala |
+| 13 | Valores dinámicos | ejecución de workflow con contexto | **Sólido** — formato-vs-contenido bien resuelto, fail-safe correcto |
+| 14 | Captura clínica en página | `POST /api/agent/chat` | **Riesgo alto** — «nunca una fecha en el pasado» en formularios clínicos (E-10) |
+| 15 | Runtime Execution Intelligence | `POST /api/workflows/:id/intelligence` | **Sólido** — jerarquía de autoridad explícita; el mejor de automatización |
+| 16 | Redactor de guías | `POST /api/workflow/stop` | **Pulir** |
+| 17 | Clasificador de valueMode | `POST /api/workflow/stop` | **Pulir** — buen fail-safe; debería usar `response_format` |
+| 18 | Resumidor de workflows | `POST /api/workflow/stop` | **Mejorable** — dice «technical log» pero su salida es el título visible del workflow |
+| 19 | Perfiles de superficie | `POST /api/surface-profile/ensure` | **Mejorable** — heurística de idioma frágil y dos defaults distintos (E-16) |
+| 20 | Addendum de superficie | fallback de #19, inyectado en #14 | **Pulir** — es el sitio natural para las reglas no clínicas que hoy contaminan #14 |
+
+## E. App de Windows — el asistente Ü — 3 prompts
+
+| # | Prompt | Llega a | Estado |
+|---|---|---|---|
+| 21 | Ü — cerebro consciente | `POST /api/v1/agent/turn` | **Riesgo alto** — controla el PC sin ninguna barrera de acciones irreversibles (E-11, E-12) |
+| 22 | Addendum de Ü para Gemini | `geminiBrain.js` | **Pulir** — destapa la asimetría de autoridad OpenAI vs Gemini (E-13) |
+| 29 | Enseñanza por video | `POST /api/v1/teach/process-video` | **Mejorable** — la mejor regla de privacidad del repo, pero va como parte de usuario y su salida entra a memoria sin verificar |
+
+## F. Herramientas internas — 2 prompts
+
+| # | Prompt | Llega a | Estado |
+|---|---|---|---|
+| 23 | Traductor a Cypher | `LLMProvider.translateToCypher()` | **Mejorable** — schema sin delimitadores, Cypher sin restricción de sólo lectura |
+| 24 | Analista de QA en vivo | `vision-live/server.js` | **Pulir** — muy buen prompt interno; acotar «sin pedir permiso» a observación |
+
+---
+
+## Los cuatro choques, y cómo se resuelven
+
+1. **#01 ↔ #25 — dos organizadores de nota.** O #25 produce el mismo contrato que #01 (secciones con las keys
+   de la plantilla activa), o queda limitado explícitamente al caso «dictado sin plantilla».
+2. **#03 ↔ #06 — dos motores de diferenciales.** #03 canónico; rescatar de #06 la verificación de evidencia y
+   dejarlo como adaptador de schema.
+3. **#14 — reglas de otro dominio.** Borrar las dos líneas de fechas; si hacen falta para superficies no
+   clínicas, van en #20.
+4. **#21/#29 — autoridad según proveedor.** Usar `instructions` de la Responses API en `openaiBrain` y
+   `system_instruction` para el prompt de vídeo.
+
+## Orden de trabajo
+
+Los cuatro primeros suman menos de una hora y quitan los dos rojos del tablero.
+
+1. Borrar las dos reglas de fechas de #14 — *5 min*
+2. Bloque de acciones irreversibles en #21 — *30 min*
+3. `.join(' ')` → `.join('\n')` en #06, #12, #14, #15, #16, #19 — *10 min*
+4. Fijar `temperature` por caso de uso — *1 h*
+5. Verificar `evidence` contra transcripción en #01 — *2 h*
+6. Resolver `summary` en modo literal + ejemplo negativo de «por → x» — *15 min*
+7. Sacar el prompt de chat de #04 — *1 h*
+8. Escala de `confidence` compartida (#01, #03, #06, #12, #13) — *1 h*
+9. Decirle a #18 que escribe un título — *10 min*
+10. Preámbulo fijo y validación del prompt generado en #09 — *3 h*
+11. Verificador de PHI en #28 y en la cadena vídeo → memoria de #29 — *1 día*
+12. `PROMPT_VERSION` en telemetría + set de evals congelado — *1–2 días*
+13. Cláusulas compartidas y un motor por capacidad — *3–5 días*
