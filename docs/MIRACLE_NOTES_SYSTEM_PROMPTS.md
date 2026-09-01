@@ -1594,8 +1594,9 @@ Texto listo para pegar. Tres movimientos, en este orden: **(1)** extraer las cl�
 | #18 | Las dos líneas actuales | No describen la tarea real (escribe un título visible, no un log) | reescritura |
 | #19 | La lista de tokens en inglés de `looksWrongLanguage` | Heurística que descarta perfiles buenos por falsos positivos | código |
 
-En una consulta con plantilla de patología y un ajuste de nota, esto son **unas 1.300 palabras menos
-de prompt** sin perder una sola regla.
+Sumado: **~690 palabras menos en una sola pasada** de nota literal + ajuste (90 del bloque literal de
+#01, 597 del prompt de chat que #04 arrastra), y **~170 menos por cada turno de chat** con el
+asistente. Sin perder una sola regla.
 
 ---
 
