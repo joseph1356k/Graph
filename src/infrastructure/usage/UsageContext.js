@@ -34,7 +34,11 @@ const EMPTY_CONTEXT = Object.freeze({
   feature: FEATURES.UNKNOWN,
   sessionId: '',
   workflowId: '',
-  requestId: ''
+  requestId: '',
+  // Datos MECÁNICOS de la llamada que el servicio quiere ver en el ledger
+  // (promptVersion, noteMode…). UsageEvent los filtra por allowlist: nunca
+  // contenido clínico.
+  metadata: Object.freeze({})
 });
 
 function currentContext() {
@@ -57,12 +61,16 @@ function runWithContext(context, fn) {
  */
 function withFeature(feature, fn, overrides = {}) {
   const base = currentContext();
+  const metadata = overrides.metadata && typeof overrides.metadata === 'object'
+    ? Object.freeze({ ...(base.metadata || {}), ...overrides.metadata })
+    : base.metadata;
   const derived = {
     ...base,
     feature: normalizeFeature(feature),
     ...(overrides.app ? { app: normalizeApp(overrides.app) } : {}),
     ...(overrides.workflowId ? { workflowId: `${overrides.workflowId}` } : {}),
-    ...(overrides.sessionId ? { sessionId: `${overrides.sessionId}` } : {})
+    ...(overrides.sessionId ? { sessionId: `${overrides.sessionId}` } : {}),
+    metadata
   };
   return storage.run(Object.freeze(derived), fn);
 }

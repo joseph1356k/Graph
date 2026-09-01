@@ -65,7 +65,16 @@ const METADATA_ALLOWLIST = Object.freeze(new Set([
   // modo, y mezclarlas sin marca haría creer que todo el ledger tiene la misma
   // solidez. `usageSource` distingue 'server_measured' de 'client_reported'.
   'usageSource',
-  'liveSessionTurns'
+  'liveSessionTurns',
+  // PROCEDENCIA DEL PROMPT. Sin esto el ledger dice qué modelo y qué módulo,
+  // pero nunca qué revisión del prompt produjo ese coste o esa calidad.
+  // `promptVersion` es un identificador (builder@n+clauses@fecha), nunca texto.
+  'promptVersion',
+  'noteMode',
+  'instructionKind',
+  // Cuántos fragmentos de evidencia descartó el validador por no estar en la
+  // transcripción. Es la señal de que un prompt de nota está alucinando citas.
+  'evidenceDropped'
 ]));
 
 const MAX_METADATA_STRING = 120;

@@ -49,7 +49,9 @@ class AiUsageRecorder {
         feature: input.feature ?? context.feature,
         sessionId: input.sessionId ?? context.sessionId,
         workflowId: input.workflowId ?? context.workflowId,
-        requestId: input.requestId ?? context.requestId
+        requestId: input.requestId ?? context.requestId,
+        // Lo del contexto primero; lo que trae la llamada concreta gana.
+        metadata: { ...(context.metadata || {}), ...(input.metadata || {}) }
       }, { environment: this.environment });
 
       promise = this.store.append(event)

@@ -5,8 +5,9 @@ const { API_FAMILIES } = require('../domain/usage/vocabulary');
 
 // Grabador de consumo compartido por todas las instancias. Se inyecta una vez
 // desde el arranque (`LLMProvider.setUsageRecorder`) en vez de pasarlo por
-// constructor: este archivo se instancia en seis sitios distintos y con el
-// setter no hay ninguno que pueda quedarse sin instrumentar por olvido.
+// constructor: este archivo se instancia en varios sitios (GRAPH, asistente,
+// biopsia) y con el setter no hay ninguno que pueda quedarse sin instrumentar
+// por olvido.
 let usageRecorder = null;
 
 class LLMProvider {
@@ -52,6 +53,11 @@ class LLMProvider {
     this.configSource = 'none';
 
     const prefix = this.envPrefix;
+    // Sin timeout, un proveedor colgado se queda hasta que Vercel mata la
+    // función y responde HTML. 60 s cubre una nota larga con margen.
+    this.timeoutMs = Number(process.env[`${prefix}_LLM_TIMEOUT_MS`]) || 60000;
+    // Escape para modelos que rechazan `temperature` (familias de razonamiento).
+    this.sendTemperature = `${process.env[`${prefix}_LLM_DISABLE_TEMPERATURE`] || ''}`.trim() !== '1';
     const explicitProvider = (process.env[`${prefix}_LLM_PROVIDER`] || '').trim().toLowerCase();
     const explicitApiKey = (process.env[`${prefix}_LLM_API_KEY`] || '').trim();
     const explicitBaseUrl = (process.env[`${prefix}_LLM_BASE_URL`] || '').trim().replace(/\/+$/, '');
@@ -183,17 +189,23 @@ class LLMProvider {
       // solo lo afina cuando el llamador sabe más que el contexto.
       ...(usageOptions.feature ? { feature: usageOptions.feature } : {}),
       metadata: {
+        // Lo que el contexto de la petición quiera adjuntar (promptVersion,
+        // noteMode…) viaja aquí; UsageEvent filtra por allowlist.
+        ...(currentContext().metadata || {}),
         messageCount: Array.isArray(payload?.messages) ? payload.messages.length : 0,
         ...(payload?.response_format?.type
           ? { responseFormat: `${payload.response_format.type}` }
-          : {})
+          : {}),
+        ...(Number.isFinite(payload?.temperature) ? { temperature: payload.temperature } : {}),
+        ...(Number.isFinite(payload?.max_tokens) ? { maxTokens: payload.max_tokens } : {})
       }
     };
 
     const run = async () => {
       try {
         const response = await axios.post(`${this.baseUrl}/chat/completions`, payload, {
-          headers: this.getHeaders()
+          headers: this.getHeaders(),
+          timeout: this.timeoutMs
         });
         return response.data;
       } catch (error) {
@@ -221,24 +233,30 @@ class LLMProvider {
     );
   }
 
-  async translateToCypher(prompt, schema) {
-    const content = await this.chat([
-      { role: 'system', content: `Translate natural language to Neo4j Cypher. Schema: ${schema}. Return ONLY the Cypher query.` },
-      { role: 'user', content: prompt }
-    ]);
-
-    return content.replace(/```cypher|```/gi, '').trim();
-  }
-
   async chat(messages, options = {}) {
     const result = await this.chatWithUsage(messages, options);
     return result.content;
   }
 
+  // Parámetros de generación opcionales. Sólo se envían cuando el llamador los
+  // fija: un prompt que exige copiar palabra por palabra pide temperature 0; un
+  // chat, 0.4. Antes todo corría a la temperatura por defecto del proveedor.
+  generationParams(options = {}) {
+    const params = {};
+    if (this.sendTemperature && Number.isFinite(options.temperature)) {
+      params.temperature = options.temperature;
+    }
+    if (Number.isFinite(options.maxTokens) && options.maxTokens > 0) {
+      params.max_tokens = Math.floor(options.maxTokens);
+    }
+    return params;
+  }
+
   async chatWithUsage(messages, options = {}) {
     const data = await this.postChatCompletions({
       model: options.model || this.model,
-      messages
+      messages,
+      ...this.generationParams(options)
     }, options.usage);
 
     return {
@@ -258,7 +276,8 @@ class LLMProvider {
     const data = await this.postChatCompletions({
       model: options.model || this.model,
       messages,
-      response_format: responseFormat
+      response_format: responseFormat,
+      ...this.generationParams(options)
     }, options.usage);
 
     return {
@@ -269,14 +288,19 @@ class LLMProvider {
     };
   }
 
+  // Recupera el JSON de la respuesta del modelo. Los fences se quitan sólo al
+  // principio y al final: la versión anterior hacía un replace GLOBAL de ```,
+  // que corrompía cualquier valor de texto que contuviera uno. Acepta objetos y
+  // arrays, y tolera prosa alrededor.
   parseJsonObject(content) {
     if (typeof content !== 'string') {
       throw new Error('LLM content must be a string');
     }
 
     const cleaned = content
-      .replace(/```json/gi, '')
-      .replace(/```/g, '')
+      .trim()
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```$/, '')
       .trim();
 
     if (!cleaned) {
@@ -287,11 +311,14 @@ class LLMProvider {
       return JSON.parse(cleaned);
     } catch (error) {
       const firstBrace = cleaned.indexOf('{');
-      const lastBrace = cleaned.lastIndexOf('}');
-      if (firstBrace >= 0 && lastBrace > firstBrace) {
-        return JSON.parse(cleaned.slice(firstBrace, lastBrace + 1));
+      const firstBracket = cleaned.indexOf('[');
+      const startsWithArray = firstBracket >= 0 && (firstBrace < 0 || firstBracket < firstBrace);
+      const open = startsWithArray ? firstBracket : firstBrace;
+      const close = startsWithArray ? cleaned.lastIndexOf(']') : cleaned.lastIndexOf('}');
+      if (open >= 0 && close > open) {
+        return JSON.parse(cleaned.slice(open, close + 1));
       }
-      throw new Error(`Could not parse LLM JSON response: ${cleaned}`);
+      throw new Error(`Could not parse LLM JSON response: ${cleaned.slice(0, 200)}`);
     }
   }
 }

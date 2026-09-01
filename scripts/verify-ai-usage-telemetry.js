@@ -939,6 +939,56 @@ function fakeStore() {
     })();
   }
 
+  // ------------------------------------------------------------------------
+  // Procedencia del prompt: qué revisión produjo el evento. Viaja por el
+  // contexto (withFeature → metadata) y pasa por la allowlist como todo lo
+  // demás: una clave desconocida se descarta sin hacer ruido.
+  // ------------------------------------------------------------------------
+  {
+    section('Procedencia del prompt en metadata');
+    const events = [];
+    const recorder = new AiUsageRecorder({
+      enabled: true,
+      store: { append: async (event) => { events.push(event); return { ok: true }; } }
+    });
+
+    await runWithContext(
+      { actorType: ACTOR_TYPES.SYSTEM, attributionSource: ATTRIBUTION_SOURCES.INTERNAL, app: APPS.SYSTEM },
+      () => withFeature(
+        FEATURES.NOTE_GENERATION,
+        () => recorder.record({
+          provider: 'openai',
+          apiFamily: 'chat_completions',
+          requestedModel: 'gpt-4.1-mini',
+          inputTokens: 10,
+          outputTokens: 5,
+          metadata: { temperature: 0, secretoClinico: 'no debe entrar' }
+        }),
+        { metadata: { promptVersion: 'clinical-note@3+clauses@x', noteMode: 'verbatim', temperature: 0.7 } }
+      )
+    );
+    await recorder.flush?.();
+
+    check('promptVersion y noteMode del contexto llegan al evento', () => {
+      assert.strictEqual(events.length, 1);
+      assert.strictEqual(events[0].metadata.promptVersion, 'clinical-note@3+clauses@x');
+      assert.strictEqual(events[0].metadata.noteMode, 'verbatim');
+    });
+    check('la metadata de la llamada concreta gana sobre la del contexto', () => {
+      assert.strictEqual(events[0].metadata.temperature, 0);
+    });
+    check('una clave fuera de la allowlist se descarta', () => {
+      assert.ok(!('secretoClinico' in events[0].metadata));
+    });
+    check('withFeature sin metadata conserva la del contexto padre', () => {
+      let inner = null;
+      withFeature(FEATURES.ASISTENTE, () => {
+        withFeature(FEATURES.NOTE_GENERATION, () => { inner = currentContext().metadata; });
+      }, { metadata: { promptVersion: 'padre@1' } });
+      assert.strictEqual(inner.promptVersion, 'padre@1');
+    });
+  }
+
   console.log(`\n✅ Telemetría de consumo de IA: ${checks} comprobaciones OK.`);
 })().catch((error) => {
   console.error(`\n❌ ${error.message}`);

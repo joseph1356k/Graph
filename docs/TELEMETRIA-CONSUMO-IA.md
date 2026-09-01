@@ -320,6 +320,15 @@ El ledger guarda cifras y etiquetas técnicas. `metadata` pasa por una
 una denylist falla abierta, y basta una clave nueva para filtrar contenido
 clínico. Objetos y arrays anidados se descartan aunque la clave esté permitida.
 
+**Procedencia del prompt.** Desde 2026-09 la allowlist admite `promptVersion`
+(identificador `builder@n+clauses@fecha`, nunca texto), `noteMode`
+(`interpretive|verbatim|mixed`), `instructionKind` (`rewrite|dictation`) y
+`evidenceDropped` (cuántas citas descartó el validador por no estar en la
+transcripción). Los servicios los adjuntan con `withFeature(feature, fn,
+{ metadata })`; `LLMProvider` añade además `temperature` y `maxTokens` cuando
+la llamada los fija. Con esto una regresión de calidad se puede atribuir a una
+revisión de prompt y no sólo a un cambio de modelo.
+
 No se almacena: prompts, respuestas, transcripciones, notas, audio, nombres de
 paciente, documentos, credenciales ni llaves. Verificado en el test
 «el evento persistido no lleva ningún campo de contenido».
