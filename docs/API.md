@@ -29,6 +29,13 @@ Ejecuta las etapas activadas por `stages`.
   "transcript": "texto final de Deepgram",
   "language": "es",
   "sequence": 1,
+  "template": {
+    "name": "Consulta general",
+    "specialty": "medicina_general",
+    "note_mode": "auto",
+    "sections": ["Motivo de consulta", "Enfermedad actual", "Plan"]
+  },
+  "note_detail": "equilibrado",
   "note": { "content": "", "title": "Nota" },
   "fields": [],
   "stages": { "transcription": true, "note": true, "autofill": false }
@@ -40,8 +47,24 @@ Etapas:
 | Stage | Default | Funcion |
 | --- | --- | --- |
 | `transcription` | `true` | Devuelve el texto recibido. |
-| `note` | `true` | Organiza el transcript en una nota clinica estructurada. |
+| `note` | `true` | Con `template.sections`: nota clinica canonica. Sin plantilla: bloque de sesion de voz. |
 | `autofill` | `false` | Mapea la nota contra los campos detectados por el cliente. |
+
+### Dos motores en la etapa `note`
+
+`result.note.engine` dice cual respondio:
+
+- `canonical-note` — cuando envias `template` (2 a 30 secciones; cada una un
+  string o `{label, required?, instruction?, mode?}`; `note_mode` en
+  `auto|interpretive|verbatim`). Es el mismo motor que usa el portal:
+  devuelve `note_json` (secciones con `grounding`, `confidence`, `evidence`,
+  `evidence_spans`, `warnings`), `content` en Markdown derivado de esa nota,
+  `note_mode` y `prompt_version`. `note_detail` (`conciso|equilibrado|detallado`)
+  ajusta la extension de las secciones interpretativas. Una plantilla invalida
+  responde 400.
+- `voice-scratchpad` — sin plantilla. Es el bloque provisional del orquestador
+  de voz (Markdown que sigue al medico mientras habla), no la nota clinica
+  final. `backend_status` conserva su semantica anterior.
 
 ## Autofill directo
 

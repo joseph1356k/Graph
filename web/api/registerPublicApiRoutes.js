@@ -3,6 +3,10 @@ const { statusForError, publicErrorMessage } = require('./httpErrors');
 const createUpstreamUsageRecorder = require('./recordUsageBestEffort');
 const { withFeature } = require('../../src/infrastructure/usage/UsageContext');
 const { FEATURES } = require('../../src/domain/usage/vocabulary');
+const { isClinicalError } = require('../../src/application/use-cases/ClinicalErrors');
+const ClinicalTemplateService = require('../../src/application/use-cases/ClinicalTemplateService');
+const ClinicalEncounterService = require('../../src/application/use-cases/ClinicalEncounterService');
+const { renderNoteMarkdown } = require('../../src/domain/clinical/noteText');
 
 // Public, versioned API surface for client apps (Chrome extension, Windows app,
 // web app). This layer keeps external contracts stable while delegating to the
@@ -34,6 +38,23 @@ function pickArray(primary, fallback = []) {
   return Array.isArray(primary) ? primary : fallback;
 }
 
+// Una plantilla enviada inline por un cliente de API se normaliza con las mismas
+// reglas que las plantillas guardadas (2–30 secciones, keys estables, modo) y se
+// congela como snapshot, igual que en una consulta del portal.
+function buildInlineSnapshot(template = {}) {
+  const sections = ClinicalTemplateService.normalizeSections(template.sections);
+  return ClinicalEncounterService.buildTemplateSnapshot({
+    id: `${template.id || 'inline'}`,
+    name: `${template.name || 'Plantilla'}`.trim() || 'Plantilla',
+    specialty: ClinicalTemplateService.normalizeSpecialty(template.specialty || ''),
+    description: '',
+    scope: 'inline',
+    is_default: false,
+    note_mode: template.note_mode,
+    sections
+  });
+}
+
 function registerPublicApiRoutes(app, deps = {}) {
   const callMiracleRuntime = deps.callMiracleRuntime;
   const noteFieldMatcher = deps.noteFieldMatcher || null;
@@ -43,6 +64,10 @@ function registerPublicApiRoutes(app, deps = {}) {
   const usageDashboardService = deps.usageDashboardService || null;
   const assistantService = deps.assistantService || null;
   const biopsyService = deps.biopsyService || null;
+  // Motor canónico de nota (el mismo que usa el portal). Con él, el pipeline
+  // produce note_json cuando el cliente manda plantilla, en vez del Markdown de
+  // estructura propia del orquestador de voz.
+  const noteGeneratorService = deps.noteGeneratorService || null;
   // Solo para el manifiesto: las rutas del organizador las registra
   // registerOrganizerRoutes. Aquí se declara para que un cliente que descubra
   // el API por GET /api/v1 sepa que existe.
@@ -80,7 +105,7 @@ function registerPublicApiRoutes(app, deps = {}) {
         description: 'Un solo llamado. Activa/desactiva etapas con stages; el backend procesa solo lo pedido.',
         stages: {
           transcription: { default: true, description: 'Devuelve la transcripcion cruda recibida.' },
-          note: { default: true, description: 'Organiza la transcripcion en una nota estructurada (Product-LLM).' },
+          note: { default: true, description: 'Con `template.sections`: nota clinica canonica (note_json con grounding y evidencia verificada, engine=canonical-note). Sin plantilla: bloque de sesion de voz del orquestador (Markdown provisional, engine=voice-scratchpad).' },
           autofill: {
             default: false,
             available: Boolean(noteFieldMatcher),
@@ -169,10 +194,49 @@ function registerPublicApiRoutes(app, deps = {}) {
       result.transcription = { text: transcript };
     }
 
+    const inlineTemplate = body.template && typeof body.template === 'object' && Array.isArray(body.template.sections)
+      ? body.template
+      : null;
+
     if (stages.note) {
       if (!transcript) {
         result.note = { status: 'skipped', reason: 'no_transcript' };
+      } else if (inlineTemplate) {
+        // Con plantilla: nota clínica canónica (note_json validado, con
+        // grounding y evidencia verificada). Es la misma representación que
+        // persiste el portal; aquí sólo no se guarda.
+        if (!noteGeneratorService || typeof noteGeneratorService.generateFromTranscript !== 'function') {
+          result.note = { status: 'unavailable', reason: 'note_engine_not_configured' };
+        } else {
+          try {
+            const snapshot = buildInlineSnapshot(inlineTemplate);
+            const generated = await noteGeneratorService.generateFromTranscript({
+              transcript,
+              templateSnapshot: snapshot,
+              noteDetail: body.note_detail,
+              sessionId
+            });
+            result.note = {
+              engine: 'canonical-note',
+              note_json: generated.noteJson,
+              content: renderNoteMarkdown(generated.noteJson),
+              note_mode: generated.noteMode,
+              prompt_version: generated.promptVersion,
+              backend_status: 'canonical-note',
+              usage: null
+            };
+          } catch (error) {
+            // Una plantilla mal formada es error del cliente, no de una etapa.
+            if (isClinicalError(error) && error.code === 'TEMPLATE_INVALID') {
+              return res.status(400).json({ error: error.message, code: error.code });
+            }
+            result.note = { status: 'error', error: error.message || 'note_failed' };
+          }
+        }
       } else {
+        // Sin plantilla: bloque de sesión de voz del orquestador (Markdown
+        // provisional que sigue al médico mientras habla). No es la nota
+        // clínica final; se etiqueta para que el cliente lo sepa.
         try {
           const sequence = Number(body.sequence) || 1;
           const orchestrated = await callMiracleRuntime(req, '/api/voice/orchestrator/events', {
@@ -195,7 +259,10 @@ function registerPublicApiRoutes(app, deps = {}) {
           });
           const payload = orchestrated.body || {};
           result.note = {
+            engine: 'voice-scratchpad',
             content: payload.resolved_note_content || '',
+            // Intacto a propósito: el plugin detecta el modo degradado con
+            // startsWith('heuristic-fallback').
             backend_status: payload.backend_status || '',
             usage: payload.usage || null,
           };

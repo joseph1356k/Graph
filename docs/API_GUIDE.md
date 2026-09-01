@@ -42,8 +42,25 @@ Con `stages` decides que se procesa:
 | Stage | Uso |
 | --- | --- |
 | `transcription` | Devuelve el texto recibido. |
-| `note` | Organiza el transcript en nota clinica. |
+| `note` | Con `template.sections`, nota clinica canonica (`note_json`); sin plantilla, bloque de sesion de voz. |
 | `autofill` | Mapea la nota contra `fields`. |
+
+Para obtener la nota clinica de verdad (la misma que produce el portal), envia
+la plantilla:
+
+```json
+"template": {
+  "name": "Consulta general",
+  "specialty": "medicina_general",
+  "sections": ["Motivo de consulta", "Enfermedad actual", "Plan"]
+}
+```
+
+La respuesta trae `note.engine: "canonical-note"`, `note.note_json` (con
+`grounding` y evidencia verificada contra el transcript) y `note.content` en
+Markdown. Sin `template`, `note.engine` es `voice-scratchpad`: un bloque
+provisional, no la nota final. `POST /api/medical/notes/organized` queda
+deprecada a favor de esta ruta.
 
 Para usar autofill dentro del pipeline, envia `fields` y activa
 `"autofill": true`.

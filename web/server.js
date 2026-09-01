@@ -1135,6 +1135,7 @@ registerPublicApiRoutes(app, {
   catalogService,
   workflowExecutor,
   usageRecorder,
+  noteGeneratorService: clinicalNoteGeneratorService,
   assistantService: clinicalAssistantService,
   biopsyService: biopsyExtractionService,
   organizerService: organizerProfileService

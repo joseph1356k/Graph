@@ -38,7 +38,13 @@ function registerMedicalRoutes(app, deps = {}) {
     }
   });
 
+  // DEPRECADA. Devuelve el bloque de sesión de voz del orquestador (Markdown
+  // provisional), no la nota clínica canónica. El sucesor es POST /api/v1/pipeline
+  // con `template.sections`, que produce note_json validado. Se mantiene por los
+  // clientes existentes; los headers avisan.
   app.post('/api/medical/notes/organized', async (req, res) => {
+    res.set('Deprecation', 'true');
+    res.set('Link', '</api/v1/pipeline>; rel="successor-version"');
     const transcript = `${req.body?.transcript || ''}`.trim();
     if (!transcript) {
       return res.status(400).json({ error: 'transcript es obligatorio.' });

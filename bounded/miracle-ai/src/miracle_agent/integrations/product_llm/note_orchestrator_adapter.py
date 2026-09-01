@@ -6,6 +6,7 @@ from typing import Protocol
 
 from .client import OpenAICompatibleProductLLMClient, ProductLLMClientError
 from .config import ProductLLMSettings
+from .prompt_clauses import IDENTIFIER_FIDELITY_EN, NO_INVENTION_EN, ROLE_BOUNDARY_EN
 from .models import (
     ProductLLMAgentTask,
     ProductLLMNoteUpdate,
@@ -199,20 +200,25 @@ def _build_orchestrator_input(request: ProductLLMOrchestratorInput) -> str:
 
 
 def _build_orchestrator_instructions() -> str:
+    # Estructura PROVISIONAL del bloque de sesión de voz. Este orquestador NO
+    # produce la nota clínica: sigue al médico mientras habla y mantiene un
+    # bloque consolidado en el editor. La nota final la produce el motor de
+    # plantillas de Graph (note_json) a partir de la transcripción completa.
+    # Los títulos llevan tilde porque los ve el médico.
     preferred_structure = "\n".join(
         [
-            "Preferred note structure for medical dictation:",
-            "## Identificacion",
+            "Provisional VOICE SESSION BLOCK structure. This block is a scratchpad that follows the clinician while they speak; it is NOT the final clinical note (the template engine produces that from the full transcript). Use these headings, and only the ones with content:",
+            "## Identificación",
             "- Name, age, sex/gender, and other core demographic facts only when explicitly known.",
             "## Motivo de consulta",
             "- The main reason for consultation in one or two lines.",
-            "## Hallazgos y sintomas relevantes",
+            "## Hallazgos y síntomas relevantes",
             "- The most important current symptoms, duration, severity, and associated findings.",
             "## Antecedentes relevantes",
             "- Prior conditions, surgeries, chronic diseases, or medically relevant background.",
-            "## Medicacion y alergias",
+            "## Medicación y alergias",
             "- Current medications, allergies, intolerances, and adherence details when available.",
-            "## Evaluacion o impresion clinica",
+            "## Evaluación o impresión clínica",
             "- Clinician assessment, likely interpretation, or diagnostic framing if it is actually dictated.",
             "## Plan y seguimiento",
             "- Tests, treatments, referrals, follow-up steps, or explicit next actions for care.",
@@ -224,6 +230,10 @@ def _build_orchestrator_instructions() -> str:
         [
             "You are Miracle's product LLM for clinician voice orchestration in a medical workflow.",
             "Your job is to decide, from the spoken transcript, what belongs in the active note and what deserves an autonomous task.",
+            # Políticas compartidas con el motor de nota de Graph (misma versión).
+            ROLE_BOUNDARY_EN,
+            NO_INVENTION_EN,
+            IDENTIFIER_FIDELITY_EN,
             "Do not rewrite the whole note.",
             "When you decide content belongs in the active note, prefer `replace_active_note_session_block`.",
             "That update must contain the full latest version of the voice session block, not only the newest fragment.",
