@@ -1,4 +1,5 @@
 const { clinicalError } = require('./ClinicalErrors');
+const NoteModeResolver = require('./NoteModeResolver');
 
 // Business rules for clinical templates: payload validation, section
 // normalization (strings or objects in, canonical objects out), stable key
@@ -64,17 +65,27 @@ class ClinicalTemplateService {
       }
       const key = toSnakeKey(`${draft.key || ''}`.trim() || label) || `seccion_${draft.index + 1}`;
       const orderValue = Number(draft.order);
-      // verbatim: la casilla se reporta tal cual la dictó el médico (patología y
-      // demás reportes literales). El prompt builder también lo activa por
-      // especialidad; esto permite marcarlo casilla por casilla.
-      const verbatim = draft.verbatim === true;
-      const instruction = `${draft.instruction || ''}`.trim().slice(0, MAX_INSTRUCTION_LENGTH)
+      // mode: cómo se genera esta casilla. 'inherit' sigue a la plantilla (y ésta
+      // a la especialidad); 'verbatim' se copia tal cual se dictó; 'interpretive'
+      // se redacta a partir de la conversación. `verbatim: true` legado se lee
+      // como 'verbatim' y se sigue emitiendo como booleano derivado una release.
+      const mode = NoteModeResolver.normalizeSectionMode(draft);
+      const verbatim = mode === 'verbatim';
+      // La instrucción entra al prompt: una línea, sin saltos, con tope. Se
+      // colapsa el whitespace porque un salto de línea dentro de una instrucción
+      // es la forma más fácil de que parezca una regla nueva del sistema.
+      const rawInstruction = `${draft.instruction || ''}`.replace(/\s+/g, ' ').trim();
+      if (rawInstruction.length > MAX_INSTRUCTION_LENGTH) {
+        console.warn(`[Clinical Templates] instrucción de "${label}" truncada a ${MAX_INSTRUCTION_LENGTH} caracteres.`);
+      }
+      const instruction = rawInstruction.slice(0, MAX_INSTRUCTION_LENGTH)
         || defaultInstruction(label, { verbatim });
       return {
         key,
         label,
         order: Number.isFinite(orderValue) && orderValue > 0 ? orderValue : draft.index + 1,
         required: draft.required === true,
+        mode,
         verbatim,
         instruction,
         index: draft.index
@@ -103,6 +114,7 @@ class ClinicalTemplateService {
         label: section.label,
         order: position + 1,
         required: section.required,
+        mode: section.mode,
         verbatim: section.verbatim,
         instruction: section.instruction
       }));
@@ -128,8 +140,9 @@ class ClinicalTemplateService {
     }
 
     const sections = ClinicalTemplateService.normalizeSections(payload.sections);
+    const noteMode = NoteModeResolver.normalizeTemplateNoteMode(payload.note_mode);
 
-    return { name, specialty, description, sections };
+    return { name, specialty, description, sections, note_mode: noteMode };
   }
 
   canEdit(template, { ownerUserId = null, canManageInstitutional = false } = {}) {
@@ -187,7 +200,8 @@ class ClinicalTemplateService {
       name: typeof payload.name !== 'undefined' ? payload.name : template.name,
       specialty: typeof payload.specialty !== 'undefined' ? payload.specialty : template.specialty,
       description: typeof payload.description !== 'undefined' ? payload.description : template.description,
-      sections: typeof payload.sections !== 'undefined' ? payload.sections : template.sections
+      sections: typeof payload.sections !== 'undefined' ? payload.sections : template.sections,
+      note_mode: typeof payload.note_mode !== 'undefined' ? payload.note_mode : template.note_mode
     });
     return this.templateRepository.update(templateId, normalized);
   }
@@ -201,6 +215,7 @@ class ClinicalTemplateService {
   }
 }
 
+ClinicalTemplateService.MAX_INSTRUCTION_LENGTH = MAX_INSTRUCTION_LENGTH;
 ClinicalTemplateService.MIN_SECTIONS = MIN_SECTIONS;
 ClinicalTemplateService.MAX_SECTIONS = MAX_SECTIONS;
 ClinicalTemplateService.defaultInstruction = defaultInstruction;

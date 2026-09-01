@@ -12,6 +12,7 @@ const SELECT_COLUMNS = [
   'specialty_code',
   'specialty_name',
   'sections',
+  'note_mode',
   'scope',
   'is_default',
   'status',
@@ -41,6 +42,7 @@ function toDomain(row) {
     is_default: Boolean(row.is_default),
     status: `${row.status || 'active'}`,
     sections: Array.isArray(row.sections) ? row.sections : [],
+    note_mode: `${row.note_mode || 'auto'}`,
     created_at: row.created_at || null,
     updated_at: row.updated_at || null
   };
@@ -88,6 +90,7 @@ class SupabaseClinicalTemplateRepository {
       specialty_code: template.specialty,
       specialty_name: humanizeSpecialty(template.specialty),
       sections: template.sections,
+      note_mode: template.note_mode || 'auto',
       owner_id: template.owner_user_id || null,
       scope: template.scope || 'personal',
       is_default: Boolean(template.is_default),
@@ -105,6 +108,7 @@ class SupabaseClinicalTemplateRepository {
       fields.specialty_name = humanizeSpecialty(patch.specialty);
     }
     if (typeof patch.sections !== 'undefined') fields.sections = patch.sections;
+    if (typeof patch.note_mode !== 'undefined') fields.note_mode = patch.note_mode;
     if (typeof patch.status !== 'undefined') fields.status = patch.status;
 
     const row = await this.restClient.update(

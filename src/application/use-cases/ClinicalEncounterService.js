@@ -1,4 +1,5 @@
 const { clinicalError } = require('./ClinicalErrors');
+const NoteModeResolver = require('./NoteModeResolver');
 
 // Business rules for clinical encounters: template snapshots,
 // transcript intake and status transitions. Note generation lives in
@@ -33,12 +34,16 @@ class ClinicalEncounterService {
       description: template.description || '',
       scope: template.scope,
       is_default: Boolean(template.is_default),
+      // El modo se congela en el snapshot: la nota de esta consulta se genera
+      // con la decisión que la plantilla tenía al crearla, aunque cambie después.
+      note_mode: NoteModeResolver.normalizeTemplateNoteMode(template.note_mode),
       sections: (template.sections || []).map((section) => ({
         key: section.key,
         label: section.label,
         order: section.order,
         required: Boolean(section.required),
-        verbatim: Boolean(section.verbatim),
+        mode: NoteModeResolver.normalizeSectionMode(section),
+        verbatim: NoteModeResolver.normalizeSectionMode(section) === 'verbatim',
         instruction: section.instruction
       })),
       snapshot_at: now.toISOString()
@@ -126,7 +131,11 @@ class ClinicalEncounterService {
       throw new Error('saveEditedNote requires the note validation service');
     }
     const encounter = await this.getOwnedEncounter(encounterId, { doctorId });
-    const validated = noteValidationService.validateEditedNote(noteJson, encounter.template_snapshot);
+    // La nota previa permite distinguir qué secciones tocó el médico: las
+    // intactas conservan el grounding de la IA; las editadas pasan a 'edited'.
+    const validated = noteValidationService.validateEditedNote(noteJson, encounter.template_snapshot, {
+      previous: encounter.note_json || null
+    });
     return this.encounterRepository.update(encounter.id, {
       note_json: validated,
       status: 'completed'

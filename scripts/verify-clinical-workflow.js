@@ -149,13 +149,16 @@ function createFakeLlm() {
     hasApiKey: () => true,
     async chatExpectingJson(messages) {
       state.calls += 1;
-      const request = JSON.parse(messages[1].content);
+      // El user message ya no es JSON plano: la plantilla viaja etiquetada.
+      const template = JSON.parse(ClinicalNotePromptBuilder.extractTagged(messages[1].content, 'plantilla'));
+      const transcript = ClinicalNotePromptBuilder.extractTagged(messages[1].content, 'transcripcion');
+      const request = { template, transcript };
       const sections = request.template.sections.map((section) => ({
         key: section.key,
         label: section.label,
         content: `Contenido generado para ${section.key}.`,
-        confidence: 0.9,
-        evidence: 'cefalea de tres días'
+        grounding: 'entailed',
+        evidence: ['cefalea de tres días']
       }));
       const note = {
         summary: 'Consulta por cefalea de tres días sin signos de alarma referidos.',
@@ -466,6 +469,102 @@ async function main() {
       assert.strictEqual(llm.state.calls, callsBeforeEdit);
       const motivo = savedNote.body.note_json.sections.find((s) => s.key === 'motivo_de_consulta');
       assert.match(motivo.content, /editado por el médico/);
+    });
+
+    // 18. Verificación de evidencia: una cita que no está en la transcripción se
+    // descarta, y la sección queda como interpretada (0.4 dispara el badge del
+    // portal). La que sí está, conserva offsets reales en la transcripción.
+    llm.state.transform = (note) => ({
+      ...note,
+      sections: note.sections.map((section) => (
+        section.key === 'motivo_de_consulta'
+          ? { ...section, grounding: 'explicit', evidence: ['esto no lo dijo nadie en la consulta'] }
+          : section
+      ))
+    });
+    const verified = await call('POST', `/api/clinical/encounters/${encounterId}/generate-note`, { note_detail: 'conciso' });
+    await check('descarta citas que no están en la transcripción y baja a inferred', () => {
+      assert.strictEqual(verified.status, 200);
+      const motivo = verified.body.note_json.sections.find((s) => s.key === 'motivo_de_consulta');
+      assert.strictEqual(motivo.grounding, 'inferred');
+      assert.strictEqual(motivo.confidence, 0.4);
+      assert.strictEqual(motivo.evidence, '');
+      assert.deepStrictEqual(motivo.evidence_spans, []);
+      assert.ok(verified.body.note_json.warnings.some((w) => /no aparecen en la transcripci/i.test(w)));
+      assert.ok(verified.body.note_json.warnings.some((w) => /sin evidencia literal/i.test(w)));
+    });
+    await check('las citas válidas traen offsets reales (evidence_spans)', () => {
+      const other = verified.body.note_json.sections.find((s) => s.key !== 'motivo_de_consulta' && s.evidence);
+      assert.ok(other, 'debe haber una sección con evidencia superviviente');
+      assert.strictEqual(other.grounding, 'entailed');
+      assert.strictEqual(other.confidence, 0.8);
+      assert.strictEqual(other.evidence_spans.length, 1);
+      const span = other.evidence_spans[0];
+      assert.strictEqual(CLINICAL_TRANSCRIPT.slice(span.char_start, span.char_end), 'cefalea de tres días');
+      assert.strictEqual(span.quote, 'cefalea de tres días');
+    });
+    llm.state.transform = null;
+
+    // 19. Edición humana: la sección tocada pasa a 'edited'; las intactas
+    // conservan el grounding de la IA.
+    const fresh = await call('POST', `/api/clinical/encounters/${encounterId}/generate-note`, {});
+    const humanEdit = {
+      ...fresh.body.note_json,
+      sections: fresh.body.note_json.sections.map((section) => (
+        section.key === 'motivo_de_consulta'
+          ? { ...section, content: 'Cefalea de tres días (redactado por el médico).' }
+          : section
+      ))
+    };
+    const savedHuman = await call('PUT', `/api/clinical/encounters/${encounterId}/note`, { note_json: humanEdit });
+    await check('la edición humana marca la sección como edited y conserva el resto', () => {
+      assert.strictEqual(savedHuman.status, 200);
+      const motivo = savedHuman.body.note_json.sections.find((s) => s.key === 'motivo_de_consulta');
+      assert.strictEqual(motivo.grounding, 'edited');
+      assert.strictEqual(motivo.confidence, 1);
+      const untouched = savedHuman.body.note_json.sections.find((s) => s.key !== 'motivo_de_consulta');
+      assert.strictEqual(untouched.grounding, 'entailed');
+      assert.strictEqual(untouched.evidence, 'cefalea de tres días');
+    });
+
+    // 20. Plantilla literal: note_mode viaja en la respuesta y el contenido que
+    // no sale del dictado recibe warning; el que sí, queda explicit.
+    const pathologyTemplate = await call('POST', '/api/clinical/templates', {
+      name: 'Informe de biopsia',
+      specialty: 'patologia',
+      note_mode: 'verbatim',
+      sections: [{ label: 'Descripción macroscópica', required: true }, { label: 'Diagnóstico', required: true }]
+    });
+    await check('la plantilla devuelve note_mode y el snapshot lo congela', async () => {
+      assert.strictEqual(pathologyTemplate.status, 201);
+      assert.strictEqual(pathologyTemplate.body.template.note_mode, 'verbatim');
+      assert.deepStrictEqual(pathologyTemplate.body.template.sections.map((s) => s.mode), ['inherit', 'inherit']);
+    });
+    const pathologyEncounter = await call('POST', '/api/clinical/encounters', {
+      consultation_type: 'presencial',
+      template_id: pathologyTemplate.body.template.id
+    });
+    const dictation = 'Se recibe fragmento de piel de dos por uno centímetros coma superficie irregular punto y aparte Diagnóstico coma nevus melanocítico intradérmico punto';
+    await call('POST', `/api/clinical/encounters/${pathologyEncounter.body.encounter_id}/transcript`, { transcript: dictation });
+    llm.state.transform = (note) => ({
+      ...note,
+      sections: note.sections.map((section) => (
+        section.key === 'descripcion_macroscopica'
+          ? { ...section, content: 'Se recibe fragmento de piel de 2 x 1 cm, superficie irregular.', grounding: 'explicit', evidence: ['Se recibe fragmento de piel de dos por uno centímetros'] }
+          : { ...section, content: 'Carcinoma basocelular con bordes comprometidos.', grounding: 'explicit', evidence: ['nevus melanocítico intradérmico'] }
+      ))
+    });
+    const literalNote = await call('POST', `/api/clinical/encounters/${pathologyEncounter.body.encounter_id}/generate-note`, {});
+    llm.state.transform = null;
+    await check('en modo literal, el contenido que no sale del dictado recibe warning y baja a inferred', () => {
+      assert.strictEqual(literalNote.status, 200);
+      assert.strictEqual(pathologyEncounter.status, 201);
+      assert.strictEqual(pathologyEncounter.body.template.note_mode, 'verbatim');
+      const macro = literalNote.body.note_json.sections.find((s) => s.key === 'descripcion_macroscopica');
+      const dx = literalNote.body.note_json.sections.find((s) => s.key === 'diagnostico');
+      assert.strictEqual(macro.grounding, 'explicit', 'lo dictado se reconoce aunque el STT escriba números como palabras');
+      assert.strictEqual(dx.grounding, 'inferred', 'lo inventado en una casilla literal no puede quedar como explicit');
+      assert.ok(literalNote.body.note_json.warnings.some((w) => /no coincide con el dictado/i.test(w)));
     });
 
     // Extras de seguridad del contrato.

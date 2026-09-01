@@ -2,21 +2,25 @@ const { clinicalError, isClinicalError } = require('./ClinicalErrors');
 
 const { withFeature } = require('../../infrastructure/usage/UsageContext');
 const { FEATURES } = require('../../domain/usage/vocabulary');
-// Orchestrates note generation: loads the encounter, builds the strict prompt
-// from the template_snapshot, calls the configured LLM, validates/repairs the
-// JSON and persists the result. Never logs transcript or note contents (PHI).
+
+// Orquesta la generación de nota. Dos entradas:
+//   - generateFromTranscript: la parte pura (prompt → LLM → validación), sin
+//     base de datos. La usan el pipeline público y los evals.
+//   - generate: carga el encounter, cambia estados, persiste y publica en el
+//     historial. La usan la ruta clínica y el rescate.
+// Nunca registra transcripción ni contenido de la nota (PHI).
 class ClinicalNoteGeneratorService {
   constructor({
-    encounterService,
-    encounterRepository,
+    encounterService = null,
+    encounterRepository = null,
     llmProvider,
     promptBuilder,
     validationService,
     consultationMirrorService = null,
     healthAlertService = null
   }) {
-    if (!encounterService || !encounterRepository || !promptBuilder || !validationService) {
-      throw new Error('ClinicalNoteGeneratorService requires encounterService, encounterRepository, promptBuilder and validationService');
+    if (!promptBuilder || !validationService) {
+      throw new Error('ClinicalNoteGeneratorService requires promptBuilder and validationService');
     }
     this.encounterService = encounterService;
     this.encounterRepository = encounterRepository;
@@ -44,7 +48,75 @@ class ClinicalNoteGeneratorService {
     return Boolean(this.llmProvider?.hasApiKey?.());
   }
 
-  async generate(encounterId, { doctorId = null } = {}) {
+  // Los builders antiguos (o los fakes de los arneses) sólo exponen build().
+  planPrompt(input) {
+    if (typeof this.promptBuilder.plan === 'function') {
+      return this.promptBuilder.plan(input);
+    }
+    return {
+      messages: this.promptBuilder.build(input),
+      promptVersion: this.promptBuilder.constructor?.PROMPT_VERSION || 'legacy',
+      noteMode: 'unknown',
+      temperature: undefined,
+      modes: null
+    };
+  }
+
+  /**
+   * Parte pura: transcripción + snapshot → note_json validado. Sin encounter,
+   * sin persistencia. `sessionId` ata el gasto a una consulta en el ledger
+   * cuando existe.
+   */
+  async generateFromTranscript({ transcript = '', templateSnapshot = null, noteDetail = '', sessionId = '' } = {}) {
+    const cleanTranscript = `${transcript || ''}`.trim();
+    if (!cleanTranscript) {
+      throw clinicalError('TRANSCRIPT_REQUIRED', 'La transcripción no puede estar vacía.');
+    }
+    const snapshotSections = Array.isArray(templateSnapshot?.sections) ? templateSnapshot.sections : [];
+    if (snapshotSections.length === 0) {
+      throw clinicalError('TEMPLATE_INVALID', 'La plantilla no tiene secciones utilizables.');
+    }
+    if (!this.hasLlm()) {
+      throw clinicalError('LLM_NOT_CONFIGURED', 'El proveedor de IA no está configurado.');
+    }
+
+    const plan = this.planPrompt({ transcript: cleanTranscript, templateSnapshot, noteDetail });
+    const content = await withFeature(
+      FEATURES.NOTE_GENERATION,
+      () => this.llmProvider.chatExpectingJson(plan.messages, { type: 'json_object' }, {
+        temperature: plan.temperature
+      }),
+      {
+        ...(sessionId ? { sessionId } : {}),
+        // Procedencia: qué revisión del prompt y qué modo produjeron este
+        // gasto. Sin esto una regresión sólo se atribuye al modelo.
+        metadata: {
+          promptVersion: plan.promptVersion,
+          noteMode: plan.noteMode,
+          templateId: `${templateSnapshot.template_id || ''}`,
+          specialtyCode: `${templateSnapshot.specialty || ''}`,
+          ...(Number.isFinite(plan.temperature) ? { temperature: plan.temperature } : {}),
+          sectionCount: snapshotSections.length
+        }
+      }
+    );
+    const parsed = this.llmProvider.parseJsonObject(content || '{}');
+    const noteJson = this.validationService.validateAndRepair(parsed, templateSnapshot, {
+      transcript: cleanTranscript,
+      modes: plan.modes
+    });
+    return {
+      noteJson,
+      promptVersion: plan.promptVersion,
+      noteMode: plan.noteMode,
+      temperature: plan.temperature
+    };
+  }
+
+  async generate(encounterId, { doctorId = null, noteDetail = '' } = {}) {
+    if (!this.encounterService || !this.encounterRepository) {
+      throw new Error('ClinicalNoteGeneratorService.generate requires encounterService and encounterRepository');
+    }
     const encounter = await this.encounterService.getOwnedEncounter(encounterId, { doctorId });
 
     const transcript = `${encounter.transcript || ''}`.trim();
@@ -64,21 +136,16 @@ class ClinicalNoteGeneratorService {
     await this.encounterRepository.update(encounter.id, { status: 'note_generating' });
 
     try {
-      const messages = this.promptBuilder.build({
-        transcript,
-        templateSnapshot: encounter.template_snapshot
-      });
       // `sessionId` = el encounter: es lo que ata este gasto a UNA consulta en
       // el ledger, y sin eso el costo solo se puede leer en agregado (ver
       // encounter_metrics en el portal). No es un dato del cliente: sale del
       // encounter que este servicio ya cargó y verificó como propio.
-      const content = await withFeature(
-        FEATURES.NOTE_GENERATION,
-        () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }),
-        { sessionId: encounter.id }
-      );
-      const parsed = this.llmProvider.parseJsonObject(content || '{}');
-      const noteJson = this.validationService.validateAndRepair(parsed, encounter.template_snapshot);
+      const { noteJson, noteMode } = await this.generateFromTranscript({
+        transcript,
+        templateSnapshot: encounter.template_snapshot,
+        noteDetail,
+        sessionId: encounter.id
+      });
 
       // note_json_ai congela lo que produjo la IA. note_json es la nota viva: el
       // médico la edita con PUT /note y ahí sí se sobrescribe. Guardar las dos es
@@ -90,7 +157,8 @@ class ClinicalNoteGeneratorService {
         note_generated_at: new Date().toISOString(),
         status: 'note_generated'
       });
-      console.log(`[Clinical Note] Encounter ${encounter.id}: nota generada (${noteJson.sections.length} secciones, ${noteJson.warnings.length} warnings).`);
+      const inferred = noteJson.sections.filter((section) => section.grounding === 'inferred').length;
+      console.log(`[Clinical Note] Encounter ${encounter.id}: nota generada (modo ${noteMode}, ${noteJson.sections.length} secciones, ${inferred} interpretadas, ${noteJson.warnings.length} warnings).`);
 
       // Publicar en el historial es responsabilidad del servidor, no del
       // navegador: si esto dependiera del cliente, cerrar la pestaña dejaría la

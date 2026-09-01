@@ -1,7 +1,18 @@
 const { clinicalError } = require('./ClinicalErrors');
+const text = require('../../domain/clinical/textNormalize');
+const grounding = require('../../domain/clinical/grounding');
 
-// Validates and repairs note_json against the encounter's template_snapshot.
-// The snapshot is the source of truth: same keys, same labels, same order.
+// Valida y repara note_json contra el template_snapshot de la consulta, y
+// VERIFICA lo que el prompt promete. Regla del módulo clínico: toda promesa de
+// un prompt necesita un verificador; lo que no se comprueba se incumple en algún
+// porcentaje de casos.
+//
+//   - cada fragmento de `evidence` debe estar, literal, en la transcripción;
+//   - una sección con contenido y sin evidencia superviviente es `inferred`;
+//   - una sección LITERAL cuyo contenido no sale del dictado recibe warning;
+//   - `evidence_spans` da los offsets reales en la transcripción persistida.
+//
+// El snapshot manda: mismas keys, mismos labels, mismo orden.
 const MISSING_CONTENT_PHRASE = 'No mencionado en la consulta.';
 const PRUDENT_EMPTY_PHRASES = [
   'no referido',
@@ -13,15 +24,19 @@ const PRUDENT_EMPTY_PHRASES = [
 const MAX_SUMMARY_LENGTH = 2000;
 const MAX_SECTION_CONTENT_LENGTH = 8000;
 const MAX_EVIDENCE_LENGTH = 500;
+const MAX_EVIDENCE_FRAGMENTS = 4;
+const MAX_EVIDENCE_FRAGMENT_LENGTH = 200;
 const MAX_WARNINGS = 20;
+const EVIDENCE_JOINER = ' … ';
+// Por debajo de esto, una sección literal no "sale del dictado". Tolera lo que
+// el STT cambia (números como palabra, puntuación dictada) porque la
+// normalización literal ya iguala esos casos.
+const VERBATIM_COVERAGE_MIN = 0.85;
 
 function normalizeComparable(value = '') {
-  return `${value || ''}`
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[.\s]+$/g, '')
-    .trim()
-    .toLowerCase();
+  // Comparación de labels y frases prudentes: además de la normalización común,
+  // se ignoran los puntos finales ("No referido." == "No referido").
+  return text.normalizeComparable(value).replace(/[.\s]+$/g, '');
 }
 
 // Eleva a mayúscula la primera letra de la casilla (requisito de patología:
@@ -42,14 +57,6 @@ function isPrudentEmptyContent(content = '') {
   return PRUDENT_EMPTY_PHRASES.some((phrase) => normalized === normalizeComparable(phrase));
 }
 
-function clampConfidence(value, fallback = 0.5) {
-  const number = Number(value);
-  if (!Number.isFinite(number)) {
-    return fallback;
-  }
-  return Math.min(1, Math.max(0, number));
-}
-
 function snapshotSections(templateSnapshot) {
   const sections = Array.isArray(templateSnapshot?.sections) ? templateSnapshot.sections : [];
   return sections
@@ -57,11 +64,34 @@ function snapshotSections(templateSnapshot) {
     .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
 }
 
+// `evidence` llega como array (contrato nuevo) o como string (contrato viejo,
+// notas persistidas). Siempre se trabaja con fragmentos.
+function evidenceFragments(raw) {
+  const list = Array.isArray(raw)
+    ? raw
+    : `${raw ?? ''}`.split(EVIDENCE_JOINER);
+  return list
+    .map((item) => `${item ?? ''}`.trim().slice(0, MAX_EVIDENCE_FRAGMENT_LENGTH))
+    .filter(Boolean)
+    .slice(0, MAX_EVIDENCE_FRAGMENTS);
+}
+
+function joinEvidence(fragments) {
+  return fragments.join(EVIDENCE_JOINER).slice(0, MAX_EVIDENCE_LENGTH);
+}
+
 class ClinicalNoteValidationService {
-  // Repairs LLM output: fills omitted sections, drops extras, restores
-  // key/label/order from the snapshot, clamps confidence, rebuilds the
-  // missing_required_sections list.
-  validateAndRepair(parsed, templateSnapshot) {
+  /**
+   * Repara la salida del modelo (secciones omitidas, extras, keys mal) y
+   * verifica grounding contra la transcripción cuando se le pasa.
+   *
+   * @param {object} parsed salida del modelo
+   * @param {object} templateSnapshot snapshot de la consulta
+   * @param {{transcript?: string, modes?: object}} [options] transcripción para
+   *   verificar evidencia y modos por sección (NoteModeResolver.resolve) para
+   *   comprobar las literales. Sin transcript no se verifica nada.
+   */
+  validateAndRepair(parsed, templateSnapshot, { transcript = '', modes = null } = {}) {
     const expected = snapshotSections(templateSnapshot);
     if (expected.length === 0) {
       throw clinicalError('TEMPLATE_INVALID', 'El template_snapshot de la consulta no tiene secciones.');
@@ -93,6 +123,12 @@ class ClinicalNoteValidationService {
       }
     });
 
+    const transcriptText = `${transcript || ''}`;
+    const canVerify = transcriptText.trim().length > 0;
+    const index = canVerify ? text.buildNormalizedIndex(transcriptText) : null;
+    const verbatimKeys = new Set(Array.isArray(modes?.verbatimKeys) ? modes.verbatimKeys : []);
+    let evidenceDropped = 0;
+
     const matchedKeys = new Set();
     const sections = expected.map((expectedSection) => {
       let raw = byKey.get(expectedSection.key) || null;
@@ -107,32 +143,73 @@ class ClinicalNoteValidationService {
       }
 
       let content = typeof raw?.content === 'string' ? raw.content.trim() : '';
-      let confidence = clampConfidence(raw?.confidence);
-      let evidence = typeof raw?.evidence === 'string' ? raw.evidence.trim() : '';
+      let level = grounding.normalizeGrounding(raw?.grounding)
+        || grounding.groundingFromConfidence(raw?.confidence)
+        || null;
+      let fragments = evidenceFragments(raw?.evidence);
+      let spans = [];
 
       if (!raw) {
         warnings.push(`El modelo omitió la sección "${expectedSection.label}"; se marcó como no mencionada.`);
         content = MISSING_CONTENT_PHRASE;
-        confidence = 0;
-        evidence = '';
       } else if (!content) {
         warnings.push(`La sección "${expectedSection.label}" llegó vacía; se marcó como no mencionada.`);
         content = MISSING_CONTENT_PHRASE;
-        confidence = 0;
-        evidence = '';
       }
 
-      if (isPrudentEmptyContent(content)) {
-        confidence = 0;
-        evidence = '';
+      const prudent = isPrudentEmptyContent(content);
+      if (prudent) {
+        level = 'absent';
+        fragments = [];
+      } else if (canVerify) {
+        // Cada cita tiene que estar, literal, en la transcripción. La que no
+        // está se descarta: el modelo puede alucinar el contenido Y la cita.
+        const kept = [];
+        for (const fragment of fragments) {
+          if (fragment === grounding.DICTATION_EVIDENCE) {
+            kept.push(fragment);
+            continue;
+          }
+          const hit = text.locateFragment(transcriptText, fragment, index);
+          if (hit) {
+            kept.push(fragment);
+            spans.push(hit);
+          } else {
+            evidenceDropped += 1;
+          }
+        }
+        fragments = kept;
+
+        if (fragments.length === 0) {
+          if (level !== 'inferred') {
+            warnings.push(`Sección "${expectedSection.label}": sin evidencia literal en la transcripción; revisar.`);
+          }
+          level = 'inferred';
+        }
+
+        if (verbatimKeys.has(expectedSection.key)) {
+          const coverage = text.verbatimCoverage(content, transcriptText);
+          if (coverage < VERBATIM_COVERAGE_MIN) {
+            warnings.push(`Sección literal "${expectedSection.label}": el contenido no coincide con el dictado (${Math.round(coverage * 100)}% reconocido); revisar.`);
+            level = 'inferred';
+          }
+        }
+      }
+
+      if (!level) {
+        // Sin grounding del modelo y sin transcripción para comprobar: se
+        // asume deducido si trae cita, interpretado si no.
+        level = fragments.length > 0 ? 'entailed' : 'inferred';
       }
 
       return {
         key: expectedSection.key,
         label: expectedSection.label,
         content: capitalizeFirst(content).slice(0, MAX_SECTION_CONTENT_LENGTH),
-        confidence,
-        evidence: evidence.slice(0, MAX_EVIDENCE_LENGTH)
+        grounding: level,
+        confidence: grounding.confidenceFromGrounding(level),
+        evidence: joinEvidence(fragments),
+        evidence_spans: spans
       };
     });
 
@@ -143,6 +220,9 @@ class ClinicalNoteValidationService {
     if (extraSections.length > 0) {
       warnings.push(`El modelo devolvió ${extraSections.length} sección(es) fuera de la plantilla; fueron ignoradas.`);
     }
+    if (evidenceDropped > 0) {
+      warnings.push(`${evidenceDropped} cita(s) del modelo no aparecen en la transcripción y fueron descartadas.`);
+    }
 
     let summary = typeof source.summary === 'string' ? source.summary.trim() : '';
     if (!summary) {
@@ -151,7 +231,7 @@ class ClinicalNoteValidationService {
     }
 
     const missingRequired = sections
-      .filter((section, index) => expected[index].required && isPrudentEmptyContent(section.content))
+      .filter((section, position) => expected[position].required && isPrudentEmptyContent(section.content))
       .map((section) => section.key);
     if (missingRequired.length > 0) {
       warnings.push(`Secciones obligatorias sin información en la transcripción: ${missingRequired.join(', ')}.`);
@@ -165,9 +245,14 @@ class ClinicalNoteValidationService {
     };
   }
 
-  // Strict validation for doctor-edited notes (PUT /note): the structure must
-  // already match the snapshot; nothing is invented or filled here.
-  validateEditedNote(noteJson, templateSnapshot) {
+  /**
+   * Validación estricta de notas editadas por el médico (PUT /note): la
+   * estructura ya debe coincidir con el snapshot; aquí no se inventa ni rellena.
+   * Con `previous` (la nota anterior), las secciones cuyo contenido no cambió
+   * conservan su grounding; las que sí, pasan a 'edited' (la fuente más fuerte:
+   * el médico lo escribió).
+   */
+  validateEditedNote(noteJson, templateSnapshot, { previous = null } = {}) {
     const expected = snapshotSections(templateSnapshot);
     if (expected.length === 0) {
       throw clinicalError('TEMPLATE_INVALID', 'El template_snapshot de la consulta no tiene secciones.');
@@ -201,6 +286,11 @@ class ClinicalNoteValidationService {
       }
     }
 
+    const previousByKey = new Map(
+      (Array.isArray(previous?.sections) ? previous.sections : [])
+        .map((section) => [`${section?.key || ''}`.trim(), section])
+    );
+
     const sections = expected.map((expectedSection) => {
       const raw = provided.get(expectedSection.key);
       if (!raw) {
@@ -209,12 +299,52 @@ class ClinicalNoteValidationService {
       if (typeof raw.content !== 'string') {
         throw clinicalError('NOTE_JSON_INVALID', `La sección "${expectedSection.key}" debe tener content de tipo string.`);
       }
+      const content = capitalizeFirst(raw.content).slice(0, MAX_SECTION_CONTENT_LENGTH);
+      const prior = previousByKey.get(expectedSection.key);
+      const untouched = prior
+        && typeof prior.content === 'string'
+        && text.normalizeComparable(prior.content) === text.normalizeComparable(content);
+
+      if (untouched) {
+        const level = grounding.normalizeGrounding(prior.grounding)
+          || grounding.groundingFromConfidence(prior.confidence)
+          || 'entailed';
+        return {
+          key: expectedSection.key,
+          label: expectedSection.label,
+          content,
+          grounding: level,
+          confidence: grounding.confidenceFromGrounding(level),
+          evidence: joinEvidence(evidenceFragments(prior.evidence)),
+          evidence_spans: Array.isArray(prior.evidence_spans) ? prior.evidence_spans : []
+        };
+      }
+
+      if (prior) {
+        // Cambió respecto a la nota anterior: lo escribió el médico.
+        return {
+          key: expectedSection.key,
+          label: expectedSection.label,
+          content,
+          grounding: grounding.EDITED,
+          confidence: grounding.confidenceFromGrounding(grounding.EDITED),
+          evidence: '',
+          evidence_spans: []
+        };
+      }
+
+      // Sin nota previa (llamadores antiguos): se respeta lo que llega.
+      const level = grounding.normalizeGrounding(raw.grounding)
+        || grounding.groundingFromConfidence(raw.confidence)
+        || grounding.EDITED;
       return {
         key: expectedSection.key,
         label: expectedSection.label,
-        content: capitalizeFirst(raw.content).slice(0, MAX_SECTION_CONTENT_LENGTH),
-        confidence: clampConfidence(raw.confidence, 1),
-        evidence: typeof raw.evidence === 'string' ? raw.evidence.slice(0, MAX_EVIDENCE_LENGTH) : ''
+        content,
+        grounding: level,
+        confidence: grounding.confidenceFromGrounding(level),
+        evidence: joinEvidence(evidenceFragments(raw.evidence)),
+        evidence_spans: Array.isArray(raw.evidence_spans) ? raw.evidence_spans : []
       };
     });
 
@@ -224,7 +354,7 @@ class ClinicalNoteValidationService {
       .slice(0, MAX_WARNINGS);
 
     const missingRequired = sections
-      .filter((section, index) => expected[index].required && isPrudentEmptyContent(section.content))
+      .filter((section, position) => expected[position].required && isPrudentEmptyContent(section.content))
       .map((section) => section.key);
 
     return {
@@ -237,5 +367,8 @@ class ClinicalNoteValidationService {
 }
 
 ClinicalNoteValidationService.MISSING_CONTENT_PHRASE = MISSING_CONTENT_PHRASE;
+ClinicalNoteValidationService.VERBATIM_COVERAGE_MIN = VERBATIM_COVERAGE_MIN;
+ClinicalNoteValidationService.EVIDENCE_JOINER = EVIDENCE_JOINER;
+ClinicalNoteValidationService.isPrudentEmptyContent = isPrudentEmptyContent;
 
 module.exports = ClinicalNoteValidationService;

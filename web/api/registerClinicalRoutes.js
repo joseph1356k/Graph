@@ -43,6 +43,7 @@ function templateResponse(template) {
     status: template.status,
     sections_count: template.sections.length,
     sections: template.sections,
+    note_mode: template.note_mode || 'auto',
     created_at: template.created_at,
     updated_at: template.updated_at
   };
@@ -249,7 +250,10 @@ function registerClinicalEngineRoutes(app, deps) {
   app.post('/api/clinical/encounters/:encounterId/generate-note', async (req, res) => {
     try {
       const encounter = await noteGeneratorService.generate(req.params.encounterId, {
-        doctorId: resolveDoctorId(req)
+        doctorId: resolveDoctorId(req),
+        // Preferencia de redacción del médico (conciso/equilibrado/detallado).
+        // Sólo afecta a las secciones interpretativas; el generador la sanea.
+        noteDetail: req.body?.note_detail
       });
       res.json({
         encounter_id: encounter.id,
