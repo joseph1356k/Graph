@@ -34,7 +34,7 @@ function registerMaintenanceRoutes(app, deps = {}) {
       return res.status(401).json({ error: 'No autorizado.' });
     }
 
-    const result = { rescued: null, purged: null, alert: null, errors: [] };
+    const result = { rescued: null, purged: null, metrics: null, alert: null, errors: [] };
 
     // El rescate va PRIMERO: convierte en notas las consultas que quedaron a
     // medias, para que el correo no reporte como problema algo que se acaba de
@@ -59,6 +59,20 @@ function registerMaintenanceRoutes(app, deps = {}) {
       } catch (error) {
         result.errors.push(`purge: ${error.message}`);
         console.error(`[Mantenimiento] Limpieza falló: ${error.message}`);
+      }
+    }
+
+    // El rollup del medidor: resume los turnos cerrados sin resumir (y refresca
+    // los abiertos hace rato), para que la consola de medición muestre el baseline
+    // del día sin esperar a que un turno termine. Best-effort: si falla, el crudo
+    // sigue intacto y el próximo cron lo recoge.
+    if (restClient) {
+      try {
+        const resumidos = await restClient.rpc('metrics_recompute_pending', { p_max: 1000 });
+        result.metrics = { resumidos: Number(resumidos) || 0 };
+      } catch (error) {
+        result.errors.push(`metrics: ${error.message}`);
+        console.error(`[Mantenimiento] Rollup de medición falló: ${error.message}`);
       }
     }
 

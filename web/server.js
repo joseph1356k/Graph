@@ -77,6 +77,7 @@ const registerAndroidPanelRoutes = require('./api/registerAndroidPanelRoutes');
 const WindowsTelemetryService = require('../src/application/use-cases/WindowsTelemetryService');
 const WindowsPanelService = require('../src/application/use-cases/WindowsPanelService');
 const registerWindowsTelemetryRoutes = require('./api/registerWindowsTelemetryRoutes');
+const registerMetricsRoutes = require('./api/registerMetricsRoutes');
 const registerWindowsPanelRoutes = require('./api/registerWindowsPanelRoutes');
 const StudioProgressService = require('../src/application/use-cases/StudioProgressService');
 const registerStudioProgressRoutes = require('./api/registerStudioProgressRoutes');
@@ -242,6 +243,10 @@ const androidPanelService = new AndroidPanelService(supabaseRestClient);
 // El subconsciente sale del catálogo real (Neo4j) vía catalogService, scopeado
 // por owner = email del usuario.
 const windowsTelemetryService = new WindowsTelemetryService(supabaseRestClient);
+// El medidor de impacto (UMedidor.exe) escribe metrics_* con service-role, igual
+// carril que la telemetría de Windows pero con semántica de estudio (no best-effort).
+const MetricsIngestService = require('../src/application/use-cases/MetricsIngestService');
+const metricsIngestService = new MetricsIngestService(supabaseRestClient);
 const windowsPanelService = new WindowsPanelService({ catalogService, supabaseRestClient });
 // Bitácora de avances del laboratorio: la mitad humana del banco de pruebas
 // (la mitad automática se deriva de la telemetría en src/domain/windowsEngines.js).
@@ -380,6 +385,17 @@ app.use((req, res, next) => {
 // endpoints that spend OpenAI/LLM credits.
 const apiLimiter = rateLimit({ windowMs: 60 * 1000, limit: 120, standardHeaders: 'draft-7', legacyHeaders: false });
 const costlyLimiter = rateLimit({ windowMs: 60 * 1000, limit: 20, standardHeaders: 'draft-7', legacyHeaders: false });
+
+// El medidor va por su PROPIO limitador, por DEVICE, montado ANTES del apiLimiter
+// por IP. Un hospital tiene todos sus PCs tras un solo NAT: con el límite por IP
+// (120/min), cuatro instalaciones lo agotan y empiezan a recibir 429 — incluido
+// el tráfico clínico del navegador, que comparte /api. El medidor late 1/min por
+// PC, así que 10/min por device es holgado y jamás toca el cupo compartido.
+const metricsLimiter = rateLimit({
+  windowMs: 60 * 1000, limit: 10, standardHeaders: 'draft-7', legacyHeaders: false,
+  keyGenerator: (req) => `${req.body?.device_id || req.query?.device_id || req.ip}`,
+});
+app.use('/api/v1/metrics', metricsLimiter);
 app.use('/api', apiLimiter);
 
 app.post('/api/auth/local-anonymous', (req, res) => {
@@ -1123,6 +1139,7 @@ registerMaintenanceRoutes(app, {
 registerAndroidPanelRoutes(app, { androidPanelService });
 // Windows Live: ingesta bajo /api/v1 (X-API-Key) + lectura admin /api/windows/*.
 registerWindowsTelemetryRoutes(app, { windowsTelemetryService });
+registerMetricsRoutes(app, { metricsIngestService });
 registerWindowsPanelRoutes(app, { windowsPanelService });
 registerStudioProgressRoutes(app, { studioProgressService });
 registerWindowsAgentRoutes(app, { agentTurnService, teachVideoService, usageRecorder });
