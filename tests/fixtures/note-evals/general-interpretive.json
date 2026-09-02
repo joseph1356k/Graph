@@ -1,0 +1,88 @@
+{
+  "id": "general-interpretive",
+  "title": "Consulta conversacional de medicina general (modo interpretativo)",
+  "template_snapshot": {
+    "template_id": "eval-general-0001",
+    "name": "Consulta inicial · Medicina general",
+    "specialty": "medicina_general",
+    "note_mode": "auto",
+    "sections": [
+      { "key": "motivo_consulta", "label": "Motivo de consulta", "order": 1, "required": true, "instruction": "Razón principal de la consulta en palabras del paciente." },
+      { "key": "enfermedad_actual", "label": "Enfermedad actual", "order": 2, "required": true, "instruction": "Cronología, características y síntomas asociados." },
+      { "key": "antecedentes", "label": "Antecedentes", "order": 3, "required": false, "instruction": "Patológicos, farmacológicos y alérgicos." },
+      { "key": "examen_fisico", "label": "Examen físico", "order": 4, "required": false, "instruction": "Hallazgos del examen físico." },
+      { "key": "impresion_diagnostica", "label": "Impresión diagnóstica", "order": 5, "required": true, "instruction": "Hipótesis clínica en términos de probabilidad." },
+      { "key": "plan", "label": "Plan", "order": 6, "required": true, "instruction": "Conducta, medicamentos, estudios y seguimiento." }
+    ],
+    "snapshot_at": "2026-09-01T00:00:00.000Z"
+  },
+  "transcript": "Médico: Buenos días, José David, cuénteme qué lo trae hoy. Paciente: Doctor, llevo como tres días con un dolor de cabeza que va y viene. Médico: ¿Dónde le duele y cómo es el dolor? Paciente: Es en toda la frente, como una presión, empeora cuando paso mucho tiempo en el computador y mejora cuando descanso. Médico: ¿Ha tenido fiebre, vómito o cambios en la visión? Paciente: No, nada de eso. Niega fiebre, ni vómito, veo bien. Sí tengo un poco de náuseas a veces. Médico: ¿Toma algún medicamento? Paciente: Tomo losartán 50 mg cada día para la presión, hace dos años. No soy alérgico a nada que yo sepa. Médico: Muy bien. Por lo que me cuenta parece una cefalea de tipo tensional, pero vamos a vigilarla. Le recomiendo higiene del sueño, hidratación, pausas de pantalla cada hora y volver a control si aparece dolor súbito muy intenso, fiebre o alteraciones visuales.",
+  "recorded_output": {
+    "summary": "Paciente con cefalea frontal opresiva de tres días de evolución, asociada a uso prolongado de pantallas, sin signos de alarma; hipertenso en tratamiento con losartán.",
+    "sections": [
+      {
+        "key": "motivo_consulta",
+        "label": "Motivo de consulta",
+        "content": "Cefalea de tres días de evolución, intermitente.",
+        "grounding": "explicit",
+        "evidence": ["llevo como tres días con un dolor de cabeza que va y viene"]
+      },
+      {
+        "key": "enfermedad_actual",
+        "label": "Enfermedad actual",
+        "content": "Cefalea frontal de carácter opresivo, de tres días de evolución, que empeora con el uso prolongado del computador y mejora con el reposo. Se acompaña de náuseas ocasionales. Niega fiebre, vómito y alteraciones visuales.",
+        "grounding": "explicit",
+        "evidence": [
+          "Es en toda la frente, como una presión, empeora cuando paso mucho tiempo en el computador y mejora cuando descanso",
+          "Niega fiebre, ni vómito, veo bien",
+          "Sí tengo un poco de náuseas a veces"
+        ]
+      },
+      {
+        "key": "antecedentes",
+        "label": "Antecedentes",
+        "content": "Hipertensión arterial en tratamiento con losartán 50 mg cada día desde hace dos años. Niega alergias conocidas.",
+        "grounding": "explicit",
+        "evidence": ["Tomo losartán 50 mg cada día para la presión, hace dos años", "No soy alérgico a nada que yo sepa"]
+      },
+      {
+        "key": "examen_fisico",
+        "label": "Examen físico",
+        "content": "No mencionado en la consulta.",
+        "grounding": "absent",
+        "evidence": []
+      },
+      {
+        "key": "impresion_diagnostica",
+        "label": "Impresión diagnóstica",
+        "content": "Cefalea probablemente de tipo tensional, pendiente de evolución y criterio médico.",
+        "grounding": "entailed",
+        "evidence": ["parece una cefalea de tipo tensional, pero vamos a vigilarla"]
+      },
+      {
+        "key": "plan",
+        "label": "Plan",
+        "content": "Higiene del sueño, hidratación y pausas de pantalla cada hora. Control si aparece dolor súbito muy intenso, fiebre o alteraciones visuales.",
+        "grounding": "explicit",
+        "evidence": ["higiene del sueño, hidratación, pausas de pantalla cada hora y volver a control si aparece dolor súbito muy intenso, fiebre o alteraciones visuales"]
+      }
+    ],
+    "warnings": [],
+    "missing_required_sections": []
+  },
+  "expect": {
+    "note_mode": "interpretive",
+    "required_filled": ["motivo_consulta", "enfermedad_actual", "impresion_diagnostica", "plan"],
+    "preserved_literals": ["losartán 50 mg", "tres días", "cada hora"],
+    "negations": [
+      { "term": "fiebre", "cues": ["niega", "no ", "sin ", "si aparece"] },
+      { "term": "vómito", "cues": ["niega", "no ", "sin "] },
+      { "term": "alergias", "cues": ["niega", "no ", "sin "] }
+    ],
+    "forbidden_terms": ["confirmado", "tensión arterial 1", "temperatura"],
+    "absent_sections": ["examen_fisico"],
+    "max_inferred": 0,
+    "max_warnings": 0,
+    "evidence_spans_valid": true
+  }
+}

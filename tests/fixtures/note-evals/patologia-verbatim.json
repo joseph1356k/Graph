@@ -1,0 +1,60 @@
+{
+  "id": "patologia-verbatim",
+  "title": "Dictado de patología (modo literal por especialidad)",
+  "template_snapshot": {
+    "template_id": "eval-patologia-0001",
+    "name": "Informe de biopsia de piel",
+    "specialty": "patologia",
+    "note_mode": "auto",
+    "sections": [
+      { "key": "descripcion_macroscopica", "label": "Descripción macroscópica", "order": 1, "required": true, "instruction": "Descripción del espécimen recibido." },
+      { "key": "descripcion_microscopica", "label": "Descripción microscópica", "order": 2, "required": true, "instruction": "Hallazgos histológicos." },
+      { "key": "diagnostico", "label": "Diagnóstico", "order": 3, "required": true, "instruction": "Diagnóstico histopatológico." }
+    ],
+    "snapshot_at": "2026-09-01T00:00:00.000Z"
+  },
+  "transcript": "Descripción macroscópica. Se recibe rotulado como lesión de espalda un fragmento de piel elíptico que mide dos por uno punto dos por cero punto cuatro centímetros, con una lesión pigmentada central de cero punto seis centímetros, bordes regulares. Se incluye totalmente en un bloque. Descripción microscópica. Cortes histológicos muestran epidermis con acantosis leve. En dermis se identifican nidos de melanocitos de aspecto maduro, sin atipia citológica ni actividad mitótica, sin extensión a los márgenes de resección. Diagnóstico. Piel de espalda, resección: nevus melanocítico intradérmico, márgenes libres.",
+  "recorded_output": {
+    "summary": "Biopsia de piel de espalda con nevus melanocítico intradérmico y márgenes libres.",
+    "sections": [
+      {
+        "key": "descripcion_macroscopica",
+        "label": "Descripción macroscópica",
+        "content": "Se recibe rotulado como lesión de espalda un fragmento de piel elíptico que mide dos por uno punto dos por cero punto cuatro centímetros, con una lesión pigmentada central de cero punto seis centímetros, bordes regulares. Se incluye totalmente en un bloque.",
+        "grounding": "explicit",
+        "evidence": ["Se recibe rotulado como lesión de espalda un fragmento de piel elíptico"]
+      },
+      {
+        "key": "descripcion_microscopica",
+        "label": "Descripción microscópica",
+        "content": "Cortes histológicos muestran epidermis con acantosis leve. En dermis se identifican nidos de melanocitos de aspecto maduro, sin atipia citológica ni actividad mitótica, sin extensión a los márgenes de resección.",
+        "grounding": "explicit",
+        "evidence": ["Cortes histológicos muestran epidermis con acantosis leve"]
+      },
+      {
+        "key": "diagnostico",
+        "label": "Diagnóstico",
+        "content": "Piel de espalda, resección: nevus melanocítico intradérmico, márgenes libres.",
+        "grounding": "explicit",
+        "evidence": ["Piel de espalda, resección: nevus melanocítico intradérmico, márgenes libres"]
+      }
+    ],
+    "warnings": [],
+    "missing_required_sections": []
+  },
+  "expect": {
+    "note_mode": "verbatim",
+    "required_filled": ["descripcion_macroscopica", "descripcion_microscopica", "diagnostico"],
+    "preserved_literals": ["cero punto seis", "sin atipia citológica", "márgenes libres"],
+    "negations": [
+      { "term": "atipia", "cues": ["sin "] },
+      { "term": "extensión", "cues": ["sin "] }
+    ],
+    "forbidden_terms": ["probable", "sugiere", "impresiona"],
+    "verbatim_keys": ["descripcion_macroscopica", "descripcion_microscopica", "diagnostico"],
+    "min_verbatim_coverage": 0.85,
+    "max_inferred": 0,
+    "max_warnings": 0,
+    "evidence_spans_valid": true
+  }
+}

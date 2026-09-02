@@ -1,0 +1,60 @@
+{
+  "id": "mixta-anotaciones",
+  "title": "Plantilla mixta (plan literal) con bloque de anotaciones del médico",
+  "template_snapshot": {
+    "template_id": "eval-mixta-0001",
+    "name": "Control · Medicina general",
+    "specialty": "medicina_general",
+    "note_mode": "auto",
+    "sections": [
+      { "key": "motivo_consulta", "label": "Motivo de consulta", "order": 1, "required": true, "instruction": "", "mode": "inherit" },
+      { "key": "enfermedad_actual", "label": "Enfermedad actual", "order": 2, "required": true, "instruction": "", "mode": "inherit" },
+      { "key": "plan", "label": "Plan", "order": 3, "required": true, "instruction": "Conducta y seguimiento tal como los dicta el médico.", "mode": "verbatim" }
+    ],
+    "snapshot_at": "2026-09-01T00:00:00.000Z"
+  },
+  "transcript": "Médico: Buenas tardes, ¿cómo ha seguido de la tos? Paciente: Sigo con tos seca, sobre todo de noche, ya van diez días. Sin fiebre. Médico: ¿Le falta el aire o le duele el pecho? Paciente: No, nada de eso, solo la tos que no me deja dormir. Médico: ¿Fuma? Paciente: Dejé de fumar hace cinco años. Médico: Bien. Vamos a hacer unos exámenes y lo veo con los resultados.\n\n--- ANOTACIONES ESCRITAS POR EL MÉDICO DURANTE LA CONSULTA ---\nPlan: Solicitar hemograma y radiografía de tórax. Control en ocho días con resultados. Signos de alarma explicados.",
+  "recorded_output": {
+    "summary": "Control por tos seca de diez días de evolución, de predominio nocturno, sin fiebre ni disnea; exfumador.",
+    "sections": [
+      {
+        "key": "motivo_consulta",
+        "label": "Motivo de consulta",
+        "content": "Control por tos seca de diez días de evolución.",
+        "grounding": "explicit",
+        "evidence": ["Sigo con tos seca, sobre todo de noche, ya van diez días"]
+      },
+      {
+        "key": "enfermedad_actual",
+        "label": "Enfermedad actual",
+        "content": "Tos seca de diez días de evolución, de predominio nocturno, que interfiere con el sueño. Niega fiebre, disnea y dolor torácico. Exfumador desde hace cinco años.",
+        "grounding": "explicit",
+        "evidence": ["Sin fiebre", "solo la tos que no me deja dormir", "Dejé de fumar hace cinco años"]
+      },
+      {
+        "key": "plan",
+        "label": "Plan",
+        "content": "Solicitar hemograma y radiografía de tórax. Control en ocho días con resultados. Signos de alarma explicados.",
+        "grounding": "explicit",
+        "evidence": ["Solicitar hemograma y radiografía de tórax. Control en ocho días con resultados. Signos de alarma explicados."]
+      }
+    ],
+    "warnings": [],
+    "missing_required_sections": []
+  },
+  "expect": {
+    "note_mode": "mixed",
+    "required_filled": ["motivo_consulta", "enfermedad_actual", "plan"],
+    "preserved_literals": ["hemograma", "ocho días", "cinco años"],
+    "negations": [
+      { "term": "fiebre", "cues": ["niega", "sin ", "no "] },
+      { "term": "disnea", "cues": ["niega", "sin ", "no "] }
+    ],
+    "forbidden_terms": ["ANOTACIONES ESCRITAS", "Plan:"],
+    "verbatim_keys": ["plan"],
+    "min_verbatim_coverage": 0.85,
+    "max_inferred": 0,
+    "max_warnings": 0,
+    "evidence_spans_valid": true
+  }
+}
