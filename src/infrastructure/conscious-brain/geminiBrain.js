@@ -11,7 +11,8 @@
 //    píxeles del screenshot (a resolución real).
 //  - Las herramientas MCP, ask_user, speak y list_apps se declaran igual que en OpenAI.
 
-const { goalPrompt } = require('./prompt');
+const { goalPrompt, PROMPT_VERSION } = require('./prompt');
+const { ASSISTANT_TOOLS } = require('./tools');
 const LLMProvider = require('../LLMProvider');
 const { fromGemini, toRecorderUsage } = require('../../domain/usage/providerUsage');
 const { API_FAMILIES, FEATURES } = require('../../domain/usage/vocabulary');
@@ -89,7 +90,7 @@ function recordGeminiBrainUsage(input) {
     latencyMs: input.latencyMs,
     status: ok ? 'ok' : 'error',
     errorCode: ok ? '' : `http_${input.statusCode}`,
-    metadata: { httpStatus: input.statusCode, attempt: input.attempt },
+    metadata: { httpStatus: input.statusCode, attempt: input.attempt, promptVersion: PROMPT_VERSION },
     ...toRecorderUsage(fromGemini(parsed))
   });
 }
@@ -126,9 +127,13 @@ function builtinFns() {
     fn('computer_swipe', 'Arrastra de un punto a otro.', { x1: INT, y1: INT, x2: INT, y2: INT }, ['x1', 'y1', 'x2', 'y2']),
     fn('computer_key', 'Pulsa una tecla especial.', { key: { type: 'STRING', enum: ['enter', 'back', 'tab', 'backspace', 'delete', 'up', 'down', 'left', 'right', 'home', 'end', 'space'] } }, ['key']),
     fn('computer_wait', 'Espera unos milisegundos a que la pantalla reaccione.', { ms: INT }, ['ms']),
-    fn('ask_user', 'Pregunta al usuario cuando tengas una duda real e importante.', { question: { type: 'STRING' } }, ['question']),
-    fn('speak', 'Di algo en voz alta con tu personalidad. Solo para lo importante.', { text: { type: 'STRING' } }, ['text']),
-    fn('list_apps', 'Lista las aplicaciones instaladas para elegir cuál abrir.', {}, [])
+    // ask_user / speak / list_apps: misma declaración que en OpenAI (tools.js).
+    ...ASSISTANT_TOOLS.map((tool) => fn(
+      tool.name,
+      tool.description,
+      Object.fromEntries(tool.params.map((param) => [param.name, { type: 'STRING', description: param.description }])),
+      tool.params.map((param) => param.name)
+    ))
   ];
 }
 

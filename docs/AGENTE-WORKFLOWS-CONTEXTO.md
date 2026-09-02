@@ -53,8 +53,11 @@ ENSEÑAR (cliente)                    GRAPH (hub)                       EJECUTAR
 - `windows-graph/src/WorkflowRecorder.cs` — observa la superficie (evento `StepObserved`),
   encola y manda steps (`POST /learning/sessions/:id/steps`; body **camelCase**:
   `actionType`, no `action_type`).
-- Título ya NO es obligatorio: vacío → Graph lo autogenera del summary
-  (`WorkflowLearner.finishSession` → `completeWorkflow(..., autoTitle)`).
+- Título ya NO es obligatorio: vacío → Graph lo autogenera
+  (`WorkflowLearner.finishSession` → `WorkflowExecutionGuideBuilder.describeWorkflow`
+  devuelve `{title, summary, valueModes}` en UNA llamada JSON a temperature 0 →
+  `completeWorkflow(..., autoTitle)`). La `executionGuide` es el draft determinístico de
+  `buildDraft` (ya no se reescribe por LLM).
 
 ### Modelo de datos (Graph)
 - `src/domain/entities/Workflow.js` + `Step.js`. Variables NO se almacenan: se **derivan**
@@ -62,7 +65,8 @@ ENSEÑAR (cliente)                    GRAPH (hub)                       EJECUTAR
   con `semanticTarget`). Steps 1-indexed; el step de alineación usa `stepOrder: 0`.
 - **`valueMode` por step** (los "3 escenarios", ver §5): `fixed | dynamic | flexible`
   (+ `bindTo`), default `fixed`, persistido en Neo4j, clasificado por el LLM al terminar
-  la grabación (`WorkflowExecutionGuideBuilder.classifyValueModes`).
+  la grabación (`WorkflowExecutionGuideBuilder.describeWorkflow`, la misma llamada que
+  produce título y summary; `classifyValueModes` queda como alias).
 - Persistencia: `src/infrastructure/repositories/Neo4jWorkflowRepository.js`.
   `updateFullWorkflow` REEMPLAZA todos los steps (no toca branches → **no reindexar**
   stepOrders al insertar; usar 0/negativos).

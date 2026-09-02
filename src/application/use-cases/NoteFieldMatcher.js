@@ -2,9 +2,16 @@ const { withFeature } = require('../../infrastructure/usage/UsageContext');
 const { FEATURES } = require('../../domain/usage/vocabulary');
 
 const {
+  PROMPT_VERSION,
   buildNoteFieldMatchingPrompt,
   buildNoteFieldMatchingResponseFormat
 } = require('./NoteFieldMatchingPolicy');
+const grounding = require('../../domain/clinical/grounding');
+
+// Umbral heredado para salidas sin `grounding` (proveedores que ignoran el
+// json_schema y devuelven el contrato antiguo con `confidence`).
+const LEGACY_CONFIDENCE_THRESHOLD = 0.75;
+const TEMPERATURE = 0;
 
 class NoteFieldMatcher {
   constructor(llmProvider = null) {
@@ -44,17 +51,28 @@ class NoteFieldMatcher {
     ];
   }
 
+  // `confidence` numérico sigue en el contrato público; se deriva del
+  // grounding cuando el modelo lo devuelve y se acepta el legado si no.
   normalizeResult(parsed = {}, usage = null) {
     const matches = Array.isArray(parsed.matches) ? parsed.matches : [];
     return {
       matches: matches
-        .map((m) => ({
-          stepOrder: Number(m?.stepOrder),
-          value: `${m?.value ?? ''}`,
-          confidence: Number(m?.confidence) || 0,
-          evidence: `${m?.evidence ?? ''}`.slice(0, 200)
-        }))
-        .filter((m) => Number.isFinite(m.stepOrder) && m.value !== '' && m.confidence >= 0.75),
+        .map((m) => {
+          const level = grounding.normalizeGrounding(m?.grounding);
+          const confidence = level
+            ? grounding.confidenceFromGrounding(level)
+            : Number(m?.confidence) || 0;
+          return {
+            stepOrder: Number(m?.stepOrder),
+            value: `${m?.value ?? ''}`,
+            grounding: level || grounding.groundingFromConfidence(confidence) || 'absent',
+            confidence,
+            evidence: `${m?.evidence ?? ''}`.slice(0, 200),
+            accepted: level ? grounding.isGroundedForAutofill(level) : confidence >= LEGACY_CONFIDENCE_THRESHOLD
+          };
+        })
+        .filter((m) => Number.isFinite(m.stepOrder) && m.value !== '' && m.accepted)
+        .map(({ accepted, ...m }) => m),
       readyToSubmit: Boolean(parsed.readyToSubmit),
       submitReason: `${parsed.submitReason || ''}`.slice(0, 200),
       usage
@@ -73,10 +91,15 @@ class NoteFieldMatcher {
     }
 
     try {
-      const response = await withFeature(FEATURES.FIELD_MATCHING, () => this.llmProvider.chatExpectingJsonWithUsage(
-        this.buildMessages(payload),
-        buildNoteFieldMatchingResponseFormat()
-      ));
+      const response = await withFeature(
+        FEATURES.FIELD_MATCHING,
+        () => this.llmProvider.chatExpectingJsonWithUsage(
+          this.buildMessages(payload),
+          buildNoteFieldMatchingResponseFormat(),
+          { temperature: TEMPERATURE }
+        ),
+        { metadata: { promptVersion: PROMPT_VERSION, temperature: TEMPERATURE } }
+      );
       const parsed = this.llmProvider.parseJsonObject(response.content || '{}');
       const usage = response.usage ? {
         provider: response.provider || this.llmProvider?.provider || '',
@@ -95,5 +118,7 @@ class NoteFieldMatcher {
     }
   }
 }
+
+NoteFieldMatcher.LEGACY_CONFIDENCE_THRESHOLD = LEGACY_CONFIDENCE_THRESHOLD;
 
 module.exports = NoteFieldMatcher;

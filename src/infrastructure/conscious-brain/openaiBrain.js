@@ -12,7 +12,8 @@
 //  - Las acciones vienen en PÍXELES ABSOLUTOS del screenshot enviado; el cliente
 //    Windows captura a resolución real, así que la escala es 1.
 
-const { goalPrompt } = require('./prompt');
+const { goalPrompt, PROMPT_VERSION } = require('./prompt');
+const { ASSISTANT_TOOLS } = require('./tools');
 const LLMProvider = require('../LLMProvider');
 const { fromOpenAiCompatible, toRecorderUsage } = require('../../domain/usage/providerUsage');
 const { API_FAMILIES, FEATURES } = require('../../domain/usage/vocabulary');
@@ -42,12 +43,17 @@ function mcpFn(tool) {
   };
 }
 
-function customFn(name, description, arg) {
+/** Herramientas propias de Ü (tools.js), en el formato de la Responses API. */
+function assistantFn(tool) {
+  const properties = {};
+  for (const param of tool.params) {
+    properties[param.name] = { type: 'string', description: param.description };
+  }
   return {
     type: 'function',
-    name,
-    description,
-    parameters: { type: 'object', properties: { [arg]: { type: 'string' } }, required: [arg] }
+    name: tool.name,
+    description: tool.description,
+    parameters: { type: 'object', properties, required: tool.params.map((param) => param.name) }
   };
 }
 
@@ -113,7 +119,7 @@ function recordBrainUsage(input) {
     latencyMs: input.latencyMs,
     status: ok ? 'ok' : 'error',
     errorCode: ok ? '' : `http_${input.statusCode}`,
-    metadata: { httpStatus: input.statusCode, attempt: input.attempt },
+    metadata: { httpStatus: input.statusCode, attempt: input.attempt, promptVersion: PROMPT_VERSION },
     ...toRecorderUsage(fromOpenAiCompatible(parsed))
   });
 }
@@ -136,8 +142,13 @@ async function runOpenAiTurn(inp) {
     input.push({ type: 'message', role: 'user', content });
   };
 
+  // El prompt del sistema va en `instructions` en CADA request: la Responses
+  // API no lo hereda por previous_response_id. Antes iba como primer mensaje
+  // de usuario, con lo que las reglas tenían el mismo rango que un "hola".
+  const instructions = goalPrompt({ goal: s.goal, tools, memory, stateBlock: '' });
+
   if (!s.previousId) {
-    userMessage(goalPrompt({ goal: s.goal, tools, memory, stateBlock }));
+    userMessage(stateBlock);
   } else if (s.pending.length === 0) {
     userMessage(`${s.continuationMessage || s.informText || 'Continúa.'}\n${stateBlock}`);
     s.continuationMessage = '';
@@ -168,12 +179,11 @@ async function runOpenAiTurn(inp) {
 
   const toolDecls = [{ type: 'computer' }];
   for (const tool of tools) toolDecls.push(mcpFn(tool));
-  toolDecls.push(customFn('ask_user', 'Pregunta al usuario cuando tengas una duda real e importante. Responde con texto o voz.', 'question'));
-  toolDecls.push(customFn('speak', 'Di algo en voz alta con tu personalidad. Solo para lo importante; no narres cada paso.', 'text'));
-  toolDecls.push(customFn('list_apps', 'Lista las aplicaciones instaladas para elegir cuál abrir.', 'reason'));
+  for (const tool of ASSISTANT_TOOLS) toolDecls.push(assistantFn(tool));
 
   const reqBody = {
     model: s.model,
+    instructions,
     input,
     tools: toolDecls,
     truncation: 'auto',

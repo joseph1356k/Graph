@@ -166,6 +166,69 @@ function fakeLlm(values, { calls = { count: 0 } } = {}) {
     );
   });
 
+  console.log('\nGrounding en resolver y field matcher:');
+
+  await check('el resolver acepta grounding explicit/entailed y descarta inferred (sin confidence)', async () => {
+    const resolver = new DynamicValueResolver(fakeLlm([
+      { stepOrder: 2, value: '12345678', grounding: 'explicit', evidence: 'documento 12345678' },
+      { stepOrder: 3, value: 'Juan Pérez', grounding: 'inferred', evidence: 'alguien llamado Juan' }
+    ]));
+    await assert.rejects(
+      () => executorWith(patientWorkflow(), resolver)
+        .getExecutionPlanById('wf_test_patient', { context: 'documento 12345678, alguien llamado Juan' }),
+      /Primer nombre/
+    );
+    const ok = new DynamicValueResolver(fakeLlm([
+      { stepOrder: 2, value: '12345678', grounding: 'explicit', evidence: 'documento 12345678' },
+      { stepOrder: 3, value: 'Juan Pérez', grounding: 'entailed', evidence: 'paciente Juan Pérez' }
+    ]));
+    const plan = await executorWith(patientWorkflow(), ok)
+      .getExecutionPlanById('wf_test_patient', { context: 'paciente Juan Pérez, documento 12345678' });
+    assert.strictEqual(plan.steps[2].value, 'Juan Pérez');
+  });
+
+  await check('el resolver pide grounding en el schema, temperature 0 y promptVersion en telemetría', async () => {
+    const { currentContext } = require('../src/infrastructure/usage/UsageContext');
+    let seen = null;
+    const llm = {
+      hasApiKey: () => true,
+      parseJsonObject: (s) => JSON.parse(s),
+      chatExpectingJsonWithUsage: async (messages, format, options) => {
+        seen = { messages, format, options, metadata: currentContext().metadata };
+        return { content: JSON.stringify({ values: [] }), usage: null };
+      }
+    };
+    await new DynamicValueResolver(llm).resolve({ context: 'x', steps: [{ stepOrder: 2, label: 'Doc' }] });
+    assert.deepStrictEqual(seen.format.json_schema.schema.properties.values.items.required, ['stepOrder', 'value', 'grounding', 'evidence']);
+    assert.strictEqual(seen.options.temperature, 0);
+    assert.strictEqual(seen.metadata.promptVersion, DynamicValueResolver.PROMPT_VERSION);
+    assert.ok(seen.messages[0].content.includes('GROUNDING'));
+    assert.ok(seen.messages[0].content.includes('FIDELIDAD DE DATOS CRÍTICOS'));
+  });
+
+  await check('el field matcher deriva confidence del grounding y conserva el contrato numérico', async () => {
+    const NoteFieldMatcher = require('../src/application/use-cases/NoteFieldMatcher');
+    const matcher = new NoteFieldMatcher(null);
+    const result = matcher.normalizeResult({
+      matches: [
+        { stepOrder: 1, value: '1023456789', grounding: 'explicit', evidence: 'cedula 1023456789' },
+        { stepOrder: 2, value: 'CC', grounding: 'entailed', evidence: 'cedula' },
+        { stepOrder: 3, value: 'masculino', grounding: 'inferred', evidence: 'Juan' },
+        // Contrato antiguo (proveedor que ignora el json_schema): confidence numérico.
+        { stepOrder: 4, value: 'Medellín', confidence: 0.9, evidence: 'Medellín' },
+        { stepOrder: 5, value: '1990-01-01', confidence: 0.5, evidence: '' }
+      ],
+      readyToSubmit: false,
+      submitReason: ''
+    });
+    assert.deepStrictEqual(result.matches.map((m) => [m.stepOrder, m.grounding, m.confidence]), [
+      [1, 'explicit', 1],
+      [2, 'entailed', 0.8],
+      [4, 'explicit', 0.9]
+    ]);
+    assert.ok(result.matches.every((m) => typeof m.confidence === 'number'));
+  });
+
   if (failures > 0) {
     console.error(`\n${failures} verificación(es) fallaron.`);
     process.exit(1);

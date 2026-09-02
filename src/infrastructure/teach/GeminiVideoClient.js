@@ -19,6 +19,9 @@
 const LLMProvider = require('../LLMProvider');
 const { fromGemini, toRecorderUsage } = require('../../domain/usage/providerUsage');
 const { FEATURES, API_FAMILIES } = require('../../domain/usage/vocabulary');
+const clauses = require('../../application/prompts/PromptClauses');
+
+const PROMPT_VERSION = clauses.promptVersion('teach-video', '2026-09-02.1');
 
 const BASE = 'https://generativelanguage.googleapis.com';
 
@@ -62,7 +65,8 @@ function recordVideoUsage(input) {
     metadata: {
       httpStatus: input.statusCode || 0,
       attempt: input.attempt,
-      usageSource: 'server_measured'
+      usageSource: 'server_measured',
+      promptVersion: PROMPT_VERSION
     },
     ...toRecorderUsage(fromGemini(input.body || {}))
   });
@@ -149,6 +153,28 @@ Responde SOLO JSON:
 {"summary": "...", "items": [{"app": "HIS - Admisiones", "note": "..."}], "questions": ["..."]}
 `.trim();
 
+// El schema hace cumplir la forma en el proveedor, no sólo en el prompt. La
+// regla de privacidad sigue viviendo en el prompt (un schema no puede
+// expresarla); detrás hay un verificador de PHI en el consumidor.
+const TEACH_RESPONSE_SCHEMA = Object.freeze({
+  type: 'OBJECT',
+  properties: {
+    summary: { type: 'STRING' },
+    items: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: { app: { type: 'STRING' }, note: { type: 'STRING' } },
+        required: ['app', 'note']
+      }
+    },
+    questions: { type: 'ARRAY', items: { type: 'STRING' } }
+  },
+  required: ['summary', 'items', 'questions']
+});
+
+const TEACH_USER_TURN = 'Analiza este video de enseñanza completo (imagen y audio) y responde con el JSON pedido.';
+
 /**
  * Gemini devuelve 429/5xx ("This model is currently overloaded") cuando está
  * saturado, y Google los documenta como temporales. Sin reintento, un bache de
@@ -162,14 +188,22 @@ function isTransient(status) {
 
 /** El video ya está ACTIVE: pídele a Gemini el conocimiento del sistema. */
 async function processVideo(apiKey, fileUri, model) {
+  // El prompt va como system_instruction (antes viajaba como parte del turno
+  // de usuario, al mismo rango que el video); el video y una consigna corta
+  // van en el turno de usuario.
   const req = {
+    system_instruction: { parts: [{ text: MEDICAL_TEACH_PROMPT }] },
     contents: [
       {
         role: 'user',
-        parts: [{ fileData: { mimeType: 'video/mp4', fileUri } }, { text: MEDICAL_TEACH_PROMPT }]
+        parts: [{ fileData: { mimeType: 'video/mp4', fileUri } }, { text: TEACH_USER_TURN }]
       }
     ],
-    generationConfig: { responseMimeType: 'application/json' }
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseSchema: TEACH_RESPONSE_SCHEMA,
+      temperature: 0.2
+    }
   };
 
   // Backoff exponencial 0.8s → 6.4s, igual que la versión Android (GeminiHttp.withRetry).
@@ -221,7 +255,7 @@ async function processVideo(apiKey, fileUri, model) {
   const text = body.candidates?.[0]?.content?.parts?.find((part) => typeof part.text === 'string')?.text;
   if (!text) throw new Error('Gemini no devolvió texto en la respuesta');
 
-  const parsed = firstJsonObject(text);
+  const parsed = parseTeachJson(text);
   const notes = Array.isArray(parsed.items)
     ? parsed.items
       .map((item) => ({ app: `${item.app ?? ''}`.trim(), note: `${item.note ?? ''}`.trim() }))
@@ -235,6 +269,17 @@ async function processVideo(apiKey, fileUri, model) {
   return { summary, notes, questions };
 }
 
+/** Con responseSchema la respuesta es JSON puro; el recorte por llaves queda como fallback. */
+function parseTeachJson(text) {
+  try {
+    const direct = JSON.parse(text);
+    if (direct && typeof direct === 'object' && !Array.isArray(direct)) return direct;
+  } catch (error) {
+    // cae al fallback
+  }
+  return firstJsonObject(text);
+}
+
 /** Tolera fences de markdown o texto extra alrededor del JSON (igual que la versión Android). */
 function firstJsonObject(text) {
   const start = text.indexOf('{');
@@ -243,4 +288,4 @@ function firstJsonObject(text) {
   return JSON.parse(text.slice(start, end + 1));
 }
 
-module.exports = { startUpload, fileState, processVideo };
+module.exports = { startUpload, fileState, processVideo, PROMPT_VERSION, TEACH_RESPONSE_SCHEMA };

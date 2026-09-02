@@ -1,8 +1,6 @@
 const Workflow = require('../../domain/entities/Workflow');
 const WorkflowExecutionGuideBuilder = require('./WorkflowExecutionGuideBuilder');
 
-const { withFeature } = require('../../infrastructure/usage/UsageContext');
-const { FEATURES } = require('../../domain/usage/vocabulary');
 class WorkflowLearner {
   constructor(repository, llmProvider, catalogWriter, catalogService) {
     this.repository = repository;
@@ -80,59 +78,37 @@ class WorkflowLearner {
       steps
     });
 
-    let summary = initialDesc;
-    let executionGuide = '';
+    // Título, summary y clasificación de valueMode salen de UNA llamada JSON
+    // (describeWorkflow); la guía de ejecución es el draft determinístico.
+    // Fail-safe: sin modelo o con error, summary determinístico, sin título y
+    // cada step 'fixed' (comportamiento de siempre).
+    let described = this.executionGuideBuilder.fallbackDescription(workflow.toJSON());
     try {
-      if (!this.llmProvider.hasApiKey()) {
-        const firstActions = steps
-          .slice(0, 3)
-          .map((step) => `${step.actionType} ${step.selector || step.url || ''}`.trim())
-          .join(', ');
-        summary = `${initialDesc}. Steps: ${firstActions || 'No recorded steps.'}`;
-      } else {
-        const messages = [
-          {
-            role: 'system',
-            content: 'Summarize a user navigation workflow for a technical log. Use the initial description and the steps provided. Keep it concise but clear.'
-          },
-          { role: 'user', content: `Initial Description: ${initialDesc}\nSteps: ${JSON.stringify(steps)}` }
-        ];
-        summary = await withFeature(FEATURES.WORKFLOW_LEARNING, () => this.llmProvider.chat(messages));
-      }
-
-      executionGuide = await this.executionGuideBuilder.buildGuide({
-        ...workflow.toJSON(),
-        summary
-      });
+      described = await this.executionGuideBuilder.describeWorkflow(workflow.toJSON());
     } catch (err) {
       console.warn(`[WorkflowLearner] LLM Warning: ${err.message}`);
     }
+    const summary = described.summary || initialDesc;
+    const executionGuide = this.executionGuideBuilder.buildDraft(summary || initialDesc, workflow.steps || []);
 
-    if (!executionGuide) {
-      executionGuide = this.executionGuideBuilder.buildDraft(summary || initialDesc, workflow.steps || []);
-    }
-
-    // El LLM clasifica cómo debe coincidir el valor de cada step al reejecutar (fixed/dynamic/flexible):
-    // así el workflow generaliza (ej. "la pestaña nueva" = flexible, no la exacta grabada). Fail-safe:
-    // si no clasifica, cada step queda 'fixed' (comportamiento de siempre). Ver doc coincidencia-superficie-estado.
+    // El modelo clasifica cómo debe coincidir el valor de cada step al reejecutar (fixed/dynamic/flexible):
+    // así el workflow generaliza (ej. "la pestaña nueva" = flexible, no la exacta grabada). Ver doc
+    // coincidencia-superficie-estado.
     try {
-      if (typeof this.executionGuideBuilder.classifyValueModes === 'function'
-          && typeof this.repository.setStepValueModes === 'function') {
-        const modes = await this.executionGuideBuilder.classifyValueModes({ ...workflow.toJSON(), summary });
-        if (modes.length) {
-          await this.repository.setStepValueModes(workflowId, modes, options.access || null);
-        }
+      if (described.valueModes.length && typeof this.repository.setStepValueModes === 'function') {
+        await this.repository.setStepValueModes(workflowId, described.valueModes, options.access || null);
       }
     } catch (err) {
       console.warn(`[WorkflowLearner] valueMode classify: ${err.message}`);
     }
 
-    // Título automático: si se enseñó sin título (placeholder del recorder o vacío), el título se crea
-    // al final a partir de lo aprendido (el summary). Así "Enseñar" es plug-and-play, sin pedir título.
+    // Título automático: si se enseñó sin título (placeholder del recorder o vacío), el título lo da el
+    // modelo en la misma llamada; si no lo dio, la primera frase del summary. Así "Enseñar" es
+    // plug-and-play, sin pedir título.
     const desc = `${initialDesc || ''}`.trim();
     const isPlaceholder = desc === '' || desc.toLowerCase() === 'workflow sin descripción';
     const autoTitle = isPlaceholder
-      ? (`${summary || ''}`.split(/[.\n]/)[0].trim().slice(0, 80) || null)
+      ? (described.title || `${summary || ''}`.split(/[.\n]/)[0].trim().slice(0, 80) || null)
       : null;
 
     await this.repository.completeWorkflow(workflowId, summary, executionGuide, options.access || null, autoTitle);
