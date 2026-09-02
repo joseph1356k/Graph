@@ -204,7 +204,6 @@ async function startTestServer({ restClient, llm }) {
     next();
   });
   registerClinicalRoutes(app, {
-    diagnosisSuggestionService: { hasLlm: () => false, suggest: async () => ({ suggestions: [] }) },
     templateService,
     encounterService,
     noteGeneratorService,

@@ -1,6 +1,6 @@
 # Asistente Clínico Contextual Miracle — Backend
 
-Backend del panel de asistente flotante y de la caja "Pídale a Miracle un ajuste de la nota...". Tres capacidades: **chat clínico** (general o contextual a una consulta), **sugerencias diagnósticas** por encounter y **ajuste de nota** propuesto (nunca persistido).
+Backend del panel de asistente flotante y de la caja "Pídale a Miracle un ajuste de la nota...". Tres capacidades: **chat clínico** (general o contextual a una consulta), **sugerencias diagnósticas** (por encounter, o por texto plano para el plugin) y **ajuste de nota** propuesto (nunca persistido), en dos modos: `rewrite` (reorganiza sin datos nuevos) y `dictation` (inserta lo que el médico dicta).
 
 > Apoyo clínico para revisión médica. El asistente no confirma diagnósticos, no inventa datos y no reemplaza el criterio profesional — esas reglas están codificadas en prompts Y en validación de salida.
 
@@ -11,7 +11,7 @@ Backend del panel de asistente flotante y de la caja "Pídale a Miracle un ajust
 | [ClinicalAssistantPromptBuilder](../src/application/use-cases/ClinicalAssistantPromptBuilder.js) | System prompt del asistente (reutilizable, no vive en rutas) + prompts de chat/diagnóstico/ajuste |
 | [ClinicalAssistantContextBuilder](../src/application/use-cases/ClinicalAssistantContextBuilder.js) | Arma el contexto clínico: encounter, especialidad, transcript, note_json, screen_context, history (sanitizados) |
 | [ClinicalAssistantService](../src/application/use-cases/ClinicalAssistantService.js) | Orquesta los 3 casos de uso; usa su propio `LLMProvider('MIRACLE_ASSISTANT')` (ver abajo) y `getOwnedEncounter` (ownership) |
-| [ClinicalAssistantValidationService](../src/application/use-cases/ClinicalAssistantValidationService.js) | Valida salidas: evidencia literal, degradación de lenguaje definitivo, límites |
+| [ClinicalAssistantValidationService](../src/application/use-cases/ClinicalAssistantValidationService.js) | Valida salidas: evidencia literal, detección (sin reescritura) de lenguaje definitivo, límites, proyección al contrato del plugin |
 | [MiracleAssistantProviderConfigService](../src/application/use-cases/MiracleAssistantProviderConfigService.js) | Provider Studio: catálogo + guardado en Vercel env del provider del asistente (independiente de Graph) |
 
 Auth: los 3 endpoints van detrás de `requireClinicalAuth` (Bearer token de Supabase → `req.clinicalUser`), igual que el resto del módulo clínico. Rate limit reforzado (gastan créditos LLM).
@@ -119,12 +119,12 @@ Sin body. Usa el encounter completo: transcript + note_json + specialty + templa
 
 Garantías del backend (validación post-LLM, no solo prompt):
 
-- Máximo **5** sugerencias; `confidence` clamp [0,1]; `type` siempre `differential_or_working_impression`.
+- Máximo **5** sugerencias; `type` siempre `differential_or_working_impression`. Cada sugerencia trae `grounding` (`explicit|entailed|inferred`) y `confidence` se **calcula** desde él (1 / 0.8 / 0.4), no lo dicta el modelo.
 - **Cada `supporting_evidence` debe existir literalmente** en el transcript o en la nota (comparación sin acentos y con espacios colapsados). Evidencia inventada se elimina; una sugerencia sin evidencia real se **descarta entera** — así el modelo no puede "inventar examen físico".
-- Lenguaje definitivo se degrada: "diagnóstico confirmado de X" → "posibilidad clínica de X"; "se confirma" → "es compatible con".
+- Lenguaje definitivo ("diagnóstico confirmado", "se confirma", "definitivo") se **detecta, no se reescribe**: el texto queda intacto, la sugerencia baja a `grounding: "inferred"` (confidence 0.4), recibe la nota fija `Redacción definitiva detectada: tratar como hipótesis pendiente de confirmación.` al inicio de `against_or_uncertain`, y la respuesta trae el contador `definitive_language_hits`. (Antes un regex cambiaba "confirmado" por "a considerar" y alteraba hechos del paciente: «contacto confirmado de tuberculosis» salía como «contacto a considerar».)
 - Encounter sin transcript ni nota → `{ "suggestions": [] }` prudente (200, sin llamar al LLM).
 
-Nota: convive con el endpoint legacy `POST /api/clinical/diagnosis-suggestions` (por contenido de nota suelto, auth local, usado por el EMR demo). Este nuevo es por-encounter y con contrato más rico; el legacy no cambió.
+Nota: `POST /api/clinical/diagnosis-suggestions` (por contenido de nota suelto, auth local, usado por el plugin del EMR demo) es ahora un **adaptador** sobre este mismo motor: mismo prompt, misma verificación de evidencia, mismo provider del asistente (con fallback al provider de Graph si el del asistente no tiene key). Su contrato de salida no cambió: `{ suggestions: [{ title, rationale, supportingEvidence }], reviewNotice }`. El motor anterior en inglés (`ClinicalDiagnosisSuggestionService`) fue eliminado.
 
 ## 3. Ajuste de nota clínica
 
@@ -134,7 +134,7 @@ Authorization: Bearer <supabase_access_token>
 ```
 
 ```json
-{ "encounter_id": "enc_123", "instruction": "Haz el plan más breve y claro.", "section_key": "plan" }
+{ "encounter_id": "enc_123", "instruction": "Haz el plan más breve y claro.", "section_key": "plan", "instruction_kind": "rewrite" }
 ```
 
 Respuesta:
@@ -143,15 +143,22 @@ Respuesta:
 {
   "proposed_note_json": { "summary": "...", "sections": [ ... ], "warnings": [], "missing_required_sections": [] },
   "changed_sections": ["plan"],
+  "instruction_kind": "rewrite",
   "explanation": "Se acortó el plan sin agregar información nueva.",
   "requires_physician_review": true
 }
 ```
 
+`instruction_kind` (opcional, default `rewrite`):
+
+- `rewrite`: reorganiza, acorta, aclara o corrige la redacción **sin datos clínicos nuevos**. Si la instrucción exige inventar información, el modelo no lo hace y lo explica en `warnings`.
+- `dictation`: el médico **es la fuente**. Lo dictado en `instruction` se integra exactamente en `section_key` (obligatorio en este modo; sin él → `400 ASSISTANT_INVALID`), sustituyendo la frase prudente si la sección estaba vacía o añadiéndose al final si ya tenía contenido. La sección queda con `grounding: "explicit"` y `evidence: "[dictado del médico]"`, que el validador reconoce como centinela y no intenta buscar en la transcripción. El portal elige este modo desde el micrófono («agrega que el paciente niega fiebre»).
+
 Garantías:
 
 - **Nunca persiste.** Devuelve una propuesta; el médico la revisa y la guarda con el `PUT /api/clinical/encounters/:id/note` existente.
-- La propuesta se valida contra el `template_snapshot` (mismas keys, mismo orden). Si el modelo responde parcial (solo la sección ajustada), el backend hace **merge con la nota original** — las secciones no mencionadas se conservan textuales. Secciones inventadas se ignoran.
+- La propuesta se valida contra el `template_snapshot` (mismas keys, mismo orden) **con la transcripción**: la evidencia de las secciones tocadas se verifica igual que en la generación. Si el modelo responde parcial (solo la sección ajustada), el backend hace **merge con la nota original** — las secciones no mencionadas se conservan textuales. Secciones inventadas se ignoran. Los `warnings` del modelo se conservan (antes se descartaban).
+- El prompt de ajuste es propio (~180 palabras): ya no hereda el system prompt del chat.
 - `section_key` es opcional; enfoca la instrucción en una sección.
 - Requiere que el encounter ya tenga `note_json` (si no → `400 ENCOUNTER_INVALID`).
 
@@ -170,7 +177,7 @@ Envelope estándar del módulo clínico `{ "error": { "code", "message" } }`:
 
 ## Seguridad y límites (resumen)
 
-El system prompt (en `ClinicalAssistantPromptBuilder.SYSTEM_PROMPT`) prohíbe: diagnóstico definitivo, órdenes médicas finales, inventar datos, dosis específicas como orden final sin datos esenciales, y exige señalar incertidumbre y red flags. La validación de salida refuerza lo verificable (evidencia literal, degradación de lenguaje, estructura de nota). Sin PHI en logs (solo ids y conteos). `safety_notice` viaja en TODAS las respuestas.
+El system prompt de chat (`ClinicalAssistantPromptBuilder.buildChatSystemPrompt`) se estructura en tres bloques: REGLAS INVIOLABLES (límite de rol frente a datos delimitados, no diagnóstico definitivo, no órdenes finales, no inventar datos, señalar incertidumbre y red flags), ESPECIALIDAD ACTIVA (solo la regla de la familia que aplica, no las siete) y ESTILO. Diferenciales y ajuste componen prompts propios y más cortos con las mismas cláusulas compartidas (`src/application/prompts/PromptClauses.js`). Transcripción, nota y pantalla viajan delimitadas (`<transcripcion>`, `<nota>`, `<pantalla>`) y el prompt declara que son datos, no instrucciones. La validación de salida refuerza lo verificable (evidencia literal, detección de lenguaje definitivo, estructura de nota). Sin PHI en logs (solo ids y conteos). `safety_notice` viaja en TODAS las respuestas. Temperaturas fijas: chat 0.4, diferenciales 0.2, ajuste 0.2. Cada llamada registra `promptVersion` en telemetría.
 
 ## Limitaciones actuales
 

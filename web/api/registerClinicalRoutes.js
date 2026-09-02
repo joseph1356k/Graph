@@ -78,18 +78,21 @@ function respondClinicalError(res, error, logPrefix) {
 }
 
 function registerClinicalRoutes(app, deps = {}) {
-  const diagnosisSuggestionService = deps.diagnosisSuggestionService;
   const templateService = deps.templateService;
   const encounterService = deps.encounterService;
   const noteGeneratorService = deps.noteGeneratorService;
   const noteValidationService = deps.noteValidationService;
+  const assistantService = deps.assistantService;
 
-  if (!app || !diagnosisSuggestionService) {
-    throw new Error('registerClinicalRoutes requires app and diagnosisSuggestionService');
+  if (!app) {
+    throw new Error('registerClinicalRoutes requires app');
+  }
+  if (!assistantService && !templateService) {
+    throw new Error('registerClinicalRoutes requires at least assistantService or the clinical engine services');
   }
 
-  // The template/encounter engine is optional as a group so legacy callers that
-  // only exercise diagnosis-suggestions keep working; partial wiring is a bug.
+  // The template/encounter engine is optional as a group so callers that only
+  // exercise the assistant keep working; partial wiring is a bug.
   const engineDeps = [templateService, encounterService, noteGeneratorService, noteValidationService];
   const hasEngine = engineDeps.every(Boolean);
   if (!hasEngine && engineDeps.some(Boolean)) {
@@ -105,14 +108,21 @@ function registerClinicalRoutes(app, deps = {}) {
     });
   }
 
-  // The contextual clinical assistant is its own optional group, so callers
-  // exercising only diagnosis-suggestions or only the engine keep working.
-  if (deps.assistantService) {
-    registerClinicalAssistantRoutes(app, { assistantService: deps.assistantService });
+  // The contextual clinical assistant is its own optional group. It also owns
+  // the single differential-diagnosis engine, so the plain-text endpoint the
+  // browser plugin consumes is registered here as an adapter over it.
+  if (assistantService) {
+    registerClinicalAssistantRoutes(app, { assistantService });
+    registerLegacyDiagnosisRoute(app, { assistantService });
   }
+}
 
-  // ---- Sugerencias diagnósticas (endpoint previo, contrato sin cambios) ----
-
+// ---- Sugerencias diagnósticas por texto plano (contrato previo, sin cambios) ----
+// Adaptador: mismo prompt y misma verificación de evidencia que
+// /encounters/:id/diagnostic-suggestions; la salida se proyecta al contrato
+// antiguo {suggestions:[{title, rationale, supportingEvidence}], reviewNotice}
+// que lee web/public/trainer-plugin.js.
+function registerLegacyDiagnosisRoute(app, { assistantService }) {
   app.post('/api/clinical/diagnosis-suggestions', async (req, res) => {
     const noteContent = typeof req.body?.noteContent === 'string'
       ? req.body.noteContent
@@ -124,15 +134,21 @@ function registerClinicalRoutes(app, deps = {}) {
     if (noteContent.length > MAX_NOTE_LENGTH) {
       return res.status(413).json({ error: 'La nota clinica supera el limite de 20000 caracteres.' });
     }
-    if (!diagnosisSuggestionService.hasLlm()) {
+    if (!assistantService.hasLlm()) {
       return res.status(503).json({ error: 'El proveedor de IA no esta configurado.' });
     }
 
     try {
-      const result = await diagnosisSuggestionService.suggest(noteContent);
-      res.json(result);
+      const result = await assistantService.suggestFromText({
+        noteContent,
+        specialty: typeof req.body?.specialty === 'string' ? req.body.specialty : ''
+      });
+      res.json(assistantService.validationService.toLegacyProjection(result));
     } catch (error) {
       console.error(`[Clinical Diagnosis Suggestions] Error: ${error.message}`);
+      if (isClinicalError(error) && error.code === 'ASSISTANT_INVALID') {
+        return res.status(error.statusCode || 400).json({ error: error.message });
+      }
       const status = error.code === 'LLM_NOT_CONFIGURED' ? 503 : 500;
       res.status(status).json({ error: status === 503 ? 'El proveedor de IA no esta configurado.' : 'No fue posible generar sugerencias diagnosticas.' });
     }
@@ -313,6 +329,9 @@ function registerClinicalAssistantRoutes(app, deps) {
         encounterId: req.body?.encounter_id,
         instruction: req.body?.instruction,
         sectionKey: req.body?.section_key,
+        // rewrite (default): reorganiza sin datos nuevos. dictation: inserta lo
+        // que el médico dicta (él es la fuente) en section_key.
+        instructionKind: req.body?.instruction_kind,
         // Aquí las preferencias solo alcanzan al campo "explanation", que es el
         // único texto que el médico lee de esta respuesta.
         doctor: req.body?.doctor

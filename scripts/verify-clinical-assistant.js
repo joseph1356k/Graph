@@ -123,7 +123,6 @@ async function startServer({ restClient, llm }) {
     next();
   });
   registerClinicalRoutes(app, {
-    diagnosisSuggestionService: { hasLlm: () => false, suggest: async () => ({ suggestions: [] }) },
     assistantService
   });
 
@@ -316,10 +315,58 @@ async function main() {
       assert.ok(Array.isArray(s.suggested_next_questions));
       assert.ok(diag.body.safety_notice.includes('No constituyen diagnóstico confirmado'));
     });
-    await check('no presenta diagnóstico como confirmado (lenguaje degradado)', () => {
+    // Antes aquí un regex reescribía "confirmado" → "a considerar", alterando
+    // hechos del paciente. Ahora el texto queda intacto y la sugerencia baja a
+    // `inferred` con una nota explícita de incertidumbre.
+    await check('lenguaje definitivo: texto intacto, grounding inferred y nota de incertidumbre', () => {
       const s = diag.body.suggestions[0];
-      assert.ok(!/confirmado/i.test(s.title), `title degradado: ${s.title}`);
-      assert.ok(!/se confirma/i.test(s.rationale), `rationale degradado: ${s.rationale}`);
+      assert.strictEqual(s.title, 'Diagnóstico confirmado de cefalea tensional', 'el título no se reescribe');
+      assert.strictEqual(s.rationale, 'Se confirma el diagnóstico por el patrón del dolor.', 'la justificación no se reescribe');
+      assert.strictEqual(s.grounding, 'inferred');
+      assert.ok(s.confidence <= 0.4, `confidence ${s.confidence} debería ser ≤ 0.4`);
+      assert.strictEqual(s.against_or_uncertain[0], ClinicalAssistantValidationService.DEFINITIVE_LANGUAGE_NOTE);
+      assert.strictEqual(diag.body.definitive_language_hits, 1);
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(!prompt.includes('REGLAS INVIOLABLES'), 'el prompt de diferenciales no hereda el de chat');
+      assert.ok(prompt.includes('<transcripcion>'), 'la transcripción viaja delimitada');
+    });
+
+    // Endpoint de texto plano (plugin): mismo motor, contrato antiguo proyectado.
+    llm.state.jsonHandler = () => ({
+      suggestions: [{
+        title: 'Faringitis aguda probable',
+        grounding: 'entailed',
+        rationale: 'Compatible con fiebre y odinofagia.',
+        supporting_evidence: ['fiebre y odinofagia de tres días'],
+        against_or_uncertain: []
+      }, {
+        title: 'Hallazgo inventado',
+        grounding: 'explicit',
+        rationale: 'No debe pasar el filtro de evidencia.',
+        supporting_evidence: ['radiografía con infiltrado']
+      }]
+    });
+    const legacy = await call('POST', '/api/clinical/diagnosis-suggestions', {
+      noteContent: 'Paciente con fiebre y odinofagia de tres días, sin disnea.'
+    });
+    await check('diagnosis-suggestions (texto plano) proyecta al contrato del plugin con evidencia verificada', () => {
+      assert.strictEqual(legacy.status, 200);
+      assert.deepStrictEqual(Object.keys(legacy.body).sort(), ['reviewNotice', 'suggestions']);
+      assert.strictEqual(legacy.body.suggestions.length, 1, 'la sugerencia sin evidencia real se descarta');
+      assert.deepStrictEqual(legacy.body.suggestions[0], {
+        title: 'Faringitis aguda probable',
+        rationale: 'Compatible con fiebre y odinofagia.',
+        supportingEvidence: 'fiebre y odinofagia de tres días'
+      });
+      assert.strictEqual(legacy.body.reviewNotice, ClinicalAssistantValidationService.LEGACY_REVIEW_NOTICE);
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(prompt.includes('fiebre y odinofagia'), 'la nota va al prompt');
+    });
+    const legacyEmpty = await call('POST', '/api/clinical/diagnosis-suggestions', { noteContent: '   ' });
+    const legacyLong = await call('POST', '/api/clinical/diagnosis-suggestions', { noteContent: 'x'.repeat(20001) });
+    await check('diagnosis-suggestions (texto plano) conserva 400 vacío / 413 largo', () => {
+      assert.strictEqual(legacyEmpty.status, 400);
+      assert.strictEqual(legacyLong.status, 413);
     });
 
     // 6. Evidencia inventada (examen físico inexistente) se elimina.
@@ -396,6 +443,69 @@ async function main() {
         'Higiene del sueño, hidratación, pausas de pantalla y control si hay signos de alarma.'
       );
     });
+
+    await check('note-adjustment: el prompt de ajuste no hereda el de chat y la especialidad activa es una sola', () => {
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(!prompt.includes('REGLAS INVIOLABLES'), 'sin reglas de chat');
+      assert.ok(!prompt.includes('Modo general'), 'sin modo de chat');
+      assert.ok(prompt.includes('<nota>'), 'la nota viaja delimitada');
+      assert.ok(prompt.includes('PROHIBIDO'), 'reglas de rewrite presentes');
+      assert.strictEqual(adjust.body.instruction_kind, 'rewrite');
+      const chatPrompt = promptTextOf(llm.state.calls.find((c) => c.kind === 'chat'));
+      assert.ok(chatPrompt.includes('Medicina general: prioriza'), 'regla de la especialidad activa');
+      assert.ok(!chatPrompt.includes('Pediatría: considera'), 'las demás familias no viajan');
+      assert.ok(!chatPrompt.includes('Ginecología y obstetricia: considera'));
+    });
+
+    // Dictado: el médico es la fuente. Lo que dicta entra con grounding
+    // explicit y el centinela como evidencia; sobrevive a la verificación.
+    llm.state.jsonHandler = (messages) => {
+      const system = messages[0].content;
+      assert.ok(system.includes('EXACTAMENTE lo dictado'), 'reglas de dictado en el system prompt');
+      assert.ok(!system.includes('PROHIBIDO agregar'), 'sin las reglas de rewrite');
+      return {
+        note_json: {
+          sections: [{
+            key: 'plan',
+            label: 'Plan',
+            content: 'Higiene del sueño, hidratación, pausas de pantalla y control si hay signos de alarma. Control en ocho días.',
+            grounding: 'explicit',
+            evidence: ['[dictado del médico]']
+          }],
+          warnings: ['El dictado no menciona la fecha exacta del control.']
+        },
+        explanation: 'Se añadió lo dictado al plan.'
+      };
+    };
+    const dictation = await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: encounter.id,
+      instruction: 'el paciente vuelve a control en ocho días',
+      section_key: 'plan',
+      instruction_kind: 'dictation'
+    });
+    await check('note-adjustment dictation: añade lo dictado con evidencia [dictado del médico] y grounding explicit', () => {
+      assert.strictEqual(dictation.status, 200, JSON.stringify(dictation.body));
+      assert.strictEqual(dictation.body.instruction_kind, 'dictation');
+      assert.deepStrictEqual(dictation.body.changed_sections, ['plan']);
+      const plan = dictation.body.proposed_note_json.sections.find((s) => s.key === 'plan');
+      assert.ok(plan.content.endsWith('Control en ocho días.'));
+      assert.strictEqual(plan.grounding, 'explicit');
+      assert.strictEqual(plan.confidence, 1);
+      assert.ok(plan.evidence.includes('[dictado del médico]'), `evidence: ${plan.evidence}`);
+    });
+    await check('note-adjustment conserva los warnings del modelo', () => {
+      assert.ok(dictation.body.proposed_note_json.warnings.includes('El dictado no menciona la fecha exacta del control.'));
+    });
+    const dictationNoSection = await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: encounter.id,
+      instruction: 'el paciente vuelve a control en ocho días',
+      instruction_kind: 'dictation'
+    });
+    await check('note-adjustment dictation sin section_key responde ASSISTANT_INVALID', () => {
+      assert.strictEqual(dictationNoSection.status, 400);
+      assert.strictEqual(dictationNoSection.body.error.code, 'ASSISTANT_INVALID');
+    });
+    llm.state.jsonHandler = null;
 
     // Extra: ajuste sin nota generada -> ENCOUNTER_INVALID.
     const noNote = await call('POST', '/api/clinical/assistant/note-adjustment', {

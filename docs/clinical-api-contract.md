@@ -341,7 +341,7 @@ POST /api/clinical/assistant/chat
 POST /api/clinical/encounters/:encounter_id/diagnostic-suggestions
 ```
 
-Sin body → `{ suggestions:[{title,type,confidence,rationale,supporting_evidence,against_or_uncertain,red_flags_to_check,suggested_next_questions}], safety_notice }`. Máx 5, tentativas, con evidencia literal verificada contra transcript/nota; sin material clínico → `suggestions: []`. (El legacy `POST /api/clinical/diagnosis-suggestions` por contenido suelto sigue igual.)
+Sin body → `{ suggestions:[{title,type,grounding,confidence,rationale,supporting_evidence,against_or_uncertain,red_flags_to_check,suggested_next_questions}], safety_notice, definitive_language_hits }`. Máx 5, tentativas, con evidencia literal verificada contra transcript/nota; `confidence` se deriva de `grounding` (explicit 1 / entailed 0.8 / inferred 0.4); lenguaje definitivo no se reescribe, baja a `inferred` con nota en `against_or_uncertain`; sin material clínico → `suggestions: []`. El endpoint `POST /api/clinical/diagnosis-suggestions` (`{ noteContent, specialty? }`, auth local, plugin) es un adaptador sobre este motor y mantiene su contrato `{ suggestions:[{title,rationale,supportingEvidence}], reviewNotice }`.
 
 ### 13. Ajuste de nota (propuesta, no persiste)
 
@@ -349,7 +349,7 @@ Sin body → `{ suggestions:[{title,type,confidence,rationale,supporting_evidenc
 POST /api/clinical/assistant/note-adjustment
 ```
 
-`{ encounter_id, instruction, section_key? }` → `{ proposed_note_json, changed_sections, explanation, requires_physician_review:true }`. Valida contra `template_snapshot` (merge con la nota original si el modelo responde parcial); el médico guarda con el endpoint 10.
+`{ encounter_id, instruction, section_key?, instruction_kind? }` → `{ proposed_note_json, changed_sections, instruction_kind, explanation, requires_physician_review:true }`. `instruction_kind ∈ {rewrite (default), dictation}`: `rewrite` reorganiza sin datos nuevos; `dictation` integra exactamente lo dictado en `section_key` (obligatorio) con `grounding: "explicit"` y `evidence: "[dictado del médico]"`. Valida contra `template_snapshot` y la transcripción (merge con la nota original si el modelo responde parcial; los `warnings` del modelo se conservan); el médico guarda con el endpoint 10.
 
 Errores adicionales: `ASSISTANT_INVALID` (400), `ASSISTANT_FAILED` (502).
 

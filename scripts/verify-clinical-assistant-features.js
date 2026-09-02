@@ -5,7 +5,9 @@ const path = require('path');
 const { chromium } = require('playwright');
 
 const NoteFieldMatcher = require('../src/application/use-cases/NoteFieldMatcher');
-const ClinicalDiagnosisSuggestionService = require('../src/application/use-cases/ClinicalDiagnosisSuggestionService');
+const ClinicalAssistantService = require('../src/application/use-cases/ClinicalAssistantService');
+const ClinicalAssistantPromptBuilder = require('../src/application/use-cases/ClinicalAssistantPromptBuilder');
+const ClinicalAssistantValidationService = require('../src/application/use-cases/ClinicalAssistantValidationService');
 const registerClinicalRoutes = require('../web/api/registerClinicalRoutes');
 
 const repoRoot = path.resolve(__dirname, '..');
@@ -46,39 +48,59 @@ function createResponseRecorder() {
   };
 }
 
+function createAssistantService(provider) {
+  return new ClinicalAssistantService({
+    encounterService: { getOwnedEncounter: async () => { throw new Error('not used'); } },
+    llmProvider: provider,
+    promptBuilder: new ClinicalAssistantPromptBuilder(),
+    validationService: new ClinicalAssistantValidationService()
+  });
+}
+
+function captureRoutes(deps) {
+  const handlers = new Map();
+  registerClinicalRoutes({
+    post(route, handler) {
+      handlers.set(route, handler);
+    }
+  }, deps);
+  return handlers;
+}
+
+// El endpoint de texto plano es un adaptador sobre el motor único de
+// diferenciales del asistente: mismo prompt, misma verificación de evidencia,
+// contrato antiguo {suggestions:[{title, rationale, supportingEvidence}], reviewNotice}.
 async function verifyDiagnosisServiceAndRoute() {
   const note = 'Paciente con fiebre y odinofagia de tres dias, sin disnea.';
   const provider = createJsonProvider(() => ({
     suggestions: [
       {
         title: 'Faringitis aguda',
+        grounding: 'entailed',
         rationale: 'Compatible con fiebre y odinofagia, pendiente de confirmacion clinica.',
-        supportingEvidence: 'fiebre y odinofagia de tres dias'
+        supporting_evidence: ['fiebre y odinofagia de tres dias']
       },
       {
         title: 'Hallazgo inventado',
+        grounding: 'explicit',
         rationale: 'No debe pasar el filtro de evidencia.',
-        supportingEvidence: 'radiografia con infiltrado'
+        supporting_evidence: ['radiografia con infiltrado']
       }
     ]
   }));
-  const service = new ClinicalDiagnosisSuggestionService(provider);
-  const result = await service.suggest(note);
+  const service = createAssistantService(provider);
+  const result = service.validationService.toLegacyProjection(await service.suggestFromText({ noteContent: note }));
 
   assert.strictEqual(result.suggestions.length, 1, 'only evidence-grounded suggestions should remain');
   assert.strictEqual(result.suggestions[0].title, 'Faringitis aguda');
+  assert.strictEqual(result.suggestions[0].supportingEvidence, 'fiebre y odinofagia de tres dias');
   assert.strictEqual(
     result.reviewNotice,
     'Sugerencias de IA para revisión médica. No constituyen diagnósticos confirmados.'
   );
 
-  let routeHandler = null;
-  registerClinicalRoutes({
-    post(route, handler) {
-      assert.strictEqual(route, '/api/clinical/diagnosis-suggestions');
-      routeHandler = handler;
-    }
-  }, { diagnosisSuggestionService: service });
+  const handlers = captureRoutes({ assistantService: service });
+  const routeHandler = handlers.get('/api/clinical/diagnosis-suggestions');
   assert(routeHandler, 'clinical diagnosis route must be registered');
 
   let response = createResponseRecorder();
@@ -93,15 +115,12 @@ async function verifyDiagnosisServiceAndRoute() {
   await routeHandler({ body: { noteContent: note } }, response);
   assert.strictEqual(response.statusCode, 200);
   assert.strictEqual(response.payload.suggestions.length, 1);
+  assert.deepStrictEqual(Object.keys(response.payload).sort(), ['reviewNotice', 'suggestions']);
 
-  const unavailableService = new ClinicalDiagnosisSuggestionService(null);
-  registerClinicalRoutes({
-    post(_route, handler) {
-      routeHandler = handler;
-    }
-  }, { diagnosisSuggestionService: unavailableService });
+  const unavailableService = createAssistantService({ hasApiKey: () => false });
+  const unavailableHandler = captureRoutes({ assistantService: unavailableService }).get('/api/clinical/diagnosis-suggestions');
   response = createResponseRecorder();
-  await routeHandler({ body: { noteContent: note } }, response);
+  await unavailableHandler({ body: { noteContent: note } }, response);
   assert.strictEqual(response.statusCode, 503);
 }
 

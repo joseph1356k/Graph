@@ -28,7 +28,6 @@ const SurfaceProfileService = require('../src/application/use-cases/SurfaceProfi
 const LearningSessionService = require('../src/application/use-cases/LearningSessionService');
 const ExecutionIntelligenceService = require('../src/application/use-cases/ExecutionIntelligenceService');
 const NoteFieldMatcher = require('../src/application/use-cases/NoteFieldMatcher');
-const ClinicalDiagnosisSuggestionService = require('../src/application/use-cases/ClinicalDiagnosisSuggestionService');
 const ClinicalRawTranscriptionService = require('../src/application/use-cases/ClinicalRawTranscriptionService');
 const ClinicalTemplateService = require('../src/application/use-cases/ClinicalTemplateService');
 const ClinicalEncounterService = require('../src/application/use-cases/ClinicalEncounterService');
@@ -143,7 +142,24 @@ const learningSessionService = new LearningSessionService(workflowLearner);
 const getGraphVisualization = new GetGraphVisualization(repository);
 const executionIntelligenceService = new ExecutionIntelligenceService(llmProvider);
 const noteFieldMatcher = new NoteFieldMatcher(llmProvider);
-const diagnosisSuggestionService = new ClinicalDiagnosisSuggestionService(llmProvider);
+// Un solo motor de diferenciales: el del asistente (prompt en español, contexto
+// completo, evidencia verificada). Si el provider del asistente no está
+// configurado, cae al de Graph para que el endpoint de texto plano del plugin
+// no devuelva 503 en entornos sin MIRACLE_ASSISTANT_LLM_*. Se decide en cada
+// llamada porque Provider Studio puede cambiar la configuración en caliente.
+function withProviderFallback(primary, secondary) {
+  const pick = () => (primary.hasApiKey() ? primary : secondary);
+  return {
+    get provider() { return pick().provider; },
+    get model() { return pick().model; },
+    hasApiKey: () => primary.hasApiKey() || secondary.hasApiKey(),
+    chat: (...args) => pick().chat(...args),
+    chatWithUsage: (...args) => pick().chatWithUsage(...args),
+    chatExpectingJson: (...args) => pick().chatExpectingJson(...args),
+    chatExpectingJsonWithUsage: (...args) => pick().chatExpectingJsonWithUsage(...args),
+    parseJsonObject: (...args) => pick().parseJsonObject(...args)
+  };
+}
 const rawTranscriptionService = new ClinicalRawTranscriptionService();
 // Clinical module wiring: note generation reuses the shared Graph LLMProvider
 // (engine capability, not duplicated); the assistant chat gets its own
@@ -214,7 +230,7 @@ const noteGenerationRescueService = new NoteGenerationRescueService({
 });
 const clinicalAssistantService = new ClinicalAssistantService({
   encounterService: clinicalEncounterService,
-  llmProvider: assistantLlmProvider,
+  llmProvider: withProviderFallback(assistantLlmProvider, llmProvider),
   promptBuilder: new ClinicalAssistantPromptBuilder(),
   validationService: new ClinicalAssistantValidationService(),
   noteValidationService: clinicalNoteValidationService
@@ -1097,7 +1113,6 @@ app.use('/api/clinical', createOpportunisticRescue({
   noteRescueService: noteGenerationRescueService
 }));
 registerClinicalRoutes(app, {
-  diagnosisSuggestionService,
   templateService: clinicalTemplateService,
   encounterService: clinicalEncounterService,
   noteGeneratorService: clinicalNoteGeneratorService,
