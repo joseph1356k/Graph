@@ -376,6 +376,30 @@ app.use((req, res, next) => {
   next();
 });
 
+// EL COLLAR OMI POR EL TELEFONO. La nube de Omi entrega aqui el audio en crudo del collar:
+// PCM16 16 kHz mono, en trozos de 1 s, ~1 peticion por segundo mientras haya voz.
+//
+// VA ANTES DEL LIMITADOR DE /api Y NO ES UN DESCUIDO. Omi apaga el webhook del usuario tras
+// 100 respuestas seguidas que no sean 2xx, y lo hace en silencio. El 2026-09-01 lo medimos con
+// un receptor de pruebas gratuito: nos corto con 429 a las 50 peticiones y el envio murio sin
+// un solo aviso — 40 minutos creyendo que fallaba el collar. Un 429 nuestro haria lo mismo.
+//
+// Del cuerpo solo se mide el tamano: el audio NO se guarda ni se escribe en el log.
+app.post('/api/omi/audio', express.raw({ type: '*/*', limit: '8mb' }), (req, res) => {
+  const bytes = Buffer.isBuffer(req.body) ? req.body.length : 0;
+  const sampleRate = Number(req.query.sample_rate) || null;
+  console.log(JSON.stringify({
+    canal: 'omi-audio',
+    t: new Date().toISOString(),
+    code: typeof req.query.code === 'string' ? req.query.code.slice(0, 16) : null,
+    uid: typeof req.query.uid === 'string' ? req.query.uid.slice(0, 40) : null,
+    sampleRate,
+    bytes,
+    ms: sampleRate ? Math.round((bytes / 2 / sampleRate) * 1000) : null,
+  }));
+  res.status(200).send('ok');
+});
+
 // Rate limiting: a generous backstop on all /api, and a stricter cap on the
 // endpoints that spend OpenAI/LLM credits.
 const apiLimiter = rateLimit({ windowMs: 60 * 1000, limit: 120, standardHeaders: 'draft-7', legacyHeaders: false });
