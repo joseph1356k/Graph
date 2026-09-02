@@ -8,8 +8,9 @@ function buildSurfaceContext(body = {}, access = null) {
     sourceOrigin: body?.sourceOrigin || body?.context?.sourceOrigin || '',
     sourcePathname: body?.sourcePathname || body?.context?.sourcePathname || '',
     sourceTitle: body?.sourceTitle || body?.context?.sourceTitle || '',
-    workflowDescription: body?.workflowDescription || '',
-    assistantProfile: body?.assistantProfile || null,
+    // El cliente ya no puede aportar assistantProfile ni workflowDescription
+    // para un perfil de alcance global: el perfil lo genera el servidor a
+    // partir del snapshot de la página y lo comparten todos los usuarios.
     scope: ownerId ? 'private' : (body?.context?.scope || 'global'),
     ownerId: ownerId || body?.context?.ownerId || '',
     browserLocale: body?.context?.browserLocale || '',

@@ -1,8 +1,28 @@
+// Chat del asistente de captura en página: decide qué flujo aprendido aplicar
+// y con qué variables, y devuelve el plan de ejecución (nunca ejecuta solo).
+//
+// Lo que ya no está aquí: la invención de datos. Antes, un `demoMode:
+// "autopilot"` en el body o frases como «es una prueba», «inventa», «hazlo tú»
+// en el mensaje hacían que el servidor fabricara cédulas, teléfonos, fechas de
+// nacimiento y nombres, forzara shouldExecute=true por encima del modelo y
+// saltara la decisión del LLM. Eso ocurría en operación normal, no sólo en
+// demos. Un formulario clínico nunca se rellena con datos que nadie dijo.
+//
+// Lo único que se completa sin preguntar es estructural, no del paciente: el
+// objetivo visible por defecto de una variable click-target y la única opción
+// de un select con una sola opción.
 const workflowAssistantPolicy = require('./WorkflowAssistantPolicy');
 const WorkflowDecisionNormalizer = require('./WorkflowDecisionNormalizer');
 
 const { withFeature } = require('../../infrastructure/usage/UsageContext');
 const { FEATURES } = require('../../domain/usage/vocabulary');
+
+const DECISION_TEMPERATURE = 0.2;
+const MAX_FALLBACK_WORKFLOWS = 5;
+const MAX_HISTORY_TURNS = 20;
+const MAX_HISTORY_CONTENT_LENGTH = 4000;
+const HISTORY_ROLES = new Set(['user', 'assistant']);
+
 class AgentChat {
   constructor(llmProvider, catalogService, executor) {
     this.llmProvider = llmProvider;
@@ -11,133 +31,38 @@ class AgentChat {
     this.decisionNormalizer = new WorkflowDecisionNormalizer();
   }
 
-  wantsInventedValues(message = '', history = []) {
-    const combined = [
-      ...history.map((item) => item?.content || ''),
-      message || ''
-    ].join(' ').toLowerCase();
-
-    return [
-      'inventa',
-      'inventalo',
-      'invéntalo',
-      'inventa todo',
-      'usa datos falsos',
-      'datos falsos',
-      'es una prueba',
-      'no me preguntes',
-      'no te voy a dar',
-      'rellena tu',
-      'rellénalo tú',
-      'hazlo tu',
-      'hazlo tú'
-    ].some((token) => combined.includes(token));
-  }
-
-  pickWorkflowForInventedExecution(workflows = [], decision = {}, message = '') {
-    if (!Array.isArray(workflows) || workflows.length === 0) {
-      return null;
-    }
-
-    if (decision?.workflowId) {
-      const exact = workflows.find((workflow) => workflow.id === decision.workflowId);
-      if (exact) {
-        return exact;
-      }
-    }
-
-    const lowerMessage = `${message || ''}`.toLowerCase();
-    const matched = workflows.find((workflow) =>
-      `${workflow.id || ''} ${workflow.description || ''} ${workflow.summary || ''}`.toLowerCase().includes(lowerMessage)
-    );
-
-    return matched || workflows[0];
-  }
-
-  buildSyntheticValue(variable = {}, index = 0) {
-    if (`${variable.kind || ''}`.trim().toLowerCase() === 'click-target' && `${variable.defaultValue || ''}`.trim()) {
-      return `${variable.defaultValue || ''}`.trim();
-    }
-
-    const label = `${variable.fieldLabel || variable.prompt || variable.selector || ''}`.toLowerCase();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dayOffset = label.includes('hasta') || label.includes('return') ? 2 : 1;
-    const baseDate = new Date(today);
-    baseDate.setDate(today.getDate() + dayOffset + Math.floor(index / 8));
-    const isoDate = baseDate.toISOString().slice(0, 10);
-
-    if (label.includes('mail') || label.includes('correo') || label.includes('email')) {
-      return `prueba.graph.${index + 1}@example.com`;
-    }
-    if (label.includes('fecha de nacimiento') || label.includes('birth')) {
-      return '1994-08-17';
-    }
-    if (label.includes('fecha') || label.includes('desde') || label.includes('hasta') || label.includes('pickup') || label.includes('return')) {
-      return isoDate;
-    }
-    if (label.includes('telefono') || label.includes('whatsapp') || label.includes('phone') || label.includes('cel')) {
-      return '+573001112233';
-    }
-    if (label.includes('documento') || label.includes('cedula') || label.includes('passport') || label.includes('ident')) {
-      return `90000${String(100 + index)}`;
-    }
-    if (label.includes('nombre')) {
-      return index % 2 === 0 ? 'Alex' : 'Jordan';
-    }
-    if (label.includes('apellido')) {
-      return 'Prueba';
-    }
-    if (label.includes('ciudad')) {
-      return 'Medellin';
-    }
-    if (label.includes('nacionalidad')) {
-      return 'Colombiana';
-    }
-    if (label.includes('direccion') || label.includes('dirección')) {
-      return 'Calle 10 # 43A-25';
-    }
-    if (label.includes('comentario') || label.includes('requerimiento')) {
-      return 'Prueba automatizada con un pasajero, dos maletas y preferencia por Mercedes.';
-    }
-    if (label.includes('aerolinea')) {
-      return 'Avianca';
-    }
-    if (label.includes('vuelo')) {
-      return 'AV9543';
-    }
-    if (label.includes('reserva')) {
-      return 'PRUEBA123';
-    }
-
-    return `prueba-${index + 1}`;
-  }
-
-  buildInventedVariables(workflow, existingVariables = {}) {
+  /**
+   * Rellena determinísticamente lo que no requiere decisión: el objetivo por
+   * defecto de un click-target y la única opción de un select unitario. Los
+   * valores de campo (field-value) NUNCA se rellenan con su defaultValue: ese
+   * default es el valor que se escribió al enseñar el flujo, es decir, datos
+   * de otro paciente.
+   */
+  fillDefaultVariables(workflow, existingVariables = {}) {
     const output = { ...(existingVariables || {}) };
     const variables = Array.isArray(workflow?.variables) ? workflow.variables : [];
 
-    for (let index = 0; index < variables.length; index += 1) {
-      const variable = variables[index];
-      if (!variable?.name || Object.prototype.hasOwnProperty.call(output, variable.name)) {
+    for (const variable of variables) {
+      if (!variable?.name) {
+        continue;
+      }
+      const current = output[variable.name];
+      if (current !== undefined && current !== null && `${current}`.trim() !== '') {
+        continue;
+      }
+
+      const kind = `${variable.kind || ''}`.trim().toLowerCase();
+      if (kind === 'click-target' && `${variable.defaultValue || ''}`.trim()) {
+        output[variable.name] = `${variable.defaultValue}`.trim();
         continue;
       }
 
       const allowedOptions = Array.isArray(variable.allowedOptions)
         ? variable.allowedOptions.filter((option) => option && option.value)
         : [];
-
-      if (`${variable.defaultValue || ''}`.trim()) {
-        output[variable.name] = variable.defaultValue;
-        continue;
-      }
-
-      if (allowedOptions.length > 0) {
+      if (allowedOptions.length === 1) {
         output[variable.name] = allowedOptions[0].value;
-        continue;
       }
-
-      output[variable.name] = this.buildSyntheticValue(variable, index);
     }
 
     return output;
@@ -213,71 +138,39 @@ class AgentChat {
     return workflows;
   }
 
-  isDemoAutopilotContext(context = {}) {
-    return workflowAssistantPolicy.isDemoAutopilotContext(context);
-  }
-
-  wantsImmediateDemoExecution(message = '', history = []) {
-    const combined = [
-      ...history.map((item) => item?.content || ''),
-      message || ''
-    ].join(' ').toLowerCase();
-
-    return [
-      'reserva',
-      'reservar',
-      'haz la reserva',
-      'hazme la reserva',
-      'hazlo',
-      'cotiza',
-      'cotizacion',
-      'cotíz',
-      'separa el carro',
-      'apartalo',
-      'apártalo',
-      'quiero ese',
-      'quiero este',
-      'me lo llevo',
-      'dale',
-      'continua',
-      'continua',
-      'sigue'
-    ].some((token) => combined.includes(token));
-  }
-
-  buildDemoAutopilotDecision(workflows = [], message = '', history = []) {
-    const chosenWorkflow = this.pickWorkflowForInventedExecution(workflows, {}, message);
-    if (!chosenWorkflow) {
-      return null;
-    }
+  // Sin modelo no hay decisión: se describe lo disponible y no se ejecuta nada.
+  fallbackAgentDecision(message, workflows = []) {
+    const names = (Array.isArray(workflows) ? workflows : [])
+      .slice(0, MAX_FALLBACK_WORKFLOWS)
+      .map((workflow) => `${workflow.description || workflow.summary || workflow.id || ''}`.trim())
+      .filter(Boolean);
 
     return {
-      reply: 'Perfecto, ya me encargo de la reserva.',
-      workflowId: chosenWorkflow.id,
-      variables: this.buildInventedVariables(chosenWorkflow, {}),
-      shouldExecute: true
+      reply: names.length > 0
+        ? `Ahora mismo no puedo interpretar tu solicitud. En esta página puedo ayudarte con: ${names.join('; ')}. Dime cuál necesitas y con qué datos.`
+        : 'Todavía no tengo una forma lista para ayudarte en esta página.',
+      workflowId: null,
+      variables: {},
+      shouldExecute: false
     };
   }
 
-  fallbackAgentDecision(message, workflows) {
-    const chosen = workflows.find((workflow) =>
-      `${workflow.id} ${workflow.description} ${workflow.summary || ''}`.toLowerCase().includes(message.toLowerCase())
-    ) || workflows[0];
+  sanitizeHistory(history = []) {
+    return (Array.isArray(history) ? history : [])
+      .filter((item) => item && HISTORY_ROLES.has(`${item.role || ''}`.trim()) && typeof item.content === 'string')
+      .slice(-MAX_HISTORY_TURNS)
+      .map((item) => ({ role: `${item.role}`.trim(), content: item.content.slice(0, MAX_HISTORY_CONTENT_LENGTH) }));
+  }
 
-    if (!chosen) {
-      return {
-        reply: 'Todavia no tengo una forma lista para ayudarte en esta pagina.',
-        workflowId: null,
-        variables: {},
-        shouldExecute: false
-      };
-    }
-
+  // Al modelo sólo le llega lo que describe la página; nada de flags ni de
+  // perfiles crudos (esos ya van saneados dentro del system prompt).
+  describeContextForModel(context = {}) {
+    const surface = workflowAssistantPolicy.sanitizeSurfaceContext(context);
     return {
-      reply: 'Puedo encargarme de esto por ti.',
-      workflowId: chosen.id,
-      variables: {},
-      shouldExecute: true
+      appId: surface.appId,
+      sourceOrigin: surface.sourceOrigin,
+      sourcePathname: surface.sourcePathname,
+      sourceTitle: surface.sourceTitle
     };
   }
 
@@ -294,8 +187,8 @@ class AgentChat {
       {
         role: 'user',
         content: JSON.stringify({
-          conversation: history,
-          context,
+          conversation: this.sanitizeHistory(history),
+          context: this.describeContextForModel(context),
           userMessage: message,
           workflows: workflows.map((workflow) => ({
             id: workflow.id,
@@ -307,7 +200,7 @@ class AgentChat {
             sourceOrigin: workflow.sourceOrigin,
             sourcePathname: workflow.sourcePathname,
             variables: workflow.variables,
-            steps: workflow.steps.map((step) => ({
+            steps: (Array.isArray(workflow.steps) ? workflow.steps : []).map((step) => ({
               stepOrder: step.stepOrder,
               actionType: step.actionType,
               selector: step.selector,
@@ -324,7 +217,11 @@ class AgentChat {
       }
     ];
 
-    const content = await withFeature(FEATURES.AGENT_CHAT, () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }));
+    const content = await withFeature(
+      FEATURES.AGENT_CHAT,
+      () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }, { temperature: DECISION_TEMPERATURE }),
+      { metadata: { promptVersion: workflowAssistantPolicy.PROMPT_VERSION, temperature: DECISION_TEMPERATURE } }
+    );
     return this.llmProvider.parseJsonObject(content);
   }
 
@@ -337,59 +234,33 @@ class AgentChat {
     const workflows = this.filterWorkflowsForContext(await this.catalogService.getCatalog(workflowAccess), context);
     let decision;
 
-    if (this.isDemoAutopilotContext(context) && this.wantsImmediateDemoExecution(message, history)) {
-      decision = this.buildDemoAutopilotDecision(workflows, message, history);
+    try {
+      decision = await this.decideWorkflowFromMessage(message, workflows, history, context);
+    } catch (error) {
+      console.warn(`[Agent Chat] la decisión del modelo falló: ${error.message}`);
+      decision = this.fallbackAgentDecision(message, workflows);
     }
-    
-    if (!decision) {
-      try {
-        decision = await this.decideWorkflowFromMessage(message, workflows, history, context);
-      } catch (error) {
-        console.warn(`[Agent Chat] LLM fallback: ${error.message}`);
-        decision = this.fallbackAgentDecision(message, workflows);
-        decision.reply = this.isDemoAutopilotContext(context)
-          ? 'Perfecto, ya me encargo de la reserva.'
-          : `${decision.reply} LLM fallback engaged because the provider request failed.`;
-      }
+    if (!decision || typeof decision !== 'object' || Array.isArray(decision)) {
+      decision = this.fallbackAgentDecision(message, workflows);
     }
 
-    if (this.isDemoAutopilotContext(context) && decision && decision.workflowId) {
-      const chosenWorkflow = this.pickWorkflowForInventedExecution(workflows, decision, message);
-      if (chosenWorkflow) {
-        decision = {
-          ...decision,
-          workflowId: chosenWorkflow.id,
-          shouldExecute: true,
-          variables: this.buildInventedVariables(chosenWorkflow, decision.variables || {}),
-          reply: 'Perfecto, ya me encargo de la reserva.'
-        };
-      }
-    } else if (this.wantsInventedValues(message, history)) {
-      const chosenWorkflow = this.pickWorkflowForInventedExecution(workflows, decision, message);
-      if (chosenWorkflow) {
-        decision = {
-          ...decision,
-          workflowId: chosenWorkflow.id,
-          shouldExecute: true,
-          variables: this.buildInventedVariables(chosenWorkflow, decision.variables || {}),
-          reply: decision.reply && decision.shouldExecute
-            ? decision.reply
-            : `Voy a completar la prueba con datos inventados y ejecutar ${chosenWorkflow.id}.`
-        };
-        decision.reply = 'Perfecto, voy a completar la prueba con datos inventados y encargarme de la reserva por ti.';
-      }
-    }
-
-    if (decision?.workflowId) {
+    if (decision.workflowId) {
       const chosenWorkflow = workflows.find((workflow) => workflow.id === decision.workflowId);
       if (chosenWorkflow) {
-        decision = this.decisionNormalizer.normalizeDecision(decision, chosenWorkflow, message);
+        decision = this.decisionNormalizer.normalizeDecision(
+          { ...decision, variables: this.fillDefaultVariables(chosenWorkflow, decision.variables || {}) },
+          chosenWorkflow,
+          message
+        );
+      } else {
+        // Un id fuera del catálogo de esta página no se ejecuta.
+        decision = { ...decision, workflowId: null, shouldExecute: false };
       }
     }
 
     if (!decision.workflowId || !decision.shouldExecute) {
       return {
-        reply: decision.reply || 'Todavia me falta un poco de informacion para encargarme de esto por ti.',
+        reply: decision.reply || 'Todavía me falta un poco de información para encargarme de esto por ti.',
         workflowId: decision.workflowId || null,
         executed: false,
         variables: decision.variables || {},
@@ -418,5 +289,7 @@ class AgentChat {
     };
   }
 }
+
+AgentChat.DECISION_TEMPERATURE = DECISION_TEMPERATURE;
 
 module.exports = AgentChat;
