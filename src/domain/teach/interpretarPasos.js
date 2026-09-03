@@ -19,6 +19,14 @@
 // programa y cualquier tarea, y lo único que cambia entre dominios son los prompts; este es el que
 // tiene que valer para todos.
 //
+// OMITIR NO ES NEUTRAL, y esto lo destapó la PRIMERA llamada contra producción (2026-09-03): con
+// dos pasos —«nwp1» en el campo de comandos y «70» en el peso— el modelo contestó por el peso y se
+// saltó el de comandos, porque una versión anterior de estas reglas le decía «si dudas, déjalo
+// fuera». Del otro lado, un campo ausente significa «no llegó a mirarlo» y el cliente conserva lo
+// que dedujo su propia regla — que es justo la que marcaba «nwp1» como dato y rompía la skill. Un
+// silencio que el lector interpreta ya no es un silencio: es una respuesta, y hay que pedirla
+// explícita.
+//
 // QUÉ SE DELEGA Y QUÉ NO. Se delega EL CRITERIO —esto es un dato de la corrida, esto es parte de la
 // tarea, esto significa aquello—. No se delega LA IDENTIDAD: la lista de campos es cerrada y el
 // cliente descarta cualquier campo que no esté en ella antes de tocar la skill. Sin esa separación
@@ -59,12 +67,19 @@ corta que le sirva a quien opere después. Formato aceptado, restricción, qué 
 dos campos parecidos es el bueno.
 
 REGLAS, y son estrictas:
+- "campos" lleva UNA entrada POR CADA PASO EN EL QUE SE TECLEÓ ALGO. Todos, sin excepción, también
+  los que sean parte fija de la tarea — ésos con "esDato": false. OMITIR UN CAMPO NO ES NEUTRAL: el
+  cliente lo interpreta como que no llegaste a mirarlo, y entonces se queda con lo que dedujo una
+  regla suya mucho más tonta que tú. Si un paso tecleó algo, contesta por él.
+- Si de verdad no puedes decidir sobre uno, pon "esDato": true. Es la opción prudente y sabemos por
+  qué: dar por fijo un dato que en realidad cambia haría que se reescribiera el valor de otro caso
+  encima de este; dar por variable algo que era fijo solo hace que la tarea se pare y lo diga.
 - Usa EXACTAMENTE los identificadores de "campo" de la lista de arriba, copiados carácter a carácter.
   Un campo que no esté en esa lista se descarta y tu respuesta se pierde: no inventes ninguno.
-- Solo opina de un campo si de verdad lo entiendes. Un campo que te deje dudas: déjalo fuera de
-  "campos" — el cliente sabe qué hacer cuando no opinas, y lo que hace es lo prudente.
 - "significado" es CORTO: unas pocas palabras que nombran qué va ahí ("el peso en kilos", "el código
   de transacción"). Nunca una frase larga ni una transcripción de lo que se dijo.
+- "recuerdos" sí es opcional y va solo donde tengas algo útil que decir sobre CÓMO se usa ese
+  elemento. Un elemento que no entiendas, fuera.
 - No metas en "significado" ni en "recuerdos" ningún valor concreto que aparezca en pantalla: los
   campos se describen por lo que SON, no por lo que tenían ese día.
 `.trim();
