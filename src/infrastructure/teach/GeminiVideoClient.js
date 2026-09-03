@@ -19,6 +19,8 @@
 const LLMProvider = require('../LLMProvider');
 const { fromGemini, toRecorderUsage } = require('../../domain/usage/providerUsage');
 const { FEATURES, API_FAMILIES } = require('../../domain/usage/vocabulary');
+// EL MISMO PROMPT que el camino sin video, y por eso vive fuera de los dos (ver ese archivo).
+const { promptParaElVideo, respuesta } = require('../../domain/teach/interpretarPasos');
 
 const BASE = 'https://generativelanguage.googleapis.com';
 
@@ -160,13 +162,25 @@ function isTransient(status) {
   return status === 429 || status >= 500;
 }
 
-/** El video ya está ACTIVE: pídele a Gemini el conocimiento del sistema. */
-async function processVideo(apiKey, fileUri, model) {
+/**
+ * El video ya está ACTIVE: pídele a Gemini el conocimiento del sistema.
+ *
+ * `steps` es opcional y es lo que el cliente Windows grabó de la demostración. Cuando viene, se le
+ * pide ADEMÁS que interprete esos pasos (ver stepsPrompt). Una sola llamada para las dos cosas y no
+ * dos: el video es lo caro de subir y de mirar, y partirlo en dos generateContent duplicaría el
+ * gasto para preguntar sobre el mismo material.
+ */
+async function processVideo(apiKey, fileUri, model, steps) {
+  const conPasos = Array.isArray(steps) && steps.length > 0;
+  const prompt = conPasos
+    ? `${MEDICAL_TEACH_PROMPT}\n\n${promptParaElVideo(steps)}`
+    : MEDICAL_TEACH_PROMPT;
+
   const req = {
     contents: [
       {
         role: 'user',
-        parts: [{ fileData: { mimeType: 'video/mp4', fileUri } }, { text: MEDICAL_TEACH_PROMPT }]
+        parts: [{ fileData: { mimeType: 'video/mp4', fileUri } }, { text: prompt }]
       }
     ],
     generationConfig: { responseMimeType: 'application/json' }
@@ -232,7 +246,16 @@ async function processVideo(apiKey, fileUri, model) {
     : [];
   const summary = typeof parsed.summary === 'string' ? parsed.summary.trim() : '';
 
-  return { summary, notes, questions };
+  // LA INTERPRETACIÓN SE DEVUELVE TAL CUAL, sin normalizar ni filtrar aquí, y a propósito: quien la
+  // lee es una pieza pura del cliente (LoQueElModeloInterpreta) que ya está juzgada por su contrato
+  // — acota los campos a los que la demo tocó, descarta lo demás y distingue «no opinó» de «no hay
+  // nada». Repetir ese filtro aquí sería un segundo lector del mismo hecho, y dos lectores del
+  // mismo hecho se desincronizan sin avisar.
+  //
+  // `null` cuando no se preguntó por pasos: ausente y vacío no significan lo mismo del otro lado.
+  const interpretation = conPasos ? respuesta(parsed) : null;
+
+  return { summary, notes, questions, interpretation };
 }
 
 /** Tolera fences de markdown o texto extra alrededor del JSON (igual que la versión Android). */

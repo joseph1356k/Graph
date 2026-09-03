@@ -81,6 +81,7 @@ const registerWindowsPanelRoutes = require('./api/registerWindowsPanelRoutes');
 const StudioProgressService = require('../src/application/use-cases/StudioProgressService');
 const registerStudioProgressRoutes = require('./api/registerStudioProgressRoutes');
 const registerWindowsAgentRoutes = require('./api/registerWindowsAgentRoutes');
+const TeachStepsInterpreter = require('../src/application/use-cases/TeachStepsInterpreter');
 const registerWindowsDistributionRoutes = require('./api/registerWindowsDistributionRoutes');
 const registerMcpRoutes = require('./api/registerMcpRoutes');
 const AgentWorkflowStore = require('../src/application/use-cases/AgentWorkflowStore');
@@ -258,6 +259,10 @@ const agentTurnService = new AgentTurnService({
   memoryRepository: agentMemoryRepository,
   learningStore: agentWorkflowStore
 });
+// Interpreta una demostración SIN video, por el proveedor de texto del cerebro. Es el respaldo
+// de process-video, no una segunda opinión: solo se llama cuando el video no pudo.
+const teachStepsInterpreter = new TeachStepsInterpreter({ llmProvider });
+
 const teachVideoService = new TeachVideoService({
   memoryRepository: agentMemoryRepository,
   supabaseRestClient
@@ -1149,7 +1154,12 @@ registerAndroidPanelRoutes(app, { androidPanelService });
 registerWindowsTelemetryRoutes(app, { windowsTelemetryService });
 registerWindowsPanelRoutes(app, { windowsPanelService });
 registerStudioProgressRoutes(app, { studioProgressService });
-registerWindowsAgentRoutes(app, { agentTurnService, teachVideoService, usageRecorder });
+registerWindowsAgentRoutes(app, {
+  agentTurnService,
+  teachVideoService,
+  teachStepsInterpreter,
+  usageRecorder
+});
 registerWindowsDistributionRoutes(app, { windowsAppReleaseService });
 registerMcpRoutes(app, { agentWorkflowStore, workflowExecutor });
 registerPublicApiRoutes(app, {

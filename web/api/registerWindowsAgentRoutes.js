@@ -14,6 +14,8 @@ function registerWindowsAgentRoutes(app, deps = {}) {
   const agentTurnService = deps.agentTurnService || null;
   const teachVideoService = deps.teachVideoService || null;
   const usageRecorder = deps.usageRecorder || null;
+  // Opcional a propósito: si no se inyecta, la ruta contesta 503 en vez de existir a medias.
+  const teachStepsInterpreter = deps.teachStepsInterpreter || null;
 
   if (!app || !agentTurnService || !teachVideoService) {
     throw new Error('registerWindowsAgentRoutes requiere app, agentTurnService y teachVideoService');
@@ -43,6 +45,17 @@ function registerWindowsAgentRoutes(app, deps = {}) {
 
   app.post('/api/v1/teach/process-video', async (req, res) => {
     const result = await teachVideoService.processVideo(req.body || {});
+    return res.status(result.status).json(result.json);
+  });
+
+  // INTERPRETAR LA DEMO SIN VIDEO. El segundo peldaño: cuando el de arriba no puede —la cuenta de
+  // Gemini sin saldo el 2026-09-03, un 504 en una demo larga—, el mismo juicio se hace con los
+  // pasos y con lo que la persona narró, que no necesitan que nadie mire la pantalla.
+  app.post('/api/v1/teach/interpret-steps', async (req, res) => {
+    if (!teachStepsInterpreter) {
+      return res.status(503).json({ error: 'La interpretación de pasos no está disponible.' });
+    }
+    const result = await teachStepsInterpreter.interpret(req.body || {});
     return res.status(result.status).json(result.json);
   });
 
