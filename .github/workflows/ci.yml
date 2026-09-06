@@ -1,0 +1,58 @@
+# ---------------------------------------------------------------------------
+# Ejecuta los 15 revisores de scripts/verify-*.js en cada cambio.
+#
+# Este archivo SOLO revisa e informa. Nunca bloquea por si mismo.
+# El bloqueo se configura aparte, en Settings > Branches de GitHub,
+# y es ahi donde viven los dos puentes de emergencia.
+# ---------------------------------------------------------------------------
+
+name: Portero
+
+on:
+  # 1. Cuando alguien propone un cambio (Pull Request).
+  pull_request:
+
+  # 2. Cuando alguien sube directo a main o develop.
+  #    Esta es la parte que cubre el PUENTE 2: si se rompe el vidrio
+  #    y se publica sin pasar por la propuesta, el portero corre igual
+  #    y deja constancia de que reviso y que encontro.
+  push:
+    branches:
+      - main
+      - develop
+
+  # 3. Boton manual, por si alguien quiere correrlo cuando quiera.
+  workflow_dispatch:
+
+# Si se suben dos cambios seguidos a la misma rama, cancela el anterior
+# y revisa solo el ultimo. Evita gastar minutos de GitHub sin necesidad.
+concurrency:
+  group: portero-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  revisores:
+    name: 15 revisores
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      # Descarga el codigo del repositorio en la maquina prestada.
+      - name: Traer el codigo
+        uses: actions/checkout@v4
+
+      # Instala Node. La version 22 es LTS (soporte largo).
+      # 'cache: npm' guarda las dependencias entre corridas para ir mas rapido.
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Instala exactamente lo que dice package-lock.json.
+      - name: Instalar dependencias
+        run: npm ci
+
+      # El mismo comando que corriste en tu terminal y te dio los 37 ok.
+      - name: Correr los 15 revisores
+        run: npm test
