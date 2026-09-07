@@ -90,6 +90,8 @@ Límites defensivos: summary ≤ 2000 chars, content ≤ 8000, evidence ≤ 500.
 - Nunca se registran en logs transcripciones ni contenido de notas: solo ids, conteos de secciones y warnings.
 - Los mensajes de error al frontend no incluyen contenido clínico ni stack traces.
 - Datos clínicos viven solo en Supabase (`clinical_encounters`), con RLS por médico y acceso del backend vía service role (server-only).
+- **Lo que sale hacia el proveedor va sin identificadores directos del paciente** (nombre, documento, teléfono, correo, dirección): el escudo de privacidad los reemplaza por marcadores en `LLMProvider.postChatCompletions` y los devuelve al volver la respuesta, antes de validar y persistir. `note_json`, `note_json_ai` y el espejo en `consultations` llevan los datos reales. `generate-note` devuelve `privacy` (modo, conteos por tipo, resultado) y `GET /encounters/:id/privacy` lista cada envío. Diseño, modos y excepciones en [privacy-egress-gateway.md](privacy-egress-gateway.md).
+- La casilla `identificacion_del_paciente` sigue funcionando: el modelo escribe `Nombre: [PACIENTE_NOMBRE_1]` y la rehidratación pone el nombre registrado completo.
 
 ## Medir si la IA acierta
 

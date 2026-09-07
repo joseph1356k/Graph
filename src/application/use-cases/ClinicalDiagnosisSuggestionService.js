@@ -1,4 +1,5 @@
 const { withFeature } = require('../../infrastructure/usage/UsageContext');
+const { withPrivacyScope } = require('../../infrastructure/privacy/PrivacyContext');
 const { FEATURES } = require('../../domain/usage/vocabulary');
 
 const REVIEW_NOTICE = 'Sugerencias de IA para revisión médica. No constituyen diagnósticos confirmados.';
@@ -77,10 +78,12 @@ class ClinicalDiagnosisSuggestionService {
       throw error;
     }
 
-    const content = await withFeature(FEATURES.DIAGNOSIS_SUGGESTION, () => this.llmProvider.chatExpectingJson(
+    // Ámbito efímero: no hay encounter, pero la nota trae sus propias líneas
+    // de identidad y el escudo las siembra desde ahí.
+    const content = await withPrivacyScope({ noteContent }, () => withFeature(FEATURES.DIAGNOSIS_SUGGESTION, () => this.llmProvider.chatExpectingJson(
       this.buildMessages(noteContent),
       { type: 'json_object' }
-    ));
+    )));
     const parsed = this.llmProvider.parseJsonObject(content || '{}');
     return this.normalizeResult(parsed, noteContent);
   }

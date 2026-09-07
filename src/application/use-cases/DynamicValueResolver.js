@@ -1,5 +1,7 @@
 const { withFeature } = require('../../infrastructure/usage/UsageContext');
 const { FEATURES } = require('../../domain/usage/vocabulary');
+const { withPrivacyScope } = require('../../infrastructure/privacy/PrivacyContext');
+const { containsToken } = require('../../domain/privacy/tokens');
 
 // Resuelve los valores POR-EJECUCIÓN de los steps dynamic de un workflow a partir del `context`
 // que manda el agente ("paciente Juan Pérez, documento 12345678"). Es la pieza que faltaba del
@@ -89,7 +91,7 @@ class DynamicValueResolver {
   }
 
   /// Devuelve { values: { [stepOrder]: string }, usage } con solo los valores que superan el umbral.
-  async resolve({ context = '', steps = [] } = {}) {
+  async resolve({ context = '', steps = [], consultationId = '' } = {}) {
     if (!this.hasLlm()) {
       throw new Error(
         'El workflow tiene campos dinámicos y llegó contexto, pero no hay LLM configurado ' +
@@ -97,10 +99,15 @@ class DynamicValueResolver {
       );
     }
 
-    const response = await withFeature(FEATURES.DYNAMIC_VALUES, () => this.llmProvider.chatExpectingJsonWithUsage(
-      this.buildMessages({ context, steps }),
-      buildResponseFormat()
-    ));
+    // Ámbito de privacidad: el `context` es la nota firmada (o lo que dictó
+    // el usuario) y trae sus propias líneas de identidad como semilla.
+    const response = await withPrivacyScope(
+      { consultationId: `${consultationId || ''}`.trim(), noteContent: `${context}` },
+      () => withFeature(FEATURES.DYNAMIC_VALUES, () => this.llmProvider.chatExpectingJsonWithUsage(
+        this.buildMessages({ context, steps }),
+        buildResponseFormat()
+      ))
+    );
     const parsed = this.llmProvider.parseJsonObject(response.content || '{}') || {};
     const rows = Array.isArray(parsed.values) ? parsed.values : [];
 
@@ -110,6 +117,9 @@ class DynamicValueResolver {
       const value = `${row?.value ?? ''}`;
       const confidence = Number(row?.confidence) || 0;
       if (!Number.isFinite(stepOrder) || value === '' || confidence < CONFIDENCE_THRESHOLD) continue;
+      // Un marcador sin rehidratar no es un valor: el campo queda sin resolver
+      // y el plan falla listándolo, igual que un dato que no vino.
+      if (containsToken(value)) continue;
       values[stepOrder] = value;
     }
 

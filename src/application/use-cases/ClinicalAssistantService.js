@@ -4,6 +4,7 @@ const ClinicalAssistantValidationService = require('./ClinicalAssistantValidatio
 
 const { withFeature } = require('../../infrastructure/usage/UsageContext');
 const { FEATURES } = require('../../domain/usage/vocabulary');
+const { withPrivacyScope, lastPrivacyResult } = require('../../infrastructure/privacy/PrivacyContext');
 // Miracle Clinical Assistant: contextual clinical chat, encounter-based
 // diagnostic suggestions and note adjustments. One service, three use cases —
 // they share encounter loading (with ownership), context building and the
@@ -72,16 +73,27 @@ class ClinicalAssistantService {
       // Atado a la consulta SOLO en el modo B (con encounter). En el modo A
       // —chat clínico general— no hay consulta a la que imputarlo, y ponerle
       // una sesión inventada haría que un costo sin dueño pareciera de alguien.
-      const { content: rawAnswer, usage } = await withFeature(
-        FEATURES.ASISTENTE,
-        () => this.llmProvider.chatWithUsage(messages),
-        encounter ? { sessionId: encounter.id } : {}
+      // Ámbito de privacidad por encounter (modo B) o efímero (modo A): en
+      // los dos casos el escudo tapa lo que detecte en el mensaje y el
+      // historial, y solo con encounter tiene además las semillas de la
+      // consulta.
+      const { content: rawAnswer, usage, privacy } = await withPrivacyScope(
+        encounter ? { encounter, encounterId: encounter.id } : {},
+        async () => {
+          const result = await withFeature(
+            FEATURES.ASISTENTE,
+            () => this.llmProvider.chatWithUsage(messages),
+            encounter ? { sessionId: encounter.id } : {}
+          );
+          return { ...result, privacy: lastPrivacyResult() };
+        }
       );
       return {
         answer: this.validationService.sanitizeAnswer(rawAnswer),
         mode: 'clinical_chat',
         specialty: clinicalContext.specialty,
         used_context: usedContext,
+        privacy: privacy || null,
         safety_notice: ClinicalAssistantValidationService.SAFETY_NOTICE_CHAT,
         suggested_actions: [],
         usage: usage
@@ -120,18 +132,21 @@ class ClinicalAssistantService {
 
     try {
       const messages = this.promptBuilder.buildDiagnosticMessages({ clinicalContext });
-      const content = await withFeature(
-        FEATURES.ASISTENTE,
-        () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }),
-        { sessionId: encounter.id }
-      );
+      const { content, privacy } = await withPrivacyScope({ encounter, encounterId: encounter.id }, async () => {
+        const raw = await withFeature(
+          FEATURES.ASISTENTE,
+          () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }),
+          { sessionId: encounter.id }
+        );
+        return { content: raw, privacy: lastPrivacyResult() };
+      });
       const parsed = this.llmProvider.parseJsonObject(content || '{}');
       const result = this.validationService.normalizeSuggestions(parsed, {
         transcript: fullTranscript,
         noteJson: encounter.note_json
       });
       console.log(`[Clinical Assistant] Encounter ${encounter.id}: ${result.suggestions.length} sugerencias diagnósticas.`);
-      return result;
+      return { ...result, privacy: privacy || null };
     } catch (error) {
       if (isClinicalError(error)) {
         throw error;
@@ -170,11 +185,14 @@ class ClinicalAssistantService {
         instruction: cleanInstruction,
         sectionKey: cleanSectionKey
       });
-      const content = await withFeature(
-        FEATURES.ASISTENTE,
-        () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }),
-        { sessionId: encounter.id }
-      );
+      const { content, privacy } = await withPrivacyScope({ encounter, encounterId: encounter.id }, async () => {
+        const raw = await withFeature(
+          FEATURES.ASISTENTE,
+          () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }),
+          { sessionId: encounter.id }
+        );
+        return { content: raw, privacy: lastPrivacyResult() };
+      });
       const parsed = this.llmProvider.parseJsonObject(content || '{}');
       const modelNote = parsed?.note_json && typeof parsed.note_json === 'object' ? parsed.note_json : parsed;
 
@@ -200,7 +218,8 @@ class ClinicalAssistantService {
         proposed_note_json: proposedNote,
         changed_sections: changedSections,
         explanation,
-        requires_physician_review: true
+        requires_physician_review: true,
+        privacy: privacy || null
       };
     } catch (error) {
       if (isClinicalError(error)) {

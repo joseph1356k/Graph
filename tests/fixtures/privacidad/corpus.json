@@ -1,0 +1,802 @@
+{
+  "descripcion": "Corpus dorado del escudo de privacidad: fragmentos de dictado clínico en español colombiano con los identificadores que DEBEN taparse y los valores clínicos que NO deben tocarse. Cada caso es un contrato: si cambia un detector, aquí se ve qué recall y qué precisión se perdieron.",
+  "casos": [
+    {
+      "id": "n01",
+      "texto": "El paciente se llama Juan David Pérez Gómez y consulta por cefalea.",
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Juan David Pérez Gómez"
+        }
+      ]
+    },
+    {
+      "id": "n02",
+      "texto": "Paciente María del Carmen García, 45 años, refiere dolor lumbar.",
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "María del Carmen García"
+        }
+      ],
+      "noTapar": [
+        "45 años"
+      ]
+    },
+    {
+      "id": "n03",
+      "texto": "se llama luis alberto rojas y viene por control",
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "luis alberto rojas"
+        }
+      ]
+    },
+    {
+      "id": "n04",
+      "texto": "Bueno, don José, siga y cuénteme.",
+      "seeds": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "José David Jaramillo"
+        }
+      ],
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "José"
+        }
+      ]
+    },
+    {
+      "id": "n05",
+      "texto": "Ayer vino Jaramillo a control y hoy vuelve.",
+      "seeds": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "José David Jaramillo"
+        }
+      ],
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Jaramillo"
+        }
+      ]
+    },
+    {
+      "id": "n06",
+      "texto": "Mi nombre es Ana Lucía Restrepo Vélez.",
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Ana Lucía Restrepo Vélez"
+        }
+      ]
+    },
+    {
+      "id": "n07",
+      "texto": "Nombre: Pedro Antonio Ramírez\nDocumento: 1036457892\nEdad: 62 años",
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Pedro Antonio Ramírez"
+        },
+        {
+          "type": "DOCUMENTO",
+          "value": "1036457892"
+        }
+      ],
+      "noTapar": [
+        "62 años"
+      ]
+    },
+    {
+      "id": "n08",
+      "texto": "Nombre del paciente: Sofía Martínez (28 años), documento 1.020.304.050.",
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Sofía Martínez"
+        },
+        {
+          "type": "DOCUMENTO",
+          "value": "1.020.304.050"
+        }
+      ]
+    },
+    {
+      "id": "n09",
+      "texto": "Soy el doctor Carlos Ruiz y atiendo al señor Andrés Felipe Cano.",
+      "excluir": [
+        "Carlos Ruiz"
+      ],
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Andrés Felipe Cano"
+        }
+      ],
+      "noTapar": [
+        "Carlos Ruiz"
+      ]
+    },
+    {
+      "id": "n10",
+      "texto": "Soy la doctora Ana María Gómez. La señora Ana Sofía Restrepo consulta por tos.",
+      "excluir": [
+        "Ana María Gómez"
+      ],
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Ana Sofía Restrepo"
+        }
+      ],
+      "noTapar": [
+        "Ana María Gómez"
+      ]
+    },
+    {
+      "id": "n11",
+      "texto": "Dolores Luz Cruz consulta por dolores abdominales y dice que la luz le molesta.",
+      "seeds": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Dolores Luz Cruz"
+        }
+      ],
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Dolores Luz Cruz"
+        }
+      ],
+      "noTapar": [
+        "dolores abdominales",
+        "la luz le molesta"
+      ]
+    },
+    {
+      "id": "n12",
+      "texto": "La señora Dolores refiere mejoría.",
+      "seeds": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Dolores Luz Cruz"
+        }
+      ],
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Dolores"
+        }
+      ]
+    },
+    {
+      "id": "n13",
+      "texto": "Paciente identificado como Óscar Iván Muñoz, sin antecedentes.",
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Óscar Iván Muñoz"
+        }
+      ]
+    },
+    {
+      "id": "n14",
+      "texto": "La paciente Rosa Elena Díaz de la Cruz, de 70 años.",
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Rosa Elena Díaz de la Cruz"
+        }
+      ],
+      "noTapar": [
+        "70 años"
+      ]
+    },
+    {
+      "id": "n15",
+      "texto": "Viene la niña Valentina Ortiz acompañada de su mamá.",
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Valentina Ortiz"
+        }
+      ]
+    },
+    {
+      "id": "n16",
+      "texto": "El josefino perezoso no tiene nada que ver con el paciente.",
+      "seeds": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "José Pérez"
+        }
+      ],
+      "esperado": [],
+      "noTapar": [
+        "josefino perezoso"
+      ]
+    },
+    {
+      "id": "n17",
+      "texto": "JOSE dice que le duele la rodilla derecha.",
+      "seeds": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "José Pérez"
+        }
+      ],
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "JOSE"
+        }
+      ]
+    },
+    {
+      "id": "n18",
+      "texto": "vino María del Carmen García hoy con fiebre",
+      "seeds": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "María del Carmen García"
+        }
+      ],
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "María del Carmen García"
+        }
+      ]
+    },
+    {
+      "id": "n19",
+      "texto": "salió del consultorio caminando sin apoyo",
+      "seeds": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "María del Carmen García"
+        }
+      ],
+      "esperado": [],
+      "noTapar": [
+        "salió del consultorio"
+      ]
+    },
+    {
+      "id": "n20",
+      "texto": "La paciente Ana Li Gómez consulta por mareo.",
+      "seeds": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Ana Li Gómez"
+        }
+      ],
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Ana Li Gómez"
+        }
+      ]
+    },
+    {
+      "id": "d01",
+      "texto": "cédula 1023456789, listo",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "1023456789"
+        }
+      ]
+    },
+    {
+      "id": "d02",
+      "texto": "documento 1.023.456.789.",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "1.023.456.789"
+        }
+      ]
+    },
+    {
+      "id": "d03",
+      "texto": "es cédula 1 023 456 789 señor",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "1 023 456 789"
+        }
+      ]
+    },
+    {
+      "id": "d04",
+      "texto": "registrado como CC 1.023.456.789 en el sistema",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "CC 1.023.456.789"
+        }
+      ]
+    },
+    {
+      "id": "d05",
+      "texto": "Documento: 23-45-67-75-43",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "23-45-67-75-43"
+        }
+      ]
+    },
+    {
+      "id": "d06",
+      "texto": "documento de identidad uno cero tres seis cuatro cinco siete ocho nueve dos, tiene 43 años",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "uno cero tres seis cuatro cinco siete ocho nueve dos"
+        }
+      ],
+      "noTapar": [
+        "43 años"
+      ]
+    },
+    {
+      "id": "d07",
+      "texto": "cédula veintitrés cuarenta y siete cuarenta y ocho cincuenta y tres noventa y dos",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "veintitrés cuarenta y siete cuarenta y ocho cincuenta y tres noventa y dos"
+        }
+      ]
+    },
+    {
+      "id": "d08",
+      "texto": "documento 23-47-48. Repito: 47-48-53-92.",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "23-47-48"
+        },
+        {
+          "type": "DOCUMENTO",
+          "value": "47-48-53-92"
+        }
+      ],
+      "nota": "La cifra a medias también es un fragmento del documento: se tapa, y la corrección va aparte."
+    },
+    {
+      "id": "d09",
+      "texto": "tarjeta de identidad 1020304050 de la menor",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "1020304050"
+        }
+      ]
+    },
+    {
+      "id": "d10",
+      "texto": "pasaporte AY123456 expedido en Bogotá",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "AY123456"
+        }
+      ]
+    },
+    {
+      "id": "d11",
+      "texto": "Cédula: PA AY123456",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "PA AY123456"
+        }
+      ]
+    },
+    {
+      "id": "d12",
+      "texto": "identificación número 71.234.567 expedida en Medellín",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "71.234.567"
+        }
+      ]
+    },
+    {
+      "id": "d13",
+      "texto": "el documento de referencia dice que no hay alergias",
+      "esperado": [],
+      "noTapar": [
+        "documento de referencia"
+      ]
+    },
+    {
+      "id": "d14",
+      "texto": "otro documento: 43285382",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "43285382"
+        }
+      ]
+    },
+    {
+      "id": "d15",
+      "texto": "cédula de ciudadanía 8.765.432",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "8.765.432"
+        }
+      ]
+    },
+    {
+      "id": "d16",
+      "texto": "cc 1.234.567.890 y teléfono de contacto 3001234567",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "1.234.567.890"
+        },
+        {
+          "type": "TELEFONO",
+          "value": "3001234567"
+        }
+      ]
+    },
+    {
+      "id": "d17",
+      "texto": "Documento: No referido en la consulta.",
+      "esperado": [],
+      "noTapar": [
+        "No referido en la consulta"
+      ]
+    },
+    {
+      "id": "d18",
+      "texto": "NUIP 1.098.765.432",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "1.098.765.432"
+        }
+      ]
+    },
+    {
+      "id": "t01",
+      "texto": "celular 310 456 7890 para avisarle",
+      "esperado": [
+        {
+          "type": "TELEFONO",
+          "value": "310 456 7890"
+        }
+      ]
+    },
+    {
+      "id": "t02",
+      "texto": "teléfono 3104567890",
+      "esperado": [
+        {
+          "type": "TELEFONO",
+          "value": "3104567890"
+        }
+      ]
+    },
+    {
+      "id": "t03",
+      "texto": "se comunica al 3151234567 en la tarde",
+      "esperado": [
+        {
+          "type": "TELEFONO",
+          "value": "3151234567"
+        }
+      ]
+    },
+    {
+      "id": "t04",
+      "texto": "whatsapp: +57 300-123-4567",
+      "esperado": [
+        {
+          "type": "TELEFONO",
+          "value": "+57 300-123-4567"
+        }
+      ]
+    },
+    {
+      "id": "t05",
+      "texto": "teléfono fijo 6042345678 de la casa",
+      "esperado": [
+        {
+          "type": "TELEFONO",
+          "value": "6042345678"
+        }
+      ]
+    },
+    {
+      "id": "c01",
+      "texto": "correo juan.perez@gmail.com para los resultados",
+      "esperado": [
+        {
+          "type": "CORREO",
+          "value": "juan.perez@gmail.com"
+        }
+      ]
+    },
+    {
+      "id": "c02",
+      "texto": "Correo electrónico: MARIA_LOPEZ-1@hospital.gov.co",
+      "esperado": [
+        {
+          "type": "CORREO",
+          "value": "MARIA_LOPEZ-1@hospital.gov.co"
+        }
+      ]
+    },
+    {
+      "id": "a01",
+      "texto": "vive en la carrera 45 número 23-10 barrio Laureles. Consulta por tos.",
+      "esperado": [
+        {
+          "type": "DIRECCION",
+          "value": "la carrera 45 número 23-10 barrio Laureles"
+        }
+      ],
+      "noTapar": [
+        "Consulta por tos"
+      ]
+    },
+    {
+      "id": "a02",
+      "texto": "Dirección: Calle 10 # 5-20 apto 301, Medellín",
+      "esperado": [
+        {
+          "type": "DIRECCION",
+          "value": "Calle 10 # 5-20 apto 301, Medellín"
+        }
+      ]
+    },
+    {
+      "id": "a03",
+      "texto": "reside en la vereda El Tablazo, kilómetro 3 vía Rionegro; refiere disnea.",
+      "esperado": [
+        {
+          "type": "DIRECCION",
+          "value": "la vereda El Tablazo, kilómetro 3 vía Rionegro"
+        }
+      ],
+      "noTapar": [
+        "refiere disnea"
+      ]
+    },
+    {
+      "id": "a04",
+      "texto": "la dirección del tratamiento es bajar la presión",
+      "esperado": [],
+      "noTapar": [
+        "bajar la presión"
+      ]
+    },
+    {
+      "id": "u01",
+      "texto": "número de historia 12345678 en el sistema viejo",
+      "esperado": [
+        {
+          "type": "NUMERO",
+          "value": "12345678"
+        }
+      ]
+    },
+    {
+      "id": "u02",
+      "texto": "autorización 1.500.000 aprobada",
+      "esperado": [
+        {
+          "type": "NUMERO",
+          "value": "1.500.000"
+        }
+      ]
+    },
+    {
+      "id": "k01",
+      "texto": "tensión 120/80, plaquetas 250.000, dosis 50 mg",
+      "esperado": [],
+      "noTapar": [
+        "120/80",
+        "250.000",
+        "50 mg"
+      ]
+    },
+    {
+      "id": "k02",
+      "texto": "123456 no alcanza a ser cédula",
+      "esperado": [],
+      "noTapar": [
+        "123456"
+      ]
+    },
+    {
+      "id": "k03",
+      "texto": "cita el 17/07/2026 a las 10:30",
+      "esperado": [],
+      "noTapar": [
+        "17/07/2026",
+        "10:30"
+      ]
+    },
+    {
+      "id": "k04",
+      "texto": "Hemoglobina 12.5 g/dL, glucosa 98 mg/dL, creatinina 0.9",
+      "esperado": [],
+      "noTapar": [
+        "12.5",
+        "98",
+        "0.9"
+      ]
+    },
+    {
+      "id": "k05",
+      "texto": "código CIE-10 M54.5, CUPS 890201",
+      "esperado": [],
+      "noTapar": [
+        "M54.5",
+        "890201"
+      ]
+    },
+    {
+      "id": "k06",
+      "texto": "rótulo de patología 26-2931, bloque 3, lámina 2",
+      "esperado": [],
+      "noTapar": [
+        "26-2931"
+      ]
+    },
+    {
+      "id": "k07",
+      "texto": "temperatura 38.2, saturación 94%, frecuencia cardiaca 88",
+      "esperado": [],
+      "noTapar": [
+        "38.2",
+        "94%",
+        "88"
+      ]
+    },
+    {
+      "id": "k08",
+      "texto": "Paciente masculino de 40 años. Consulta por tos seca de tres días.",
+      "esperado": [],
+      "noTapar": [
+        "masculino",
+        "Consulta por tos"
+      ]
+    },
+    {
+      "id": "k09",
+      "texto": "La paciente Refiere dolor precordial desde ayer.",
+      "esperado": [],
+      "noTapar": [
+        "Refiere dolor"
+      ]
+    },
+    {
+      "id": "k10",
+      "texto": "Se administra Losartán 50 mg y Metformina 850 mg.",
+      "esperado": [],
+      "noTapar": [
+        "Losartán",
+        "Metformina"
+      ]
+    },
+    {
+      "id": "m01",
+      "texto": "El paciente se llama Juan David Pérez, cédula 23-45-67-75-43, celular 3104567890, correo juan.perez@gmail.com, vive en la carrera 45 número 23-10 barrio Laureles. Bueno, don Juan, siga.",
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Juan David Pérez"
+        },
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Juan"
+        },
+        {
+          "type": "DOCUMENTO",
+          "value": "23-45-67-75-43"
+        },
+        {
+          "type": "TELEFONO",
+          "value": "3104567890"
+        },
+        {
+          "type": "CORREO",
+          "value": "juan.perez@gmail.com"
+        },
+        {
+          "type": "DIRECCION",
+          "value": "la carrera 45 número 23-10 barrio Laureles"
+        }
+      ]
+    },
+    {
+      "id": "m02",
+      "texto": "Nombre: Laura Sofía Mejía\nDocumento: TI 1.001.234.567\nMotivo: control de asma. Tos nocturna, saturación 96%.",
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Laura Sofía Mejía"
+        },
+        {
+          "type": "DOCUMENTO",
+          "value": "TI 1.001.234.567"
+        }
+      ],
+      "noTapar": [
+        "96%",
+        "control de asma"
+      ]
+    },
+    {
+      "id": "m03",
+      "texto": "Consulta de Camilo Andrés Torres Lozano, cédula 71234567, con su esposa. Refiere que a Camilo le duele el pecho.",
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Camilo Andrés Torres Lozano"
+        },
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Camilo"
+        },
+        {
+          "type": "DOCUMENTO",
+          "value": "71234567"
+        }
+      ],
+      "seeds": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Camilo Andrés Torres Lozano"
+        }
+      ]
+    },
+    {
+      "id": "m04",
+      "texto": "¿qué le mando a Juan para el dolor?",
+      "seeds": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Juan David Pérez"
+        }
+      ],
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Juan"
+        }
+      ]
+    },
+    {
+      "id": "m05",
+      "texto": "Paciente: Gloria Inés Ospina, 55 años, HTA. Tensión 150/95.",
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Gloria Inés Ospina"
+        }
+      ],
+      "noTapar": [
+        "150/95",
+        "HTA"
+      ]
+    }
+  ]
+}
