@@ -349,7 +349,7 @@ Sin body → `{ suggestions:[{title,type,confidence,rationale,supporting_evidenc
 POST /api/clinical/assistant/note-adjustment
 ```
 
-`{ encounter_id, instruction, section_key? }` → `{ proposed_note_json, changed_sections, explanation, requires_physician_review:true }`. Valida contra `template_snapshot` (merge con la nota original si el modelo responde parcial); el médico guarda con el endpoint 10.
+`{ encounter_id, instruction, section_key?, note_json?, doctor? }` → `{ proposed_note_json, changed_sections, explanation, requires_physician_review:true, unresolved, unverified, transcript_coverage, sources_used, warnings }`. `note_json` es la nota tal como la ve el médico (con ediciones sin guardar); sin ella se usa la persistida. El modelo recibe la sección objetivo, la nota completa, la transcripción entera (o sus tramos relevantes por encima de 60k) y las anotaciones del médico; cada dato nuevo trae cita literal y lo que no se verifica se marca en `unverified`. Valida contra `template_snapshot` (merge con la nota original si el modelo responde parcial); el médico guarda con el endpoint 10. Detalle: [clinical-assistant.md](clinical-assistant.md).
 
 Errores adicionales: `ASSISTANT_INVALID` (400), `ASSISTANT_FAILED` (502).
 

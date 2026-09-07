@@ -142,7 +142,7 @@ async function startServer({ restClient, llm }) {
   return { server, call };
 }
 
-function seedEncounter(restClient, { withTranscript = true, withNote = true } = {}) {
+function seedEncounter(restClient, { withTranscript = true, withNote = true, transcript = null } = {}) {
   const snapshot = {
     template_id: crypto.randomUUID(),
     name: 'Consulta inicial · Medicina general',
@@ -176,7 +176,7 @@ function seedEncounter(restClient, { withTranscript = true, withNote = true } = 
     template_id: snapshot.template_id,
     template_snapshot: snapshot,
     status: withNote ? 'note_generated' : (withTranscript ? 'transcript_ready' : 'created'),
-    transcript: withTranscript ? TRANSCRIPT : '',
+    transcript: withTranscript ? (transcript ?? TRANSCRIPT) : '',
     note_json: note,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
@@ -479,6 +479,271 @@ async function main() {
       const prompt = promptTextOf(llm.state.calls.at(-1));
       assert.ok(prompt.includes('El médico se llama Juan'));
       assert.ok(prompt.includes('únicamente al texto de "explanation"'), 'debe acotar el alcance');
+    });
+
+    // -----------------------------------------------------------------------
+    // Ajuste de nota con contexto real de la consulta.
+    // -----------------------------------------------------------------------
+    const contextBuilder = require('../src/application/use-cases/ClinicalAssistantContextBuilder');
+    const planOriginal = 'Higiene del sueño, hidratación, pausas de pantalla y control si hay signos de alarma.';
+    const enfermedadOriginal = 'Dolor intermitente que empeora con pantallas y mejora con reposo, con náuseas leves.';
+    const unchanged = () => ({ sections: [], explanation: 'Sin cambios.', unresolved: [] });
+
+    llm.state.jsonHandler = unchanged;
+    await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: encounter.id,
+      instruction: 'Haz el plan más claro.',
+      section_key: 'plan'
+    });
+    await check('ajuste: prompt propio (no el del chat) con la sección objetivo completa y alcance de sección', () => {
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(prompt.includes('Eres el editor de una nota clínica'), 'system prompt de ajuste');
+      assert.ok(!prompt.includes('Formato para diferenciales'), 'no hereda el system prompt del chat');
+      assert.ok(prompt.includes(`"contenido_actual":"${planOriginal}"`), 'contenido actual de la sección');
+      assert.ok(prompt.includes('"evidencia_actual":"higiene del sueño"'), 'evidencia de la sección');
+      assert.ok(prompt.includes('"instruccion_de_plantilla":"x"'), 'instrucción de plantilla');
+      assert.ok(prompt.includes('"alcance":"seccion"'));
+      assert.ok(prompt.includes('El alcance es "seccion"'));
+      assert.ok(prompt.includes('"cobertura_transcripcion":"completa"'));
+    });
+
+    await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: encounter.id,
+      instruction: 'Expande la enfermedad actual con lo que hablamos en la consulta.'
+    });
+    await check('ajuste: sin section_key la sección objetivo se infiere del texto y el alcance sigue siendo la nota', () => {
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(prompt.includes('Sección objetivo sugerida'), 'objetivo inferido');
+      assert.ok(prompt.includes('"seccion_objetivo":{"key":"enfermedad_actual"'));
+      assert.ok(prompt.includes('"alcance":"nota"'));
+    });
+
+    // Transcripción larga (30k): entra ENTERA, incluida la cola.
+    const filler = 'El paciente comenta que trabaja frente al computador la mayor parte del día y que duerme poco entre semana. ';
+    const longTranscript = `${TRANSCRIPT} ${filler.repeat(280)} Al cierre el médico indica control en una semana con hemograma.`;
+    assert.ok(longTranscript.length > contextBuilder.MAX_PROMPT_TRANSCRIPT_LENGTH && longTranscript.length < contextBuilder.MAX_ADJUSTMENT_TRANSCRIPT_LENGTH);
+    const longEncounter = seedEncounter(restClient, { transcript: longTranscript });
+    const longAdjust = await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: longEncounter.id,
+      instruction: 'Agrega al plan el control que indicó.'
+    });
+    await check('ajuste: una transcripción de 30k llega completa (la cola aparece en el prompt)', () => {
+      assert.strictEqual(longAdjust.status, 200);
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(prompt.includes('control en una semana con hemograma'), 'la cola de la transcripción');
+      assert.ok(!prompt.includes('[transcripción truncada para el prompt]'));
+      assert.strictEqual(longAdjust.body.transcript_coverage, 'completa');
+    });
+
+    // Transcripción enorme (90k): se conservan inicio, cierre y el tramo que
+    // habla de lo que pide la instrucción.
+    const noise = 'Conversación general sobre el clima, el tráfico y la familia del vecino. ';
+    const hugeTranscript = [
+      'Inicio de la consulta: buenos días, cuénteme qué lo trae.',
+      noise.repeat(500),
+      'El paciente refiere fiebre de treinta y ocho grados durante dos noches seguidas.',
+      noise.repeat(800),
+      'Cierre de consulta: nos vemos en el control.'
+    ].join(' ');
+    assert.ok(hugeTranscript.length > contextBuilder.MAX_ADJUSTMENT_TRANSCRIPT_LENGTH);
+    const hugeEncounter = seedEncounter(restClient, { transcript: hugeTranscript });
+    const hugeAdjust = await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: hugeEncounter.id,
+      instruction: 'Agrega lo que dijo sobre la fiebre.'
+    });
+    await check('ajuste: una transcripción de 90k conserva inicio, cierre y el tramo relevante, y se marca parcial', () => {
+      assert.strictEqual(hugeAdjust.status, 200);
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(prompt.includes('Inicio de la consulta'), 'primera ventana');
+      assert.ok(prompt.includes('Cierre de consulta'), 'última ventana');
+      assert.ok(prompt.includes('fiebre de treinta y ocho grados'), 'la ventana que habla de fiebre');
+      assert.ok(prompt.includes('[…]'), 'marca de hueco');
+      assert.ok(prompt.length < hugeTranscript.length, 'no viaja entera');
+      assert.strictEqual(hugeAdjust.body.transcript_coverage, 'parcial');
+    });
+
+    // Evidencia verificada: dato recuperado de la transcripción, con cita real.
+    llm.state.jsonHandler = () => ({
+      sections: [{
+        key: 'enfermedad_actual',
+        content: `${enfermedadOriginal} Refiere fiebre de 38 grados durante dos noches.`,
+        added_facts: [{ text: 'fiebre de 38 grados durante dos noches', source: 'transcripcion', quote: 'fiebre de treinta y ocho grados durante dos noches' }]
+      }],
+      explanation: 'Agregué la fiebre que refirió el paciente.',
+      unresolved: []
+    });
+    const grounded = await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: hugeEncounter.id,
+      instruction: 'Agrega lo que dijo sobre la fiebre.'
+    });
+    await check('ajuste: un dato recuperado de la transcripción con cita literal se acepta sin marcas', () => {
+      assert.strictEqual(grounded.status, 200);
+      assert.deepStrictEqual(grounded.body.changed_sections, ['enfermedad_actual']);
+      assert.deepStrictEqual(grounded.body.unverified, []);
+      assert.strictEqual(grounded.body.sources_used.transcript, true);
+      assert.ok(grounded.body.proposed_note_json.sections[1].content.includes('fiebre de 38 grados'));
+    });
+
+    // Cita inventada: el cambio se aplica (decisión: aceptar pero marcar).
+    llm.state.jsonHandler = () => ({
+      sections: [{
+        key: 'enfermedad_actual',
+        content: `${enfermedadOriginal} Se documenta rigidez de nuca.`,
+        added_facts: [{ text: 'rigidez de nuca', source: 'transcripcion', quote: 'rigidez de nuca presente' }]
+      }],
+      explanation: 'Agregué la rigidez de nuca.'
+    });
+    const invented2 = await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: encounter.id,
+      instruction: 'Agrega los hallazgos del examen.'
+    });
+    await check('ajuste: un dato sin cita en ninguna fuente se aplica pero queda marcado en unverified', () => {
+      assert.strictEqual(invented2.status, 200);
+      assert.deepStrictEqual(invented2.body.changed_sections, ['enfermedad_actual']);
+      assert.deepStrictEqual(invented2.body.unverified, [{ section_key: 'enfermedad_actual', text: 'rigidez de nuca' }]);
+      assert.strictEqual(invented2.body.requires_physician_review, true);
+    });
+
+    // Crecimiento sin hechos declarados: también se marca.
+    llm.state.jsonHandler = () => ({
+      sections: [{ key: 'plan', content: `${planOriginal} ${'Recomendaciones generales de estilo de vida y seguimiento. '.repeat(4)}`, added_facts: [] }],
+      explanation: 'Amplié el plan.'
+    });
+    const grew = await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: encounter.id,
+      instruction: 'Haz el plan más largo.',
+      section_key: 'plan'
+    });
+    await check('ajuste: una sección que crece mucho sin declarar hechos queda marcada', () => {
+      assert.strictEqual(grew.status, 200);
+      assert.strictEqual(grew.body.unverified.length, 1);
+      assert.strictEqual(grew.body.unverified[0].section_key, 'plan');
+    });
+
+    // No encontrado: el modelo no cambia nada y lo declara en unresolved.
+    llm.state.jsonHandler = () => ({
+      sections: [],
+      explanation: '',
+      unresolved: ['lo que mencionó sobre la cirugía', 42, '   ', 'x'.repeat(500)]
+    });
+    const notFound = await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: encounter.id,
+      instruction: 'Agrega lo que mencionó sobre la cirugía que tuvo.'
+    });
+    await check('ajuste: lo que no se encontró llega en unresolved (saneado) y la nota no cambia', () => {
+      assert.strictEqual(notFound.status, 200);
+      assert.deepStrictEqual(notFound.body.changed_sections, []);
+      assert.strictEqual(notFound.body.unresolved.length, 3);
+      assert.strictEqual(notFound.body.unresolved[0], 'lo que mencionó sobre la cirugía');
+      assert.strictEqual(notFound.body.unresolved[2].length, 300);
+      assert.ok(notFound.body.explanation.includes('No encontré en la consulta'));
+    });
+
+    // Alcance: con section_key, lo que el modelo toque fuera se descarta.
+    llm.state.jsonHandler = () => ({
+      sections: [
+        { key: 'plan', content: 'Plan breve: higiene del sueño e hidratación.', added_facts: [] },
+        { key: 'enfermedad_actual', content: 'Texto que nadie pidió.', added_facts: [] }
+      ],
+      explanation: 'Acorté el plan.'
+    });
+    const scoped = await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: encounter.id,
+      instruction: 'Haz el plan más corto.',
+      section_key: 'plan'
+    });
+    await check('ajuste: con section_key solo esa sección cambia; el resto se descarta', () => {
+      assert.strictEqual(scoped.status, 200);
+      assert.deepStrictEqual(scoped.body.changed_sections, ['plan']);
+      assert.strictEqual(scoped.body.proposed_note_json.sections[1].content, enfermedadOriginal);
+      assert.ok(scoped.body.warnings.some((w) => w.includes('fuera de la sección pedida')));
+    });
+
+    // Dato nuevo dictado por el médico en la instrucción: se acepta (fuente "medico").
+    llm.state.jsonHandler = () => ({
+      sections: [{
+        key: 'plan',
+        content: `${planOriginal} Se solicita tomografía de abdomen.`,
+        added_facts: [{ text: 'tomografía de abdomen', source: 'medico', quote: 'voy a solicitar una tomografía de abdomen' }]
+      }],
+      explanation: 'Agregué la tomografía que indicaste.'
+    });
+    const fromDoctor = await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: encounter.id,
+      instruction: 'Agrega al plan que voy a solicitar una tomografía de abdomen.'
+    });
+    await check('ajuste: un dato nuevo dictado por el médico en la instrucción se acepta con fuente "medico"', () => {
+      assert.strictEqual(fromDoctor.status, 200);
+      assert.deepStrictEqual(fromDoctor.body.changed_sections, ['plan']);
+      assert.deepStrictEqual(fromDoctor.body.unverified, []);
+      assert.strictEqual(fromDoctor.body.sources_used.instruction, true);
+    });
+
+    // Bloque de anotaciones del médico: sale de la transcripción y entra como fuente propia.
+    const annotated = seedEncounter(restClient, {
+      transcript: [
+        TRANSCRIPT,
+        '',
+        contextBuilder.DOCTOR_ANNOTATIONS_MARKER,
+        'Estas frases las escribió el médico durante la consulta; no se dijeron en voz alta.',
+        '[Plan] Sospecha de migraña sin aura, iniciar profilaxis si recurre.'
+      ].join('\n')
+    });
+    llm.state.jsonHandler = () => ({
+      sections: [{
+        key: 'plan',
+        content: `${planOriginal} Ante sospecha de migraña sin aura, iniciar profilaxis si recurre.`,
+        added_facts: [{ text: 'iniciar profilaxis si recurre', source: 'anotaciones', quote: 'iniciar profilaxis si recurre' }]
+      }],
+      explanation: 'Integré tu anotación al plan.'
+    });
+    const withNotes = await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: annotated.id,
+      instruction: 'Integra al plan lo que anoté.'
+    });
+    await check('ajuste: las anotaciones escritas por el médico viajan aparte y sirven de evidencia', () => {
+      assert.strictEqual(withNotes.status, 200);
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(prompt.includes('"anotaciones_del_medico":[{"section_label":"Plan","text":"Sospecha de migraña sin aura, iniciar profilaxis si recurre."}]'));
+      const transcriptField = prompt.slice(prompt.indexOf('"transcripcion":'), prompt.indexOf('"anotaciones_del_medico"'));
+      assert.ok(!transcriptField.includes('ANOTACIONES ESCRITAS'), 'el bloque no va dentro de la transcripción');
+      assert.deepStrictEqual(withNotes.body.unverified, []);
+      assert.strictEqual(withNotes.body.sources_used.annotations, true);
+    });
+
+    // La nota que manda el navegador reemplaza a la persistida.
+    llm.state.jsonHandler = unchanged;
+    const editedNote = {
+      summary: 'Consulta por cefalea de tres días.',
+      sections: [
+        { key: 'motivo_consulta', content: 'Cefalea de 3 días de evolución.' },
+        { key: 'enfermedad_actual', content: enfermedadOriginal },
+        { key: 'plan', content: 'Plan editado a mano por el médico.' }
+      ]
+    };
+    const override = await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: encounter.id,
+      instruction: 'Haz el plan más claro.',
+      section_key: 'plan',
+      note_json: editedNote
+    });
+    await check('ajuste: note_json del body es la nota actual (prompt y propuesta), no la persistida', () => {
+      assert.strictEqual(override.status, 200);
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(prompt.includes('"contenido_actual":"Plan editado a mano por el médico."'));
+      assert.ok(!prompt.includes(planOriginal), 'la persistida no viaja');
+      assert.strictEqual(override.body.proposed_note_json.sections[2].content, 'Plan editado a mano por el médico.');
+      assert.deepStrictEqual(override.body.changed_sections, []);
+    });
+
+    const badOverride = await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: encounter.id,
+      instruction: 'Haz el plan más claro.',
+      note_json: { summary: 'x', sections: [{ key: 'plan', content: 'solo una' }] }
+    });
+    await check('ajuste: un note_json que no cuadra con la plantilla responde ASSISTANT_INVALID', () => {
+      assert.strictEqual(badOverride.status, 400);
+      assert.strictEqual(badOverride.body.error.code, 'ASSISTANT_INVALID');
     });
 
     console.log(`\n[verify-clinical-assistant] ${passed} verificaciones OK`);

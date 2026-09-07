@@ -142,7 +142,13 @@ class ClinicalAssistantService {
   }
 
   // ---- Ajuste de nota clínica (modo C) — propone, nunca persiste ----
-  async adjustNote({ encounterId = '', instruction = '', sectionKey = '', doctor = null } = {}, { doctorId = null } = {}) {
+  //
+  // La "nota actual" es la que manda el navegador (`noteJson`, lo que el
+  // médico está viendo, con sus ediciones sin guardar) o, si no viene, la
+  // persistida. Sobre esa nota se arma el prompt, se hace el merge y se
+  // calcula qué cambió; así el ajuste nunca pisa lo que el médico editó a
+  // mano en la pantalla.
+  async adjustNote({ encounterId = '', instruction = '', sectionKey = '', doctor = null, noteJson = null } = {}, { doctorId = null } = {}) {
     if (!this.noteValidationService) {
       throw new Error('adjustNote requires the noteValidationService dependency');
     }
@@ -155,20 +161,25 @@ class ClinicalAssistantService {
     }
 
     const encounter = await this.encounterService.getOwnedEncounter(encounterId, { doctorId });
-    const originalNote = encounter.note_json;
-    if (!originalNote || !Array.isArray(originalNote.sections) || originalNote.sections.length === 0) {
+    const currentNote = this.resolveCurrentNote(noteJson, encounter);
+    if (!currentNote || !Array.isArray(currentNote.sections) || currentNote.sections.length === 0) {
       throw clinicalError('ENCOUNTER_INVALID', 'La consulta aún no tiene una nota clínica generada para ajustar.');
     }
     this.requireLlm();
 
-    const { clinicalContext } = contextBuilder.build({ encounter, doctor });
     const cleanSectionKey = `${sectionKey || ''}`.trim();
+    const { clinicalContext, fullTranscript, annotationsText } = contextBuilder.buildForAdjustment({
+      encounter,
+      doctor,
+      sectionKey: cleanSectionKey,
+      instruction: cleanInstruction,
+      currentNote
+    });
 
     try {
       const messages = this.promptBuilder.buildNoteAdjustmentMessages({
         clinicalContext,
-        instruction: cleanInstruction,
-        sectionKey: cleanSectionKey
+        instruction: cleanInstruction
       });
       const content = await withFeature(
         FEATURES.ASISTENTE,
@@ -176,31 +187,57 @@ class ClinicalAssistantService {
         { sessionId: encounter.id }
       );
       const parsed = this.llmProvider.parseJsonObject(content || '{}');
-      const modelNote = parsed?.note_json && typeof parsed.note_json === 'object' ? parsed.note_json : parsed;
+
+      // Formato actual: { sections: [solo las cambiadas], summary?, explanation,
+      // unresolved }. Se acepta también el anterior ({ note_json: {...} }) por
+      // si el modelo lo devuelve así: el merge de abajo ya sabía convivir con
+      // respuestas parciales o completas.
+      const modelSections = Array.isArray(parsed?.sections)
+        ? parsed.sections
+        : (Array.isArray(parsed?.note_json?.sections) ? parsed.note_json.sections : []);
+      const modelSummary = typeof parsed?.summary === 'string'
+        ? parsed.summary
+        : (typeof parsed?.note_json?.summary === 'string' ? parsed.note_json.summary : '');
+
+      const grounded = this.validationService.groundAdjustedSections(modelSections, {
+        originalNote: currentNote,
+        transcript: fullTranscript,
+        annotationsText,
+        instruction: cleanInstruction,
+        sectionKey: cleanSectionKey
+      });
 
       // Merge BEFORE validating: a partial model response (only the adjusted
       // section) must not wipe the rest of the note. Per snapshot key we take
-      // the model's section when present, otherwise the original one.
-      const merged = this.mergeWithOriginalNote(modelNote, originalNote);
+      // the model's section when present, otherwise the original one. Con
+      // alcance de sección, el resumen tampoco se toca.
+      const merged = this.mergeWithOriginalNote({
+        sections: grounded.sections,
+        summary: clinicalContext.scope === 'seccion' ? '' : modelSummary
+      }, currentNote);
       const proposedNote = this.noteValidationService.validateAndRepair(merged, encounter.template_snapshot);
 
       const changedSections = proposedNote.sections
         .filter((section) => {
-          const original = originalNote.sections.find((item) => item.key === section.key);
+          const original = currentNote.sections.find((item) => item.key === section.key);
           return `${original?.content || ''}` !== section.content;
         })
         .map((section) => section.key);
 
+      const unresolved = this.validationService.sanitizeUnresolved(parsed?.unresolved);
       const explanation = `${parsed?.explanation || ''}`.trim().slice(0, MAX_EXPLANATION_LENGTH)
-        || (changedSections.length > 0
-          ? `Se ajustó la redacción de: ${changedSections.join(', ')}. Sin datos clínicos nuevos.`
-          : 'No se aplicaron cambios: la instrucción no requería modificar la nota o exigía información no disponible.');
+        || this.fallbackExplanation({ changedSections, unresolved });
 
       return {
         proposed_note_json: proposedNote,
         changed_sections: changedSections,
         explanation,
-        requires_physician_review: true
+        requires_physician_review: true,
+        unresolved,
+        unverified: grounded.unverified,
+        transcript_coverage: clinicalContext.transcript_coverage,
+        sources_used: grounded.sources_used,
+        warnings: grounded.warnings
       };
     } catch (error) {
       if (isClinicalError(error)) {
@@ -209,6 +246,34 @@ class ClinicalAssistantService {
       console.error(`[Clinical Assistant] note-adjustment falló: ${error.message}`);
       throw clinicalError('ASSISTANT_FAILED', 'No fue posible proponer el ajuste de la nota. Intenta de nuevo.');
     }
+  }
+
+  // La nota que manda el navegador tiene que cuadrar con la plantilla de la
+  // consulta (mismas keys, todas presentes): es la misma regla que aplica el
+  // PUT /note, y por eso se reutiliza su validador. Sin nota en el body, la
+  // persistida.
+  resolveCurrentNote(noteJson, encounter) {
+    if (noteJson === null || typeof noteJson === 'undefined') {
+      return encounter.note_json;
+    }
+    try {
+      return this.noteValidationService.validateEditedNote(noteJson, encounter.template_snapshot);
+    } catch (error) {
+      if (isClinicalError(error) && error.code === 'NOTE_JSON_INVALID') {
+        throw clinicalError('ASSISTANT_INVALID', `La nota enviada no coincide con la plantilla de esta consulta: ${error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  fallbackExplanation({ changedSections = [], unresolved = [] } = {}) {
+    if (changedSections.length > 0) {
+      return `Se ajustó: ${changedSections.join(', ')}.`;
+    }
+    if (unresolved.length > 0) {
+      return `No encontré en la consulta lo que pediste (${unresolved.join('; ')}); la nota quedó como estaba.`;
+    }
+    return 'No se aplicaron cambios: la instrucción no requería modificar la nota.';
   }
 
   mergeWithOriginalNote(modelNote, originalNote) {

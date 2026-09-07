@@ -134,25 +134,55 @@ Authorization: Bearer <supabase_access_token>
 ```
 
 ```json
-{ "encounter_id": "enc_123", "instruction": "Haz el plan más breve y claro.", "section_key": "plan" }
+{
+  "encounter_id": "enc_123",
+  "instruction": "Agrega lo que dijo sobre la fiebre.",
+  "section_key": "enfermedad_actual",
+  "note_json": { "summary": "...", "sections": [ { "key": "...", "content": "..." } ] },
+  "doctor": { "display_name": "Juan", "address": "tu" }
+}
 ```
+
+Solo `encounter_id` e `instruction` son obligatorios.
+
+- `section_key`: acota el ajuste a **esa** sección (alcance `seccion`). Sin él, el backend infiere una sección objetivo a partir del texto ("expande la impresión diagnóstica" → la sección cuyo label la nombra) como pista para el modelo, sin limitar el alcance.
+- `note_json`: la nota **tal como la ve el médico ahora mismo**, con sus ediciones sin guardar. Si viene, es la nota actual para el prompt, el merge y el diff (se valida con la misma regla que `PUT /note`: mismas keys que el `template_snapshot`, todas presentes; si no cuadra → `400 ASSISTANT_INVALID`). Si no viene, se usa la persistida.
 
 Respuesta:
 
 ```json
 {
   "proposed_note_json": { "summary": "...", "sections": [ ... ], "warnings": [], "missing_required_sections": [] },
-  "changed_sections": ["plan"],
-  "explanation": "Se acortó el plan sin agregar información nueva.",
-  "requires_physician_review": true
+  "changed_sections": ["enfermedad_actual"],
+  "explanation": "Agregué la fiebre de 38 grados que refirió el paciente; no encontré nada sobre la cirugía.",
+  "requires_physician_review": true,
+  "unresolved": ["lo que mencionó sobre la cirugía"],
+  "unverified": [{ "section_key": "enfermedad_actual", "text": "rigidez de nuca" }],
+  "transcript_coverage": "completa",
+  "sources_used": { "transcript": true, "annotations": false, "note": false, "instruction": false },
+  "warnings": []
 }
 ```
 
-Garantías:
+- `unresolved`: lo que el médico pidió buscar y el modelo no encontró en ninguna fuente. La nota no cambia en ese punto.
+- `unverified`: datos que el modelo agregó sin una cita literal verificable en su fuente. **El cambio se aplica igual** (decisión de producto: aceptar pero marcar) y el médico revisa antes de firmar.
+- `transcript_coverage`: `completa` (viajó entera) o `parcial` (superó el presupuesto y viajaron los tramos relevantes).
+- `sources_used`: de dónde salieron los datos verificados.
+
+### Contexto que recibe el modelo
+
+El prompt de ajuste es propio (`ClinicalAssistantPromptBuilder.ADJUSTMENT_SYSTEM_PROMPT`), no el del chat. El mensaje de usuario lleva: la instrucción, el alcance, la **sección objetivo** (key, label, instrucción de plantilla, contenido actual y `evidence` de esa sección), las secciones de la plantilla con su instrucción, la nota completa, la transcripción y las anotaciones del médico.
+
+- **Transcripción**: hasta `MAX_ADJUSTMENT_TRANSCRIPT_LENGTH` (60 000 caracteres) va entera. Por encima, `selectRelevantTranscript` conserva siempre el primer y el último tramo y llena el presupuesto con los tramos que más vocabulario comparten con la instrucción y la sección objetivo, en orden original y con `[…]` en los huecos. Nunca se corta por la cabeza como en el chat (16 000).
+- **Anotaciones del médico**: si la transcripción trae el bloque `--- ANOTACIONES ESCRITAS POR EL MÉDICO DURANTE LA CONSULTA ---` (lo añade la web al generar), se separa y viaja como `anotaciones_del_medico: [{ section_label, text }]`, identificado como escrito por el médico.
+- **Fuentes y jerarquía** (en el prompt): instrucción del médico → transcripción → anotaciones → resto de la nota. Un dato nuevo entra solo si está en la transcripción/anotaciones o si el médico lo afirma en la instrucción ("agrega que voy a solicitar una tomografía"). Preguntas no son hallazgos, negaciones se conservan como negaciones, hipótesis se redactan como hipótesis.
+
+### Garantías del servidor (validación post-LLM)
 
 - **Nunca persiste.** Devuelve una propuesta; el médico la revisa y la guarda con el `PUT /api/clinical/encounters/:id/note` existente.
-- La propuesta se valida contra el `template_snapshot` (mismas keys, mismo orden). Si el modelo responde parcial (solo la sección ajustada), el backend hace **merge con la nota original** — las secciones no mencionadas se conservan textuales. Secciones inventadas se ignoran.
-- `section_key` es opcional; enfoca la instrucción en una sección.
+- El modelo devuelve **solo las secciones que cambió**, cada dato nuevo en `added_facts` con `source` (`transcripcion | anotaciones | nota | medico`) y una cita literal. `groundAdjustedSections` busca la cita (sin acentos ni espacios dobles) en el corpus de esa fuente; lo que no aparece va a `unverified`. Una sección que crece más de 120 caracteres sin declarar hechos también se marca.
+- Con `section_key`, cualquier otra sección que el modelo toque se descarta (y el `summary` no cambia); queda constancia en `warnings`.
+- La propuesta se valida contra el `template_snapshot` (mismas keys, mismo orden) con el merge de siempre: secciones no devueltas se conservan textuales, secciones inventadas se ignoran. También se acepta el formato anterior (`{ note_json: {...} }`).
 - Requiere que el encounter ya tenga `note_json` (si no → `400 ENCOUNTER_INVALID`).
 
 ## Errores
@@ -175,7 +205,7 @@ El system prompt (en `ClinicalAssistantPromptBuilder.SYSTEM_PROMPT`) prohíbe: d
 ## Limitaciones actuales
 
 - Las respuestas de chat son texto libre: la no-invención se exige por prompt pero no es verificable automáticamente (por eso el safety notice y la revisión médica).
-- En ajustes de nota, la estructura está garantizada (keys/orden/merge); el contenido textual final requiere revisión (`requires_physician_review`).
+- En ajustes de nota, la estructura está garantizada (keys/orden/merge) y cada dato nuevo se coteja contra su fuente; lo que no se pudo cotejar se marca en `unverified`, pero se aplica igual, así que el contenido final requiere revisión (`requires_physician_review`).
 - `confidence` es autoreportada por el modelo (clampeada), no calibrada.
 - `suggested_actions` se devuelve vacío — reservado para acciones futuras del frontend.
 - No hay streaming de respuesta (una llamada, una respuesta).
