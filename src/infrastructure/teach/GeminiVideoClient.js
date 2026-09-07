@@ -20,8 +20,10 @@ const LLMProvider = require('../LLMProvider');
 const { fromGemini, toRecorderUsage } = require('../../domain/usage/providerUsage');
 const { FEATURES, API_FAMILIES } = require('../../domain/usage/vocabulary');
 const clauses = require('../../application/prompts/PromptClauses');
+// EL MISMO PROMPT que el camino sin video, y por eso vive fuera de los dos (ver ese archivo).
+const { promptParaElVideo, respuesta } = require('../../domain/teach/interpretarPasos');
 
-const PROMPT_VERSION = clauses.promptVersion('teach-video', '2026-09-02.1');
+const PROMPT_VERSION = clauses.promptVersion('teach-video', '2026-09-07.1');
 
 const BASE = 'https://generativelanguage.googleapis.com';
 
@@ -175,6 +177,37 @@ const TEACH_RESPONSE_SCHEMA = Object.freeze({
 
 const TEACH_USER_TURN = 'Analiza este video de enseñanza completo (imagen y audio) y responde con el JSON pedido.';
 
+// Con pasos grabados, se piden dos claves más sobre el MISMO objeto
+// (interpretarPasos.FORMA_DE_LA_RESPUESTA). Entran al schema sólo entonces:
+// con el schema base el modelo no podría emitirlas.
+const INTERPRETATION_SCHEMA_PROPERTIES = Object.freeze({
+  campos: {
+    type: 'ARRAY',
+    items: {
+      type: 'OBJECT',
+      properties: { campo: { type: 'STRING' }, esDato: { type: 'BOOLEAN' }, significado: { type: 'STRING' } },
+      required: ['campo', 'esDato', 'significado']
+    }
+  },
+  recuerdos: {
+    type: 'ARRAY',
+    items: {
+      type: 'OBJECT',
+      properties: { campo: { type: 'STRING' }, significado: { type: 'STRING' } },
+      required: ['campo', 'significado']
+    }
+  }
+});
+
+function teachResponseSchema({ conPasos = false } = {}) {
+  if (!conPasos) return TEACH_RESPONSE_SCHEMA;
+  return {
+    ...TEACH_RESPONSE_SCHEMA,
+    properties: { ...TEACH_RESPONSE_SCHEMA.properties, ...INTERPRETATION_SCHEMA_PROPERTIES },
+    required: [...TEACH_RESPONSE_SCHEMA.required, 'campos', 'recuerdos']
+  };
+}
+
 /**
  * Gemini devuelve 429/5xx ("This model is currently overloaded") cuando está
  * saturado, y Google los documenta como temporales. Sin reintento, un bache de
@@ -186,22 +219,36 @@ function isTransient(status) {
   return status === 429 || status >= 500;
 }
 
-/** El video ya está ACTIVE: pídele a Gemini el conocimiento del sistema. */
-async function processVideo(apiKey, fileUri, model) {
-  // El prompt va como system_instruction (antes viajaba como parte del turno
-  // de usuario, al mismo rango que el video); el video y una consigna corta
-  // van en el turno de usuario.
+/**
+ * El video ya está ACTIVE: pídele a Gemini el conocimiento del sistema.
+ *
+ * `steps` es opcional y es lo que el cliente Windows grabó de la demostración. Cuando viene, se le
+ * pide ADEMÁS que interprete esos pasos (promptParaElVideo). Una sola llamada para las dos cosas y no
+ * dos: el video es lo caro de subir y de mirar, y partirlo en dos generateContent duplicaría el
+ * gasto para preguntar sobre el mismo material.
+ *
+ * El prompt clínico (con la regla de privacidad) va como system_instruction; el video, la consigna
+ * y —si los hay— los pasos grabados van en el turno de usuario: son datos de ESTA demostración. El
+ * responseSchema se amplía con `campos`/`recuerdos` sólo cuando se piden: con el schema base el
+ * modelo no podría emitirlos y la interpretación quedaría vacía en silencio.
+ */
+async function processVideo(apiKey, fileUri, model, steps) {
+  const conPasos = Array.isArray(steps) && steps.length > 0;
+  const userText = conPasos
+    ? `${TEACH_USER_TURN}\n\n${promptParaElVideo(steps)}`
+    : TEACH_USER_TURN;
+
   const req = {
     system_instruction: { parts: [{ text: MEDICAL_TEACH_PROMPT }] },
     contents: [
       {
         role: 'user',
-        parts: [{ fileData: { mimeType: 'video/mp4', fileUri } }, { text: TEACH_USER_TURN }]
+        parts: [{ fileData: { mimeType: 'video/mp4', fileUri } }, { text: userText }]
       }
     ],
     generationConfig: {
       responseMimeType: 'application/json',
-      responseSchema: TEACH_RESPONSE_SCHEMA,
+      responseSchema: teachResponseSchema({ conPasos }),
       temperature: 0.2
     }
   };
@@ -266,7 +313,16 @@ async function processVideo(apiKey, fileUri, model) {
     : [];
   const summary = typeof parsed.summary === 'string' ? parsed.summary.trim() : '';
 
-  return { summary, notes, questions };
+  // LA INTERPRETACIÓN SE DEVUELVE TAL CUAL, sin normalizar ni filtrar aquí, y a propósito: quien la
+  // lee es una pieza pura del cliente (LoQueElModeloInterpreta) que ya está juzgada por su contrato
+  // — acota los campos a los que la demo tocó, descarta lo demás y distingue «no opinó» de «no hay
+  // nada». Repetir ese filtro aquí sería un segundo lector del mismo hecho, y dos lectores del
+  // mismo hecho se desincronizan sin avisar.
+  //
+  // `null` cuando no se preguntó por pasos: ausente y vacío no significan lo mismo del otro lado.
+  const interpretation = conPasos ? respuesta(parsed) : null;
+
+  return { summary, notes, questions, interpretation };
 }
 
 /** Con responseSchema la respuesta es JSON puro; el recorte por llaves queda como fallback. */
@@ -288,4 +344,4 @@ function firstJsonObject(text) {
   return JSON.parse(text.slice(start, end + 1));
 }
 
-module.exports = { startUpload, fileState, processVideo, PROMPT_VERSION, TEACH_RESPONSE_SCHEMA };
+module.exports = { startUpload, fileState, processVideo, teachResponseSchema, PROMPT_VERSION, TEACH_RESPONSE_SCHEMA };

@@ -80,6 +80,7 @@ const registerWindowsPanelRoutes = require('./api/registerWindowsPanelRoutes');
 const StudioProgressService = require('../src/application/use-cases/StudioProgressService');
 const registerStudioProgressRoutes = require('./api/registerStudioProgressRoutes');
 const registerWindowsAgentRoutes = require('./api/registerWindowsAgentRoutes');
+const TeachStepsInterpreter = require('../src/application/use-cases/TeachStepsInterpreter');
 const registerWindowsDistributionRoutes = require('./api/registerWindowsDistributionRoutes');
 const registerMcpRoutes = require('./api/registerMcpRoutes');
 const AgentWorkflowStore = require('../src/application/use-cases/AgentWorkflowStore');
@@ -274,6 +275,10 @@ const agentTurnService = new AgentTurnService({
   memoryRepository: agentMemoryRepository,
   learningStore: agentWorkflowStore
 });
+// Interpreta una demostración SIN video, por el proveedor de texto del cerebro. Es el respaldo
+// de process-video, no una segunda opinión: solo se llama cuando el video no pudo.
+const teachStepsInterpreter = new TeachStepsInterpreter({ llmProvider });
+
 const teachVideoService = new TeachVideoService({
   memoryRepository: agentMemoryRepository,
   supabaseRestClient
@@ -390,6 +395,30 @@ app.use(express.static('web/public'));
 app.use((req, res, next) => {
   console.log(`[HTTP] ${req.method} ${req.url}`);
   next();
+});
+
+// EL COLLAR OMI POR EL TELEFONO. La nube de Omi entrega aqui el audio en crudo del collar:
+// PCM16 16 kHz mono, en trozos de 1 s, ~1 peticion por segundo mientras haya voz.
+//
+// VA ANTES DEL LIMITADOR DE /api Y NO ES UN DESCUIDO. Omi apaga el webhook del usuario tras
+// 100 respuestas seguidas que no sean 2xx, y lo hace en silencio. El 2026-09-01 lo medimos con
+// un receptor de pruebas gratuito: nos corto con 429 a las 50 peticiones y el envio murio sin
+// un solo aviso — 40 minutos creyendo que fallaba el collar. Un 429 nuestro haria lo mismo.
+//
+// Del cuerpo solo se mide el tamano: el audio NO se guarda ni se escribe en el log.
+app.post('/api/omi/audio', express.raw({ type: '*/*', limit: '8mb' }), (req, res) => {
+  const bytes = Buffer.isBuffer(req.body) ? req.body.length : 0;
+  const sampleRate = Number(req.query.sample_rate) || null;
+  console.log(JSON.stringify({
+    canal: 'omi-audio',
+    t: new Date().toISOString(),
+    code: typeof req.query.code === 'string' ? req.query.code.slice(0, 16) : null,
+    uid: typeof req.query.uid === 'string' ? req.query.uid.slice(0, 40) : null,
+    sampleRate,
+    bytes,
+    ms: sampleRate ? Math.round((bytes / 2 / sampleRate) * 1000) : null,
+  }));
+  res.status(200).send('ok');
 });
 
 // Rate limiting: a generous backstop on all /api, and a stricter cap on the
@@ -1140,7 +1169,12 @@ registerAndroidPanelRoutes(app, { androidPanelService });
 registerWindowsTelemetryRoutes(app, { windowsTelemetryService });
 registerWindowsPanelRoutes(app, { windowsPanelService });
 registerStudioProgressRoutes(app, { studioProgressService });
-registerWindowsAgentRoutes(app, { agentTurnService, teachVideoService, usageRecorder });
+registerWindowsAgentRoutes(app, {
+  agentTurnService,
+  teachVideoService,
+  teachStepsInterpreter,
+  usageRecorder
+});
 registerWindowsDistributionRoutes(app, { windowsAppReleaseService });
 registerMcpRoutes(app, { agentWorkflowStore, workflowExecutor });
 registerPublicApiRoutes(app, {
