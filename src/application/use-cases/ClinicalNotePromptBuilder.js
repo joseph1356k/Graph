@@ -18,8 +18,9 @@
 
 const clauses = require('../prompts/PromptClauses');
 const NoteModeResolver = require('./NoteModeResolver');
+const { GROUNDING_LEVELS } = require('../../domain/clinical/grounding');
 
-const PROMPT_VERSION = clauses.promptVersion('clinical-note', '3');
+const PROMPT_VERSION = clauses.promptVersion('clinical-note', '4');
 const NOTE_DETAILS = Object.freeze(['conciso', 'equilibrado', 'detallado']);
 const MISSING_PHRASE = 'No mencionado en la consulta.';
 
@@ -108,6 +109,48 @@ const OUTPUT_CONTRACT = [
 function sanitizeNoteDetail(value) {
   const normalized = `${value ?? ''}`.trim().toLowerCase();
   return NOTE_DETAILS.includes(normalized) ? normalized : 'equilibrado';
+}
+
+/**
+ * Schema estricto de la respuesta. Hace imposibles por construcción las claves
+ * fuera de la plantilla y los objetos a medias; el validador conserva sus
+ * reparaciones como defensa para los proveedores que ignoran el schema.
+ * Ni `confidence` ni `evidence_spans`: los calcula el código.
+ */
+function buildResponseFormat(sections = []) {
+  const keys = sections.map((section) => `${section?.key || ''}`.trim()).filter(Boolean);
+  return {
+    type: 'json_schema',
+    json_schema: {
+      name: 'clinical_note',
+      strict: true,
+      schema: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          summary: { type: 'string' },
+          sections: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                key: keys.length > 0 ? { type: 'string', enum: keys } : { type: 'string' },
+                label: { type: 'string' },
+                content: { type: 'string' },
+                grounding: { type: 'string', enum: [...GROUNDING_LEVELS] },
+                evidence: { type: 'array', items: { type: 'string' } }
+              },
+              required: ['key', 'label', 'content', 'grounding', 'evidence']
+            }
+          },
+          warnings: { type: 'array', items: { type: 'string' } },
+          missing_required_sections: { type: 'array', items: { type: 'string' } }
+        },
+        required: ['summary', 'sections', 'warnings', 'missing_required_sections']
+      }
+    }
+  };
 }
 
 class ClinicalNotePromptBuilder {
@@ -208,6 +251,7 @@ class ClinicalNotePromptBuilder {
     ];
     return {
       messages,
+      responseFormat: buildResponseFormat(sections),
       promptVersion: PROMPT_VERSION,
       noteMode: modes.noteMode,
       // Literal exige determinismo; interpretativo, casi. Antes todo corría a
@@ -227,5 +271,6 @@ ClinicalNotePromptBuilder.DEFAULT_VERBATIM_SPECIALTIES = NoteModeResolver.DEFAUL
 ClinicalNotePromptBuilder.normalizeSpecialty = NoteModeResolver.normalizeSpecialty;
 ClinicalNotePromptBuilder.NOTE_DETAILS = NOTE_DETAILS;
 ClinicalNotePromptBuilder.MISSING_PHRASE = MISSING_PHRASE;
+ClinicalNotePromptBuilder.buildResponseFormat = buildResponseFormat;
 
 module.exports = ClinicalNotePromptBuilder;

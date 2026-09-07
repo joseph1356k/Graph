@@ -9,6 +9,18 @@ const { FEATURES } = require('../../domain/usage/vocabulary');
 //   - generate: carga el encounter, cambia estados, persiste y publica en el
 //     historial. La usan la ruta clínica y el rescate.
 // Nunca registra transcripción ni contenido de la nota (PHI).
+const JSON_OBJECT_FORMAT = Object.freeze({ type: 'json_object' });
+
+// Un proveedor que no soporta json_schema lo dice con un 400 que nombra el
+// response_format. Se recuerda a nivel de módulo: pagar un 400 por cada nota
+// para volver a descubrirlo sería absurdo.
+let schemaRejected = false;
+
+function looksLikeSchemaRejection(error) {
+  const message = `${error?.message || ''}`;
+  return /response_format|json_schema|schema/i.test(message);
+}
+
 class ClinicalNoteGeneratorService {
   constructor({
     encounterService = null,
@@ -67,6 +79,31 @@ class ClinicalNoteGeneratorService {
    * sin persistencia. `sessionId` ata el gasto a una consulta en el ledger
    * cuando existe.
    */
+  callModel(plan, format, usage) {
+    return withFeature(
+      FEATURES.NOTE_GENERATION,
+      () => this.llmProvider.chatExpectingJson(plan.messages, format, { temperature: plan.temperature }),
+      usage
+    );
+  }
+
+  // Schema estricto cuando el builder lo trae y el proveedor lo acepta; si lo
+  // rechaza, un reintento con json_object y las siguientes van directas.
+  async requestNoteJson(plan, usage) {
+    const strict = plan.responseFormat && plan.responseFormat.type === 'json_schema';
+    const format = strict && !schemaRejected ? plan.responseFormat : JSON_OBJECT_FORMAT;
+    try {
+      return await this.callModel(plan, format, usage);
+    } catch (error) {
+      if (format.type === 'json_schema' && looksLikeSchemaRejection(error)) {
+        schemaRejected = true;
+        console.warn(`[Clinical Note] el proveedor rechazó json_schema (${`${error.message || ''}`.slice(0, 120)}); se usa json_object en adelante.`);
+        return this.callModel(plan, JSON_OBJECT_FORMAT, usage);
+      }
+      throw error;
+    }
+  }
+
   async generateFromTranscript({ transcript = '', templateSnapshot = null, noteDetail = '', sessionId = '' } = {}) {
     const cleanTranscript = `${transcript || ''}`.trim();
     if (!cleanTranscript) {
@@ -81,25 +118,20 @@ class ClinicalNoteGeneratorService {
     }
 
     const plan = this.planPrompt({ transcript: cleanTranscript, templateSnapshot, noteDetail });
-    const content = await withFeature(
-      FEATURES.NOTE_GENERATION,
-      () => this.llmProvider.chatExpectingJson(plan.messages, { type: 'json_object' }, {
-        temperature: plan.temperature
-      }),
-      {
-        ...(sessionId ? { sessionId } : {}),
-        // Procedencia: qué revisión del prompt y qué modo produjeron este
-        // gasto. Sin esto una regresión sólo se atribuye al modelo.
-        metadata: {
-          promptVersion: plan.promptVersion,
-          noteMode: plan.noteMode,
-          templateId: `${templateSnapshot.template_id || ''}`,
-          specialtyCode: `${templateSnapshot.specialty || ''}`,
-          ...(Number.isFinite(plan.temperature) ? { temperature: plan.temperature } : {}),
-          sectionCount: snapshotSections.length
-        }
+    const usage = {
+      ...(sessionId ? { sessionId } : {}),
+      // Procedencia: qué revisión del prompt y qué modo produjeron este
+      // gasto. Sin esto una regresión sólo se atribuye al modelo.
+      metadata: {
+        promptVersion: plan.promptVersion,
+        noteMode: plan.noteMode,
+        templateId: `${templateSnapshot.template_id || ''}`,
+        specialtyCode: `${templateSnapshot.specialty || ''}`,
+        ...(Number.isFinite(plan.temperature) ? { temperature: plan.temperature } : {}),
+        sectionCount: snapshotSections.length
       }
-    );
+    };
+    const content = await this.requestNoteJson(plan, usage);
     const parsed = this.llmProvider.parseJsonObject(content || '{}');
     const noteJson = this.validationService.validateAndRepair(parsed, templateSnapshot, {
       transcript: cleanTranscript,
@@ -205,5 +237,9 @@ class ClinicalNoteGeneratorService {
     }
   }
 }
+
+// Para los arneses: el flag de módulo sobrevive entre casos.
+ClinicalNoteGeneratorService.resetSchemaSupport = () => { schemaRejected = false; };
+ClinicalNoteGeneratorService.schemaRejected = () => schemaRejected;
 
 module.exports = ClinicalNoteGeneratorService;

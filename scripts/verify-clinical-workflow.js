@@ -12,6 +12,7 @@ const SupabaseClinicalEncounterRepository = require('../src/infrastructure/repos
 const ClinicalTemplateService = require('../src/application/use-cases/ClinicalTemplateService');
 const ClinicalEncounterService = require('../src/application/use-cases/ClinicalEncounterService');
 const ClinicalNotePromptBuilder = require('../src/application/use-cases/ClinicalNotePromptBuilder');
+const { currentContext } = require('../src/infrastructure/usage/UsageContext');
 const ClinicalNoteValidationService = require('../src/application/use-cases/ClinicalNoteValidationService');
 const ClinicalNoteGeneratorService = require('../src/application/use-cases/ClinicalNoteGeneratorService');
 const registerClinicalRoutes = require('../web/api/registerClinicalRoutes');
@@ -143,12 +144,23 @@ function seedInstitutionalTemplates(restClient) {
 // Fake LLM provider.
 // ---------------------------------------------------------------------------
 function createFakeLlm() {
-  const state = { calls: 0, transform: null };
+  const state = { calls: 0, transform: null, formats: [], lastFormat: null, lastOptions: null, lastMetadata: null, lastMessages: null, rejectSchema: false };
   return {
     state,
     hasApiKey: () => true,
-    async chatExpectingJson(messages) {
+    async chatExpectingJson(messages, format = { type: 'json_object' }, options = {}) {
       state.calls += 1;
+      state.formats.push(format.type);
+      state.lastFormat = format;
+      state.lastOptions = options;
+      state.lastMessages = messages;
+      state.lastMetadata = currentContext().metadata || null;
+      if (state.rejectSchema && format.type === 'json_schema') {
+        // Como lo devuelve LLMProvider ante un proveedor sin soporte de schema.
+        const error = new Error('LLM request failed (400): response_format json_schema is not supported');
+        error.statusCode = 400;
+        throw error;
+      }
       // El user message ya no es JSON plano: la plantilla viaja etiquetada.
       const template = JSON.parse(ClinicalNotePromptBuilder.extractTagged(messages[1].content, 'plantilla'));
       const transcript = ClinicalNotePromptBuilder.extractTagged(messages[1].content, 'transcripcion');
@@ -564,6 +576,121 @@ async function main() {
       assert.strictEqual(macro.grounding, 'explicit', 'lo dictado se reconoce aunque el STT escriba números como palabras');
       assert.strictEqual(dx.grounding, 'inferred', 'lo inventado en una casilla literal no puede quedar como explicit');
       assert.ok(literalNote.body.note_json.warnings.some((w) => /no coincide con el dictado/i.test(w)));
+    });
+
+    // 21. Schema estricto: la última generación (plantilla literal) pidió
+    // json_schema con las keys exactas del snapshot y grounding obligatorio.
+    await check('generate-note pide json_schema estricto con las keys del snapshot y sin confidence', () => {
+      const format = llm.state.lastFormat;
+      assert.strictEqual(format.type, 'json_schema');
+      assert.strictEqual(format.json_schema.strict, true);
+      const schema = format.json_schema.schema;
+      assert.strictEqual(schema.additionalProperties, false);
+      const item = schema.properties.sections.items;
+      assert.deepStrictEqual(item.properties.key.enum, ['descripcion_macroscopica', 'diagnostico']);
+      assert.ok(item.required.includes('grounding'));
+      assert.deepStrictEqual(item.properties.grounding.enum, ['explicit', 'entailed', 'inferred', 'absent']);
+      assert.ok(!('confidence' in item.properties), 'confidence lo calcula el código, no el modelo');
+      assert.deepStrictEqual(schema.required, ['summary', 'sections', 'warnings', 'missing_required_sections']);
+    });
+
+    // 22. Proveedor sin soporte de schema: un reintento con json_object y las
+    // siguientes notas van directas (el rechazo se recuerda).
+    const fallbackEncounter = await call('POST', '/api/clinical/encounters', {
+      consultation_type: 'presencial',
+      template_id: pathologyTemplate.body.template.id
+    });
+    await call('POST', `/api/clinical/encounters/${fallbackEncounter.body.encounter_id}/transcript`, { transcript: dictation });
+    llm.state.rejectSchema = true;
+    const formatsBefore = llm.state.formats.length;
+    const fallbackNote = await call('POST', `/api/clinical/encounters/${fallbackEncounter.body.encounter_id}/generate-note`, {});
+    const fallbackSecondEncounter = await call('POST', '/api/clinical/encounters', {
+      consultation_type: 'presencial',
+      template_id: pathologyTemplate.body.template.id
+    });
+    await call('POST', `/api/clinical/encounters/${fallbackSecondEncounter.body.encounter_id}/transcript`, { transcript: dictation });
+    const formatsMid = llm.state.formats.length;
+    const fallbackSecondNote = await call('POST', `/api/clinical/encounters/${fallbackSecondEncounter.body.encounter_id}/generate-note`, {});
+    await check('si el proveedor rechaza json_schema se reintenta con json_object y se recuerda', () => {
+      assert.strictEqual(fallbackNote.status, 200, JSON.stringify(fallbackNote.body));
+      assert.deepStrictEqual(llm.state.formats.slice(formatsBefore, formatsMid), ['json_schema', 'json_object']);
+      assert.strictEqual(fallbackSecondNote.status, 200);
+      assert.deepStrictEqual(llm.state.formats.slice(formatsMid), ['json_object'], 'la segunda nota no vuelve a intentar el schema');
+      assert.strictEqual(ClinicalNoteGeneratorService.schemaRejected(), true);
+    });
+    llm.state.rejectSchema = false;
+    ClinicalNoteGeneratorService.resetSchemaSupport();
+
+    // 23. Routing: la plantilla explícita gana a la especialidad literal.
+    const explicitTemplate = await call('POST', '/api/clinical/templates', {
+      name: 'Nota de patología conversacional',
+      specialty: 'patologia',
+      note_mode: 'interpretive',
+      sections: [{ label: 'Motivo de consulta', required: true }, { label: 'Plan', required: true }]
+    });
+    const explicitEncounter = await call('POST', '/api/clinical/encounters', {
+      consultation_type: 'presencial',
+      template_id: explicitTemplate.body.template.id
+    });
+    await call('POST', `/api/clinical/encounters/${explicitEncounter.body.encounter_id}/transcript`, { transcript: CLINICAL_TRANSCRIPT });
+    const explicitNote = await call('POST', `/api/clinical/encounters/${explicitEncounter.body.encounter_id}/generate-note`, {});
+    await check('note_mode explícito de la plantilla gana a la especialidad literal (patologia → interpretativo)', () => {
+      assert.strictEqual(explicitNote.status, 200, JSON.stringify(explicitNote.body));
+      assert.strictEqual(explicitTemplate.body.template.note_mode, 'interpretive');
+      assert.strictEqual(explicitEncounter.body.template.note_mode, 'interpretive');
+      assert.strictEqual(llm.state.lastMetadata.noteMode, 'interpretive', 'la telemetría reporta el modo resuelto');
+      const system = llm.state.lastMessages[0].content;
+      assert.ok(!system.includes('MODO LITERAL'), 'sin bloque literal en el prompt');
+      const template = JSON.parse(ClinicalNotePromptBuilder.extractTagged(llm.state.lastMessages[1].content, 'plantilla'));
+      assert.strictEqual(template.note_mode, 'interpretive');
+    });
+
+    // 24. Routing mixto por sección, ida y vuelta completa: POST → PUT → snapshot → prompt → validador.
+    const mixedTemplate = await call('POST', '/api/clinical/templates', {
+      name: 'Control con plan dictado',
+      specialty: 'medicina_general',
+      sections: [{ label: 'Motivo de consulta', required: true }, { label: 'Plan', required: true, mode: 'verbatim' }]
+    });
+    const mixedUpdated = await call('PUT', `/api/clinical/templates/${mixedTemplate.body.template.id}`, {
+      name: 'Control con plan dictado',
+      specialty: 'medicina_general',
+      sections: mixedTemplate.body.template.sections.map((section) => ({
+        label: section.label, required: section.required, mode: section.mode, instruction: section.instruction
+      }))
+    });
+    const mixedEncounter = await call('POST', '/api/clinical/encounters', {
+      consultation_type: 'presencial',
+      template_id: mixedTemplate.body.template.id
+    });
+    const mixedTranscript = 'Paciente refiere tos seca de diez días. Niega fiebre. Plan: solicitar radiografía de tórax y control en ocho días.';
+    await call('POST', `/api/clinical/encounters/${mixedEncounter.body.encounter_id}/transcript`, { transcript: mixedTranscript });
+    llm.state.transform = (note) => ({
+      ...note,
+      sections: note.sections.map((section) => (
+        section.key === 'plan'
+          ? { ...section, content: 'Solicitar TAC de tórax urgente.', grounding: 'explicit', evidence: ['control en ocho días'] }
+          : { ...section, content: 'Tos seca de diez días de evolución, sin fiebre.', grounding: 'entailed', evidence: ['tos seca de diez días'] }
+      ))
+    });
+    const mixedNote = await call('POST', `/api/clinical/encounters/${mixedEncounter.body.encounter_id}/generate-note`, {});
+    llm.state.transform = null;
+    await check('el modo por sección sobrevive POST/PUT/snapshot y sólo la sección literal exige cobertura del dictado', () => {
+      assert.strictEqual(mixedTemplate.status, 201, JSON.stringify(mixedTemplate.body));
+      assert.deepStrictEqual(mixedTemplate.body.template.sections.map((s) => s.mode), ['inherit', 'verbatim']);
+      assert.strictEqual(mixedUpdated.status, 200, JSON.stringify(mixedUpdated.body));
+      assert.deepStrictEqual(mixedUpdated.body.template.sections.map((s) => s.mode), ['inherit', 'verbatim'], 'el PUT no borra el modo');
+      assert.deepStrictEqual(mixedEncounter.body.template.sections.map((s) => s.mode), ['inherit', 'verbatim'], 'el snapshot lo congela');
+      assert.strictEqual(mixedNote.status, 200, JSON.stringify(mixedNote.body));
+      assert.strictEqual(llm.state.lastMetadata.noteMode, 'mixed');
+      const system = llm.state.lastMessages[0].content;
+      assert.ok(system.includes('Son LITERALES únicamente estas secciones'), 'bloque literal acotado');
+      assert.ok(system.includes('"Plan" (key="plan")'));
+      const plan = mixedNote.body.note_json.sections.find((s) => s.key === 'plan');
+      const motivo = mixedNote.body.note_json.sections.find((s) => s.key === 'motivo_de_consulta');
+      assert.ok(plan && motivo, `keys presentes: ${JSON.stringify(mixedNote.body.note_json.sections.map((s) => s.key))}`);
+      assert.strictEqual(plan.grounding, 'inferred', 'la sección literal con contenido ajeno al dictado baja');
+      assert.ok(mixedNote.body.note_json.warnings.some((w) => /no coincide con el dictado/i.test(w)));
+      assert.strictEqual(motivo.grounding, 'entailed', 'la sección interpretativa no exige cobertura literal');
     });
 
     // Extras de seguridad del contrato.

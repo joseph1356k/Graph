@@ -297,6 +297,33 @@ function main() {
     assert.ok(standard.startsWith('Redacta la sección'));
   });
 
+  check('el centinela «[dictado del médico]» no vale en la generación ni en otra sección; sólo en un dictado a esa sección', () => {
+    const ClinicalNoteValidationService = require('../src/application/use-cases/ClinicalNoteValidationService');
+    const validation = new ClinicalNoteValidationService();
+    const snapshot = { specialty: 'medicina_general', sections: [{ key: 'plan', label: 'Plan', order: 1, required: true }] };
+    const modes = NoteModeResolver.resolve(snapshot);
+    const transcript = 'Paciente con tos seca. Se indica control.';
+    const parsed = () => ({
+      summary: 'Control por tos.',
+      sections: [{ key: 'plan', label: 'Plan', content: 'Control en ocho días con hemograma.', grounding: 'explicit', evidence: ['[dictado del médico]'] }],
+      warnings: [],
+      missing_required_sections: []
+    });
+    const generated = validation.validateAndRepair(parsed(), snapshot, { transcript, modes });
+    assert.strictEqual(generated.sections[0].grounding, 'inferred');
+    assert.strictEqual(generated.sections[0].evidence, '');
+    assert.ok(generated.warnings.some((w) => /sin evidencia literal/.test(w)));
+    const elsewhere = validation.validateAndRepair(parsed(), snapshot, { transcript, modes, dictation: { sectionKey: 'motivo_consulta' } });
+    assert.strictEqual(elsewhere.sections[0].grounding, 'inferred');
+    const dictated = validation.validateAndRepair(parsed(), snapshot, { transcript, modes, dictation: { sectionKey: 'plan' } });
+    assert.strictEqual(dictated.sections[0].grounding, 'explicit');
+    assert.strictEqual(dictated.sections[0].evidence, '[dictado del médico]');
+    // Sin transcripción tampoco cuela: la sección baja con su propio aviso.
+    const blind = validation.validateAndRepair(parsed(), snapshot, { modes });
+    assert.strictEqual(blind.sections[0].grounding, 'inferred');
+    assert.ok(blind.warnings.some((w) => /cita de dictado fuera de un dictado/.test(w)));
+  });
+
   console.log(`\n✅ Fidelidad y modos de la nota: ${checks} comprobaciones OK.`);
 }
 

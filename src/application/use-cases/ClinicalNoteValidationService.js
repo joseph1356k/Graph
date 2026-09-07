@@ -80,6 +80,33 @@ function joinEvidence(fragments) {
   return fragments.join(EVIDENCE_JOINER).slice(0, MAX_EVIDENCE_LENGTH);
 }
 
+/**
+ * Sección cuyo contenido no cambió respecto a la nota anterior: conserva su
+ * grounding, confidence, evidence y evidence_spans tal como se persistieron.
+ * La comparten validateAndRepair (ajustes del asistente) y validateEditedNote
+ * (ediciones del médico). Devuelve null si cambió o no hay nota previa.
+ */
+function untouchedSection(expectedSection, content, prior) {
+  if (!prior || typeof prior.content !== 'string') {
+    return null;
+  }
+  if (normalizeComparable(prior.content) !== normalizeComparable(content)) {
+    return null;
+  }
+  const level = grounding.normalizeGrounding(prior.grounding)
+    || grounding.groundingFromConfidence(prior.confidence)
+    || 'entailed';
+  return {
+    key: expectedSection.key,
+    label: expectedSection.label,
+    content: capitalizeFirst(content).slice(0, MAX_SECTION_CONTENT_LENGTH),
+    grounding: level,
+    confidence: grounding.confidenceFromGrounding(level),
+    evidence: joinEvidence(evidenceFragments(prior.evidence)),
+    evidence_spans: Array.isArray(prior.evidence_spans) ? prior.evidence_spans : []
+  };
+}
+
 class ClinicalNoteValidationService {
   /**
    * Repara la salida del modelo (secciones omitidas, extras, keys mal) y
@@ -91,7 +118,20 @@ class ClinicalNoteValidationService {
    *   verificar evidencia y modos por sección (NoteModeResolver.resolve) para
    *   comprobar las literales. Sin transcript no se verifica nada.
    */
-  validateAndRepair(parsed, templateSnapshot, { transcript = '', modes = null } = {}) {
+  /**
+   * @param {object} options
+   * @param {string} options.transcript  Texto contra el que se verifican las citas.
+   * @param {object} options.modes       Resultado de NoteModeResolver.resolve.
+   * @param {{sectionKey: string}|null} options.dictation
+   *   Sólo en un ajuste de tipo `dictation`: la única sección donde el
+   *   centinela «[dictado del médico]» vale como evidencia. En cualquier otra
+   *   ruta el centinela es una cita que no existe en la transcripción.
+   * @param {object|null} options.previous
+   *   Nota anterior: las secciones cuyo contenido no cambió conservan su
+   *   grounding/evidencia sin volver a verificarse (una reescritura del plan
+   *   no puede degradar una sección dictada la semana pasada).
+   */
+  validateAndRepair(parsed, templateSnapshot, { transcript = '', modes = null, dictation = null, previous = null } = {}) {
     const expected = snapshotSections(templateSnapshot);
     if (expected.length === 0) {
       throw clinicalError('TEMPLATE_INVALID', 'El template_snapshot de la consulta no tiene secciones.');
@@ -128,6 +168,11 @@ class ClinicalNoteValidationService {
     const index = canVerify ? text.buildNormalizedIndex(transcriptText) : null;
     const verbatimKeys = new Set(Array.isArray(modes?.verbatimKeys) ? modes.verbatimKeys : []);
     let evidenceDropped = 0;
+    const dictationKey = dictation && typeof dictation === 'object' ? `${dictation.sectionKey || ''}`.trim() : '';
+    const previousByKey = new Map(
+      (Array.isArray(previous?.sections) ? previous.sections : [])
+        .map((section) => [`${section?.key || ''}`.trim(), section])
+    );
 
     const matchedKeys = new Set();
     const sections = expected.map((expectedSection) => {
@@ -155,6 +200,26 @@ class ClinicalNoteValidationService {
       } else if (!content) {
         warnings.push(`La sección "${expectedSection.label}" llegó vacía; se marcó como no mencionada.`);
         content = MISSING_CONTENT_PHRASE;
+      }
+
+      const carried = untouchedSection(expectedSection, content, previousByKey.get(expectedSection.key));
+      if (carried) {
+        return carried;
+      }
+
+      // El centinela de dictado sólo vale en un ajuste `dictation` y sólo en la
+      // sección que el médico indicó. Fuera de ahí (generación, reescritura,
+      // otra sección) es una cita inexistente: se descarta y la sección se
+      // verifica como cualquier otra. Antes se aceptaba en todas las rutas, y
+      // bastaba con que el modelo lo copiara para saltarse la verificación.
+      const dictatedHere = Boolean(dictationKey) && expectedSection.key === dictationKey;
+      if (!dictatedHere && fragments.includes(grounding.DICTATION_EVIDENCE)) {
+        evidenceDropped += fragments.filter((fragment) => fragment === grounding.DICTATION_EVIDENCE).length;
+        fragments = fragments.filter((fragment) => fragment !== grounding.DICTATION_EVIDENCE);
+        if (!canVerify && fragments.length === 0 && (level === 'explicit' || level === 'entailed')) {
+          warnings.push(`Sección "${expectedSection.label}": cita de dictado fuera de un dictado; se trató como no verificada.`);
+          level = 'inferred';
+        }
       }
 
       const prudent = isPrudentEmptyContent(content);
@@ -301,23 +366,9 @@ class ClinicalNoteValidationService {
       }
       const content = capitalizeFirst(raw.content).slice(0, MAX_SECTION_CONTENT_LENGTH);
       const prior = previousByKey.get(expectedSection.key);
-      const untouched = prior
-        && typeof prior.content === 'string'
-        && text.normalizeComparable(prior.content) === text.normalizeComparable(content);
-
-      if (untouched) {
-        const level = grounding.normalizeGrounding(prior.grounding)
-          || grounding.groundingFromConfidence(prior.confidence)
-          || 'entailed';
-        return {
-          key: expectedSection.key,
-          label: expectedSection.label,
-          content,
-          grounding: level,
-          confidence: grounding.confidenceFromGrounding(level),
-          evidence: joinEvidence(evidenceFragments(prior.evidence)),
-          evidence_spans: Array.isArray(prior.evidence_spans) ? prior.evidence_spans : []
-        };
+      const carried = untouchedSection(expectedSection, content, prior);
+      if (carried) {
+        return carried;
       }
 
       if (prior) {

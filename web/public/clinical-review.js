@@ -3,6 +3,11 @@
     // 'miracle-field-change' event with source:'ai' (see page-state.js). We mark those
     // fields as "proposed / unconfirmed" with their evidence, let the clinician confirm
     // (or edit) them, and block finalizing the note while any remain unconfirmed.
+    // `confidence` ya no lo inventa el modelo: lo calcula el servidor desde el
+    // grounding (src/domain/clinical/grounding.js): explicit 1 · entailed 0.8 ·
+    // inferred 0.4 · absent 0. El servidor rellena con explicit y entailed; con
+    // 0.85 este lado sólo da por confirmado lo explícito y pide confirmar lo
+    // deducido. Es deliberadamente más conservador que el servidor.
     const LOW_CONFIDENCE = 0.85;
     const unconfirmed = new Map(); // fieldId -> { evidence, confidence }
     let stepIndex = 0;

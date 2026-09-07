@@ -65,4 +65,30 @@ check('grounding: normaliza, calcula confidence y acepta sólo explicit/entailed
   assert.ok(!grounding.isGroundedForAutofill('inferred'));
 });
 
+check('grounding ↔ confidence: la ida y vuelta es estable y los bordes del legado caen donde deben', () => {
+  for (const level of grounding.GROUNDING_LEVELS) {
+    const number = grounding.confidenceFromGrounding(level);
+    assert.strictEqual(grounding.groundingFromConfidence(number), level, `${level} → ${number} → ${level}`);
+    assert.strictEqual(grounding.confidenceFromGrounding(grounding.groundingFromConfidence(number)), number);
+  }
+  // Los cuatro valores que produce el sistema son exactamente estos; ningún
+  // productor debe emitir otro (los consumidores cortan sobre ellos).
+  assert.deepStrictEqual(
+    grounding.GROUNDING_LEVELS.map((level) => grounding.confidenceFromGrounding(level)),
+    [1, 0.8, 0.4, 0]
+  );
+  // Bordes del mapeo legado (notas persistidas antes del cambio):
+  assert.strictEqual(grounding.groundingFromConfidence(0.9), 'explicit');
+  assert.strictEqual(grounding.groundingFromConfidence(0.89), 'entailed');
+  assert.strictEqual(grounding.groundingFromConfidence(0.6), 'entailed');
+  assert.strictEqual(grounding.groundingFromConfidence(0.59), 'inferred');
+  assert.strictEqual(grounding.groundingFromConfidence(0.01), 'inferred');
+  // Umbrales de los consumidores frente a la escala: inferred (0.4) queda bajo
+  // el 0.5 del portal; entailed (0.8) pasa el autofill del servidor pero queda
+  // bajo el 0.85 del plugin (deliberado: sólo lo explícito se da por confirmado).
+  assert.ok(grounding.confidenceFromGrounding('inferred') < 0.5);
+  assert.ok(grounding.isGroundedForAutofill('entailed') && grounding.confidenceFromGrounding('entailed') < 0.85);
+  assert.ok(grounding.confidenceFromGrounding('explicit') >= 0.85);
+});
+
 console.log(`\nverify-clinical-text: ${passed} checks ok`);

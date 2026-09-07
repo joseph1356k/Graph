@@ -264,9 +264,50 @@ async function main() {
       assert.strictEqual(body.generationConfig.temperature, 0.2);
       assert.strictEqual(result.summary, 'Entendí cómo se admite un paciente.');
       assert.deepStrictEqual(result.notes, [{ app: 'HIS - Admisiones', note: 'Se usa Nuevo ingreso.' }]);
+      assert.strictEqual(result.interpretation, null, 'sin pasos no se pregunta por ellos: ausente, no vacío');
+      assert.ok(!('campos' in body.generationConfig.responseSchema.properties), 'sin pasos el schema no pide interpretación');
     });
   } finally {
     vid.restore();
+  }
+
+  // Con pasos grabados (main): el schema tiene que dejar salir `campos` y
+  // `recuerdos`, o la interpretación que main estrenó queda vacía en silencio.
+  const vidSteps = stubFetch(() => ({
+    candidates: [{ content: { parts: [{ text: JSON.stringify({
+      summary: 'Entendí cómo se admite un paciente.',
+      items: [{ app: 'HIS - Admisiones', note: 'Se usa Nuevo ingreso.' }],
+      questions: [],
+      campos: [{ campo: 'Nombre del paciente', esDato: true, significado: 'Nombre de la persona que se admite.' }],
+      recuerdos: [{ campo: 'Sede', significado: 'Siempre se elige la sede norte.' }]
+    }) }] } }],
+    usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5, totalTokenCount: 15 }
+  }));
+  try {
+    const steps = [
+      { order: 1, field: 'Nombre del paciente', value: 'Juan', said: 'aquí va el nombre' },
+      { order: 2, field: 'Sede', value: 'Norte', said: 'siempre la norte' }
+    ];
+    const result = await video.processVideo('k', 'https://generativelanguage.googleapis.com/v1beta/files/abc', 'gemini-2.5-pro', steps);
+    check('video con pasos: el schema amplía campos/recuerdos, el prompt clínico sigue en system_instruction y la interpretación llega', () => {
+      const body = vidSteps.calls[0].body;
+      assert.ok(body.system_instruction.parts[0].text.includes('REGLA DE PRIVACIDAD'));
+      const userText = body.contents[0].parts.at(-1).text;
+      assert.ok(userText.includes('ADEMÁS, interpreta'), 'los pasos van en el turno de usuario');
+      assert.ok(userText.includes('campo: Nombre del paciente'));
+      const schema = body.generationConfig.responseSchema;
+      assert.deepStrictEqual(Object.keys(schema.properties).sort(), ['campos', 'items', 'questions', 'recuerdos', 'summary']);
+      assert.ok(schema.required.includes('campos') && schema.required.includes('recuerdos'));
+      assert.strictEqual(schema.properties.campos.items.properties.esDato.type, 'BOOLEAN');
+      assert.deepStrictEqual(video.teachResponseSchema({ conPasos: false }), video.TEACH_RESPONSE_SCHEMA);
+      assert.deepStrictEqual(result.interpretation, {
+        campos: [{ campo: 'Nombre del paciente', esDato: true, significado: 'Nombre de la persona que se admite.' }],
+        recuerdos: [{ campo: 'Sede', significado: 'Siempre se elige la sede norte.' }]
+      });
+      assert.strictEqual(result.summary, 'Entendí cómo se admite un paciente.');
+    });
+  } finally {
+    vidSteps.restore();
   }
 
   console.log(`\n[verify-workflow-learning] ${passed} verificaciones OK`);

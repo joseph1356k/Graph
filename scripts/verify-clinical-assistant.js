@@ -505,6 +505,116 @@ async function main() {
       assert.strictEqual(dictationNoSection.status, 400);
       assert.strictEqual(dictationNoSection.body.error.code, 'ASSISTANT_INVALID');
     });
+    // --- El centinela sólo vale en un dictado, y sólo en su sección ----------
+    // (a) Reescritura que copia el centinela a otra sección con contenido
+    // inventado: antes se saltaba la verificación entera con confianza 1.
+    llm.state.jsonHandler = () => ({
+      note_json: {
+        sections: [{
+          key: 'enfermedad_actual',
+          label: 'Enfermedad actual',
+          content: 'Dolor intermitente con fiebre de 39 grados y rigidez de nuca.',
+          grounding: 'explicit',
+          evidence: ['[dictado del médico]']
+        }]
+      },
+      explanation: 'Se amplió la enfermedad actual.'
+    });
+    const smuggled = await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: encounter.id,
+      instruction: 'Mejora la redacción de la enfermedad actual.',
+      section_key: 'enfermedad_actual'
+    });
+    await check('el centinela de dictado NO vale en una reescritura: la sección baja a inferred con warning', () => {
+      assert.strictEqual(smuggled.status, 200, JSON.stringify(smuggled.body));
+      const ea = smuggled.body.proposed_note_json.sections.find((s) => s.key === 'enfermedad_actual');
+      assert.strictEqual(ea.grounding, 'inferred');
+      assert.strictEqual(ea.confidence, 0.4);
+      assert.ok(!ea.evidence.includes('[dictado del médico]'), 'el centinela no sobrevive');
+      assert.ok(smuggled.body.proposed_note_json.warnings.some((w) => /sin evidencia literal/i.test(w)));
+      const plan = smuggled.body.proposed_note_json.sections.find((s) => s.key === 'plan');
+      assert.strictEqual(plan.evidence, 'higiene del sueño', 'las secciones no tocadas conservan su evidencia');
+      assert.strictEqual(plan.grounding, 'entailed', 'grounding derivado de la confidence persistida (0.85)');
+      assert.strictEqual(plan.confidence, 0.8);
+    });
+
+    // (b) Dictado sobre `plan` donde el modelo también estampa el centinela en
+    // otra sección: sólo la indicada lo conserva.
+    llm.state.jsonHandler = () => ({
+      note_json: {
+        sections: [
+          {
+            key: 'plan',
+            label: 'Plan',
+            content: 'Higiene del sueño, hidratación, pausas de pantalla y control si hay signos de alarma. Control en ocho días.',
+            grounding: 'explicit',
+            evidence: ['[dictado del médico]']
+          },
+          {
+            key: 'motivo_consulta',
+            label: 'Motivo de consulta',
+            content: 'Cefalea de 3 días de evolución y tos productiva.',
+            grounding: 'explicit',
+            evidence: ['[dictado del médico]']
+          }
+        ]
+      },
+      explanation: 'Se añadió el dictado.'
+    });
+    const spread = await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: encounter.id,
+      instruction: 'vuelve a control en ocho días',
+      section_key: 'plan',
+      instruction_kind: 'dictation'
+    });
+    await check('en un dictado el centinela sólo vale en section_key; en otra sección se degrada', () => {
+      assert.strictEqual(spread.status, 200, JSON.stringify(spread.body));
+      const plan = spread.body.proposed_note_json.sections.find((s) => s.key === 'plan');
+      const motivo = spread.body.proposed_note_json.sections.find((s) => s.key === 'motivo_consulta');
+      assert.strictEqual(plan.grounding, 'explicit');
+      assert.ok(plan.evidence.includes('[dictado del médico]'));
+      assert.strictEqual(motivo.grounding, 'inferred');
+      assert.ok(!motivo.evidence.includes('[dictado del médico]'));
+    });
+
+    // (c) Reescritura de otra sección cuando `plan` ya venía dictado de antes:
+    // la sección intacta conserva su centinela y su grounding.
+    const storedRow = restClient.tables.clinical_encounters.find((row) => row.id === encounter.id);
+    const storedPlan = storedRow.note_json.sections.find((s) => s.key === 'plan');
+    const originalPlan = { ...storedPlan };
+    Object.assign(storedPlan, {
+      content: 'Higiene del sueño e hidratación. Control en ocho días.',
+      grounding: 'explicit',
+      confidence: 1,
+      evidence: '[dictado del médico]',
+      evidence_spans: []
+    });
+    llm.state.jsonHandler = () => ({
+      note_json: {
+        sections: [
+          { key: 'motivo_consulta', label: 'Motivo de consulta', content: 'Cefalea de tres días de evolución.', grounding: 'explicit', evidence: ['cefalea de tres días'] },
+          { key: 'plan', label: 'Plan', content: 'Higiene del sueño e hidratación. Control en ocho días.', grounding: 'explicit', evidence: ['[dictado del médico]'] }
+        ]
+      },
+      explanation: 'Se corrigió el motivo.'
+    });
+    const later = await call('POST', '/api/clinical/assistant/note-adjustment', {
+      encounter_id: encounter.id,
+      instruction: 'Escribe el motivo con la cifra en letras.',
+      section_key: 'motivo_consulta'
+    });
+    await check('una sección dictada antes conserva su centinela cuando se reescribe otra', () => {
+      assert.strictEqual(later.status, 200, JSON.stringify(later.body));
+      const plan = later.body.proposed_note_json.sections.find((s) => s.key === 'plan');
+      const motivo = later.body.proposed_note_json.sections.find((s) => s.key === 'motivo_consulta');
+      assert.strictEqual(plan.grounding, 'explicit');
+      assert.strictEqual(plan.evidence, '[dictado del médico]');
+      assert.strictEqual(motivo.grounding, 'explicit');
+      assert.strictEqual(motivo.evidence, 'cefalea de tres días');
+      assert.deepStrictEqual(later.body.changed_sections, ['motivo_consulta']);
+      assert.ok(!later.body.proposed_note_json.warnings.some((w) => /"Plan"/.test(w)), 'sin warnings sobre la sección intacta');
+    });
+    Object.assign(storedPlan, originalPlan);
     llm.state.jsonHandler = null;
 
     // Extra: ajuste sin nota generada -> ENCOUNTER_INVALID.

@@ -3,6 +3,7 @@
 // (note_json validado); sin plantilla, del orquestador de voz, etiquetado como
 // bloque provisional y con backend_status intacto.
 //   node scripts/verify-public-pipeline.js
+const { currentContext } = require('../src/infrastructure/usage/UsageContext');
 const assert = require('assert');
 const http = require('http');
 const express = require('express');
@@ -18,9 +19,11 @@ function createFakeLlm() {
   return {
     calls: 0,
     hasApiKey: () => true,
-    async chatExpectingJson(messages, _format, options = {}) {
+    async chatExpectingJson(messages, format = { type: 'json_object' }, options = {}) {
       this.calls += 1;
       this.lastTemperature = options.temperature;
+      this.lastFormat = format;
+      this.lastMetadata = currentContext().metadata || null;
       const template = JSON.parse(ClinicalNotePromptBuilder.extractTagged(messages[1].content, 'plantilla'));
       return JSON.stringify({
         summary: 'Consulta por cefalea.',
@@ -105,6 +108,27 @@ async function main() {
     check('la plantilla inline respeta el modo por especialidad', () => {
       assert.strictEqual(literal.body.note.note_mode, 'verbatim');
       assert.strictEqual(llm.lastTemperature, 0);
+    });
+
+    // Mismo resolver que la ruta clínica: la plantilla explícita gana a la
+    // especialidad, el modo por sección produce una nota mixta, y la
+    // telemetría reporta el modo resuelto en los dos casos.
+    const explicitInline = await post({
+      transcript: TRANSCRIPT,
+      template: { name: 'Patología conversacional', specialty: 'patologia', note_mode: 'interpretive', sections: ['Motivo de consulta', 'Plan'] }
+    });
+    const mixedInline = await post({
+      transcript: TRANSCRIPT,
+      template: { name: 'Control', specialty: 'medicina_general', sections: [{ label: 'Motivo de consulta' }, { label: 'Plan', mode: 'verbatim' }] }
+    });
+    check('el pipeline usa el mismo resolver: note_mode explícito gana a la especialidad y el modo por sección da mixta', () => {
+      assert.strictEqual(explicitInline.status, 200, JSON.stringify(explicitInline.body));
+      assert.strictEqual(explicitInline.body.note.note_mode, 'interpretive');
+      assert.strictEqual(llm.lastFormat.type, 'json_schema', 'el pipeline también pide el schema estricto');
+      assert.strictEqual(mixedInline.status, 200, JSON.stringify(mixedInline.body));
+      assert.strictEqual(mixedInline.body.note.note_mode, 'mixed');
+      assert.strictEqual(llm.lastMetadata.noteMode, 'mixed', 'la telemetría reporta el modo resuelto');
+      assert.strictEqual(llm.lastMetadata.promptVersion, ClinicalNotePromptBuilder.PROMPT_VERSION);
     });
 
     const scratchpad = await post({ transcript: TRANSCRIPT });

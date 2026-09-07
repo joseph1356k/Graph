@@ -257,11 +257,15 @@ class ClinicalAssistantService {
       // toma la sección del modelo si vino, si no la original.
       const merged = this.mergeWithOriginalNote(modelNote, originalNote);
       // La transcripción permite verificar la evidencia de lo que el modelo
-      // tocó; las secciones intactas conservan la suya. El centinela del dictado
-      // sobrevive a la verificación (grounding.js).
+      // tocó; las secciones cuyo contenido no cambió conservan la suya
+      // (`previous`). El centinela «[dictado del médico]» sólo vale en modo
+      // dictation y sólo en la sección indicada: en una reescritura es una cita
+      // inexistente y el validador la descarta.
       const proposedNote = this.noteValidationService.validateAndRepair(merged, encounter.template_snapshot, {
         transcript: `${encounter.transcript || ''}`,
-        modes: NoteModeResolver.resolve(encounter.template_snapshot || {})
+        modes: NoteModeResolver.resolve(encounter.template_snapshot || {}),
+        dictation: kind === 'dictation' ? { sectionKey: cleanSectionKey } : null,
+        previous: originalNote
       });
 
       const changedSections = proposedNote.sections

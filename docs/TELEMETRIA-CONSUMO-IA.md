@@ -457,3 +457,12 @@ hacen `openaiBrain` y `geminiBrain`.
 | `GRAPH_USAGE_INGEST_KEY` | Graph + portal | Ingesta interna autenticada |
 | `GRAPH_BASE_URL` | portal | A dónde reporta el portal |
 | `MIRACLE_USAGE_ENVIRONMENT` | opcional | Fuerza el entorno; si no, se deduce de `VERCEL_ENV`/`NODE_ENV` |
+
+## Cambios de etiqueta (para paneles que agrupan por `feature`)
+
+- **2026-09-02**: las sugerencias diagnósticas por encounter
+  (`POST /api/clinical/encounters/:id/diagnostic-suggestions`) y por texto plano
+  (`POST /api/clinical/diagnosis-suggestions`) pasan de `feature: asistente` a
+  `feature: diagnosis_suggestion`. Antes convivían dos motores (uno bajo `asistente`, otro bajo
+  `diagnosis_suggestion`); ahora hay uno solo y toda su serie va bajo la segunda etiqueta. Un
+  panel que sume `asistente` verá un escalón a la baja en esa fecha; es el mismo gasto, movido.

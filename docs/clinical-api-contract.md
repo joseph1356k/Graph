@@ -150,8 +150,10 @@ Reglas de normalización (el backend siempre las aplica):
       "key": "motivo_consulta",
       "label": "Motivo de consulta",
       "content": "Cefalea de 3 días de evolución.",
-      "confidence": 0.92,
-      "evidence": "cefalea de tres días"
+      "grounding": "explicit",
+      "confidence": 1,
+      "evidence": "cefalea de tres días",
+      "evidence_spans": [{ "quote": "cefalea de tres días", "char_start": 22, "char_end": 42 }]
     }
   ],
   "warnings": [],
@@ -160,7 +162,10 @@ Reglas de normalización (el backend siempre las aplica):
 ```
 
 - `sections` contiene EXACTAMENTE las secciones del `template_snapshot`, en el mismo orden. Nunca markdown gigante.
-- `confidence` ∈ [0, 1]. Secciones sin información llegan con frases prudentes (`"No mencionado en la consulta."`), `confidence: 0` y `evidence: ""`.
+- `grounding` lo declara el modelo (`explicit` · `entailed` · `inferred` · `absent`); tras una edición del médico (endpoint 10) la sección cambiada pasa a `edited`. **`confidence` la calcula el backend** desde `grounding`: 1 · 0.8 · 0.4 · 0 (`edited` = 1). Ningún productor emite otro valor; el portal muestra el badge de revisión por debajo de 0.5, es decir, en `inferred`.
+- `evidence`: fragmentos textuales de la transcripción que sobrevivieron a la verificación literal del backend, unidos con ` … `. `evidence_spans`: sus offsets reales sobre `transcript`. Una cita que no está en la transcripción se descarta y la sección baja a `inferred` con warning.
+- Secciones sin información llegan con frase prudente (`"No mencionado en la consulta."`), `grounding: "absent"`, `confidence: 0` y `evidence: ""`.
+- `[dictado del médico]` como `evidence` sólo aparece en secciones dictadas por el médico a través del ajuste del asistente (endpoint 13, `instruction_kind: dictation`); en cualquier otra ruta el backend lo trata como cita inexistente.
 
 ## Estados del encounter
 
