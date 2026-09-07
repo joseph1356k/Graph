@@ -249,7 +249,12 @@ function registerClinicalEngineRoutes(app, deps) {
   app.post('/api/clinical/encounters/:encounterId/generate-note', async (req, res) => {
     try {
       const encounter = await noteGeneratorService.generate(req.params.encounterId, {
-        doctorId: resolveDoctorId(req)
+        doctorId: resolveDoctorId(req),
+        // Extensión de la nota que prefiere el médico (web: Configuración >
+        // General). Cuerpo opcional { doctor: { note_detail } }; se sanea en
+        // ClinicalNotePromptBuilder.sanitizeDoctor (whitelist de un campo, enum
+        // cerrado) y lo inválido se ignora en silencio, nunca responde 400.
+        doctor: req.body?.doctor
       });
       res.json({
         encounter_id: encounter.id,

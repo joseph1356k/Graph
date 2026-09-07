@@ -79,6 +79,8 @@ class NoteGenerationRescueService {
       try {
         // El doctor dueño de la consulta: el rescate actúa en su nombre, no
         // salta la verificación de propiedad del generador.
+        // Sin preferencia de extensión (viaja desde el navegador, y aquí no hay
+        // navegador): la nota rescatada sale en estándar.
         await this.noteGeneratorService.generate(encounter.id, { doctorId: encounter.doctor_id });
         result.rescued += 1;
         console.log(`[Rescate] Consulta ${encounter.id}: nota generada tras quedar a medias.`);

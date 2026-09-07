@@ -21,7 +21,7 @@ Cómo el backend convierte `transcript + template_snapshot` en `note_json` estru
 
 ## Construcción del prompt
 
-`ClinicalNotePromptBuilder.build({ transcript, templateSnapshot })` produce dos mensajes:
+`ClinicalNotePromptBuilder.build({ transcript, templateSnapshot, doctor })` produce dos mensajes (`doctor` es opcional: la preferencia de extensión del médico, ver abajo):
 
 **System** (reglas fijas):
 - Rol: "Miracle Clinical Note Generator", notas en español.
@@ -29,12 +29,13 @@ Cómo el backend convierte `transcript + template_snapshot` en `note_json` estru
 - Reglas de fidelidad al dictado (siempre): escribir con las palabras del médico, conservar el orden en que enunció los datos, no resumir ni recortar, no agregar conectores ni frases de relleno. "Redactar" = repartir el dictado en las secciones correctas y aplicar la puntuación dictada.
 - Reglas de puntuación dictada: signos dictados como palabras ("coma", "punto y aparte", "abre paréntesis"…) y el signo `x` entre medidas ("tres por cuatro centímetros" → `3 x 4 cm`).
 - Modo literal cuando aplica (ver abajo).
+- Preferencia de extensión del médico cuando aplica (ver abajo): bloque `PREFERENCIA DE EXTENSIÓN DEL MÉDICO`, entre el modo literal y las reglas de estructura.
 - Prudencia diagnóstica: impresión en términos de probabilidad, "pendiente de criterio médico".
 - Frases prudentes obligatorias cuando falta información: `"No referido."`, `"No mencionado en la consulta."`, `"No documentado en la transcripción."`
 - Estructura: devolver SOLO JSON; `sections` con exactamente las keys/labels/orden de la plantilla; `confidence` 0–1; `evidence` como cita textual breve; `warnings` y `missing_required_sections`.
 - Lista numerada de las secciones del snapshot con su instrucción individual (la instrucción de cada sección viaja en el prompt); las secciones literales llevan la marca `· LITERAL`.
 
-**User** (payload JSON): `{ task, fidelity: {mode, reason, verbatim_sections}, template: {name, specialty, sections}, transcript, expected_schema }`.
+**User** (payload JSON): `{ task, fidelity: {mode, reason, verbatim_sections}, note_detail?, template: {name, specialty, sections}, transcript, expected_schema }` (`note_detail` solo viaja cuando la preferencia se aplicó).
 
 La llamada usa `chatExpectingJson(messages, { type: 'json_object' })` del `LLMProvider` existente, que fuerza salida JSON en los tres proveedores soportados.
 
@@ -56,6 +57,26 @@ Lista base: `patologia`, `anatomia_patologica`, `patologia_clinica`, `histopatol
 `verbatim` viaja como campo de cada sección: se normaliza en `ClinicalTemplateService.normalizeSections`, se congela en `ClinicalEncounterService.buildTemplateSnapshot` y llega al prompt. Una casilla `verbatim` sin instrucción propia recibe una instrucción por defecto que manda copiar el dictado en lugar de redactarlo.
 
 Cobertura: [scripts/verify-note-fidelity.js](../scripts/verify-note-fidelity.js) (`npm run test:note-fidelity`).
+
+## Preferencia de extensión (note_detail)
+
+El médico elige en la web (Configuración > General) qué tan extensa quiere la nota: `concisa`, `estandar` o `detallada`. Llega en el cuerpo de `generate-note` como `{ doctor: { note_detail } }` y `ClinicalNotePromptBuilder` la convierte en un bloque del system prompt, colocado después del modo literal y antes de las reglas de estructura.
+
+| Valor | Efecto en el prompt |
+|---|---|
+| `estandar` (o ausente / inválido) | Nada. El prompt es byte a byte el de siempre y el JSON de usuario no lleva `note_detail`. |
+| `concisa` | Estilo telegráfico de historia clínica: frases cortas, sin narrativa de conversación. Se acorta la forma, nunca la información: cada dato dictado o escrito va completo y por separado; "concisa" no es "más técnica" ni siglas que el médico no usó; ante la duda se quitan palabras, no datos. `summary` en una o dos frases. |
+| `detallada` | Oraciones completas con todo el contexto que sí se expresó (cronología, características, agravantes/atenuantes, negativos y hallazgos normales uno por uno). Más completa, no más adornada: sin conectores de relleno, sin plantillas de "examen físico normal" en aparatos no explorados; lo no mencionado sigue fuera. `summary` en un párrafo breve. |
+
+Reglas de convivencia:
+
+- El encabezado del bloque acota su alcance a la FORMA: nunca relaja las reglas de no invención, de fidelidad al dictado ni de puntuación dictada, ni el formato JSON.
+- Plantilla literal completa (especialidad de informe o `verbatim: true`): la preferencia se apaga entera, `summary` incluido (`resolveNoteDetail` devuelve `{ requested, effective: 'estandar' }`). Literal parcial: el bloque se emite y excluye explícitamente las secciones literales.
+- Saneo: `ClinicalNotePromptBuilder.sanitizeDoctor` acepta un solo campo y un enum cerrado; strings sueltos, mayúsculas, espacios o saltos de línea se descartan. Lo inválido nunca responde 400.
+- El rescate automático (`NoteGenerationRescueService`) no tiene la preferencia y regenera en estándar. Seguimiento posible: leer `user_preferences.note_detail` por `encounter.doctor_id` con service role.
+- El log de generación añade `extensión concisa|detallada` (o `… ignorada por plantilla literal`), nunca contenido.
+
+Cobertura: [scripts/verify-note-fidelity.js](../scripts/verify-note-fidelity.js) (bloque, orden, saneo, literal) y [scripts/verify-clinical-workflow.js](../scripts/verify-clinical-workflow.js) (llega por HTTP al system prompt, no se pega entre peticiones).
 
 ## Validación y reparación post-LLM
 

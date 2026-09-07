@@ -149,6 +149,7 @@ function createFakeLlm() {
     hasApiKey: () => true,
     async chatExpectingJson(messages) {
       state.calls += 1;
+      state.lastMessages = messages;
       const request = JSON.parse(messages[1].content);
       const sections = request.template.sections.map((section) => ({
         key: section.key,
@@ -447,6 +448,35 @@ async function main() {
       assert.strictEqual(withExtra.status, 200);
       assert.strictEqual(withExtra.body.note_json.sections.length, snapshotSections.length);
       assert.ok(!withExtra.body.note_json.sections.some((s) => s.key === 'seccion_inventada'));
+    });
+
+    // 16b. La preferencia de extensión del médico llega al system prompt y no
+    // se queda pegada entre peticiones.
+    llm.state.transform = null;
+    const concisa = await call('POST', `/api/clinical/encounters/${encounterId}/generate-note`, {
+      doctor: { note_detail: 'concisa' }
+    });
+    await check('generate-note lleva la preferencia de extensión al system prompt', () => {
+      assert.strictEqual(concisa.status, 200);
+      const system = llm.state.lastMessages[0].content;
+      assert.ok(system.includes('PREFERENCIA DE EXTENSIÓN DEL MÉDICO'), 'falta el bloque de extensión');
+      assert.ok(system.includes('notas CONCISAS'));
+    });
+
+    const sinPreferencia = await call('POST', `/api/clinical/encounters/${encounterId}/generate-note`, {});
+    await check('sin preferencia el prompt vuelve al de siempre (no hay fuga entre peticiones)', () => {
+      assert.strictEqual(sinPreferencia.status, 200);
+      assert.ok(!llm.state.lastMessages[0].content.includes('PREFERENCIA DE EXTENSIÓN'));
+    });
+
+    const basura = await call('POST', `/api/clinical/encounters/${encounterId}/generate-note`, {
+      doctor: { note_detail: 'x'.repeat(50), display_name: 'Dr. Inyección' }
+    });
+    await check('un note_detail inválido se ignora en silencio, nunca 400', () => {
+      assert.strictEqual(basura.status, 200);
+      const system = llm.state.lastMessages[0].content;
+      assert.ok(!system.includes('PREFERENCIA DE EXTENSIÓN'));
+      assert.ok(!system.includes('Inyección'));
     });
 
     // 17. Guarda nota editada sin llamar al LLM.

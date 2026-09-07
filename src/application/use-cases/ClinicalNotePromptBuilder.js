@@ -27,6 +27,40 @@ const DEFAULT_VERBATIM_SPECIALTIES = [
   'medicina_legal'
 ];
 
+// Extensión de la nota pedida por el médico (web: Configuración > General;
+// viaja en el cuerpo de generate-note como { doctor: { note_detail } }).
+// Enum cerrado: el valor termina dentro del system prompt, así que un string
+// libre aquí sería una superficie de prompt-injection entregada al modelo.
+// 'estandar' es válido pero no emite nada: es exactamente el prompt de hoy, y
+// un prompt que crece cuando el médico no pidió nada distinto se degrada solo.
+const NOTE_DETAIL_VALUES = new Set(['concisa', 'estandar', 'detallada']);
+
+// El encabezado acota el alcance a la FORMA. Que una casilla de Configuración
+// pudiera relajar una regla clínica la convertiría en una puerta trasera.
+const NOTE_DETAIL_HEADER = 'PREFERENCIA DE EXTENSIÓN DEL MÉDICO (afecta SOLO a la forma de redactar: nunca a las reglas de no invención, de fidelidad al dictado ni de puntuación dictada, ni al formato JSON exigido):';
+
+// Cada directiva repite en positivo las reglas de fidelidad que más peligran
+// con ella: "concisa" tienta a recortar datos o a volver el texto "más
+// técnico"; "detallada" tienta a rellenar con examen físico normal que nadie
+// exploró. Sin esas frases el modelo resuelve la tensión por su cuenta.
+const NOTE_DETAIL_DIRECTIVES = {
+  concisa: [
+    'Este médico prefiere notas CONCISAS.',
+    '- Redacta en el estilo telegráfico propio de la historia clínica: frases cortas o sintagmas nominales, sin la narrativa de la conversación ("el paciente me cuenta que...", "bueno, entonces...") ni fórmulas de cortesía.',
+    '- Lo que se acorta es la forma, nunca la información: cada dato clínico dictado o escrito por el médico —cifras, dosis, medidas, nombres, hallazgos y los negativos que sí mencionó— va completo y por separado, sin fundirlo en generalidades.',
+    '- Concisa no es sinónimo de "más técnica": los términos siguen siendo los del médico, sin sustituirlos por sinónimos ni por siglas que él no usó.',
+    '- Si dudas entre quitar palabras o quitar un dato, quita palabras. Nunca dejes una sección en frase prudente por ahorrar espacio cuando sí hay contenido para ella.',
+    '- "summary": una o dos frases con motivo, hallazgo principal y conducta.'
+  ],
+  detallada: [
+    'Este médico prefiere notas DETALLADAS.',
+    '- Redacta en oraciones completas y ordenadas, conservando las palabras del médico, y recoge TODO el contexto que sí se expresó en la consulta: cronología, características de cada síntoma, factores que agravan o alivian, y cada negativo o hallazgo normal mencionado, escrito uno por uno en vez de agrupado.',
+    '- Detallada significa más completa, no más adornada: sin conectores ni frases de relleno que el médico no dijo, sin plantillas de "examen físico normal" y sin "sin alteraciones" en aparatos que no se exploraron. La extensión sale de lo mencionado, nunca de completar lo que falta.',
+    '- Un dato que no fue mencionado sigue fuera de la nota (o en la frase prudente): no se completa para que la nota se vea completa.',
+    '- "summary": un párrafo breve que recorra motivo, evolución, hallazgos relevantes, impresión diagnóstica y plan, siempre a partir de lo mencionado.'
+  ]
+};
+
 function normalizeSpecialty(value = '') {
   return `${value || ''}`
     .normalize('NFD')
@@ -41,6 +75,17 @@ function toSpecialtySet(value) {
     ? value
     : `${value || ''}`.split(',');
   return list.map(normalizeSpecialty).filter(Boolean);
+}
+
+// "Enfermedad actual" (key="enfermedad_actual"), ... — así se nombran las
+// secciones dentro del prompt, para que el modelo las ubique por label y key.
+function listSections(keys = [], sections = []) {
+  return keys
+    .map((key) => {
+      const section = sections.find((item) => item.key === key);
+      return section ? `"${section.label}" (key="${key}")` : `key="${key}"`;
+    })
+    .join(', ');
 }
 
 class ClinicalNotePromptBuilder {
@@ -110,12 +155,7 @@ class ClinicalNotePromptBuilder {
 
     const scope = fidelity.wholeTemplate
       ? 'TODAS las secciones de esta plantilla son LITERALES.'
-      : `Son LITERALES únicamente estas secciones: ${fidelity.verbatimKeys
-        .map((key) => {
-          const section = sections.find((item) => item.key === key);
-          return section ? `"${section.label}" (key="${key}")` : `key="${key}"`;
-        })
-        .join(', ')}. El resto sigue las reglas generales.`;
+      : `Son LITERALES únicamente estas secciones: ${listSections(fidelity.verbatimKeys, sections)}. El resto sigue las reglas generales.`;
 
     return [
       '',
@@ -138,9 +178,56 @@ class ClinicalNotePromptBuilder {
     ];
   }
 
-  build({ transcript = '', templateSnapshot = {} } = {}) {
+  // Whitelist de un solo campo + enum cerrado, igual que sanitizeDoctor en
+  // ClinicalAssistantContextBuilder. Devuelve null cuando no hay nada válido:
+  // basura, strings sueltos o un valor con salto de línea nunca llegan al prompt.
+  static sanitizeDoctor(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+      return null;
+    }
+    const sanitized = {};
+    if (typeof raw.note_detail === 'string' && NOTE_DETAIL_VALUES.has(raw.note_detail)) {
+      sanitized.note_detail = raw.note_detail;
+    }
+    return Object.keys(sanitized).length > 0 ? sanitized : null;
+  }
+
+  // requested = lo que pidió el médico (ya saneado); effective = lo que se
+  // aplica. En una plantilla literal completa el dictado ES la nota: no hay
+  // nada que acortar ni ampliar, así que la preferencia se apaga entera,
+  // summary incluido. Se devuelven las dos para que esa decisión sea visible
+  // en pruebas y en el log, no un return escondido.
+  resolveNoteDetail(doctor, fidelity = {}) {
+    const requested = ClinicalNotePromptBuilder.sanitizeDoctor(doctor)?.note_detail || 'estandar';
+    const effective = fidelity.wholeTemplate ? 'estandar' : requested;
+    return { requested, effective };
+  }
+
+  // Atajo para quien solo quiere saber qué se aplicó (el generador, para su
+  // log) sin rearmar el prompt.
+  noteDetailFor({ templateSnapshot = {}, doctor = null } = {}) {
+    const sections = Array.isArray(templateSnapshot.sections) ? templateSnapshot.sections : [];
+    return this.resolveNoteDetail(doctor, this.resolveFidelity(templateSnapshot, sections));
+  }
+
+  buildNoteDetailRules(noteDetail, fidelity = {}, sections = []) {
+    const directive = NOTE_DETAIL_DIRECTIVES[noteDetail?.effective];
+    if (!directive) {
+      return [];
+    }
+    // Literal parcial: la preferencia vale para el resto, pero en las casillas
+    // literales el dictado se copia tal cual; hay que decirlo para que "concisa"
+    // no las recorte ni "detallada" las infle.
+    const literalScope = fidelity.mode === 'verbatim' && !fidelity.wholeTemplate
+      ? [`- Esta preferencia NO aplica a las secciones LITERALES (${listSections(fidelity.verbatimKeys, sections)}): ahí el dictado se copia tal cual, sin acortar ni ampliar.`]
+      : [];
+    return ['', NOTE_DETAIL_HEADER, ...directive, ...literalScope];
+  }
+
+  build({ transcript = '', templateSnapshot = {}, doctor = null } = {}) {
     const sections = Array.isArray(templateSnapshot.sections) ? templateSnapshot.sections : [];
     const fidelity = this.resolveFidelity(templateSnapshot, sections);
+    const noteDetail = this.resolveNoteDetail(doctor, fidelity);
     const verbatimKeys = new Set(fidelity.verbatimKeys);
     const sectionRules = sections
       .map((section) => `${section.order}. key="${section.key}" · label="${section.label}"${section.required ? ' · OBLIGATORIA' : ''}${verbatimKeys.has(section.key) ? ' · LITERAL (copiar el dictado tal cual)' : ''}\n   Instrucción: ${section.instruction}`)
@@ -175,6 +262,9 @@ class ClinicalNotePromptBuilder {
       '- No reemplaces "por" cuando funciona como preposición normal del español (causa, motivo, duración, vía: "consulta por dolor abdominal", "tratado por 5 días", "por vía oral", "por antecedente de..."); ahí se transcribe tal cual.',
       '- Usa el contexto numérico para decidir: "por" entre dos cantidades/medidas (cifras, unidades de longitud/superficie) es signo "x"; "por" seguido de una causa, motivo o duración en texto es preposición.',
       ...this.buildVerbatimRules(fidelity, sections),
+      // Va después del modo literal (al que puede referirse) y antes de la
+      // estructura: es una regla de redacción, subordinada a la fidelidad.
+      ...this.buildNoteDetailRules(noteDetail, fidelity, sections),
       '',
       'REGLAS DE ESTRUCTURA:',
       '- Devuelve ÚNICAMENTE un objeto JSON válido, sin markdown ni texto fuera del JSON.',
@@ -198,6 +288,9 @@ class ClinicalNotePromptBuilder {
         reason: fidelity.reason,
         verbatim_sections: fidelity.verbatimKeys
       },
+      // Solo cuando el bloque se emitió: así el prompt por defecto sigue siendo
+      // byte a byte el de siempre.
+      ...(NOTE_DETAIL_DIRECTIVES[noteDetail.effective] ? { note_detail: noteDetail.effective } : {}),
       template: {
         name: templateSnapshot.name || '',
         specialty: templateSnapshot.specialty || '',
@@ -223,5 +316,7 @@ class ClinicalNotePromptBuilder {
 
 ClinicalNotePromptBuilder.DEFAULT_VERBATIM_SPECIALTIES = DEFAULT_VERBATIM_SPECIALTIES;
 ClinicalNotePromptBuilder.normalizeSpecialty = normalizeSpecialty;
+ClinicalNotePromptBuilder.NOTE_DETAIL_VALUES = NOTE_DETAIL_VALUES;
+ClinicalNotePromptBuilder.NOTE_DETAIL_HEADER = NOTE_DETAIL_HEADER;
 
 module.exports = ClinicalNotePromptBuilder;

@@ -44,7 +44,7 @@ class ClinicalNoteGeneratorService {
     return Boolean(this.llmProvider?.hasApiKey?.());
   }
 
-  async generate(encounterId, { doctorId = null } = {}) {
+  async generate(encounterId, { doctorId = null, doctor = null } = {}) {
     const encounter = await this.encounterService.getOwnedEncounter(encounterId, { doctorId });
 
     const transcript = `${encounter.transcript || ''}`.trim();
@@ -66,7 +66,11 @@ class ClinicalNoteGeneratorService {
     try {
       const messages = this.promptBuilder.build({
         transcript,
-        templateSnapshot: encounter.template_snapshot
+        templateSnapshot: encounter.template_snapshot,
+        // Preferencia de extensión del médico, tal como llegó del navegador
+        // ({ note_detail }). La sanea el builder (whitelist + enum cerrado);
+        // el rescate automático no la manda y genera en estándar.
+        doctor
       });
       // `sessionId` = el encounter: es lo que ata este gasto a UNA consulta en
       // el ledger, y sin eso el costo solo se puede leer en agregado (ver
@@ -90,7 +94,17 @@ class ClinicalNoteGeneratorService {
         note_generated_at: new Date().toISOString(),
         status: 'note_generated'
       });
-      console.log(`[Clinical Note] Encounter ${encounter.id}: nota generada (${noteJson.sections.length} secciones, ${noteJson.warnings.length} warnings).`);
+      // Solo el nivel, nunca contenido: sirve para comprobar en producción que
+      // la preferencia llegó (o que una plantilla literal la apagó).
+      const noteDetail = typeof this.promptBuilder.noteDetailFor === 'function'
+        ? this.promptBuilder.noteDetailFor({ templateSnapshot: encounter.template_snapshot, doctor })
+        : null;
+      const extension = !noteDetail || noteDetail.requested === 'estandar'
+        ? ''
+        : noteDetail.effective === noteDetail.requested
+          ? `, extensión ${noteDetail.effective}`
+          : `, extensión ${noteDetail.requested} ignorada por plantilla literal`;
+      console.log(`[Clinical Note] Encounter ${encounter.id}: nota generada (${noteJson.sections.length} secciones, ${noteJson.warnings.length} warnings${extension}).`);
 
       // Publicar en el historial es responsabilidad del servidor, no del
       // navegador: si esto dependiera del cliente, cerrar la pestaña dejaría la

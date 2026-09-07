@@ -301,6 +301,20 @@ POST /api/clinical/encounters/:encounter_id/generate-note
 
 Usa el `template_snapshot` (no la plantilla actual), construye el prompt clínico estricto, llama al LLM configurado, valida/repara el JSON y guarda el resultado. Endpoint con rate limit reforzado (gasta créditos LLM).
 
+Cuerpo opcional — extensión de la nota que prefiere el médico (web: Configuración > General):
+
+```json
+{ "doctor": { "note_detail": "concisa" } }
+```
+
+- `note_detail` acepta `concisa | estandar | detallada`. Se sanea en `ClinicalNotePromptBuilder.sanitizeDoctor` (whitelist de un campo + enum cerrado); cualquier otra cosa se ignora en silencio, nunca responde 400.
+- `estandar` no hace nada: es el prompt de siempre, así que el cliente web no lo manda (la petición sale sin cuerpo, como antes).
+- Solo cambia la redacción (frases cortas vs. oraciones completas con todo el contexto que sí se mencionó); nunca las reglas de no invención ni de fidelidad al dictado. Detalle en [clinical-note-generation.md](./clinical-note-generation.md#preferencia-de-extensión-note_detail).
+- En plantillas o especialidades de informe literal (patología, radiología, laboratorio…) se ignora entera: ahí el dictado es la nota. Si solo algunas secciones son literales, el prompt excluye esas.
+- El rescate automático de consultas a medias (cron diario) regenera sin esta preferencia, en estándar.
+
+Respuesta:
+
 ```json
 { "encounter_id": "0b3f...", "status": "note_generated", "note_json": { "summary": "...", "sections": [ ... ], "warnings": [], "missing_required_sections": [] } }
 ```
@@ -378,6 +392,8 @@ curl -s -X POST "$BASE/api/clinical/encounters/$ENC/transcript" -H "$AUTH" -H "$
 
 # 4. Generar nota estructurada
 curl -s -X POST "$BASE/api/clinical/encounters/$ENC/generate-note" -H "$AUTH" -H "$JSON"
+#    (opcional) con la extensión que prefiere el médico:
+curl -s -X POST "$BASE/api/clinical/encounters/$ENC/generate-note" -H "$AUTH" -H "$JSON" -d '{ "doctor": { "note_detail": "concisa" } }'
 
 # 5. Leer encounter completo (transcript + note_json)
 curl -s "$BASE/api/clinical/encounters/$ENC" -H "$AUTH"
