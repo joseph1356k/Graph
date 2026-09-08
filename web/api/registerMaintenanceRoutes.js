@@ -34,7 +34,7 @@ function registerMaintenanceRoutes(app, deps = {}) {
       return res.status(401).json({ error: 'No autorizado.' });
     }
 
-    const result = { rescued: null, purged: null, alert: null, errors: [] };
+    const result = { rescued: null, purged: null, purgedExportPayloads: null, alert: null, errors: [] };
 
     // El rescate va PRIMERO: convierte en notas las consultas que quedaron a
     // medias, para que el correo no reporte como problema algo que se acaba de
@@ -59,6 +59,23 @@ function registerMaintenanceRoutes(app, deps = {}) {
       } catch (error) {
         result.errors.push(`purge: ${error.message}`);
         console.error(`[Mantenimiento] Limpieza falló: ${error.message}`);
+      }
+    }
+
+    // El payload de una exportación terminada lleva la nota firmada entera.
+    // La función de purga existía desde la migración de exportaciones (72 h
+    // tras el estado terminal) y nadie la llamaba: se descubrió en la auditoría
+    // de privacidad del 2026-09-07.
+    if (restClient) {
+      try {
+        const hours = Number(process.env.NOTE_EXPORT_PAYLOAD_RETENTION_HOURS || 72);
+        const purged = await restClient.rpc('graph_purge_note_export_payloads', {
+          p_older_than_hours: Number.isFinite(hours) ? hours : 72,
+        });
+        result.purgedExportPayloads = typeof purged === 'number' ? purged : Number(purged) || 0;
+      } catch (error) {
+        result.errors.push(`purge exportaciones: ${error.message}`);
+        console.error(`[Mantenimiento] Purga de payloads de exportación falló: ${error.message}`);
       }
     }
 

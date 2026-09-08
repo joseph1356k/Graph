@@ -9,6 +9,12 @@ const { API_FAMILIES } = require('../domain/usage/vocabulary');
 // setter no hay ninguno que pueda quedarse sin instrumentar por olvido.
 let usageRecorder = null;
 
+// Escudo de privacidad, inyectado igual que el grabador: un solo setter para
+// las seis instancias. Tapa los identificadores del paciente ANTES de que el
+// payload salga hacia el proveedor y los devuelve al volver la respuesta. Ver
+// PrivacyShieldService y docs/privacy-egress-gateway.md.
+let privacyShield = null;
+
 class LLMProvider {
   static setUsageRecorder(recorder) {
     usageRecorder = recorder;
@@ -16,6 +22,14 @@ class LLMProvider {
 
   static getUsageRecorder() {
     return usageRecorder;
+  }
+
+  static setPrivacyShield(shield) {
+    privacyShield = shield;
+  }
+
+  static getPrivacyShield() {
+    return privacyShield;
   }
 
   // envPrefix picks which *_LLM_PROVIDER/_API_KEY/_BASE_URL/_MODEL env vars this
@@ -173,6 +187,7 @@ class LLMProvider {
   // de modo que AgentChat, SurfaceProfile, ClinicalNoteGenerator, las
   // sugerencias diagnósticas y todos los fallos no aparecían en el ledger.
   async postChatCompletions(payload, usageOptions = {}) {
+    const feature = usageOptions.feature || currentContext().feature || '';
     const descriptor = {
       provider: this.provider || 'unknown',
       apiFamily: API_FAMILIES.CHAT_COMPLETIONS,
@@ -190,12 +205,24 @@ class LLMProvider {
       }
     };
 
+    // El escudo corre ANTES de `measure`: un fallo suyo no es una llamada
+    // facturable ni una caída del proveedor, y en `enforce` la llamada no sale.
+    // Lo que se manda es la COPIA tapada; `payload` del llamador no se toca.
+    let outbound = payload;
+    let protection = null;
+    if (privacyShield) {
+      protection = await privacyShield.protectChatPayload(payload, { feature });
+      outbound = protection.payload;
+      Object.assign(descriptor.metadata, privacyShield.metadataFor(protection));
+    }
+
     const run = async () => {
+      let data;
       try {
-        const response = await axios.post(`${this.baseUrl}/chat/completions`, payload, {
+        const response = await axios.post(`${this.baseUrl}/chat/completions`, outbound, {
           headers: this.getHeaders()
         });
-        return response.data;
+        data = response.data;
       } catch (error) {
         const status = error.response?.status;
         const details = typeof error.response?.data === 'string'
@@ -203,11 +230,19 @@ class LLMProvider {
           : JSON.stringify(error.response?.data || {});
         const wrapped = new Error(`LLM request failed (${status || 'unknown'}): ${details}`);
         // Se conserva la respuesta cruda para que el grabador pueda leer el
-        // `usage` de un error que sí gastó tokens (p. ej. context_length).
-        wrapped.response = error.response;
+        // `usage` de un error que sí gastó tokens (p. ej. context_length),
+        // pero SIN `config`: ahí viaja el cuerpo enviado, y un error no puede
+        // ser la vía por la que el prompt acabe en un log.
+        wrapped.response = error.response ? { status: error.response.status, data: error.response.data } : undefined;
         wrapped.statusCode = status;
         throw wrapped;
       }
+      // Rehidratación dentro de `run`: por debajo de aquí nadie ve marcadores.
+      if (protection) {
+        data = privacyShield.restoreChatResponse(data, protection);
+        Object.assign(descriptor.metadata, privacyShield.metadataFor(protection));
+      }
+      return data;
     };
 
     if (!usageRecorder) {

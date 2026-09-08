@@ -65,7 +65,21 @@ const METADATA_ALLOWLIST = Object.freeze(new Set([
   // modo, y mezclarlas sin marca haría creer que todo el ledger tiene la misma
   // solidez. `usageSource` distingue 'server_measured' de 'client_reported'.
   'usageSource',
-  'liveSessionTurns'
+  'liveSessionTurns',
+  // ESCUDO DE PRIVACIDAD (PrivacyShieldService): conteos y estados de la
+  // protección con la que salió cada llamada. Nunca el valor tapado: solo
+  // cuántos marcadores por tipo, el modo, el resultado del barrido y de la
+  // rehidratación, y el hash del payload que salió.
+  'privacyMode',
+  'privacyTokens',
+  'privacySeeded',
+  'privacyDetected',
+  'privacyLeakScan',
+  'privacyRehydration',
+  'privacyImageParts',
+  'privacyPayloadSha256',
+  'privacyPosthoc',
+  'privacyError'
 ]));
 
 const MAX_METADATA_STRING = 120;

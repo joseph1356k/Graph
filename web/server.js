@@ -16,6 +16,9 @@ const MarkdownCatalogWriter = require('../src/infrastructure/file-system/Markdow
 const UsageLedgerStore = require('../src/infrastructure/file-system/UsageLedgerStore');
 const SupabaseUsageEventStore = require('../src/infrastructure/usage/SupabaseUsageEventStore');
 const AiUsageRecorder = require('../src/application/use-cases/AiUsageRecorder');
+const PrivacyShieldService = require('../src/application/use-cases/PrivacyShieldService');
+const SupabasePatientSeedRepository = require('../src/infrastructure/repositories/SupabasePatientSeedRepository');
+const PrivacyLedgerReader = require('../src/infrastructure/privacy/PrivacyLedgerReader');
 const UsageAttributionResolver = require('../src/application/use-cases/UsageAttributionResolver');
 const createUsageContextMiddleware = require('./api/attachUsageContext');
 
@@ -166,6 +169,17 @@ const usageRecorder = new AiUsageRecorder({ store: usageEventStore });
 // Se inyecta una sola vez para las seis instancias de LLMProvider y para los
 // clientes que no lo usan (cerebros conscientes, Deepgram, vídeo).
 LLMProvider.setUsageRecorder(usageRecorder);
+
+// ---- Escudo de privacidad hacia los proveedores de IA ----------------------
+// Tapa los identificadores directos del paciente en el último salto antes del
+// proveedor (LLMProvider.postChatCompletions y el salto al runtime Python) y
+// los devuelve al volver la respuesta. Mismo mecanismo que el grabador de
+// consumo: un setter para todas las instancias. Modo por PRIVACY_SHIELD_MODE
+// (off | shadow | enforce) y por funcionalidad. Ver docs/privacy-egress-gateway.md.
+const privacySeedRepository = new SupabasePatientSeedRepository(supabaseRestClient);
+const privacyShield = new PrivacyShieldService({ seedRepository: privacySeedRepository });
+LLMProvider.setPrivacyShield(privacyShield);
+const privacyLedger = new PrivacyLedgerReader(supabaseRestClient);
 const usageAttributionResolver = new UsageAttributionResolver({
   supabaseClient: supabaseRestClient
 });
@@ -1131,7 +1145,9 @@ registerClinicalRoutes(app, {
   encounterService: clinicalEncounterService,
   noteGeneratorService: clinicalNoteGeneratorService,
   noteValidationService: clinicalNoteValidationService,
-  assistantService: clinicalAssistantService
+  assistantService: clinicalAssistantService,
+  privacyShield,
+  privacyLedger
 });
 // Dos carriles: /api/clinical/exports (JWT del médico) y
 // /api/v1/operations/exports (X-API-Key del ejecutor). Los middlewares de auth
@@ -1140,7 +1156,8 @@ registerNoteExportRoutes(app, { noteExportService });
 registerMedicalRoutes(app, {
   rawTranscriptionService,
   callMiracleRuntime,
-  usageRecorder
+  usageRecorder,
+  privacyShield
 });
 registerUsageRoutes(app, { usageDashboardService, usageRecorder });
 // Mantenimiento diario (cron de Vercel): limpieza + alerta de salud por correo.
@@ -1171,7 +1188,8 @@ registerPublicApiRoutes(app, {
   usageRecorder,
   assistantService: clinicalAssistantService,
   biopsyService: biopsyExtractionService,
-  organizerService: organizerProfileService
+  organizerService: organizerProfileService,
+  privacyShield
 });
 registerOrganizerRoutes(app, { organizerProfileService });
 

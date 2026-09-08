@@ -324,6 +324,15 @@ No se almacena: prompts, respuestas, transcripciones, notas, audio, nombres de
 paciente, documentos, credenciales ni llaves. Verificado en el test
 «el evento persistido no lleva ningún campo de contenido».
 
+**Escudo de privacidad (2026-09-07).** Cada evento de una llamada de texto lleva
+además, en `metadata`, cómo salió protegida: `privacyMode` (off | shadow |
+enforce), `privacyTokens` («PACIENTE_NOMBRE:2,DOCUMENTO:1»), `privacySeeded`,
+`privacyDetected`, `privacyLeakScan`, `privacyRehydration`, `privacyImageParts`,
+`privacyPayloadSha256` y `privacyPosthoc`. Son conteos y estados —el valor tapado
+nunca entra— y por eso viven en la misma allowlist. `GET
+/api/clinical/encounters/:id/privacy` y `scripts/evidencia-privacidad.js` los
+leen por `session_id`. Diseño en [privacy-egress-gateway.md](privacy-egress-gateway.md).
+
 **Nombres del personal.** El panel muestra el nombre de quien consumió, porque
 sin eso no responde la pregunta que lo justifica. No es contenido clínico ni
 dato de paciente: es identidad de plataforma, la misma que ya se ve en cualquier

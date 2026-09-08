@@ -2,6 +2,7 @@ const { clinicalError, isClinicalError } = require('./ClinicalErrors');
 
 const { withFeature } = require('../../infrastructure/usage/UsageContext');
 const { FEATURES } = require('../../domain/usage/vocabulary');
+const { withPrivacyScope, lastPrivacyResult } = require('../../infrastructure/privacy/PrivacyContext');
 // Orchestrates note generation: loads the encounter, builds the strict prompt
 // from the template_snapshot, calls the configured LLM, validates/repairs the
 // JSON and persists the result. Never logs transcript or note contents (PHI).
@@ -72,12 +73,27 @@ class ClinicalNoteGeneratorService {
       // el ledger, y sin eso el costo solo se puede leer en agregado (ver
       // encounter_metrics en el portal). No es un dato del cliente: sale del
       // encounter que este servicio ya cargó y verificó como propio.
-      const content = await withFeature(
-        FEATURES.NOTE_GENERATION,
-        () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }),
-        { sessionId: encounter.id }
-      );
+      // El ámbito de privacidad lo fija ESTE servicio, con el encounter ya
+      // cargado y verificado: el rescate oportunista llama aquí desde la
+      // petición de otro médico, y un ámbito heredado de la ruta taparía con
+      // la identidad equivocada.
+      const { content, privacy } = await withPrivacyScope({ encounter, encounterId: encounter.id }, async () => {
+        const raw = await withFeature(
+          FEATURES.NOTE_GENERATION,
+          () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }),
+          { sessionId: encounter.id }
+        );
+        return { content: raw, privacy: lastPrivacyResult() };
+      });
       const parsed = this.llmProvider.parseJsonObject(content || '{}');
+      if (privacy?.rehydration === 'incomplete') {
+        // Un marcador que esta llamada no emitió se deja visible a propósito:
+        // el médico tiene que verlo, no una adivinanza nuestra.
+        parsed.warnings = [
+          ...(Array.isArray(parsed.warnings) ? parsed.warnings : []),
+          'La nota contiene un marcador de privacidad que no se pudo resolver. Revísala antes de firmar.'
+        ];
+      }
       const noteJson = this.validationService.validateAndRepair(parsed, encounter.template_snapshot);
 
       // note_json_ai congela lo que produjo la IA. note_json es la nota viva: el
@@ -122,7 +138,9 @@ class ClinicalNoteGeneratorService {
         }
       }
 
-      return updated;
+      // `privacy` viaja con la respuesta (conteos, nunca valores): es lo que
+      // la web le enseña al médico en vez de una insignia fija.
+      return { ...updated, privacy: privacy || null };
     } catch (error) {
       try {
         await this.encounterRepository.update(encounter.id, { status: 'failed' });

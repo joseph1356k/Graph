@@ -9,6 +9,9 @@ const CLINICAL_ERROR_STATUS = {
   TRANSCRIPT_REQUIRED: 400,
   TRANSCRIPT_TOO_LONG: 413,
   LLM_NOT_CONFIGURED: 503,
+  // El escudo de privacidad no pudo proteger la llamada y el modo es
+  // `enforce`: la llamada NO salió. Se dice así, no como fallo del modelo.
+  PRIVACY_SHIELD_FAILED: 503,
   NOTE_GENERATION_FAILED: 502,
   NOTE_JSON_INVALID: 400,
   ASSISTANT_INVALID: 400,
