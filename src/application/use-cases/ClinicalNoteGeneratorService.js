@@ -2,6 +2,7 @@ const { clinicalError, isClinicalError } = require('./ClinicalErrors');
 
 const { withFeature } = require('../../infrastructure/usage/UsageContext');
 const { FEATURES } = require('../../domain/usage/vocabulary');
+const { withPrivacyScope, lastPrivacyResult } = require('../../infrastructure/privacy/PrivacyContext');
 
 // Orquesta la generación de nota. Dos entradas:
 //   - generateFromTranscript: la parte pura (prompt → LLM → validación), sin
@@ -104,7 +105,7 @@ class ClinicalNoteGeneratorService {
     }
   }
 
-  async generateFromTranscript({ transcript = '', templateSnapshot = null, noteDetail = '', sessionId = '' } = {}) {
+  async generateFromTranscript({ transcript = '', templateSnapshot = null, noteDetail = '', sessionId = '', privacyScope = null } = {}) {
     const cleanTranscript = `${transcript || ''}`.trim();
     if (!cleanTranscript) {
       throw clinicalError('TRANSCRIPT_REQUIRED', 'La transcripción no puede estar vacía.');
@@ -131,8 +132,21 @@ class ClinicalNoteGeneratorService {
         sectionCount: snapshotSections.length
       }
     };
-    const content = await this.requestNoteJson(plan, usage);
+    // El escudo de privacidad corre dentro de LLMProvider; el ámbito (semillas
+    // del encounter o de la consulta) lo pone quien conoce la fuente.
+    const { content, privacy } = await withPrivacyScope(privacyScope || {}, async () => {
+      const raw = await this.requestNoteJson(plan, usage);
+      return { content: raw, privacy: lastPrivacyResult() };
+    });
     const parsed = this.llmProvider.parseJsonObject(content || '{}');
+    if (privacy?.rehydration === 'incomplete') {
+      // Un marcador que esta llamada no emitió se deja visible a propósito:
+      // el médico tiene que verlo, no una adivinanza nuestra.
+      parsed.warnings = [
+        ...(Array.isArray(parsed?.warnings) ? parsed.warnings : []),
+        'La nota contiene un marcador de privacidad que no se pudo resolver. Revísala antes de firmar.'
+      ];
+    }
     const noteJson = this.validationService.validateAndRepair(parsed, templateSnapshot, {
       transcript: cleanTranscript,
       modes: plan.modes
@@ -141,7 +155,9 @@ class ClinicalNoteGeneratorService {
       noteJson,
       promptVersion: plan.promptVersion,
       noteMode: plan.noteMode,
-      temperature: plan.temperature
+      temperature: plan.temperature,
+      // Conteos y estados de la protección, nunca valores (PrivacyContext).
+      privacy: privacy || null
     };
   }
 
@@ -172,11 +188,16 @@ class ClinicalNoteGeneratorService {
       // el ledger, y sin eso el costo solo se puede leer en agregado (ver
       // encounter_metrics en el portal). No es un dato del cliente: sale del
       // encounter que este servicio ya cargó y verificó como propio.
-      const { noteJson, noteMode } = await this.generateFromTranscript({
+      // El ámbito de privacidad lo fija ESTE servicio, con el encounter ya
+      // cargado y verificado: el rescate oportunista llama aquí desde la
+      // petición de otro médico, y un ámbito heredado de la ruta taparía con
+      // la identidad equivocada.
+      const { noteJson, noteMode, privacy } = await this.generateFromTranscript({
         transcript,
         templateSnapshot: encounter.template_snapshot,
         noteDetail,
-        sessionId: encounter.id
+        sessionId: encounter.id,
+        privacyScope: { encounter, encounterId: encounter.id }
       });
 
       // note_json_ai congela lo que produjo la IA. note_json es la nota viva: el
@@ -222,7 +243,9 @@ class ClinicalNoteGeneratorService {
         }
       }
 
-      return updated;
+      // `privacy` viaja con la respuesta (conteos, nunca valores): es lo que
+      // la web le enseña al médico en vez de una insignia fija.
+      return { ...updated, privacy: privacy || null };
     } catch (error) {
       try {
         await this.encounterRepository.update(encounter.id, { status: 'failed' });

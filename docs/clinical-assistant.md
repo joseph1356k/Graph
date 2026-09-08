@@ -175,6 +175,10 @@ Envelope estándar del módulo clínico `{ "error": { "code", "message" } }`:
 | `LLM_NOT_CONFIGURED` | 503 | Sin proveedor LLM |
 | `UNAUTHORIZED` | 401 | Sin Bearer de Supabase / token inválido |
 
+## Privacidad
+
+Todo lo que el asistente manda al proveedor —pregunta, historial, transcripción, nota, `screen_context`— pasa por el escudo de privacidad ([privacy-egress-gateway.md](privacy-egress-gateway.md)): los identificadores directos del paciente salen como marcadores y la respuesta vuelve con los datos reales. Las tres respuestas traen `privacy` (modo, conteos, resultado). Un marcador que venga en `history` o `message` desde el cliente es texto opaco: nunca se convierte en el dato de nadie. La validación de evidencia literal de las sugerencias sigue funcionando porque cada marcador restaura la forma exacta que tapó.
+
 ## Seguridad y límites (resumen)
 
 El system prompt de chat (`ClinicalAssistantPromptBuilder.buildChatSystemPrompt`) se estructura en tres bloques: REGLAS INVIOLABLES (límite de rol frente a datos delimitados, no diagnóstico definitivo, no órdenes finales, no inventar datos, señalar incertidumbre y red flags), ESPECIALIDAD ACTIVA (solo la regla de la familia que aplica, no las siete) y ESTILO. Diferenciales y ajuste componen prompts propios y más cortos con las mismas cláusulas compartidas (`src/application/prompts/PromptClauses.js`). Transcripción, nota y pantalla viajan delimitadas (`<transcripcion>`, `<nota>`, `<pantalla>`) y el prompt declara que son datos, no instrucciones. La validación de salida refuerza lo verificable (evidencia literal, detección de lenguaje definitivo, estructura de nota). Sin PHI en logs (solo ids y conteos). `safety_notice` viaja en TODAS las respuestas. Temperaturas fijas: chat 0.4, diferenciales 0.2, ajuste 0.2. Cada llamada registra `promptVersion` en telemetría.

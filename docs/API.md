@@ -35,7 +35,7 @@ Ejecuta las etapas activadas por `stages`.
     "note_mode": "auto",
     "sections": ["Motivo de consulta", "Enfermedad actual", "Plan"]
   },
-  "note_detail": "equilibrado",
+  "note_detail": "estandar",
   "note": { "content": "", "title": "Nota" },
   "fields": [],
   "stages": { "transcription": true, "note": true, "autofill": false }
@@ -59,7 +59,7 @@ Etapas:
   `auto|interpretive|verbatim`). Es el mismo motor que usa el portal:
   devuelve `note_json` (secciones con `grounding`, `confidence`, `evidence`,
   `evidence_spans`, `warnings`), `content` en Markdown derivado de esa nota,
-  `note_mode` y `prompt_version`. `note_detail` (`conciso|equilibrado|detallado`)
+  `note_mode` y `prompt_version`. `note_detail` (`concisa|estandar|detallada`)
   ajusta la extension de las secciones interpretativas. Una plantilla invalida
   responde 400.
 - `voice-scratchpad` — sin plantilla. Es el bloque provisional del orquestador

@@ -493,7 +493,7 @@ async function main() {
           : section
       ))
     });
-    const verified = await call('POST', `/api/clinical/encounters/${encounterId}/generate-note`, { note_detail: 'conciso' });
+    const verified = await call('POST', `/api/clinical/encounters/${encounterId}/generate-note`, { note_detail: 'concisa' });
     await check('descarta citas que no están en la transcripción y baja a inferred', () => {
       assert.strictEqual(verified.status, 200);
       const motivo = verified.body.note_json.sections.find((s) => s.key === 'motivo_de_consulta');

@@ -7,6 +7,7 @@ const { isClinicalError } = require('../../src/application/use-cases/ClinicalErr
 const ClinicalTemplateService = require('../../src/application/use-cases/ClinicalTemplateService');
 const ClinicalEncounterService = require('../../src/application/use-cases/ClinicalEncounterService');
 const { renderNoteMarkdown } = require('../../src/domain/clinical/noteText');
+const { withPrivacyScope } = require('../../src/infrastructure/privacy/PrivacyContext');
 
 // Public, versioned API surface for client apps (Chrome extension, Windows app,
 // web app). This layer keeps external contracts stable while delegating to the
@@ -72,6 +73,9 @@ function registerPublicApiRoutes(app, deps = {}) {
   // registerOrganizerRoutes. Aquí se declara para que un cliente que descubra
   // el API por GET /api/v1 sepa que existe.
   const organizerService = deps.organizerService || null;
+  // Escudo de privacidad para el salto Node → runtime Python (etapa `note`
+  // del pipeline). Opcional: sin él la etapa sale como antes y el ledger lo dice.
+  const privacyShield = deps.privacyShield || null;
 
   if (!app || typeof callMiracleRuntime !== 'function') {
     throw new Error('registerPublicApiRoutes requires app and callMiracleRuntime');
@@ -214,8 +218,11 @@ function registerPublicApiRoutes(app, deps = {}) {
               transcript,
               templateSnapshot: snapshot,
               noteDetail: body.note_detail,
-              sessionId
-            });
+              sessionId,
+            // Ámbito de privacidad: el escudo siembra desde la consulta si el
+            // cliente la identifica; sin id, desde lo que detecte en el texto.
+            privacyScope: { consultationId: `${body.consultation_id || body.consultationId || body.export_id || ''}`.trim() }
+          });
             result.note = {
               engine: 'canonical-note',
               note_json: generated.noteJson,
@@ -239,36 +246,56 @@ function registerPublicApiRoutes(app, deps = {}) {
         // clínica final; se etiqueta para que el cliente lo sepa.
         try {
           const sequence = Number(body.sequence) || 1;
+          // El runtime Python llama al proveedor por su cuenta: se tapa aquí,
+          // en el salto Node → Python, que es el último punto de Miracle. El
+          // runtime no tiene otra fuente de datos, así que equivale a taparlo
+          // antes del proveedor.
+          const consultationId = `${body.consultation_id || body.consultationId || body.export_id || ''}`.trim();
+          const protection = privacyShield
+            ? await withPrivacyScope(
+              { consultationId, noteContent: (body.note && body.note.content) || '' },
+              () => privacyShield.protectTexts(
+                { transcript, noteContent: (body.note && body.note.content) || '' },
+                { feature: FEATURES.CLINICAL_STRUCTURING }
+              )
+            )
+            : null;
+          const outbound = protection ? protection.texts : { transcript, noteContent: (body.note && body.note.content) || '' };
           const orchestrated = await callMiracleRuntime(req, '/api/voice/orchestrator/events', {
             method: 'POST',
             body: JSON.stringify({
               voice_session_id: sessionId,
               note_path: body.note && typeof body.note.path !== 'undefined' ? body.note.path : null,
               note_title: (body.note && body.note.title) || 'Nota',
-              note_content: (body.note && body.note.content) || '',
+              note_content: outbound.noteContent,
               tab_id: body.client_id || 'api-v1',
               event_id: crypto.randomUUID(),
               sequence,
               segment: {
                 segment_id: `api_${sessionId}_${sequence}`,
                 kind: 'final',
-                transcript,
+                transcript: outbound.transcript,
                 language: body.language || null,
               },
             }),
           });
           const payload = orchestrated.body || {};
+          const resolvedContent = protection
+            ? privacyShield.restoreText(payload.resolved_note_content || '', protection)
+            : (payload.resolved_note_content || '');
           result.note = {
             engine: 'voice-scratchpad',
-            content: payload.resolved_note_content || '',
+            content: resolvedContent,
             // Intacto a propósito: el plugin detecta el modo degradado con
             // startsWith('heuristic-fallback').
             backend_status: payload.backend_status || '',
             usage: payload.usage || null,
+            ...(protection ? { privacy: privacyShield.publicSummaryFor(protection) } : {})
           };
           recordUpstreamUsage(payload.usage, {
             feature: FEATURES.CLINICAL_STRUCTURING,
-            sessionId
+            sessionId,
+            metadata: protection ? privacyShield.metadataFor(protection) : {}
           });
         } catch (error) {
           if (error.code === 'MIRACLE_RUNTIME_NOT_CONFIGURED') {
@@ -297,6 +324,9 @@ function registerPublicApiRoutes(app, deps = {}) {
             alreadyFulfilled: pickArray(body.already_fulfilled, pickArray(body.alreadyFulfilled)),
             pageUrl: body.page_url || body.pageUrl || '',
             voiceSessionId: sessionId,
+            // Id de la consulta (= id del trabajo de exportación): con él el
+            // escudo de privacidad siembra desde la base, no solo desde la nota.
+            consultationId: `${body.consultation_id || body.consultationId || body.export_id || ''}`.trim(),
           }));
           result.autofill = {
             matches: matched.matches || [],
@@ -304,6 +334,7 @@ function registerPublicApiRoutes(app, deps = {}) {
             ready_to_submit: Boolean(matched.readyToSubmit),
             submit_reason: matched.submitReason || '',
             usage: matched.usage || null,
+            ...(matched.privacy ? { privacy: matched.privacy } : {})
           };
         } catch (error) {
           result.autofill = { status: 'error', error: error.message || 'autofill_failed' };
@@ -327,7 +358,8 @@ function registerPublicApiRoutes(app, deps = {}) {
         fields: pickArray(body.fields),
         alreadyFulfilled: pickArray(body.already_fulfilled, pickArray(body.alreadyFulfilled)),
         pageUrl: body.page_url || body.pageUrl || '',
-        voiceSessionId: sessionId
+        voiceSessionId: sessionId,
+        consultationId: `${body.consultation_id || body.consultationId || body.export_id || ''}`.trim()
       }));
       return res.json({
         autofill: {
@@ -335,7 +367,8 @@ function registerPublicApiRoutes(app, deps = {}) {
           ready_to_submit: Boolean(matched.readyToSubmit),
           readyToSubmit: Boolean(matched.readyToSubmit),
           submit_reason: matched.submitReason || '',
-          usage: matched.usage || null
+          usage: matched.usage || null,
+          ...(matched.privacy ? { privacy: matched.privacy } : {})
         }
       });
     } catch (error) {

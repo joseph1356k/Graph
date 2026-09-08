@@ -126,7 +126,8 @@ function registerWorkflowRoutes(app, deps = {}) {
         noteContent: req.body?.noteContent || '',
         fields: req.body?.fields || [],
         alreadyFulfilled: req.body?.alreadyFulfilled || [],
-        pageUrl: req.body?.pageUrl || ''
+        pageUrl: req.body?.pageUrl || '',
+        consultationId: `${req.body?.consultationId || req.body?.consultation_id || ''}`.trim()
       }), { workflowId });
       res.json(result);
     } catch (err) {

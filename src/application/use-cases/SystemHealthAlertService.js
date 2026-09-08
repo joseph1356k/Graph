@@ -145,6 +145,13 @@ class SystemHealthAlertService {
       });
     }
 
+    // Escudo de privacidad: lo que el ledger de consumo dice de las últimas 24
+    // horas. Un `posthoc` es un nombre o documento REAL en la casilla de
+    // identificación de una nota generada en modo enforce: el modelo lo vio,
+    // así que el detector no lo atrapó. Se cuenta, nunca se muestra.
+    const privacidad = await this.collectPrivacyFindings();
+    findings.push(...privacidad);
+
     return findings.sort(
       (a, b) => (SEVERITY_ORDER[a.severity] ?? 9) - (SEVERITY_ORDER[b.severity] ?? 9),
     );
@@ -152,6 +159,49 @@ class SystemHealthAlertService {
 
   sinceIso(days) {
     return new Date(this.now().getTime() - days * 86400000).toISOString();
+  }
+
+  async collectPrivacyFindings() {
+    const findings = [];
+    const desde = this.sinceIso(1);
+    let fugas = 0;
+    let reparadas = 0;
+    let incompletas = 0;
+    try {
+      [fugas, reparadas, incompletas] = await Promise.all([
+        this.count('ai_usage_events', `occurred_at=gte.${desde}&metadata->>privacyPosthoc=eq.true`),
+        this.count('ai_usage_events', `occurred_at=gte.${desde}&metadata->>privacyLeakScan=in.(repaired,blocked)`),
+        this.count('ai_usage_events', `occurred_at=gte.${desde}&metadata->>privacyRehydration=eq.incomplete`),
+      ]);
+    } catch (error) {
+      // El ledger puede no existir aún en un entorno nuevo; la alerta de salud
+      // no puede caerse por eso.
+      console.warn(`[Salud] No se pudo leer el ledger de privacidad: ${error.message}`);
+      return findings;
+    }
+    if (fugas > 0) {
+      findings.push({
+        severity: 'critico',
+        title: `${fugas} nota(s) en las que el modelo vio un identificador real del paciente`,
+        detail:
+          'La casilla de identificación volvió con un nombre o documento sin marcador: el detector no lo tapó antes de enviar. Revisa el corpus del escudo (scripts/verify-privacy-shield.js) con ese patrón.',
+      });
+    }
+    if (reparadas > 0) {
+      findings.push({
+        severity: 'atencion',
+        title: `${reparadas} envío(s) en los que el barrido anti-fuga tuvo que reparar el texto`,
+        detail: 'Una semilla conocida seguía visible tras taparla. Se reemplazó antes de enviar, pero indica un hueco en los patrones.',
+      });
+    }
+    if (incompletas > 0) {
+      findings.push({
+        severity: 'atencion',
+        title: `${incompletas} respuesta(s) con un marcador de privacidad sin resolver`,
+        detail: 'El modelo devolvió un marcador que esta llamada no emitió. La nota lo muestra con un aviso para que el médico lo corrija.',
+      });
+    }
+    return findings;
   }
 
   buildEmail(findings) {

@@ -90,7 +90,13 @@ class WorkflowExecutor {
       );
     }
 
-    const { values } = await this.dynamicValueResolver.resolve({ context, steps: dynamicSteps });
+    const { values } = await this.dynamicValueResolver.resolve({
+      context,
+      steps: dynamicSteps,
+      // Con el id de la consulta el escudo de privacidad siembra desde la base;
+      // sin él, desde el propio contexto.
+      consultationId: `${variables?.consultationId || variables?.consultation_id || variables?.exportId || variables?.export_id || ''}`
+    });
 
     // Consistencia por bindTo: el valor resuelto para una variable aplica a todos sus steps.
     const byBind = new Map();

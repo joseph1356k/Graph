@@ -36,7 +36,7 @@ existiendo y devuelve sólo `messages`.
   dictada). En una plantilla mixta el bloque literal se acota a las secciones marcadas.
 - Reglas de puntuación dictada y de medidas («por» → `x`; ante duda, warning).
 - `GROUNDING_SCALE` y, sólo en interpretativo, la preferencia de longitud del médico
-  (`note_detail`: conciso/detallado; equilibrado no añade nada).
+  (`note_detail`: concisa/detallada; estandar no añade nada).
 - Contrato de salida: `sections` con exactamente las keys de la plantilla, `grounding` por
   sección, `evidence` como lista de fragmentos textuales, `warnings`, `missing_required_sections`.
 
@@ -157,6 +157,8 @@ desplegar: `GET /api/clinical/templates` responde 200 y cada plantilla trae `not
 - Nunca se registran en logs transcripciones ni contenido de notas: solo ids, conteos de secciones y warnings.
 - Los mensajes de error al frontend no incluyen contenido clínico ni stack traces.
 - Datos clínicos viven solo en Supabase (`clinical_encounters`), con RLS por médico y acceso del backend vía service role (server-only).
+- **Lo que sale hacia el proveedor va sin identificadores directos del paciente** (nombre, documento, teléfono, correo, dirección): el escudo de privacidad los reemplaza por marcadores en `LLMProvider.postChatCompletions` y los devuelve al volver la respuesta, antes de validar y persistir. `note_json`, `note_json_ai` y el espejo en `consultations` llevan los datos reales. `generate-note` devuelve `privacy` (modo, conteos por tipo, resultado) y `GET /encounters/:id/privacy` lista cada envío. Diseño, modos y excepciones en [privacy-egress-gateway.md](privacy-egress-gateway.md).
+- La casilla `identificacion_del_paciente` sigue funcionando: el modelo escribe `Nombre: [PACIENTE_NOMBRE_1]` y la rehidratación pone el nombre registrado completo.
 
 ## Medir si la IA acierta
 

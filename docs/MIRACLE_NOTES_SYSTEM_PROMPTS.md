@@ -294,7 +294,7 @@ Preferencia de este médico: respuestas al grano. Da la respuesta más corta que
 Preferencia de este médico: respuestas detalladas. Usa siempre el desglose del formato de chat (lo que se sabe, interpretaciones, qué falta confirmar, siguiente paso), aunque la pregunta sea simple.
 ```
 
-> `equilibrado` no emite nada (es el comportamiento por defecto). Decisión correcta y deliberada.
+> `estandar` (antes `equilibrado`) no emite nada (es el comportamiento por defecto). Decisión correcta y deliberada.
 
 ---
 

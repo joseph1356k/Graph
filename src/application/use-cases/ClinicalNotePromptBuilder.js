@@ -21,7 +21,9 @@ const NoteModeResolver = require('./NoteModeResolver');
 const { GROUNDING_LEVELS } = require('../../domain/clinical/grounding');
 
 const PROMPT_VERSION = clauses.promptVersion('clinical-note', '4');
-const NOTE_DETAILS = Object.freeze(['conciso', 'equilibrado', 'detallado']);
+// Vocabulario de la columna user_preferences.note_detail en producción
+// (concisa | estandar | detallada). 'estandar' no emite nada.
+const NOTE_DETAILS = Object.freeze(['concisa', 'estandar', 'detallada']);
 const MISSING_PHRASE = 'No mencionado en la consulta.';
 
 const IDENTITY = [
@@ -89,8 +91,8 @@ function verbatimTask(modes, sections) {
 }
 
 const NOTE_DETAIL_DIRECTIVES = Object.freeze({
-  conciso: 'PREFERENCIA DE REDACCIÓN — conciso: en las secciones interpretativas escribe lo esencial en frases cortas, sin conectores ni contexto que el médico ya conoce. Nunca omitas un dato clínico por brevedad.',
-  detallado: 'PREFERENCIA DE REDACCIÓN — detallado: en las secciones interpretativas incluye la cronología, los matices y los negativos pertinentes que la conversación aporte. Detallado no es inventar: sigue sin haber nada que no esté en la transcripción.'
+  concisa: 'PREFERENCIA DE REDACCIÓN — concisa: en las secciones interpretativas escribe lo esencial en frases cortas, sin conectores ni contexto que el médico ya conoce. Nunca omitas un dato clínico por brevedad.',
+  detallada: 'PREFERENCIA DE REDACCIÓN — detallada: en las secciones interpretativas incluye la cronología, los matices y los negativos pertinentes que la conversación aporte. Detallado no es inventar: sigue sin haber nada que no esté en la transcripción.'
 });
 
 const OUTPUT_CONTRACT = [
@@ -108,7 +110,7 @@ const OUTPUT_CONTRACT = [
 
 function sanitizeNoteDetail(value) {
   const normalized = `${value ?? ''}`.trim().toLowerCase();
-  return NOTE_DETAILS.includes(normalized) ? normalized : 'equilibrado';
+  return NOTE_DETAILS.includes(normalized) ? normalized : 'estandar';
 }
 
 /**

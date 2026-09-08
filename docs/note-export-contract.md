@@ -94,8 +94,19 @@ detrás del firewall del hospital.
 ```
 
 **PHI:** el payload lleva el contenido clínico (es lo que hay que escribir), pero
-`patient_ref` es un uuid: **nunca nombre ni documento**. Solo `codigos` con
-`estado='aceptado'` llegan al HIS.
+`patient_ref` es un uuid: **nunca nombre ni documento** como campo aparte. La
+nota firmada sí trae su casilla de identificación, porque es lo que SAP necesita.
+
+**Escudo de privacidad hacia el LLM:** cuando el ejecutor pide el emparejamiento
+nota → campos (`POST /api/v1/pipeline`, `/api/v1/autofill/match`) o el plan
+(`/api/v1/workflows/:id/plan` con `variables`), puede mandar `consultation_id`
+(= `export.id` del claim, o `variables.consultationId`) para que Graph siembre la
+protección desde `consultations` y `patients`. Con o sin él, el modelo recibe la
+nota con marcadores y Graph devuelve los `matches`/`values` ya rehidratados.
+**Ningún valor con un marcador sin resolver se devuelve**: se descarta y
+`submit_reason` lo dice (`ready_to_submit` queda en `false`). El cliente debería
+además negarse a teclear un valor con la forma `[TIPO_n]` en SAP, por si acaso.
+Ver [privacy-egress-gateway.md](privacy-egress-gateway.md).
 
 El claim es FIFO con `FOR UPDATE SKIP LOCKED`: varios ejecutores en paralelo
 nunca se llevan el mismo trabajo. Un trabajo `claimed` cuyo lease venció vuelve a
@@ -205,4 +216,6 @@ cambia este contrato**.
 
 Mitigaciones ya activas: lease corto, `claimed_by` auditado, techo de intentos,
 `error_code` y telemetría tipados sin PHI, y purga del `payload` a las 72 h del
-estado terminal vía `graph_purge_note_export_payloads()`.
+estado terminal vía `graph_purge_note_export_payloads()`, que desde el 2026-09-07
+llama el mantenimiento diario (`NOTE_EXPORT_PAYLOAD_RETENTION_HOURS`); antes
+existía y nadie la invocaba.

@@ -1,5 +1,6 @@
 const createUpstreamUsageRecorder = require('./recordUsageBestEffort');
 const { FEATURES } = require('../../src/domain/usage/vocabulary');
+const { withPrivacyScope } = require('../../src/infrastructure/privacy/PrivacyContext');
 
 const MAX_AUDIO_BASE64_LENGTH = 15 * 1024 * 1024;
 const MAX_TRANSCRIPT_LENGTH = 40000;
@@ -8,6 +9,8 @@ function registerMedicalRoutes(app, deps = {}) {
   const rawTranscriptionService = deps.rawTranscriptionService;
   const callMiracleRuntime = deps.callMiracleRuntime;
   const usageRecorder = deps.usageRecorder || null;
+  // Escudo de privacidad para el salto Node → runtime Python (opcional).
+  const privacyShield = deps.privacyShield || null;
 
   if (!app || !rawTranscriptionService || typeof callMiracleRuntime !== 'function') {
     throw new Error('registerMedicalRoutes requires app, rawTranscriptionService, and callMiracleRuntime');
@@ -60,29 +63,43 @@ function registerMedicalRoutes(app, deps = {}) {
     const language = `${req.body?.language || 'es'}`.trim() || 'es';
 
     try {
+      // Se tapa en el salto Node → Python: el runtime llama al proveedor por
+      // su cuenta y no tiene otra fuente de datos que lo que le mandamos.
+      const protection = privacyShield
+        ? await withPrivacyScope(
+          { noteContent },
+          () => privacyShield.protectTexts({ transcript, noteContent }, { feature: FEATURES.CLINICAL_STRUCTURING })
+        )
+        : null;
+      const outbound = protection ? protection.texts : { transcript, noteContent };
       const orchestrated = await callMiracleRuntime(req, '/api/voice/orchestrator/events', {
         method: 'POST',
         body: {
           voice_session_id: voiceSessionId,
           note_path: notePath,
           note_title: noteTitle,
-          note_content: noteContent,
+          note_content: outbound.noteContent,
           tab_id: req.body?.tabId || req.body?.tab_id || 'medical-api',
           event_id: req.body?.eventId || req.body?.event_id || `${voiceSessionId}-evt-1`,
           sequence: Number(req.body?.sequence || 1),
           segment: {
             segment_id: req.body?.segmentId || req.body?.segment_id || `${voiceSessionId}-seg-1`,
             kind: 'final',
-            transcript,
+            transcript: outbound.transcript,
             language
           }
         }
       });
       const payload = orchestrated?.body || {};
+      if (protection && typeof payload.resolved_note_content === 'string') {
+        payload.resolved_note_content = privacyShield.restoreText(payload.resolved_note_content, protection);
+        payload.privacy = privacyShield.publicSummaryFor(protection);
+      }
 
       recordUpstreamUsage(payload.usage, {
         feature: FEATURES.CLINICAL_STRUCTURING,
-        sessionId: voiceSessionId
+        sessionId: voiceSessionId,
+        metadata: protection ? privacyShield.metadataFor(protection) : {}
       });
 
       return res.json({

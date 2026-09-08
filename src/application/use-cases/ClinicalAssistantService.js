@@ -6,6 +6,7 @@ const NoteModeResolver = require('./NoteModeResolver');
 
 const { withFeature } = require('../../infrastructure/usage/UsageContext');
 const { FEATURES } = require('../../domain/usage/vocabulary');
+const { withPrivacyScope, lastPrivacyResult } = require('../../infrastructure/privacy/PrivacyContext');
 // Miracle Clinical Assistant: chat clínico contextual, diferenciales (por
 // encounter o por texto) y ajuste de nota. Un servicio, un motor de
 // diferenciales, un LLMProvider. Nunca persiste nada ni registra PHI.
@@ -91,12 +92,22 @@ class ClinicalAssistantService {
       // Atado a la consulta SOLO en el modo B (con encounter). En el modo A no
       // hay consulta a la que imputarlo, y ponerle una sesión inventada haría
       // que un costo sin dueño pareciera de alguien.
-      const { content: rawAnswer, usage } = await withFeature(
-        FEATURES.ASISTENTE,
-        () => this.llmProvider.chatWithUsage(messages, { temperature: TEMPERATURE.chat }),
-        {
-          ...(encounter ? { sessionId: encounter.id } : {}),
-          metadata: { promptVersion: ClinicalAssistantPromptBuilder.CHAT_PROMPT_VERSION, temperature: TEMPERATURE.chat }
+      // Ámbito de privacidad por encounter (modo B) o efímero (modo A): en
+      // los dos casos el escudo tapa lo que detecte en el mensaje y el
+      // historial, y solo con encounter tiene además las semillas de la
+      // consulta.
+      const { content: rawAnswer, usage, privacy } = await withPrivacyScope(
+        encounter ? { encounter, encounterId: encounter.id } : {},
+        async () => {
+          const result = await withFeature(
+            FEATURES.ASISTENTE,
+            () => this.llmProvider.chatWithUsage(messages, { temperature: TEMPERATURE.chat }),
+            {
+              ...(encounter ? { sessionId: encounter.id } : {}),
+              metadata: { promptVersion: ClinicalAssistantPromptBuilder.CHAT_PROMPT_VERSION, temperature: TEMPERATURE.chat }
+            }
+          );
+          return { ...result, privacy: lastPrivacyResult() };
         }
       );
       return {
@@ -104,6 +115,7 @@ class ClinicalAssistantService {
         mode: 'clinical_chat',
         specialty: clinicalContext.specialty,
         used_context: usedContext,
+        privacy: privacy || null,
         safety_notice: ClinicalAssistantValidationService.SAFETY_NOTICE_CHAT,
         suggested_actions: [],
         usage: this.usageSummary(usage)
@@ -119,21 +131,26 @@ class ClinicalAssistantService {
 
   // ---- Diferenciales: un solo motor, dos entradas ----
 
-  async runDiagnostic(messages, { sessionId = '', transcript = '', noteJson = null, noteText = '' } = {}) {
-    const content = await withFeature(
+  async runDiagnostic(messages, { sessionId = '', transcript = '', noteJson = null, noteText = '', privacyScope = null } = {}) {
+    // Ámbito de privacidad: por encounter cuando lo hay; efímero (semillas
+    // desde el propio texto de la nota) en el endpoint de texto plano.
+    const { content, privacy } = await withPrivacyScope(privacyScope || {}, async () => {
+      const raw = await withFeature(
       FEATURES.DIAGNOSIS_SUGGESTION,
       () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }, { temperature: TEMPERATURE.diagnostic }),
       {
         ...(sessionId ? { sessionId } : {}),
         metadata: { promptVersion: ClinicalAssistantPromptBuilder.DIAGNOSTIC_PROMPT_VERSION, temperature: TEMPERATURE.diagnostic }
       }
-    );
+      );
+      return { content: raw, privacy: lastPrivacyResult() };
+    });
     const parsed = this.llmProvider.parseJsonObject(content || '{}');
     const result = this.validationService.normalizeSuggestions(parsed, { transcript, noteJson, noteText });
     if (result.definitive_language_hits > 0) {
       console.warn(`[Clinical Assistant] definitive_language_hits=${result.definitive_language_hits}`);
     }
-    return result;
+    return { ...result, privacy: privacy || null };
   }
 
   // Por encounter (contrato rico, con transcripción y nota persistidas).
@@ -154,6 +171,7 @@ class ClinicalAssistantService {
       const messages = this.promptBuilder.buildDiagnosticMessages({ clinicalContext });
       const result = await this.runDiagnostic(messages, {
         sessionId: encounter.id,
+        privacyScope: { encounter, encounterId: encounter.id },
         transcript: fullTranscript,
         noteJson: encounter.note_json
       });
@@ -185,7 +203,7 @@ class ClinicalAssistantService {
         clinicalContext: { specialty: NoteModeResolver.normalizeSpecialty(specialty) },
         noteText: cleanNote
       });
-      return await this.runDiagnostic(messages, { noteText: cleanNote });
+      return await this.runDiagnostic(messages, { noteText: cleanNote, privacyScope: { noteContent: cleanNote } });
     } catch (error) {
       if (isClinicalError(error)) {
         throw error;
@@ -232,18 +250,21 @@ class ClinicalAssistantService {
         sectionKey: cleanSectionKey,
         instructionKind: kind
       });
-      const content = await withFeature(
-        FEATURES.ASISTENTE,
-        () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }, { temperature: TEMPERATURE.adjust }),
-        {
-          sessionId: encounter.id,
-          metadata: {
-            promptVersion: ClinicalAssistantPromptBuilder.ADJUST_PROMPT_VERSION,
-            instructionKind: kind,
-            temperature: TEMPERATURE.adjust
+      const { content, privacy } = await withPrivacyScope({ encounter, encounterId: encounter.id }, async () => {
+        const raw = await withFeature(
+          FEATURES.ASISTENTE,
+          () => this.llmProvider.chatExpectingJson(messages, { type: 'json_object' }, { temperature: TEMPERATURE.adjust }),
+          {
+            sessionId: encounter.id,
+            metadata: {
+              promptVersion: ClinicalAssistantPromptBuilder.ADJUST_PROMPT_VERSION,
+              instructionKind: kind,
+              temperature: TEMPERATURE.adjust
+            }
           }
-        }
-      );
+        );
+        return { content: raw, privacy: lastPrivacyResult() };
+      });
       const parsed = this.llmProvider.parseJsonObject(content || '{}');
       const modelNote = parsed?.note_json && typeof parsed.note_json === 'object' ? parsed.note_json : parsed;
       // El contrato pide warnings dentro de note_json, pero los modelos los
@@ -287,7 +308,8 @@ class ClinicalAssistantService {
         changed_sections: changedSections,
         instruction_kind: kind,
         explanation,
-        requires_physician_review: true
+        requires_physician_review: true,
+        privacy: privacy || null
       };
     } catch (error) {
       if (isClinicalError(error)) {

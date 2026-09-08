@@ -24,6 +24,9 @@ const DEFAULT_MAX_JOBS = 5;
 const DEFAULT_LEASE_SECONDS = 300;
 const DEFAULT_MAX_ATTEMPTS = 3;
 
+const { runAsSystem } = require('../../infrastructure/usage/UsageContext');
+const { FEATURES } = require('../../domain/usage/vocabulary');
+
 class NoteGenerationRescueService {
   constructor({ restClient, noteGeneratorService, healthAlertService = null, options = {} } = {}) {
     if (!restClient || !noteGeneratorService) {
@@ -60,6 +63,13 @@ class NoteGenerationRescueService {
    * tumbar el resto del mantenimiento.
    */
   async run() {
+    // Contexto PROPIO del rescate: el rescate oportunista corre dentro de la
+    // petición de un médico cualquiera, y sin esto el consumo (y el ámbito de
+    // privacidad, si viniera de la ruta) se heredaría de esa petición ajena.
+    return runAsSystem(FEATURES.NOTE_GENERATION, () => this.runJobs());
+  }
+
+  async runJobs() {
     const result = { claimed: 0, rescued: 0, failed: 0, exhausted: 0, errors: [] };
 
     for (let i = 0; i < this.maxJobs; i += 1) {

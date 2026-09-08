@@ -74,7 +74,21 @@ const METADATA_ALLOWLIST = Object.freeze(new Set([
   'instructionKind',
   // Cuántos fragmentos de evidencia descartó el validador por no estar en la
   // transcripción. Es la señal de que un prompt de nota está alucinando citas.
-  'evidenceDropped'
+  'evidenceDropped',
+  // ESCUDO DE PRIVACIDAD (PrivacyShieldService): conteos y estados de la
+  // protección con la que salió cada llamada. Nunca el valor tapado: solo
+  // cuántos marcadores por tipo, el modo, el resultado del barrido y de la
+  // rehidratación, y el hash del payload que salió.
+  'privacyMode',
+  'privacyTokens',
+  'privacySeeded',
+  'privacyDetected',
+  'privacyLeakScan',
+  'privacyRehydration',
+  'privacyImageParts',
+  'privacyPayloadSha256',
+  'privacyPosthoc',
+  'privacyError'
 ]));
 
 const MAX_METADATA_STRING = 120;

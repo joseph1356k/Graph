@@ -1,5 +1,7 @@
 const { withFeature } = require('../../infrastructure/usage/UsageContext');
 const { FEATURES } = require('../../domain/usage/vocabulary');
+const { withPrivacyScope, lastPrivacyResult } = require('../../infrastructure/privacy/PrivacyContext');
+const { containsToken } = require('../../domain/privacy/tokens');
 
 const {
   PROMPT_VERSION,
@@ -55,26 +57,42 @@ class NoteFieldMatcher {
   // grounding cuando el modelo lo devuelve y se acepta el legado si no.
   normalizeResult(parsed = {}, usage = null) {
     const matches = Array.isArray(parsed.matches) ? parsed.matches : [];
+    let withToken = 0;
+    const clean = matches
+      .map((m) => {
+        const level = grounding.normalizeGrounding(m?.grounding);
+        const confidence = level
+          ? grounding.confidenceFromGrounding(level)
+          : Number(m?.confidence) || 0;
+        return {
+          stepOrder: Number(m?.stepOrder),
+          value: `${m?.value ?? ''}`,
+          grounding: level || grounding.groundingFromConfidence(confidence) || 'absent',
+          confidence,
+          evidence: `${m?.evidence ?? ''}`.slice(0, 200),
+          accepted: level ? grounding.isGroundedForAutofill(level) : confidence >= LEGACY_CONFIDENCE_THRESHOLD
+        };
+      })
+      .filter((m) => Number.isFinite(m.stepOrder) && m.value !== '' && m.accepted)
+      // GUARDA DE MARCADORES: un valor con `[PACIENTE_NOMBRE_1]` que no se
+      // pudo rehidratar NUNCA se devuelve. El cliente Windows escribe lo que
+      // recibe en SAP sin mirarlo (RellenadorSap.cs), lo relee no vacío y lo
+      // reporta como éxito: el marcador acabaría en la historia clínica.
+      .filter((m) => {
+        if (containsToken(m.value)) {
+          withToken += 1;
+          return false;
+        }
+        return true;
+      })
+      .map(({ accepted, ...m }) => (containsToken(m.evidence) ? { ...m, evidence: '' } : m));
+    const submitReason = `${parsed.submitReason || ''}`.slice(0, 200);
     return {
-      matches: matches
-        .map((m) => {
-          const level = grounding.normalizeGrounding(m?.grounding);
-          const confidence = level
-            ? grounding.confidenceFromGrounding(level)
-            : Number(m?.confidence) || 0;
-          return {
-            stepOrder: Number(m?.stepOrder),
-            value: `${m?.value ?? ''}`,
-            grounding: level || grounding.groundingFromConfidence(confidence) || 'absent',
-            confidence,
-            evidence: `${m?.evidence ?? ''}`.slice(0, 200),
-            accepted: level ? grounding.isGroundedForAutofill(level) : confidence >= LEGACY_CONFIDENCE_THRESHOLD
-          };
-        })
-        .filter((m) => Number.isFinite(m.stepOrder) && m.value !== '' && m.accepted)
-        .map(({ accepted, ...m }) => m),
-      readyToSubmit: Boolean(parsed.readyToSubmit),
-      submitReason: `${parsed.submitReason || ''}`.slice(0, 200),
+      matches: clean,
+      readyToSubmit: Boolean(parsed.readyToSubmit) && withToken === 0,
+      submitReason: withToken > 0
+        ? `${withToken} valor(es) descartado(s) por traer un marcador de privacidad sin resolver`
+        : (containsToken(submitReason) ? '' : submitReason),
       usage
     };
   }
@@ -91,15 +109,25 @@ class NoteFieldMatcher {
     }
 
     try {
-      const response = await withFeature(
-        FEATURES.FIELD_MATCHING,
-        () => this.llmProvider.chatExpectingJsonWithUsage(
-          this.buildMessages(payload),
-          buildNoteFieldMatchingResponseFormat(),
-          { temperature: TEMPERATURE }
-        ),
-        { metadata: { promptVersion: PROMPT_VERSION, temperature: TEMPERATURE } }
-      );
+      // Ámbito de privacidad: con `consultationId` el escudo siembra desde
+      // `consultations` y `patients`; sin él, desde las líneas de identidad
+      // de la propia nota y los valores de los campos en pantalla.
+      const scope = {
+        consultationId: `${payload.consultationId || payload.exportId || ''}`.trim(),
+        noteContent: `${payload.noteContent || ''}`
+      };
+      const { response, privacy } = await withPrivacyScope(scope, async () => {
+        const raw = await withFeature(
+          FEATURES.FIELD_MATCHING,
+          () => this.llmProvider.chatExpectingJsonWithUsage(
+            this.buildMessages(payload),
+            buildNoteFieldMatchingResponseFormat(),
+            { temperature: TEMPERATURE }
+          ),
+          { metadata: { promptVersion: PROMPT_VERSION, temperature: TEMPERATURE } }
+        );
+        return { response: raw, privacy: lastPrivacyResult() };
+      });
       const parsed = this.llmProvider.parseJsonObject(response.content || '{}');
       const usage = response.usage ? {
         provider: response.provider || this.llmProvider?.provider || '',
@@ -109,7 +137,7 @@ class NoteFieldMatcher {
         outputTokens: Number(response.usage?.completion_tokens) || 0,
         totalTokens: Number(response.usage?.total_tokens) || 0
       } : null;
-      return this.normalizeResult(parsed, usage);
+      return { ...this.normalizeResult(parsed, usage), privacy: privacy || null };
     } catch (error) {
       return {
         ...this.emptyResult(),

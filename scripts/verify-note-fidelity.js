@@ -228,15 +228,15 @@ function main() {
     assert.ok(system.includes('copiados carácter a carácter'));
   });
 
-  check('la preferencia de longitud sólo aparece para conciso/detallado y sólo en interpretativo', () => {
+  check('la preferencia de longitud sólo aparece para concisa/detallada y sólo en interpretativo', () => {
     const general = snapshot({ specialty: 'medicina_general', sections: GENERAL_SECTIONS });
     assert.ok(!systemOf(builder.build({ transcript: 'x', templateSnapshot: general })).includes('PREFERENCIA DE REDACCIÓN'));
-    assert.ok(!systemOf(builder.build({ transcript: 'x', templateSnapshot: general, noteDetail: 'equilibrado' })).includes('PREFERENCIA DE REDACCIÓN'));
-    assert.ok(systemOf(builder.build({ transcript: 'x', templateSnapshot: general, noteDetail: 'conciso' })).includes('PREFERENCIA DE REDACCIÓN — conciso'));
-    assert.ok(systemOf(builder.build({ transcript: 'x', templateSnapshot: general, noteDetail: 'DETALLADO' })).includes('PREFERENCIA DE REDACCIÓN — detallado'));
+    assert.ok(!systemOf(builder.build({ transcript: 'x', templateSnapshot: general, noteDetail: 'estandar' })).includes('PREFERENCIA DE REDACCIÓN'));
+    assert.ok(systemOf(builder.build({ transcript: 'x', templateSnapshot: general, noteDetail: 'concisa' })).includes('PREFERENCIA DE REDACCIÓN — concisa'));
+    assert.ok(systemOf(builder.build({ transcript: 'x', templateSnapshot: general, noteDetail: 'DETALLADA' })).includes('PREFERENCIA DE REDACCIÓN — detallada'));
     const literal = snapshot({ specialty: 'patologia', sections: PATHOLOGY_SECTIONS });
-    assert.ok(!systemOf(builder.build({ transcript: 'x', templateSnapshot: literal, noteDetail: 'detallado' })).includes('PREFERENCIA DE REDACCIÓN'));
-    assert.strictEqual(ClinicalNotePromptBuilder.sanitizeNoteDetail('lo que sea'), 'equilibrado');
+    assert.ok(!systemOf(builder.build({ transcript: 'x', templateSnapshot: literal, noteDetail: 'detallada' })).includes('PREFERENCIA DE REDACCIÓN'));
+    assert.strictEqual(ClinicalNotePromptBuilder.sanitizeNoteDetail('lo que sea'), 'estandar');
   });
 
   check('una transcripción con cierre de etiqueta no rompe el delimitador', () => {

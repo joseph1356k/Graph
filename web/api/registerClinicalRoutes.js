@@ -104,7 +104,10 @@ function registerClinicalRoutes(app, deps = {}) {
       templateService,
       encounterService,
       noteGeneratorService,
-      noteValidationService
+      noteValidationService,
+      // Escudo de privacidad y su ledger: alimentan GET /encounters/:id/privacy.
+      privacyShield: deps.privacyShield || null,
+      privacyLedger: deps.privacyLedger || null
     });
   }
 
@@ -267,17 +270,41 @@ function registerClinicalEngineRoutes(app, deps) {
     try {
       const encounter = await noteGeneratorService.generate(req.params.encounterId, {
         doctorId: resolveDoctorId(req),
-        // Preferencia de redacción del médico (conciso/equilibrado/detallado).
+        // Preferencia de redacción del médico (concisa/estandar/detallada).
         // Sólo afecta a las secciones interpretativas; el generador la sanea.
         noteDetail: req.body?.note_detail
       });
       res.json({
         encounter_id: encounter.id,
         status: encounter.status,
-        note_json: encounter.note_json
+        note_json: encounter.note_json,
+        // Qué se protegió antes de enviar a la IA (modo, conteos por tipo,
+        // resultado). Es lo que la web enseña en vez de una insignia fija.
+        privacy: encounter.privacy || null
       });
     } catch (error) {
       respondClinicalError(res, error, '[Clinical Encounters] generate-note:');
+    }
+  });
+
+  // Los envíos a proveedores de IA de esta consulta, con el resultado del
+  // escudo de privacidad en cada uno. Conteos y estados: nunca valores. Solo
+  // el médico dueño del encounter (getOwnedEncounter) puede leerlo.
+  app.get('/api/clinical/encounters/:encounterId/privacy', async (req, res) => {
+    try {
+      const encounter = await encounterService.getOwnedEncounter(req.params.encounterId, {
+        doctorId: resolveDoctorId(req)
+      });
+      const events = deps.privacyLedger
+        ? await deps.privacyLedger.eventsForSession(encounter.id)
+        : [];
+      res.json({
+        encounter_id: encounter.id,
+        mode_default: deps.privacyShield ? deps.privacyShield.modeFor('') : 'off',
+        events
+      });
+    } catch (error) {
+      respondClinicalError(res, error, '[Clinical Encounters] privacy:');
     }
   });
 

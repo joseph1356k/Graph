@@ -5,6 +5,8 @@ const grounding = require('../../domain/clinical/grounding');
 
 const PROMPT_VERSION = clauses.promptVersion('dynamic-values', '2026-09-02.1');
 const TEMPERATURE = 0;
+const { withPrivacyScope } = require('../../infrastructure/privacy/PrivacyContext');
+const { containsToken } = require('../../domain/privacy/tokens');
 
 // Resuelve los valores POR-EJECUCIÓN de los steps dynamic de un workflow a partir del `context`
 // que manda el agente ("paciente Juan Pérez, documento 12345678"). Es la pieza que faltaba del
@@ -102,7 +104,7 @@ class DynamicValueResolver {
   }
 
   /// Devuelve { values: { [stepOrder]: string }, usage } con solo los valores que superan el umbral.
-  async resolve({ context = '', steps = [] } = {}) {
+  async resolve({ context = '', steps = [], consultationId = '' } = {}) {
     if (!this.hasLlm()) {
       throw new Error(
         'El workflow tiene campos dinámicos y llegó contexto, pero no hay LLM configurado ' +
@@ -110,14 +112,19 @@ class DynamicValueResolver {
       );
     }
 
-    const response = await withFeature(
-      FEATURES.DYNAMIC_VALUES,
-      () => this.llmProvider.chatExpectingJsonWithUsage(
-        this.buildMessages({ context, steps }),
-        buildResponseFormat(),
-        { temperature: TEMPERATURE }
-      ),
-      { metadata: { promptVersion: PROMPT_VERSION, temperature: TEMPERATURE } }
+    // Ámbito de privacidad: el `context` es la nota firmada (o lo que dictó
+    // el usuario) y trae sus propias líneas de identidad como semilla.
+    const response = await withPrivacyScope(
+      { consultationId: `${consultationId || ''}`.trim(), noteContent: `${context}` },
+      () => withFeature(
+        FEATURES.DYNAMIC_VALUES,
+        () => this.llmProvider.chatExpectingJsonWithUsage(
+          this.buildMessages({ context, steps }),
+          buildResponseFormat(),
+          { temperature: TEMPERATURE }
+        ),
+        { metadata: { promptVersion: PROMPT_VERSION, temperature: TEMPERATURE } }
+      )
     );
     const parsed = this.llmProvider.parseJsonObject(response.content || '{}') || {};
     const rows = Array.isArray(parsed.values) ? parsed.values : [];
@@ -127,6 +134,9 @@ class DynamicValueResolver {
       const stepOrder = Number(row?.stepOrder);
       const value = `${row?.value ?? ''}`;
       if (!Number.isFinite(stepOrder) || value === '') continue;
+      // Un marcador sin rehidratar no es un valor: el campo queda sin resolver
+      // y el plan falla listándolo, igual que un dato que no vino.
+      if (containsToken(value)) continue;
       // Con grounding manda el nivel; sin él, el umbral numérico heredado.
       const level = grounding.normalizeGrounding(row?.grounding);
       const accepted = level
