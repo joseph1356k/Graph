@@ -336,6 +336,9 @@ function registerClinicalAssistantRoutes(app, deps) {
         encounterId: req.body?.encounter_id,
         instruction: req.body?.instruction,
         sectionKey: req.body?.section_key,
+        // La nota tal como la ve el médico ahora mismo (con sus ediciones sin
+        // guardar). Opcional: sin ella se usa la persistida, como siempre.
+        noteJson: req.body?.note_json,
         // Aquí las preferencias solo alcanzan al campo "explanation", que es el
         // único texto que el médico lee de esta respuesta.
         doctor: req.body?.doctor

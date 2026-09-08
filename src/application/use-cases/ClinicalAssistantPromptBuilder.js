@@ -89,6 +89,58 @@ const DIAGNOSTIC_SYSTEM_PROMPT = [
   '- No incluyas texto fuera del objeto JSON.'
 ].join('\n');
 
+// Ajuste de una nota ya redactada. Prompt PROPIO, no el del chat: aquel trae
+// formatos de bullets, diferenciales y "cuatro puntos" que aquí solo estorban,
+// y su regla "no agregues datos clínicos nuevos" no distingue inventar de
+// recuperar algo que sí se dijo en la consulta o que el médico acaba de
+// dictar. Esa distinción es el trabajo entero de este prompt.
+const ADJUSTMENT_SYSTEM_PROMPT = [
+  'Eres el editor de una nota clínica que ya está redactada. El médico te pide un cambio; tú lo aplicas y él revisa y firma. Escribes en español, en el registro clínico del propio médico.',
+  '',
+  'FUENTES. Solo existen cuatro, en este orden de autoridad:',
+  '1. La instrucción del médico (campo "instruccion").',
+  '2. La transcripción de la consulta (campo "transcripcion"): lo que se habló entre médico y paciente.',
+  '3. Las anotaciones del médico (campo "anotaciones_del_medico"): frases que el médico ESCRIBIÓ durante la consulta, cada una con la sección a la que pertenece. Son tan válidas como lo hablado.',
+  '4. El resto de la nota (campo "nota_clinica"): lo que ya está redactado en las demás secciones.',
+  'Nada que no salga de esas cuatro fuentes puede entrar en la nota. Tu conocimiento médico sirve para redactar y organizar, nunca para completar datos del paciente.',
+  '',
+  'QUÉ PUEDE ENTRAR COMO DATO NUEVO EN UNA SECCIÓN:',
+  '- Algo que está en la transcripción o en las anotaciones y todavía no estaba en la sección. Ese es el caso principal: "agrega lo que dijo sobre la fiebre", "incluye que negó fiebre", "expande usando lo que hablamos". Búscalo en la transcripción y redáctalo.',
+  '- Algo que el médico afirma o decide en la instrucción misma, como hecho suyo: "agrega que voy a solicitar una tomografía", "pon que el examen físico fue normal". Viene del profesional: se agrega, y en "explanation" dices que salió de su instrucción y no de la consulta.',
+  '- Si el médico pide BUSCAR algo ("agrega lo que mencionó sobre la cirugía") y no está en la transcripción ni en las anotaciones ni en la nota, NO lo agregues, NO lo supongas y NO lo rellenes con lo típico del cuadro. Deja la sección como está en ese punto y ponlo en "unresolved" con tus palabras ("lo que mencionó sobre la cirugía").',
+  '- Una petición de expandir o alargar se cumple con material real: detalles de la transcripción, datos de otras secciones, negaciones dichas, contexto de la conducta. Si no hay más material, dilo en "explanation" y no infles el texto con generalidades.',
+  '- Una petición de acortar o resumir no puede perder datos clínicos: cifras, dosis, tiempos, negaciones y hallazgos se conservan; lo que se quita son palabras.',
+  '',
+  'CÓMO LEER LA TRANSCRIPCIÓN (no trae etiquetas de hablante; infiérelo por el contenido):',
+  '- Una PREGUNTA del médico no es un hallazgo. "¿Ha tenido fiebre?" no significa que hubo fiebre; cuenta la respuesta del paciente.',
+  '- Una NEGACIÓN se conserva como negación: "no, fiebre no" se escribe "niega fiebre", nunca desaparece ni se convierte en "fiebre".',
+  '- Una HIPÓTESIS del médico ("puede ser", "sospecho", "hay que descartar", "de pronto") se redacta como hipótesis o impresión a considerar, nunca como diagnóstico establecido.',
+  '- Lo que refiere el paciente es síntoma referido; lo que el médico describe al examinar es hallazgo; lo que el médico decide o indica es conducta. No mezcles esas tres cosas.',
+  '- Lo que se dice sobre terceros (un familiar, otro paciente, un ejemplo) no es del paciente.',
+  '- Si la transcripción viene marcada como parcial, solo ves algunos tramos: si lo pedido no aparece en ellos, trátalo como no encontrado y dilo, no lo inventes.',
+  '',
+  'RELACIÓN ENTRE SECCIONES:',
+  '- Lee toda la nota antes de cambiar una sección: la impresión diagnóstica tiene que ser coherente con la enfermedad actual, los antecedentes y el examen físico; el plan, con el diagnóstico y con lo que el médico decidió en la consulta.',
+  '- Cambia solo lo que la instrucción pide. Si "alcance" es "seccion", modificas únicamente la sección objetivo; cualquier otra sección se devuelve intacta o no se devuelve.',
+  '- Si "alcance" es "nota", puedes tocar más de una sección cuando la instrucción lo requiera, pero cada una por su motivo; no reescribas por reescribir.',
+  '- Nunca muevas un dato a una sección que no le corresponde ni dupliques el mismo dato en dos secciones.',
+  '- La sección objetivo trae la instrucción de plantilla que dice QUÉ debe contener; úsala para saber qué cabe ahí y qué no.',
+  '',
+  'ESTILO:',
+  '- Conserva el vocabulario, las cifras y las abreviaturas del médico. Sin frases de relleno, sin encabezados nuevos, sin plantillas de "examen físico normal".',
+  '- Si la sección actual dice "No mencionado en la consulta." y sí encuentras material, reemplázala por el contenido real.',
+  '',
+  'SALIDA. Devuelve únicamente un objeto JSON con este schema:',
+  '{"sections":[{"key":"string","content":"string","added_facts":[{"text":"string","source":"transcripcion|anotaciones|nota|medico","quote":"string"}]}],"summary":"string (opcional)","explanation":"string","unresolved":["string"]}',
+  '- "sections": SOLO las secciones que cambiaste, con su key exacta y el contenido completo nuevo. Las que no cambian no se incluyen.',
+  '- "added_facts": cada dato clínico que NO estaba en esa sección antes del cambio, uno por uno. "text" es el dato como quedó redactado; "source" es de dónde salió; "quote" es una cita LITERAL y corta (5 a 25 palabras) copiada tal cual de esa fuente, sin parafrasear. Un cambio de redacción sin datos nuevos lleva "added_facts": [].',
+  '- "summary": solo si la instrucción pide cambiar el resumen; si no, omítelo.',
+  '- "explanation": una o dos frases para el médico: qué cambiaste, de dónde salió, qué no pudiste hacer.',
+  '- "unresolved": lo que el médico pidió y no encontraste en ninguna fuente. Vacío si no hubo nada.',
+  '- Si la instrucción no requiere ningún cambio, devuelve "sections": [] y explícalo.',
+  '- No incluyas texto fuera del objeto JSON.'
+].join('\n');
+
 // Preferencias del médico -> líneas extra del system prompt.
 //
 // Cada una PARAMETRIZA una regla que SYSTEM_PROMPT ya trae, en vez de abrir un
@@ -187,23 +239,21 @@ class ClinicalAssistantPromptBuilder {
     ];
   }
 
-  buildNoteAdjustmentMessages({ clinicalContext = {}, instruction = '', sectionKey = '' } = {}) {
+  // `clinicalContext` viene de ClinicalAssistantContextBuilder.buildForAdjustment.
+  buildNoteAdjustmentMessages({ clinicalContext = {}, instruction = '' } = {}) {
     const doctorDirective = buildDoctorDirective(clinicalContext.doctor);
+    const target = clinicalContext.target_section || null;
+    const scope = clinicalContext.scope === 'seccion' ? 'seccion' : 'nota';
+
+    const targetDirective = target
+      ? (target.source === 'explicit'
+        ? `Sección objetivo: "${target.label}" (key "${target.key}"). El alcance es "seccion": solo esa sección puede cambiar.`
+        : `Sección objetivo sugerida por el texto de la instrucción: "${target.label}" (key "${target.key}"). Es una pista: si la instrucción claramente se refiere a otra cosa, manda la instrucción.`)
+      : 'No hay sección objetivo: decide por la instrucción qué sección o secciones tocar.';
+
     const system = [
-      SYSTEM_PROMPT,
-      '',
-      'Tarea actual: AJUSTE DE NOTA CLÍNICA.',
-      'Recibirás la nota clínica estructurada (note_json) y una instrucción de ajuste del médico.',
-      'Devuelve JSON únicamente con este schema:',
-      '{"note_json":{"summary":"string","sections":[{"key":"string","label":"string","content":"string","confidence":0.0,"evidence":"string"}],"warnings":[],"missing_required_sections":[]},"explanation":"string"}',
-      'Reglas del ajuste:',
-      '- Devuelve la nota COMPLETA (todas las secciones de la plantilla, mismas keys), no solo la sección ajustada.',
-      '- Modifica únicamente lo que la instrucción pide; conserva el resto textualmente.',
-      '- PROHIBIDO agregar datos clínicos nuevos (síntomas, hallazgos, medicamentos, diagnósticos, valores).',
-      '- Si la instrucción exige inventar información, no lo hagas: deja la sección como está y explícalo en "explanation".',
-      '- "explanation" resume en 1-2 frases qué cambiaste y qué no.',
-      sectionKey ? `- La instrucción se refiere principalmente a la sección con key "${sectionKey}".` : '',
-      '- No incluyas texto fuera del objeto JSON.',
+      ADJUSTMENT_SYSTEM_PROMPT,
+      targetDirective,
       // El trato del médico aplica al campo "explanation", que es lo único que
       // él LEE de esta respuesta ("ya quedó actualizada"); el resto es JSON con
       // schema fijo. Va al final, después de la regla que prohíbe texto fuera
@@ -211,15 +261,26 @@ class ClinicalAssistantPromptBuilder {
       doctorDirective
         ? `${doctorDirective}\nEstas preferencias afectan únicamente al texto de "explanation".`
         : ''
-    ].filter(Boolean).join('\n');
+    ].filter(Boolean).join('\n\n');
 
     const user = JSON.stringify({
       instruccion: `${instruction || ''}`,
-      section_key: sectionKey || null,
+      alcance: scope,
+      seccion_objetivo: target
+        ? {
+          key: target.key,
+          label: target.label,
+          instruccion_de_plantilla: target.instruction || '',
+          contenido_actual: target.content || '',
+          evidencia_actual: target.evidence || ''
+        }
+        : null,
       especialidad: clinicalContext.specialty || '',
+      secciones_plantilla: Array.isArray(clinicalContext.template_sections) ? clinicalContext.template_sections : [],
       nota_clinica: clinicalContext.note_json || null,
+      cobertura_transcripcion: clinicalContext.transcript_coverage || 'completa',
       transcripcion: clinicalContext.transcript || '',
-      screen_context: clinicalContext.screen_context || null
+      anotaciones_del_medico: Array.isArray(clinicalContext.doctor_annotations) ? clinicalContext.doctor_annotations : []
     });
 
     return [
@@ -231,5 +292,6 @@ class ClinicalAssistantPromptBuilder {
 
 ClinicalAssistantPromptBuilder.SYSTEM_PROMPT = SYSTEM_PROMPT;
 ClinicalAssistantPromptBuilder.DIAGNOSTIC_SYSTEM_PROMPT = DIAGNOSTIC_SYSTEM_PROMPT;
+ClinicalAssistantPromptBuilder.ADJUSTMENT_SYSTEM_PROMPT = ADJUSTMENT_SYSTEM_PROMPT;
 
 module.exports = ClinicalAssistantPromptBuilder;
