@@ -37,6 +37,23 @@ const { learnedToMcp, workflowToMcp, InMemoryAgentLearningStore } = require('../
 const { runProviderTurn } = require('../../infrastructure/conscious-brain');
 const { resolveConsciousConfig } = require('../../infrastructure/conscious-brain/config');
 
+// Key de un proveedor PUNTUAL, sin pasar por la key activa general
+// (MIRACLE_CONSCIOUS_LLM_API_KEY): esa es la del proveedor configurado AHORA,
+// no necesariamente el que quedó congelado en la sesión de este hilo. Mismas
+// variables que resuelve config.js para "otro proveedor" (ver androidAppConfig).
+function apiKeyForFrozenProvider(provider) {
+  const v = (name) => `${process.env[name] || ''}`.trim();
+  return provider === 'gemini'
+    ? (v('MIRACLE_CONSCIOUS_LLM_GOOGLE_API_KEY') || v('GEMINI_API_KEY') || v('GOOGLE_API_KEY'))
+    : (v('MIRACLE_CONSCIOUS_LLM_OPENAI_API_KEY') || v('OPENAI_API_KEY'));
+}
+
+function missingKeyMessageForProvider(provider) {
+  return provider === 'gemini'
+    ? 'GEMINI_API_KEY no está configurada en el entorno.'
+    : 'OPENAI_API_KEY no está configurada en el entorno.';
+}
+
 class AgentTurnService {
   /**
    * @param {object} deps
@@ -110,6 +127,18 @@ class AgentTurnService {
       return { status: 500, json: { error: config.errorMessage } };
     }
 
+    // La key del cerebro va por el proveedor CONGELADO en la sesión, no por el
+    // que esté configurado en este instante: si cambia a mitad de hilo, la key
+    // de un proveedor no puede viajar al otro (ver cabecera del archivo).
+    const sessionProvider = (body.session && !decodeError && decoded) ? decoded.provider : config.provider;
+    let apiKey = config.apiKey;
+    if (sessionProvider !== config.provider) {
+      apiKey = apiKeyForFrozenProvider(sessionProvider);
+      if (!apiKey) {
+        return { status: 500, json: { error: missingKeyMessageForProvider(sessionProvider) } };
+      }
+    }
+
     if (!body.state || typeof body.state.screen !== 'string') {
       return { status: 400, json: { error: 'falta `state` (screen, uiContext, width, height)' } };
     }
@@ -161,7 +190,7 @@ class AgentTurnService {
         apps,
         state: body.state,
         results: Array.isArray(body.results) ? body.results : [],
-        apiKey: config.apiKey,
+        apiKey,
         screenScale: screenScaleOfTurn
       });
 

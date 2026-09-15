@@ -211,11 +211,22 @@ async function main() {
     assert.strictEqual(modelOf(lunaAdded.requests[0]), 'gpt-verify', 'definir la variable movió un hilo abierto sin ella');
 
     const [onGemini] = await captureConversation({ env: PROVIDER_ENVS.gemini, firstApp: 'android_app', secondApp: null });
-    const toOpenai = { ...PROVIDER_ENVS.gemini, MIRACLE_CONSCIOUS_LLM_OPENAI_API_KEY: 'verify-openai-android-key', MIRACLE_CONSCIOUS_LLM_PROVIDER_ANDROID_APP: 'openai', MIRACLE_CONSCIOUS_LLM_MODEL_ANDROID_APP: 'gpt-5.6-luna' };
+    // GEMINI_API_KEY: sin ella el hilo (congelado en gemini) no puede seguir con
+    // el proveedor de ESTE turno recién puesto a openai — y no debe, porque la
+    // key de openai no es de gemini (ver check (f)).
+    const toOpenai = {
+      ...PROVIDER_ENVS.gemini,
+      MIRACLE_CONSCIOUS_LLM_OPENAI_API_KEY: 'verify-openai-android-key',
+      MIRACLE_CONSCIOUS_LLM_PROVIDER_ANDROID_APP: 'openai',
+      MIRACLE_CONSCIOUS_LLM_MODEL_ANDROID_APP: 'gpt-5.6-luna',
+      GEMINI_API_KEY: 'verify-gemini-frozen-key'
+    };
     const switched = await continueConversation({ env: toOpenai, session: onGemini.response.json.session });
     assert.strictEqual(switched.response.status, 200, JSON.stringify(switched.response.json));
     assert.strictEqual(switched.requests[0].kind, 'gemini', 'cambiar PROVIDER_ANDROID_APP movió de proveedor un hilo abierto');
     assert.strictEqual(modelOf(switched.requests[0]), 'gemini-verify');
+    const switchedUrl = new URL(switched.requests[0].url);
+    assert.strictEqual(switchedUrl.searchParams.get('key'), 'verify-gemini-frozen-key', 'la key de openai viajó al hilo congelado en gemini');
   });
 
   await check('(d) con MIRACLE_CONSCIOUS_LLM_MODEL_ANDROID_APP definida, Windows no la lee (idéntico al snapshot)', async () => {
@@ -241,6 +252,35 @@ async function main() {
       assert.strictEqual(turn.requests[0].authorization, 'Bearer verify-openai-android-key');
       assert.strictEqual(modelOf(turn.requests[0]), 'gpt-5.6-luna');
     }
+  });
+
+  // --- (f) La key del cerebro sigue al proveedor CONGELADO, nunca al activo ---
+  await check('(f) un hilo Windows abierto en gemini nunca manda la key de openai si el proveedor cambia a mitad de hilo', async () => {
+    const [first] = await captureConversation({ env: PROVIDER_ENVS.gemini });
+    const swapped = await continueConversation({
+      env: { MIRACLE_CONSCIOUS_LLM_PROVIDER: 'openai', MIRACLE_CONSCIOUS_LLM_API_KEY: 'key-de-openai-que-no-debe-viajar', MIRACLE_CONSCIOUS_LLM_MODEL: 'gpt-verify' },
+      session: first.response.json.session
+    });
+    assert.strictEqual(swapped.requests.length, 0, 'llamó al proveedor sin key del proveedor congelado');
+    assert.strictEqual(swapped.response.status, 500, JSON.stringify(swapped.response.json));
+    assert.ok(/GEMINI_API_KEY/.test(swapped.response.json.error), swapped.response.json.error);
+  });
+
+  await check('(f) el mismo hilo sigue en gemini con SU key propia si hay una key específica de gemini, nunca con la de openai', async () => {
+    const [first] = await captureConversation({ env: PROVIDER_ENVS.gemini });
+    const swapped = await continueConversation({
+      env: {
+        MIRACLE_CONSCIOUS_LLM_PROVIDER: 'openai',
+        MIRACLE_CONSCIOUS_LLM_API_KEY: 'key-de-openai-que-no-debe-viajar',
+        MIRACLE_CONSCIOUS_LLM_MODEL: 'gpt-verify',
+        GEMINI_API_KEY: 'key-de-gemini-de-respaldo'
+      },
+      session: first.response.json.session
+    });
+    assert.strictEqual(swapped.response.status, 200, JSON.stringify(swapped.response.json));
+    assert.strictEqual(swapped.requests[0].kind, 'gemini', 'el hilo cambió de proveedor a mitad de camino');
+    const url = new URL(swapped.requests[0].url);
+    assert.strictEqual(url.searchParams.get('key'), 'key-de-gemini-de-respaldo', 'no usó la key del proveedor congelado');
   });
 
   // --- (e) App desconocida ----------------------------------------------------------
