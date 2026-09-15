@@ -60,6 +60,18 @@ function assistantFn(tool) {
   };
 }
 
+/**
+ * Las tools de un turno en la Responses API: computer-use nativo, el catálogo MCP del turno y las
+ * propias de Ü, en ese orden. Exportada para scripts/probe-luna-computer.js: la sonda tiene que
+ * declarar exactamente lo mismo que el cerebro.
+ */
+function toolDeclarations(tools) {
+  const toolDecls = [{ type: 'computer' }];
+  for (const tool of tools) toolDecls.push(mcpFn(tool));
+  for (const tool of ASSISTANT_TOOLS) toolDecls.push(assistantFn(tool));
+  return toolDecls;
+}
+
 function transient(code) {
   return code === 429 || (code >= 500 && code <= 599);
 }
@@ -182,15 +194,11 @@ async function runOpenAiTurn(inp) {
     s.informText = '';
   }
 
-  const toolDecls = [{ type: 'computer' }];
-  for (const tool of tools) toolDecls.push(mcpFn(tool));
-  for (const tool of ASSISTANT_TOOLS) toolDecls.push(assistantFn(tool));
-
   const reqBody = {
     model: s.model,
     instructions,
     input,
-    tools: toolDecls,
+    tools: toolDeclarations(tools),
     truncation: 'auto',
     reasoning: { effort: s.effort }
   };
@@ -359,4 +367,4 @@ function extractMessage(item) {
   return asStr(item.text);
 }
 
-module.exports = { runOpenAiTurn };
+module.exports = { runOpenAiTurn, toolDeclarations };

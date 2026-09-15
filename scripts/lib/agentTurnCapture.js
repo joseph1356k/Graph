@@ -168,6 +168,24 @@ async function captureConversation({ env = {}, firstApp = null, secondApp = null
   });
 }
 
+/**
+ * Un turno más sobre una sesión ya emitida, con OTRO entorno. Sirve para probar
+ * que lo que la sesión congeló (plataforma, proveedor, modelo) no se mueve si las
+ * variables cambian entre turnos. No interviene en el snapshot de Windows.
+ */
+async function continueConversation({ env = {}, session, app = null } = {}) {
+  return withEnv(env, async () => {
+    const handler = mountTurnRoute();
+    const fetchStub = stubFetch();
+    try {
+      const response = await callRoute(handler, secondBody(session), app);
+      return { requests: fetchStub.requests.splice(0), response };
+    } finally {
+      fetchStub.restore();
+    }
+  });
+}
+
 // Configuración de prueba por proveedor (valores falsos: nunca salen a la red).
 const PROVIDER_ENVS = Object.freeze({
   openai: Object.freeze({ MIRACLE_CONSCIOUS_LLM_PROVIDER: 'openai', MIRACLE_CONSCIOUS_LLM_API_KEY: 'verify-openai-key', MIRACLE_CONSCIOUS_LLM_MODEL: 'gpt-verify' }),
@@ -223,6 +241,7 @@ function windowsPrompts(prompt = goalPrompt, catalog = baseCatalog()) {
 
 module.exports = {
   captureConversation,
+  continueConversation,
   captureErrors,
   readSession,
   promptInputs,

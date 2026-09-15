@@ -16,7 +16,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const { captureConversation, captureErrors, readSession, promptInputs, windowsPrompts, PROVIDER_ENVS } = require('./lib/agentTurnCapture');
+const { captureConversation, continueConversation, captureErrors, readSession, promptInputs, windowsPrompts, PROVIDER_ENVS } = require('./lib/agentTurnCapture');
 const { baseCatalog } = require('../src/domain/agent/mcpCatalog');
 const { goalPrompt } = require('../src/infrastructure/conscious-brain/prompt');
 const UsageAttributionResolver = require('../src/application/use-cases/UsageAttributionResolver');
@@ -197,6 +197,25 @@ async function main() {
     const conversation = await captureConversation({ env: lunaEnv, firstApp: 'android_app', secondApp: null });
     assert.strictEqual(modelOf(conversation[0].requests[0]), 'gpt-5.6-luna');
     assert.strictEqual(modelOf(conversation[1].requests[0]), 'gpt-5.6-luna');
+  });
+
+  await check('(d) el hilo Android congela modelo y proveedor: cambiar las variables *_ANDROID_APP entre turnos no lo mueve', async () => {
+    const [withLuna] = await captureConversation({ env: lunaEnv, firstApp: 'android_app', secondApp: null });
+    const lunaRemoved = await continueConversation({ env: PROVIDER_ENVS.openai, session: withLuna.response.json.session });
+    assert.strictEqual(lunaRemoved.response.status, 200, JSON.stringify(lunaRemoved.response.json));
+    assert.strictEqual(modelOf(lunaRemoved.requests[0]), 'gpt-5.6-luna', 'quitar la variable movió un hilo abierto con luna');
+
+    const [withoutLuna] = await captureConversation({ env: PROVIDER_ENVS.openai, firstApp: 'android_app', secondApp: null });
+    const lunaAdded = await continueConversation({ env: lunaEnv, session: withoutLuna.response.json.session });
+    assert.strictEqual(lunaAdded.response.status, 200, JSON.stringify(lunaAdded.response.json));
+    assert.strictEqual(modelOf(lunaAdded.requests[0]), 'gpt-verify', 'definir la variable movió un hilo abierto sin ella');
+
+    const [onGemini] = await captureConversation({ env: PROVIDER_ENVS.gemini, firstApp: 'android_app', secondApp: null });
+    const toOpenai = { ...PROVIDER_ENVS.gemini, MIRACLE_CONSCIOUS_LLM_OPENAI_API_KEY: 'verify-openai-android-key', MIRACLE_CONSCIOUS_LLM_PROVIDER_ANDROID_APP: 'openai', MIRACLE_CONSCIOUS_LLM_MODEL_ANDROID_APP: 'gpt-5.6-luna' };
+    const switched = await continueConversation({ env: toOpenai, session: onGemini.response.json.session });
+    assert.strictEqual(switched.response.status, 200, JSON.stringify(switched.response.json));
+    assert.strictEqual(switched.requests[0].kind, 'gemini', 'cambiar PROVIDER_ANDROID_APP movió de proveedor un hilo abierto');
+    assert.strictEqual(modelOf(switched.requests[0]), 'gemini-verify');
   });
 
   await check('(d) con MIRACLE_CONSCIOUS_LLM_MODEL_ANDROID_APP definida, Windows no la lee (idéntico al snapshot)', async () => {
