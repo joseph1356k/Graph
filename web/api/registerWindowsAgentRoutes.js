@@ -29,9 +29,11 @@ function registerWindowsAgentRoutes(app, deps = {}) {
   // MCP, memoria ni la key del modelo.
   // X-Miracle-App dice qué cliente llama (windows_app, android_app). Solo cuenta
   // en el primer turno; después manda la plataforma guardada en la sesión.
+  // req.workflowAccess lo pone requireApiKey: los workflows que el cerebro ve son
+  // los de ESA key más los globales, nunca los de las demás.
   app.post('/api/v1/agent/turn', async (req, res) => {
     const appHeader = req.get?.('x-miracle-app') || req.headers?.['x-miracle-app'];
-    const result = await agentTurnService.handleTurn(req.body || {}, { app: appHeader });
+    const result = await agentTurnService.handleTurn(req.body || {}, { app: appHeader, workflowAccess: req.workflowAccess || null });
     return res.status(result.status).json(result.json);
   });
 

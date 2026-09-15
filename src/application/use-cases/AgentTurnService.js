@@ -65,10 +65,11 @@ class AgentTurnService {
    * turno inyecta el id en los args de la llamada (ver handleTurn).
    *
    * La base depende de la plataforma; aprendidas y workflows son iguales en las dos.
+   * `workflowAccess` es el de la API key que llama: cada key ve sus workflows y los globales.
    */
-  async assembleTools(userId, apps, surface = null, platform = PLATFORMS.WINDOWS) {
-    const learned = await this.learningStore.learnedTools(userId, apps, surface);
-    const workflows = await this.learningStore.workflows(userId, apps, surface);
+  async assembleTools(userId, apps, surface = null, platform = PLATFORMS.WINDOWS, workflowAccess = null) {
+    const learned = await this.learningStore.learnedTools(userId, apps, surface, workflowAccess);
+    const workflows = await this.learningStore.workflows(userId, apps, surface, workflowAccess);
     const workflowTools = workflows.map(workflowToMcp);
     const workflowIdByTool = new Map(
       workflowTools.map((tool, i) => [tool.name, `${workflows[i].id || workflows[i].name || ''}`])
@@ -83,7 +84,8 @@ class AgentTurnService {
    * 500 provider sin configurar, 502 error del cerebro.
    *
    * @param {object} [context] lo que la ruta sabe de la petición y el cuerpo no:
-   *   `app` es X-Miracle-App tal como llegó (se normaliza aquí).
+   *   `app` es X-Miracle-App tal como llegó (se normaliza aquí);
+   *   `workflowAccess` es el acceso de la API key (requireApiKey) que acota los workflows.
    */
   async handleTurn(body = {}, context = {}) {
     // La plataforma se fija en el PRIMER turno y después manda la sesión firmada:
@@ -135,7 +137,8 @@ class AgentTurnService {
         origin: `${body.state.surfaceOrigin || ''}`.trim(),
         pathname: `${body.state.surfacePathname || ''}`.trim()
       };
-      const { tools, workflowIdByTool } = await this.assembleTools(userId, apps, surface, platform);
+      const workflowAccess = (context && context.workflowAccess) || null;
+      const { tools, workflowIdByTool } = await this.assembleTools(userId, apps, surface, platform, workflowAccess);
       const memory = await this.memoryRepository.forPrompt(userId);
 
       const { session: next, turn } = await this.runProviderTurn({

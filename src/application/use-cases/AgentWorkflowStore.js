@@ -35,14 +35,18 @@ class AgentWorkflowStore {
    * Se declaran TODOS los workflows (los de la superficie actual PRIMERO, el resto anotado
    * con su app): el usuario puede pedir por chat una tarea aprendida estando en otra app, y
    * el cliente ya sabe alinearse solo (abrir/enfocar la app del workflow) al ejecutarlo.
+   *
+   * `access` es el de la API key que llama (requireApiKey: `api-client:<label>` + globales). El
+   * catálogo sin acceso es el de TODAS las keys, así que sin dueño no se consulta: devuelve [].
    */
-  async workflows(userId, apps, surface = null) {
+  async workflows(userId, apps, surface = null, access = null) {
     const origin = `${surface?.origin || ''}`.trim();
     const pathname = `${surface?.pathname || ''}`.trim();
+    if (!`${access?.ownerId || ''}`.trim()) return [];
 
     let catalog;
     try {
-      catalog = await this.catalogService.getCatalog(null);
+      catalog = await this.catalogService.getCatalog(access);
     } catch (error) {
       return []; // sin Neo4j no hay workflows; el turno sigue con el catálogo base
     }
