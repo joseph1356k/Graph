@@ -10,14 +10,28 @@
 // el tamaño de la imagen se lee de su cabecera PNG o JPEG: no hace falta un campo
 // nuevo en el contrato. El factor es UNO para los dos ejes, el mayor entre
 // ancho/ancho y alto/alto: la captura conserva la proporción, y displayMetrics
-// puede venir sin la barra de navegación (un lado más corto que la pantalla real),
-// nunca más largo. Se acota dentro de esa pantalla real.
+// puede venir sin la barra de navegación (un lado más corto que la pantalla real,
+// abajo en vertical, al costado o abajo en apaisado), nunca más largo. Se acota
+// dentro de esa pantalla real.
+//
+// RANGO. Una coordenada negativa, o más allá de la imagen (con 1 px de
+// tolerancia), es -1: inválida, igual que sin escala. Acotarla la convertiría en
+// un toque real en el borde. Solo el redondeo de lo que está dentro se acota.
+//
+// IMAGEN QUE NO ES DE ESTA PANTALLA. Si la imagen tiene otra orientación que la
+// pantalla (el teléfono giró entre el turno que la guardó y este), un lado de
+// menos de 64 px o una proporción a más del 15 % de la de la pantalla, no se usa:
+// escala 1, con el mismo rango y la misma cota, ahora sobre la pantalla reportada.
+// Así el resultado siempre cae dentro de la pantalla o es -1.
 //
 // Sin pantalla o sin imagen legible no hay escala (null) y las coordenadas pasan
 // como siempre: redondeadas, sin acotar. Así un Android viejo no se rompe.
 const { PLATFORMS } = require('./platform');
 
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+const MIN_IMAGE_SIDE = 64;
+const MAX_ASPECT_DRIFT = 0.15;
+const EDGE_TOLERANCE_PX = 1;
 
 function positiveInt(value) {
   const n = Number(value);
@@ -65,9 +79,23 @@ function imageSize(base64) {
   return null;
 }
 
+// Vertical contra apaisada. Una cuadrada no contradice ninguna de las dos.
+function sameOrientation(aWidth, aHeight, bWidth, bHeight) {
+  return aWidth === aHeight || bWidth === bHeight || (aWidth > aHeight) === (bWidth > bHeight);
+}
+
+/** ¿La imagen puede ser una captura de ESTA pantalla? (ver cabecera: orientación, lado mínimo, proporción). */
+function imageFitsScreen(imageWidth, imageHeight, screenWidth, screenHeight) {
+  if (!sameOrientation(imageWidth, imageHeight, screenWidth, screenHeight)) return false;
+  if (Math.min(imageWidth, imageHeight) < MIN_IMAGE_SIDE) return false;
+  const screenAspect = screenWidth / screenHeight;
+  return Math.abs(imageWidth / imageHeight - screenAspect) <= MAX_ASPECT_DRIFT * screenAspect;
+}
+
 /**
  * Escala del turno, o null si no aplica: solo Android, y solo con pantalla e imagen.
  * `image` es la imagen que el modelo vio por última vez (la de este turno o la guardada en la sesión).
+ * `imageWidth`/`imageHeight` son el rango válido de coordenadas del modelo; `maxX`/`maxY`, la cota.
  */
 function screenScale({ platform, state, image } = {}) {
   if (platform !== PLATFORMS.ANDROID) return null;
@@ -76,22 +104,30 @@ function screenScale({ platform, state, image } = {}) {
   const imageWidth = positiveInt(image && image.width);
   const imageHeight = positiveInt(image && image.height);
   if (!screenWidth || !screenHeight || !imageWidth || !imageHeight) return null;
+  if (!imageFitsScreen(imageWidth, imageHeight, screenWidth, screenHeight)) {
+    return { factor: 1, imageWidth: screenWidth, imageHeight: screenHeight, maxX: screenWidth - 1, maxY: screenHeight - 1 };
+  }
   const factor = Math.max(screenWidth / imageWidth, screenHeight / imageHeight);
   return {
     factor,
+    imageWidth,
+    imageHeight,
     maxX: Math.max(screenWidth, Math.round(imageWidth * factor)) - 1,
     maxY: Math.max(screenHeight, Math.round(imageHeight * factor)) - 1
   };
 }
 
 /**
- * Coordenada del modelo → píxel de pantalla. `axis` es 'x' o 'y'. Lo que no es un número da -1,
- * el «inválido» de siempre, y no se acota: acotarlo lo convertiría en un toque real en el borde.
+ * Coordenada del modelo → píxel de pantalla. `axis` es 'x' o 'y'. Lo que no es un número, lo
+ * negativo y lo que cae más allá de la imagen da -1, el «inválido» de siempre, y no se acota:
+ * acotarlo lo convertiría en un toque real en el borde.
  */
 function toScreen(raw, scale, axis) {
   const n = typeof raw === 'number' ? raw : typeof raw === 'string' ? parseFloat(raw) : NaN;
   if (!Number.isFinite(n)) return -1;
   if (!scale) return Math.round(n);
+  const limit = axis === 'y' ? scale.imageHeight : scale.imageWidth;
+  if (n < 0 || n > limit + EDGE_TOLERANCE_PX) return -1;
   const max = axis === 'y' ? scale.maxY : scale.maxX;
   return Math.min(Math.max(Math.round(n * scale.factor), 0), max);
 }

@@ -9,6 +9,12 @@
 // y el tamaño real de la imagen, leído de su cabecera PNG/JPEG. Sin datos, escala
 // 1 como antes. Windows no se toca (y verify-agent-platform.js lo fija byte a byte).
 //
+// Reglas que se fijan aquí:
+//  - factor único, el MAYOR de ancho/ancho y alto/alto (apaisado incluido);
+//  - una coordenada negativa o más allá de la imagen (+1 px) es -1, nunca un toque en el borde;
+//  - una imagen que no corresponde a la pantalla (otra orientación, lado < 64 px o una
+//    proporción a más del 15 %) no se usa: escala 1, acotada a la pantalla.
+//
 // Se recorre la ruta REAL (registerWindowsAgentRoutes → AgentTurnService → cerebro
 // OpenAI o Gemini) con `fetch` stubbeado con respuestas fijas del proveedor.
 const assert = require('assert');
@@ -38,11 +44,22 @@ function jpeg(width, height) {
   return Buffer.concat([Buffer.from([0xff, 0xd8]), app1, sof0, Buffer.from([0xff, 0xd9])]).toString('base64');
 }
 
+// JPEG progresivo: JFIF, tabla de cuantización, SOF2, Huffman y el scan, en el orden en que salen.
+function jpegProgressive(width, height) {
+  const app0 = Buffer.concat([Buffer.from([0xff, 0xe0, 0x00, 0x10]), Buffer.from('JFIF\0'), Buffer.from([1, 1, 0, 0, 1, 0, 1, 0, 0])]);
+  const dqt = Buffer.concat([Buffer.from([0xff, 0xdb, 0x00, 0x43, 0x00]), Buffer.alloc(64, 1)]);
+  const sof2 = Buffer.from([0xff, 0xc2, 0x00, 0x11, 0x08, height >> 8, height & 0xff, width >> 8, width & 0xff, 0x03, 1, 0x22, 0, 2, 0x11, 1, 3, 0x11, 1]);
+  const dht = Buffer.concat([Buffer.from([0xff, 0xc4, 0x00, 0x14, 0x00]), Buffer.alloc(16), Buffer.from([0])]);
+  const sos = Buffer.from([0xff, 0xda, 0x00, 0x08, 0x01, 1, 0x00, 0, 0x00, 0x00]);
+  return Buffer.concat([Buffer.from([0xff, 0xd8]), app0, dqt, sof2, dht, sos, Buffer.from([0x00, 0xff, 0xd9])]).toString('base64');
+}
+
 const PNG_1080x2400 = png(1080, 2400);
 
 // ---- Respuestas fijas del proveedor -----------------------------------------
 // Coordenadas en píxeles de la imagen: centro, borde, fuera de la imagen, negativa,
-// un arrastre de tres puntos (vale origen y destino) y un clic sin `y` (inválido).
+// un arrastre de tres puntos (vale origen y destino), un clic sin `y` (inválido) y
+// un punto a 1 px de la imagen (dentro de la tolerancia).
 const OPENAI_COMPUTER = {
   id: 'resp_scale',
   output: [{
@@ -56,7 +73,8 @@ const OPENAI_COMPUTER = {
       { type: 'left_click', x: 2000, y: 5000 },
       { type: 'click', x: -10, y: 5 },
       { type: 'click', x: 50 },
-      { type: 'scroll', x: 540, y: 1200, scroll_y: 300 }
+      { type: 'scroll', x: 540, y: 1200, scroll_y: 300 },
+      { type: 'click', x: 1081, y: 2401 }
     ]
   }]
 };
@@ -73,7 +91,8 @@ const GEMINI_COMPUTER = {
         { functionCall: { name: 'computer_tap', args: { x: 2000, y: 5000 } } },
         { functionCall: { name: 'computer_tap', args: { x: -10, y: 5 } } },
         { functionCall: { name: 'computer_tap', args: { x: 50 } } },
-        { functionCall: { name: 'computer_scroll', args: { direction: 'down' } } }
+        { functionCall: { name: 'computer_scroll', args: { direction: 'down' } } },
+        { functionCall: { name: 'computer_tap', args: { x: 1081, y: 2401 } } }
       ]
     }
   }]
@@ -81,7 +100,7 @@ const GEMINI_COMPUTER = {
 
 // Lo que el cliente tiene que recibir, por proveedor, en el mismo orden.
 function expected(provider, points) {
-  const [center, corner, edge, drag0, drag1, outside, negative, halfX] = points;
+  const [center, corner, edge, drag0, drag1, outside, negative, halfX, tolerance] = points;
   const tap = ([x, y]) => ({ kind: 'tap', x, y });
   return [
     tap(center),
@@ -91,13 +110,36 @@ function expected(provider, points) {
     tap(outside),
     tap(negative),
     tap([halfX, -1]),
-    { kind: 'scroll', down: true }
+    { kind: 'scroll', down: true },
+    tap(tolerance)
   ];
 }
 
-const SCALED = [[720, 1600], [13, 27], [1439, 3199], [133, 267], [1200, 2667], [1439, 3199], [0, 7], 67];
-const UNSCALED = [[540, 1200], [10, 20], [1079, 2399], [100, 200], [900, 2000], [2000, 5000], [-10, 5], 50];
-const SAME_SIZE = [[540, 1200], [10, 20], [1079, 2399], [100, 200], [900, 2000], [1439, 3199], [0, 5], 50];
+// Imagen 1080×2400 sobre pantalla 1440×3200: factor 4/3, acotado a [0,1439]×[0,3199].
+const SCALED = [[720, 1600], [13, 27], [1439, 3199], [133, 267], [1200, 2667], [-1, -1], [-1, 7], 67, [1439, 3199]];
+const UNSCALED = [[540, 1200], [10, 20], [1079, 2399], [100, 200], [900, 2000], [2000, 5000], [-10, 5], 50, [1081, 2401]];
+// Escala 1 sobre 1440×3200: lo de dentro pasa igual, lo de fuera es -1.
+const SAME_SIZE = [[540, 1200], [10, 20], [1079, 2399], [100, 200], [900, 2000], [-1, -1], [-1, 5], 50, [1081, 2401]];
+// Escala 1 sobre la pantalla girada (3200×1440): toda y mayor que 1441 queda inválida.
+const ROTATED = [[540, 1200], [10, 20], [1079, -1], [100, 200], [900, -1], [2000, -1], [-1, 5], 50, [1081, -1]];
+
+// Solo toques, para imágenes que no son 1080×2400 (apaisadas, casi cuadradas).
+function tapsCanned(provider, points) {
+  return provider === 'openai'
+    ? { id: 'resp_taps', output: [{ type: 'computer_call', call_id: 'c1', actions: points.map(([x, y]) => ({ type: 'click', x, y })) }] }
+    : { candidates: [{ content: { role: 'model', parts: points.map(([x, y]) => ({ functionCall: { name: 'computer_tap', args: { x, y } } })) } }] };
+}
+const taps = (points) => points.map(([x, y]) => ({ kind: 'tap', x, y }));
+
+// Captura apaisada 1080×486 de una pantalla física 3200×1440 (factor 2.963):
+// centro, esquina, a 1 px (tolerancia), fuera por x, negativa, origen y fuera por y.
+const LANDSCAPE_IMAGE_POINTS = [[540, 243], [1079, 485], [1081, 487], [1082, 300], [-1, 10], [0, 0], [300, 488]];
+const LANDSCAPE_SCREEN_POINTS = [[1600, 720], [3197, 1437], [3199, 1439], [-1, 889], [-1, 30], [0, 0], [889, -1]];
+
+const GO_HOME = {
+  openai: { id: 'resp_0', output: [{ type: 'function_call', call_id: 'f1', name: 'go_home', arguments: '{}' }] },
+  gemini: { candidates: [{ content: { role: 'model', parts: [{ functionCall: { name: 'go_home', args: {} } }] } }] }
+};
 
 // ---- Arnés: la ruta real con fetch stubbeado -----------------------------------
 const PROVIDER_ENVS = {
@@ -179,12 +221,12 @@ async function check(name, fn) {
 
 async function main() {
   for (const provider of ['openai', 'gemini']) {
-    await check(`(1) ${provider}: imagen PNG 1080×2400 sobre pantalla 1440×3200 → tap, doble tap, type y swipe (origen y destino) reescalados, redondeados y dentro de la pantalla`, async () => {
+    await check(`(1) ${provider}: imagen PNG 1080×2400 sobre pantalla 1440×3200 → tap, doble tap, type y swipe (origen y destino) reescalados y dentro de la pantalla; lo que cae fuera de la imagen es -1, no un toque en el borde`, async () => {
       const [turn] = await converse(provider, 'android_app', [{ state: state(1440, 3200, PNG_1080x2400), canned: cannedFor(provider) }]);
       assert.deepStrictEqual(computerActions(turn), expected(provider, SCALED));
     });
 
-    await check(`(2) ${provider}: imagen igual a la pantalla (1440×3200) → escala 1, solo se acota lo que cae fuera`, async () => {
+    await check(`(2) ${provider}: imagen igual a la pantalla (1440×3200) → escala 1; lo que cae fuera de la imagen es -1, como sin escala`, async () => {
       const [turn] = await converse(provider, 'android_app', [{ state: state(1440, 3200, png(1440, 3200)), canned: cannedFor(provider) }]);
       assert.deepStrictEqual(computerActions(turn), expected(provider, SAME_SIZE));
     });
@@ -212,7 +254,7 @@ async function main() {
 
     await check(`(5) ${provider}: un turno sin captura reescala con la última imagen que vio el modelo (queda en la sesión Android)`, async () => {
       const [, second] = await converse(provider, 'android_app', [
-        { state: state(1440, 3200, PNG_1080x2400), canned: provider === 'openai' ? { id: 'resp_0', output: [{ type: 'function_call', call_id: 'f1', name: 'go_home', arguments: '{}' }] } : { candidates: [{ content: { role: 'model', parts: [{ functionCall: { name: 'go_home', args: {} } }] } }] } },
+        { state: state(1440, 3200, PNG_1080x2400), canned: GO_HOME[provider] },
         { state: state(1440, 3200), canned: cannedFor(provider) }
       ]);
       assert.deepStrictEqual(computerActions(second), expected(provider, SCALED));
@@ -227,6 +269,49 @@ async function main() {
     await check(`(7) ${provider}: la cabecera JPEG (con EXIF delante del SOF) también da el tamaño de la imagen`, async () => {
       const [turn] = await converse(provider, 'android_app', [{ state: state(1440, 3200, jpeg(1080, 2400)), canned: cannedFor(provider) }]);
       assert.deepStrictEqual(computerActions(turn), expected(provider, SCALED));
+    });
+
+    await check(`(8) ${provider}: apaisado con la barra al costado (pantalla 3040×1440, imagen 1080×486) → factor del alto 2.963, x=1079 cae en 3197, no en 3037`, async () => {
+      const [turn] = await converse(provider, 'android_app', [{ state: state(3040, 1440, png(1080, 486)), canned: tapsCanned(provider, LANDSCAPE_IMAGE_POINTS) }]);
+      assert.deepStrictEqual(computerActions(turn), taps(LANDSCAPE_SCREEN_POINTS));
+    });
+
+    await check(`(9) ${provider}: apaisado con la barra abajo (pantalla 3200×1280, imagen 1080×486) → factor del ancho 2.963, y=485 cae en 1437, no en 1277`, async () => {
+      const [turn] = await converse(provider, 'android_app', [{ state: state(3200, 1280, png(1080, 486)), canned: tapsCanned(provider, LANDSCAPE_IMAGE_POINTS) }]);
+      assert.deepStrictEqual(computerActions(turn), taps(LANDSCAPE_SCREEN_POINTS));
+    });
+
+    await check(`(10) ${provider}: JPEG progresivo (SOF2, después de DQT) da las dimensiones correctas y reescala`, async () => {
+      const [turn] = await converse(provider, 'android_app', [{ state: state(1440, 3200, jpegProgressive(1080, 2400)), canned: cannedFor(provider) }]);
+      assert.deepStrictEqual(computerActions(turn), expected(provider, SCALED));
+    });
+
+    await check(`(11) ${provider}: rotación entre turnos (imagen vertical guardada, pantalla ahora apaisada) → la imagen no se usa: escala 1 acotada a la pantalla nueva`, async () => {
+      const [, rotated] = await converse(provider, 'android_app', [
+        { state: state(1440, 3200, PNG_1080x2400), canned: GO_HOME[provider] },
+        { state: state(3200, 1440), canned: cannedFor(provider) }
+      ]);
+      assert.deepStrictEqual(computerActions(rotated), expected(provider, ROTATED), 'vertical → apaisada');
+      // Casi cuadrada: la proporción queda a menos del 15 %, solo la orientación la delata.
+      const [, nearSquare] = await converse(provider, 'android_app', [
+        { state: state(1400, 1500, png(1080, 1157)), canned: GO_HOME[provider] },
+        { state: state(1500, 1400), canned: tapsCanned(provider, [[540, 578], [1079, 1156]]) }
+      ]);
+      assert.deepStrictEqual(computerActions(nearSquare), taps([[540, 578], [1079, 1156]]), 'casi cuadrada girada');
+    });
+
+    await check(`(12) ${provider}: cabecera absurda (1×1, o 36×80 con la proporción justa pero lado < 64 px) → se ignora: escala 1 acotada a la pantalla`, async () => {
+      for (const [label, image] of [['1×1', png(1, 1)], ['36×80', png(36, 80)]]) {
+        const [turn] = await converse(provider, 'android_app', [{ state: state(1440, 3200, image), canned: cannedFor(provider) }]);
+        assert.deepStrictEqual(computerActions(turn), expected(provider, SAME_SIZE), label);
+      }
+    });
+
+    await check(`(13) ${provider}: proporción rara (imagen 1080×1080 o 1080×1600 sobre 1440×3200, a más del 15 %) → se ignora: escala 1 acotada a la pantalla`, async () => {
+      for (const [label, image] of [['1080×1080', png(1080, 1080)], ['1080×1600', png(1080, 1600)]]) {
+        const [turn] = await converse(provider, 'android_app', [{ state: state(1440, 3200, image), canned: cannedFor(provider) }]);
+        assert.deepStrictEqual(computerActions(turn), expected(provider, SAME_SIZE), label);
+      }
     });
   }
 
