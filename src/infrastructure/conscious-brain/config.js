@@ -9,7 +9,9 @@
 // que la tarjeta de Provider Studio y este módulo lean exactamente las mismas
 // variables. Fallback a las keys globales (OPENAI_API_KEY / GEMINI_API_KEY)
 // para conservar el comportamiento del backend original cuando la tarjeta aún
-// no se ha configurado.
+// no se ha configurado. La key general (MIRACLE_CONSCIOUS_LLM_API_KEY) solo vale
+// con MIRACLE_CONSCIOUS_LLM_PROVIDER explícito y válido: con el proveedor
+// deducido se usan únicamente las keys propias de ese proveedor.
 //
 // MODELO POR APP (opcional). La app Android usa el mismo turno que Windows y
 // puede pensar con otro modelo —o con otro proveedor— sin que Windows se entere:
@@ -41,6 +43,14 @@ function normalizeProvider(raw) {
 
 function geminiFallbackKey() {
   return env('GEMINI_API_KEY') || env('GOOGLE_API_KEY');
+}
+
+// Key de UN proveedor sin pasar por la general (MIRACLE_CONSCIOUS_LLM_API_KEY):
+// solo variables que por su nombre son de ese proveedor.
+function providerOwnKey(provider) {
+  return provider === 'gemini'
+    ? (env('MIRACLE_CONSCIOUS_LLM_GOOGLE_API_KEY') || geminiFallbackKey())
+    : (env('MIRACLE_CONSCIOUS_LLM_OPENAI_API_KEY') || env('OPENAI_API_KEY'));
 }
 
 function fallbackModel(provider) {
@@ -90,14 +100,17 @@ function resolveGeneralConsciousConfig() {
 
   // Sin tarjeta configurada: mismo default del backend viejo (PROVIDER=gemini si
   // hay key de Gemini; si no, OpenAI si hay OPENAI_API_KEY).
+  const explicitProvider = Boolean(provider);
   if (!provider) {
     provider = geminiFallbackKey() ? 'gemini' : (env('OPENAI_API_KEY') ? 'openai' : '');
   }
 
-  const activeKey = env('MIRACLE_CONSCIOUS_LLM_API_KEY');
-  const apiKey = provider === 'gemini'
-    ? (activeKey || env('MIRACLE_CONSCIOUS_LLM_GOOGLE_API_KEY') || geminiFallbackKey())
-    : (activeKey || env('MIRACLE_CONSCIOUS_LLM_OPENAI_API_KEY') || env('OPENAI_API_KEY'));
+  // La key general es la del proveedor ESCRITO en MIRACLE_CONSCIOUS_LLM_PROVIDER.
+  // Si el proveedor se dedujo (variable vacía o inválida: «gemni» da ''), nada
+  // dice de quién es esa key: puede ser de OpenAI y el deducido, Gemini. Entonces
+  // la key sale solo de las variables del proveedor deducido.
+  const activeKey = explicitProvider ? env('MIRACLE_CONSCIOUS_LLM_API_KEY') : '';
+  const apiKey = activeKey || providerOwnKey(provider);
 
   const model = env('MIRACLE_CONSCIOUS_LLM_MODEL') || fallbackModel(provider);
   const effort = consciousEffort();
@@ -133,9 +146,7 @@ function androidAppConfig(general) {
   // Otro proveedor: la key activa y el modelo general son del proveedor general.
   // Mandarle a OpenAI la key de Gemini (o al revés) solo produciría un 401 y
   // dejaría una credencial en los logs de un tercero.
-  const apiKey = provider === 'gemini'
-    ? (env('MIRACLE_CONSCIOUS_LLM_GOOGLE_API_KEY') || geminiFallbackKey())
-    : (env('MIRACLE_CONSCIOUS_LLM_OPENAI_API_KEY') || env('OPENAI_API_KEY'));
+  const apiKey = providerOwnKey(provider);
   const configured = Boolean(apiKey);
   return {
     provider,

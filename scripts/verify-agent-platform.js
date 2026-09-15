@@ -10,7 +10,9 @@
 //  (b) android_app recibe el prompt de teléfono y el catálogo de Android;
 //  (c) la plataforma queda congelada en la sesión firmada del primer turno;
 //  (d) MIRACLE_CONSCIOUS_LLM_{MODEL,PROVIDER}_ANDROID_APP solo los lee Android;
-//  (e) una app desconocida cae en Windows.
+//  (e) una app desconocida cae en Windows;
+//  (f) la key del cerebro sigue al proveedor congelado en la sesión;
+//  (g) con el proveedor deducido, la key general no viaja a ningún proveedor.
 // Si (a) se pone rojo, lo que cambió es el contrato con U.exe: el snapshot NO se
 // regenera para ponerlo verde.
 const assert = require('assert');
@@ -281,6 +283,41 @@ async function main() {
     assert.strictEqual(swapped.requests[0].kind, 'gemini', 'el hilo cambió de proveedor a mitad de camino');
     const url = new URL(swapped.requests[0].url);
     assert.strictEqual(url.searchParams.get('key'), 'key-de-gemini-de-respaldo', 'no usó la key del proveedor congelado');
+  });
+
+  // --- (g) Proveedor DEDUCIDO: la key general no viaja a ningún proveedor -----------
+  // MIRACLE_CONSCIOUS_LLM_API_KEY es la key del proveedor escrito en
+  // MIRACLE_CONSCIOUS_LLM_PROVIDER. Si esa variable falta o no es válida («gemni»
+  // se normaliza a ''), el proveedor se deduce de las keys globales y la key sale
+  // SOLO de las variables de ese proveedor: la general puede ser de otro.
+  await check('(g) proveedor vacío o inválido: el deducido usa solo sus keys propias, nunca la general (Windows y Android, openai y gemini)', async () => {
+    const GENERAL = 'key-general-de-otro-proveedor';
+    const cases = [
+      { label: 'PROVIDER=gemni', env: { MIRACLE_CONSCIOUS_LLM_PROVIDER: 'gemni', MIRACLE_CONSCIOUS_LLM_API_KEY: GENERAL, GEMINI_API_KEY: 'key-gemini-propia' }, kind: 'gemini', key: 'key-gemini-propia' },
+      { label: 'PROVIDER vacío', env: { MIRACLE_CONSCIOUS_LLM_PROVIDER: '', MIRACLE_CONSCIOUS_LLM_API_KEY: GENERAL, GOOGLE_API_KEY: 'key-google-propia' }, kind: 'gemini', key: 'key-google-propia' },
+      { label: 'sin PROVIDER, key específica de gemini', env: { MIRACLE_CONSCIOUS_LLM_API_KEY: GENERAL, MIRACLE_CONSCIOUS_LLM_GOOGLE_API_KEY: 'key-gemini-especifica', GEMINI_API_KEY: 'key-gemini-global' }, kind: 'gemini', key: 'key-gemini-especifica' },
+      { label: 'sin PROVIDER, openai', env: { MIRACLE_CONSCIOUS_LLM_API_KEY: GENERAL, OPENAI_API_KEY: 'key-openai-propia' }, kind: 'openai', key: 'key-openai-propia' },
+      { label: 'PROVIDER=gemni, key específica de openai', env: { MIRACLE_CONSCIOUS_LLM_PROVIDER: 'gemni', MIRACLE_CONSCIOUS_LLM_API_KEY: GENERAL, MIRACLE_CONSCIOUS_LLM_OPENAI_API_KEY: 'key-openai-especifica', OPENAI_API_KEY: 'key-openai-global' }, kind: 'openai', key: 'key-openai-especifica' }
+    ];
+    for (const { label, env, kind, key } of cases) {
+      for (const app of [null, 'android_app']) {
+        const where = `${label} (${app || 'Windows'})`;
+        const conversation = await captureConversation({ env, firstApp: app, secondApp: app });
+        for (const turn of conversation) {
+          assert.strictEqual(turn.response.status, 200, `${where}: ${JSON.stringify(turn.response.json)}`);
+          assert.strictEqual(turn.requests.length, 1, `${where}: requests`);
+          const [request] = turn.requests;
+          assert.strictEqual(request.kind, kind, `${where}: proveedor`);
+          const sent = kind === 'gemini' ? new URL(request.url).searchParams.get('key') : request.authorization;
+          assert.strictEqual(sent, kind === 'gemini' ? key : `Bearer ${key}`, `${where}: key enviada`);
+          assert.ok(!JSON.stringify(request).includes(GENERAL), `${where}: la key general viajó al proveedor deducido`);
+        }
+      }
+    }
+
+    // Con el proveedor explícito y válido, la key general sigue siendo LA key.
+    const explicit = await captureConversation({ env: { ...PROVIDER_ENVS.gemini, GEMINI_API_KEY: 'key-gemini-global' } });
+    assert.strictEqual(new URL(explicit[0].requests[0].url).searchParams.get('key'), 'verify-gemini-key', 'con PROVIDER explícito dejó de usarse la key general');
   });
 
   // --- (e) App desconocida ----------------------------------------------------------
