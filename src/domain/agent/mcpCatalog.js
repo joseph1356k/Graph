@@ -6,6 +6,13 @@
 // ocurre en el cliente Windows, que tiene su propio registro `nombre -> ejecutor
 // local` (gesto de Windows / acción de sistema). Así los prompts, descripciones
 // y la lógica del catálogo — la innovación — nunca salen del servidor.
+//
+// Hay un catálogo por plataforma (ver domain/agent/platform.js): el de Windows y
+// el de la app Android. Cada uno declara SOLO lo que ese cliente sabe ejecutar;
+// declararle a un teléfono `switch_window` o el mapa UIA sería invitar al modelo
+// a pedir algo que del otro lado no existe.
+
+const { PLATFORMS } = require('./platform');
 
 const GESTURE = 'gesto de Windows';
 const SYSTEM = 'API/acción del sistema (sin navegar la UI)';
@@ -146,11 +153,159 @@ const systemTools = [
 ];
 
 /**
+ * Gestos de accesibilidad de la app Android: los ejecuta su AccessibilityService.
+ * Espejo de `Mcp.gestureTools` en Android/core/src/commonMain/kotlin/graph/core/domain/Model.kt
+ * (nombres, descripciones y enums tal cual): el modelo solo puede pedir lo que el
+ * teléfono sabe hacer.
+ */
+const ANDROID_GESTURE = 'gesto de accesibilidad';
+const ANDROID_SYSTEM = 'Intent/API de Android';
+
+const androidGestureTools = [
+  { name: 'go_home', via: ANDROID_GESTURE, params: [], description: 'Vuelve a la pantalla de inicio (home) de Android.' },
+  { name: 'open_app_drawer', via: ANDROID_GESTURE, params: [], description: 'Abre el cajón de aplicaciones deslizando hacia arriba desde el home.' },
+  { name: 'open_notifications', via: ANDROID_GESTURE, params: [], description: 'Despliega la barra de notificaciones deslizando desde el borde superior.' },
+  {
+    name: 'pan_home', via: ANDROID_GESTURE,
+    description: 'Cambia de panel dentro del home moviéndote hacia los lados.',
+    params: [{ name: 'direction', description: 'Hacia dónde moverse en el home', options: ['left', 'right'] }]
+  },
+  {
+    name: 'scroll_menu', via: ANDROID_GESTURE,
+    description: 'Desliza (scroll) dentro de una lista o del cajón de aplicaciones.',
+    params: [{ name: 'direction', description: 'Dirección del desplazamiento', options: ['up', 'down'] }]
+  }
+];
+
+const ANDROID_STREAM = { name: 'stream', description: 'Canal de audio', options: ['media', 'ring', 'alarm', 'notification', 'call'] };
+
+/**
+ * Acciones del sistema por Intent/API de Android (headless, sin navegar la UI).
+ * Espejo de `Mcp.systemTools` en el mismo Model.kt, en su orden.
+ */
+const androidSystemTools = [
+  {
+    name: 'launch_app', via: ANDROID_SYSTEM,
+    description: 'Abre una aplicación por su nombre directamente (Intent de lanzamiento), sin navegar la UI.',
+    params: [{ name: 'app', description: 'Nombre visible o paquete de la app' }]
+  },
+  {
+    name: 'set_alarm', via: ANDROID_SYSTEM,
+    description: 'Crea una alarma vía la API AlarmClock, sin abrir la interfaz del reloj.',
+    params: [
+      { name: 'hour', description: 'Hora 0-23' },
+      { name: 'minute', description: 'Minuto 0-59' },
+      { name: 'message', description: 'Etiqueta (opcional)' }
+    ]
+  },
+  {
+    name: 'set_timer', via: ANDROID_SYSTEM,
+    description: 'Inicia un temporizador vía AlarmClock, sin UI.',
+    params: [
+      { name: 'seconds', description: 'Duración en segundos' },
+      { name: 'message', description: 'Etiqueta (opcional)' }
+    ]
+  },
+  { name: 'show_alarms', via: ANDROID_SYSTEM, params: [], description: 'Abre la lista de alarmas del reloj.' },
+  {
+    name: 'create_event', via: ANDROID_SYSTEM,
+    description: 'Crea un evento de calendario vía Intent (prellenado).',
+    params: [
+      { name: 'title', description: 'Título del evento' },
+      { name: 'start', description: 'Inicio ISO-8601 local, p.ej. 2026-07-06T15:00 (opcional)' },
+      { name: 'location', description: 'Lugar (opcional)' }
+    ]
+  },
+  {
+    name: 'dial', via: ANDROID_SYSTEM,
+    description: 'Abre el marcador con un número (sin llamar todavía).',
+    params: [{ name: 'number', description: 'Número de teléfono' }]
+  },
+  {
+    name: 'call', via: ANDROID_SYSTEM,
+    description: 'Llama directamente a un número vía Intent (requiere permiso de llamada).',
+    params: [{ name: 'number', description: 'Número de teléfono' }]
+  },
+  {
+    name: 'send_sms', via: ANDROID_SYSTEM,
+    description: 'Abre un SMS prellenado a un número (el usuario confirma el envío).',
+    params: [
+      { name: 'number', description: 'Destinatario' },
+      { name: 'message', description: 'Texto (opcional)' }
+    ]
+  },
+  {
+    name: 'send_email', via: ANDROID_SYSTEM,
+    description: 'Abre un correo prellenado.',
+    params: [
+      { name: 'to', description: 'Destinatario (opcional)' },
+      { name: 'subject', description: 'Asunto (opcional)' },
+      { name: 'body', description: 'Cuerpo (opcional)' }
+    ]
+  },
+  {
+    name: 'web_search', via: ANDROID_SYSTEM,
+    description: 'Busca en la web vía el Intent de búsqueda del sistema.',
+    params: [{ name: 'query', description: 'Qué buscar' }]
+  },
+  {
+    name: 'open_url', via: ANDROID_SYSTEM,
+    description: 'Abre una URL en el navegador.',
+    params: [{ name: 'url', description: 'URL http(s)' }]
+  },
+  {
+    name: 'check_simit_fines', via: ANDROID_SYSTEM, params: [],
+    description: 'Abre el portal OFICIAL de SIMIT (Sistema Nacional de Información de Comparendos de Tránsito, simit.org.co) para consultar comparendos/multas de tránsito en Colombia por cédula o placa. Úsala cuando el usuario pida revisar sus comparendos o multas, o evaluar si uno prescribió/caducó. Tras abrir, sigue con computer-use: busca por cédula o placa (pregunta con ask_user cuál usar si no lo sabes) y lee, de cada infracción, su ESTADO (comparendo/pendiente de resolución VS. resolución o multa YA en firme) y su FECHA. CONOCIMIENTO LEGAL para razonar (Código Nacional de Tránsito, Ley 769 de 2002; SIEMPRE aclara al usuario que esto NO es asesoría legal definitiva y que debe confirmarlo con el organismo de tránsito): la CADUCIDAD (art. 161) es de 1 año desde el hecho — si sigue como "comparendo" SIN resolución sancionatoria en firme pasado ese año, la autoridad pudo haber perdido la facultad de sancionar; la PRESCRIPCIÓN (art. 159) es de 3 años, pero aplica al COBRO de una multa que YA está en firme (otro escenario distinto). Ninguna de las dos opera sola en el portal: hay que ALEGARLA mediante un derecho de petición ante el organismo de tránsito que impuso el comparendo (NO ante SIMIT, que solo consulta). LÍMITES ESTRICTOS: JAMÁS pagues, envíes ni radiques ningún formulario/recurso/derecho de petición en nombre del usuario — es una gestión legal ante un tercero y debe hacerla él mismo. Solo informa lo que encontraste y, si lo pide, redacta el TEXTO del derecho de petición (por chat o con send_email/share_text) para que él lo revise y presente.'
+  },
+  {
+    name: 'open_maps', via: ANDROID_SYSTEM,
+    description: 'Abre Maps en un lugar o búsqueda.',
+    params: [{ name: 'query', description: 'Lugar o búsqueda' }]
+  },
+  {
+    name: 'directions', via: ANDROID_SYSTEM,
+    description: 'Abre la navegación hacia un destino.',
+    params: [{ name: 'destination', description: 'Destino' }]
+  },
+  { name: 'open_camera', via: ANDROID_SYSTEM, params: [], description: 'Abre la cámara para tomar una foto.' },
+  {
+    name: 'open_settings', via: ANDROID_SYSTEM,
+    description: 'Abre una pantalla de Ajustes del sistema.',
+    params: [{ name: 'section', description: 'Sección', options: ['general', 'wifi', 'bluetooth', 'data', 'display', 'sound', 'battery', 'location', 'apps'] }]
+  },
+  {
+    name: 'share_text', via: ANDROID_SYSTEM,
+    description: 'Abre el diálogo de compartir con un texto.',
+    params: [{ name: 'text', description: 'Texto a compartir' }]
+  },
+  {
+    name: 'set_clipboard', via: ANDROID_SYSTEM,
+    description: 'Copia un texto al portapapeles (sin UI).',
+    params: [{ name: 'text', description: 'Texto a copiar' }]
+  },
+  {
+    name: 'set_volume', via: ANDROID_SYSTEM,
+    description: 'Ajusta el volumen de un canal de audio directamente (sin UI). Útil para asegurar que una alarma/llamada/medio se oiga.',
+    params: [ANDROID_STREAM, { name: 'percent', description: 'Nivel 0-100 (usa 100 para asegurar que se oiga)' }]
+  },
+  {
+    name: 'adjust_volume', via: ANDROID_SYSTEM,
+    description: 'Sube, baja, muda o restaura el volumen de un canal de audio con un solo golpe (como el botón físico), sin necesitar un porcentaje exacto. Úsala, por ejemplo, para bajar el volumen tras poner música/un video si crees que puede molestar, o subirlo si el usuario no lo va a escuchar bien.',
+    params: [ANDROID_STREAM, { name: 'direction', description: 'Acción', options: ['raise', 'lower', 'mute', 'unmute'] }]
+  }
+];
+
+/**
  * El catálogo MCP base: gestos + acciones de sistema. Las herramientas
  * APRENDIDAS y los WORKFLOWS se añaden encima en runtime desde los stores de
- * aprendizaje (ver learning.js), sin tocar esto.
+ * aprendizaje (ver learning.js), sin tocar esto — igual en las dos plataformas.
+ *
+ * Sin plataforma, o con cualquiera que no sea Android, es el de Windows de
+ * siempre. Android no lleva el mapa del computador (map_*: es un grafo de
+ * superficies UIA) ni switch_window (Alt+Tab no existe en un teléfono).
  */
-function baseCatalog() {
+function baseCatalog(platform = PLATFORMS.WINDOWS) {
+  if (platform === PLATFORMS.ANDROID) return [...androidGestureTools, ...androidSystemTools];
   return [...gestureTools, ...systemTools, ...mapTools];
 }
 

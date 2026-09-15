@@ -1,5 +1,6 @@
 // Rutas públicas /api/v1 del agente de escritorio Ü (cliente Windows), absorbidas
-// del backend viejo (Android/backend/api/{agent,teach}/*). Se montan bajo el
+// del backend viejo (Android/backend/api/{agent,teach}/*). La app Android usa el
+// mismo turno y se distingue por X-Miracle-App: android_app. Se montan bajo el
 // prefijo /api/v1, que ya está gated con X-API-Key (requireApiKey en server.js),
 // reemplazando al CLIENT_TOKEN Bearer del backend original.
 //
@@ -26,8 +27,11 @@ function registerWindowsAgentRoutes(app, deps = {}) {
   //  - Siguientes:  manda { session, state, results, inform? } (echa el blob opaco).
   // Devuelve { session, ...BrainTurn }. El cliente nunca ve prompt, catálogo
   // MCP, memoria ni la key del modelo.
+  // X-Miracle-App dice qué cliente llama (windows_app, android_app). Solo cuenta
+  // en el primer turno; después manda la plataforma guardada en la sesión.
   app.post('/api/v1/agent/turn', async (req, res) => {
-    const result = await agentTurnService.handleTurn(req.body || {});
+    const appHeader = req.get?.('x-miracle-app') || req.headers?.['x-miracle-app'];
+    const result = await agentTurnService.handleTurn(req.body || {}, { app: appHeader });
     return res.status(result.status).json(result.json);
   });
 

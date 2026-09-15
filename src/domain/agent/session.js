@@ -13,13 +13,17 @@
 // para que una sesión emitida por uno pueda seguir en el otro durante la migración.
 
 const crypto = require('crypto');
+const { PLATFORMS } = require('./platform');
 
 /**
  * Crea el estado inicial de una sesión del cerebro.
  * provider: 'openai' | 'gemini' — fija el formato del resto de campos.
+ * platform: 'windows' | 'android' — sobre qué dispositivo opera el hilo; queda
+ * congelada como el modelo. Solo Android deja el campo: la sesión de Windows
+ * sale byte a byte igual que antes, y una sesión sin campo es de Windows.
  */
-function freshSession(provider, goal, model, effort) {
-  return {
+function freshSession(provider, goal, model, effort, platform) {
+  const session = {
     provider,
     goal,
     model,
@@ -31,6 +35,8 @@ function freshSession(provider, goal, model, effort) {
     pending: [],
     gemini: provider === 'gemini' ? { history: [], pending: [] } : undefined
   };
+  if (platform === PLATFORMS.ANDROID) session.platform = PLATFORMS.ANDROID;
+  return session;
 }
 
 // Mismo comportamiento permisivo de dev que el backend original: si SESSION_SECRET

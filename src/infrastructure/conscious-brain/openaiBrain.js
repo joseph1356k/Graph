@@ -12,7 +12,8 @@
 //  - Las acciones vienen en PÍXELES ABSOLUTOS del screenshot enviado; el cliente
 //    Windows captura a resolución real, así que la escala es 1.
 
-const { goalPrompt, PROMPT_VERSION } = require('./prompt');
+const { goalPrompt, describeState, promptVersionFor, PROMPT_VERSION } = require('./prompt');
+const { platformOfSession } = require('../../domain/agent/platform');
 const { ASSISTANT_TOOLS } = require('./tools');
 const LLMProvider = require('../LLMProvider');
 const { fromOpenAiCompatible, toRecorderUsage } = require('../../domain/usage/providerUsage');
@@ -67,7 +68,7 @@ function transient(code) {
 // al modelo SÍ es consumo facturable, así que colapsarlos en un solo evento
 // subestimaría el costo. Los 429 no gastan tokens y quedan como evento de error
 // sin consumo, que es exactamente lo que pasó.
-async function oaHttp(url, apiKey, body) {
+async function oaHttp(url, apiKey, body, promptVersion = PROMPT_VERSION) {
   let wait = 800;
   for (let attempt = 1; ; attempt++) {
     const startedAt = Date.now();
@@ -84,6 +85,7 @@ async function oaHttp(url, apiKey, body) {
       apiFamily: API_FAMILIES.COMPUTER_USE,
       feature: FEATURES.CONSCIOUS_BRIDGE,
       requestedModel: body?.model || '',
+      promptVersion,
       attempt,
       statusCode: res.status,
       latencyMs: Date.now() - startedAt,
@@ -119,7 +121,7 @@ function recordBrainUsage(input) {
     latencyMs: input.latencyMs,
     status: ok ? 'ok' : 'error',
     errorCode: ok ? '' : `http_${input.statusCode}`,
-    metadata: { httpStatus: input.statusCode, attempt: input.attempt, promptVersion: PROMPT_VERSION },
+    metadata: { httpStatus: input.statusCode, attempt: input.attempt, promptVersion: input.promptVersion || PROMPT_VERSION },
     ...toRecorderUsage(fromOpenAiCompatible(parsed))
   });
 }
@@ -132,8 +134,9 @@ const asArr = (v) => (Array.isArray(v) ? v : []);
 async function runOpenAiTurn(inp) {
   const s = JSON.parse(JSON.stringify(inp.session)); // copia mutable
   const { tools, mcpNames, memory, apps, state, results, apiKey } = inp;
+  const platform = platformOfSession(s);
 
-  const stateBlock = `Pantalla actual: ${state.screen}\nDónde estás (árbol de UI de Windows):\n${state.uiContext}`;
+  const stateBlock = describeState(state, platform);
   const input = [];
 
   const userMessage = (text) => {
@@ -145,7 +148,7 @@ async function runOpenAiTurn(inp) {
   // El prompt del sistema va en `instructions` en CADA request: la Responses
   // API no lo hereda por previous_response_id. Antes iba como primer mensaje
   // de usuario, con lo que las reglas tenían el mismo rango que un "hola".
-  const instructions = goalPrompt({ goal: s.goal, tools, memory, stateBlock: '' });
+  const instructions = goalPrompt({ goal: s.goal, tools, memory, stateBlock: '', platform });
 
   if (!s.previousId) {
     userMessage(stateBlock);
@@ -191,7 +194,7 @@ async function runOpenAiTurn(inp) {
   };
   if (s.previousId) reqBody.previous_response_id = s.previousId;
 
-  const res = await oaHttp(`${OA_BASE}/v1/responses`, apiKey, reqBody);
+  const res = await oaHttp(`${OA_BASE}/v1/responses`, apiKey, reqBody, promptVersionFor(platform));
   if (res.code >= 300) {
     // Si el hilo previo expiró y aún no hicimos nada este turno, abre ventana nueva y reintenta una vez.
     if (s.startId && s.previousId === s.startId) {

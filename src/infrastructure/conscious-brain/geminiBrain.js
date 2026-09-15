@@ -11,7 +11,8 @@
 //    píxeles del screenshot (a resolución real).
 //  - Las herramientas MCP, ask_user, speak y list_apps se declaran igual que en OpenAI.
 
-const { goalPrompt, PROMPT_VERSION } = require('./prompt');
+const { goalPrompt, describeState, geminiComputerUse, promptVersionFor, PROMPT_VERSION } = require('./prompt');
+const { platformOfSession } = require('../../domain/agent/platform');
 const { ASSISTANT_TOOLS } = require('./tools');
 const LLMProvider = require('../LLMProvider');
 const { fromGemini, toRecorderUsage } = require('../../domain/usage/providerUsage');
@@ -38,7 +39,7 @@ function transient(code) {
 // Igual que en el cerebro de OpenAI: un evento por intento, con su número.
 // El modelo se saca de la URL porque Gemini lo lleva en la ruta
 // (/v1beta/models/<modelo>:generateContent), no en el cuerpo.
-async function gemHttp(url, body) {
+async function gemHttp(url, body, promptVersion = PROMPT_VERSION) {
   let wait = 800;
   for (let attempt = 1; ; attempt++) {
     const startedAt = Date.now();
@@ -52,6 +53,7 @@ async function gemHttp(url, body) {
 
     recordGeminiBrainUsage({
       requestedModel: modelFromGeminiUrl(url),
+      promptVersion,
       attempt,
       statusCode: res.status,
       latencyMs: Date.now() - startedAt,
@@ -90,7 +92,7 @@ function recordGeminiBrainUsage(input) {
     latencyMs: input.latencyMs,
     status: ok ? 'ok' : 'error',
     errorCode: ok ? '' : `http_${input.statusCode}`,
-    metadata: { httpStatus: input.statusCode, attempt: input.attempt, promptVersion: PROMPT_VERSION },
+    metadata: { httpStatus: input.statusCode, attempt: input.attempt, promptVersion: input.promptVersion || PROMPT_VERSION },
     ...toRecorderUsage(fromGemini(parsed))
   });
 }
@@ -137,14 +139,9 @@ function builtinFns() {
   ];
 }
 
-function systemPrompt(goal, tools, memory, width, height) {
-  const base = goalPrompt({ goal, tools, memory, stateBlock: '' }).trim();
-  const addendum = `
-        COMPUTER-USE EN GEMINI: para tocar algo visual, primero llama a look() para ver la pantalla; luego
-        usa computer_tap / computer_type / computer_scroll / computer_swipe / computer_key con coordenadas
-        en PÍXELES sobre la imagen (la captura está a resolución REAL de pantalla: ${width}x${height}). Para
-        tareas de sistema (abrir apps, buscar, ajustes…) prefiere SIEMPRE las herramientas MCP, no el ratón.
-        Cuando el objetivo esté cumplido, responde SOLO con texto (sin llamar funciones).`.trim();
+function systemPrompt(goal, tools, memory, width, height, platform) {
+  const base = goalPrompt({ goal, tools, memory, stateBlock: '', platform }).trim();
+  const addendum = geminiComputerUse({ width, height, platform });
   return `${base}\n\n${addendum}`;
 }
 
@@ -166,8 +163,9 @@ async function runGeminiTurn(inp) {
   if (!s.gemini) s.gemini = { history: [], pending: [] };
   const g = s.gemini;
   const { tools, mcpNames, memory, apps, state, results, apiKey } = inp;
+  const platform = platformOfSession(s);
 
-  const stateBlock = `Pantalla actual: ${state.screen}\nDónde estás (árbol de UI de Windows):\n${state.uiContext}`;
+  const stateBlock = describeState(state, platform);
 
   // 1) Construye el nuevo turno de usuario: respuestas a las funciones pendientes + estado + imagen.
   const parts = [];
@@ -187,14 +185,14 @@ async function runGeminiTurn(inp) {
 
   // 2) Llama a Gemini.
   const body = {
-    system_instruction: { parts: [{ text: systemPrompt(s.goal, tools, memory, state.width, state.height) }] },
+    system_instruction: { parts: [{ text: systemPrompt(s.goal, tools, memory, state.width, state.height, platform) }] },
     contents: g.history,
     tools: [{ function_declarations: [...tools.map(mcpFn), ...builtinFns()] }],
     tool_config: { function_calling_config: { mode: 'AUTO' } },
     generationConfig: { temperature: 0.6 }
   };
   const url = `${BASE}/${encodeURIComponent(s.model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
-  const res = await gemHttp(url, body);
+  const res = await gemHttp(url, body, promptVersionFor(platform));
   if (res.code >= 300) throw new Error(`Gemini HTTP ${res.code}: ${res.body.slice(0, 300)}`);
 
   // 3) Parsea la respuesta del modelo.
