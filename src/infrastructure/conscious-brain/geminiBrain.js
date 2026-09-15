@@ -13,6 +13,7 @@
 
 const { goalPrompt, describeState, geminiComputerUse, promptVersionFor, PROMPT_VERSION } = require('./prompt');
 const { platformOfSession } = require('../../domain/agent/platform');
+const { toScreen } = require('../../domain/agent/screenScale');
 const { ASSISTANT_TOOLS } = require('./tools');
 const LLMProvider = require('../LLMProvider');
 const { fromGemini, toRecorderUsage } = require('../../domain/usage/providerUsage');
@@ -145,13 +146,19 @@ function systemPrompt(goal, tools, memory, width, height, platform) {
   return `${base}\n\n${addendum}`;
 }
 
-/** Convierte una functionCall de computer-use a una acción del contrato. */
-function toAction(name, args) {
+/**
+ * Convierte una functionCall de computer-use a una acción del contrato. Las coordenadas vienen en
+ * píxeles de la imagen; `scale` (Android, domain/agent/screenScale) las pasa a píxeles de pantalla.
+ * Sin escala (Windows, o Android sin datos) quedan redondeadas como siempre.
+ */
+function toAction(name, args, scale = null) {
+  const x = (key) => toScreen(args[key], scale, 'x');
+  const y = (key) => toScreen(args[key], scale, 'y');
   switch (name) {
-    case 'computer_tap': return { kind: 'tap', x: asInt(args.x), y: asInt(args.y) };
-    case 'computer_type': return { kind: 'type', x: asInt(args.x), y: asInt(args.y), text: asStr(args.text) };
+    case 'computer_tap': return { kind: 'tap', x: x('x'), y: y('y') };
+    case 'computer_type': return { kind: 'type', x: x('x'), y: y('y'), text: asStr(args.text) };
     case 'computer_scroll': return { kind: 'scroll', down: asStr(args.direction) !== 'up' };
-    case 'computer_swipe': return { kind: 'swipe', x1: asInt(args.x1), y1: asInt(args.y1), x2: asInt(args.x2), y2: asInt(args.y2), ms: 400 };
+    case 'computer_swipe': return { kind: 'swipe', x1: x('x1'), y1: y('y1'), x2: x('x2'), y2: y('y2'), ms: 400 };
     case 'computer_key': return { kind: 'key', key: asStr(args.key) };
     case 'computer_wait': return { kind: 'wait', ms: Math.max(0, asInt(args.ms)) };
     default: return null;
@@ -225,7 +232,7 @@ async function runGeminiTurn(inp) {
       actions.push({ kind: 'mcp', tool: name, args: clean });
       if (args.intent) intents.push(asStr(args.intent));
     } else if (COMPUTER_FNS.has(name)) {
-      const action = toAction(name, args);
+      const action = toAction(name, args, inp.screenScale || null);
       if (action) actions.push(action);
     } else if (name === 'ask_user') {
       question = asStr(args.question);

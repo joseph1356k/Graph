@@ -10,10 +10,12 @@
 //  - La conversación la mantiene el servidor de OpenAI vía previous_response_id;
 //    cada turno reenvía computer_call_output (screenshot) y/o function_call_output.
 //  - Las acciones vienen en PÍXELES ABSOLUTOS del screenshot enviado; el cliente
-//    Windows captura a resolución real, así que la escala es 1.
+//    Windows captura a resolución real, así que la escala es 1. Android manda la
+//    captura achicada y el turno trae la escala (domain/agent/screenScale).
 
 const { goalPrompt, describeState, promptVersionFor, PROMPT_VERSION } = require('./prompt');
 const { platformOfSession } = require('../../domain/agent/platform');
+const { toScreen } = require('../../domain/agent/screenScale');
 const { ASSISTANT_TOOLS } = require('./tools');
 const LLMProvider = require('../LLMProvider');
 const { fromOpenAiCompatible, toRecorderUsage } = require('../../domain/usage/providerUsage');
@@ -206,7 +208,7 @@ async function runOpenAiTurn(inp) {
     throw new Error(`OpenAI HTTP ${res.code}: ${res.body.slice(0, 200)}`);
   }
 
-  return parseTurn(JSON.parse(res.body), s, state, mcpNames, apps);
+  return parseTurn(JSON.parse(res.body), s, state, mcpNames, apps, inp.screenScale || null);
 }
 
 function functionOutput(callId, output) {
@@ -214,20 +216,15 @@ function functionOutput(callId, output) {
 }
 
 /** Traduce la respuesta de la Responses API a un BrainTurn + la sesión actualizada. */
-function parseTurn(body, s, state, mcpNames, apps) {
+function parseTurn(body, s, state, mcpNames, apps, scale = null) {
   s.previousId = asStr(body.id) || s.previousId;
   const items = asArr(body.output ?? body.outputs).map(asObj);
 
   // Reescalado screenshot→pantalla: OpenAI da píxeles del screenshot enviado.
-  // El cliente Windows captura a la resolución real de pantalla, así que
-  // screenshot y pantalla coinciden (escala 1).
-  const sx = 1;
-  const sy = 1;
-  const px = (a, key, scale) => {
-    const raw = a[key];
-    const n = typeof raw === 'number' ? raw : typeof raw === 'string' ? parseFloat(raw) : NaN;
-    return Number.isFinite(n) ? Math.round(n * scale) : -1;
-  };
+  // El cliente Windows captura a la resolución real de pantalla (scale null:
+  // escala 1). Android manda la captura achicada y el turno trae la escala.
+  const at = (a, key, axis) => toScreen(a[key], scale, axis);
+  const px = (a, key) => toScreen(a[key], null, 'x');
 
   const actions = [];
   const pending = [];
@@ -241,10 +238,10 @@ function parseTurn(body, s, state, mcpNames, apps) {
       case 'click':
       case 'double_click':
       case 'left_click':
-        actions.push({ kind: 'tap', x: px(a, 'x', sx), y: px(a, 'y', sy) });
+        actions.push({ kind: 'tap', x: at(a, 'x', 'x'), y: at(a, 'y', 'y') });
         break;
       case 'type':
-        actions.push({ kind: 'type', x: px(a, 'x', sx), y: px(a, 'y', sy), text: asStr(a.text) });
+        actions.push({ kind: 'type', x: at(a, 'x', 'x'), y: at(a, 'y', 'y'), text: asStr(a.text) });
         break;
       case 'keypress':
       case 'key': {
@@ -254,8 +251,9 @@ function parseTurn(body, s, state, mcpNames, apps) {
         break;
       }
       case 'scroll': {
-        const dy = px(a, 'scroll_y', 1);
-        const dyAlt = px(a, 'delta_y', 1);
+        // El contrato no lleva punto en scroll (solo dirección): no hay coordenada que reescalar.
+        const dy = px(a, 'scroll_y');
+        const dyAlt = px(a, 'delta_y');
         const v = dy !== -1 ? dy : dyAlt !== -1 ? dyAlt : 1;
         actions.push({ kind: 'scroll', down: v >= 0 });
         break;
@@ -265,11 +263,11 @@ function parseTurn(body, s, state, mcpNames, apps) {
         const path = asArr(a.path).map(asObj);
         const p0 = path[0] ?? {};
         const p1 = path[path.length - 1] ?? p0;
-        actions.push({ kind: 'swipe', x1: px(p0, 'x', sx), y1: px(p0, 'y', sy), x2: px(p1, 'x', sx), y2: px(p1, 'y', sy), ms: 400 });
+        actions.push({ kind: 'swipe', x1: at(p0, 'x', 'x'), y1: at(p0, 'y', 'y'), x2: at(p1, 'x', 'x'), y2: at(p1, 'y', 'y'), ms: 400 });
         break;
       }
       case 'wait':
-        actions.push({ kind: 'wait', ms: Number(px(a, 'ms', 1) > 0 ? px(a, 'ms', 1) : 1000) });
+        actions.push({ kind: 'wait', ms: Number(px(a, 'ms') > 0 ? px(a, 'ms') : 1000) });
         break;
       default:
         break; // move / screenshot: no aplican (el screenshot ya viaja en cada output)

@@ -31,6 +31,7 @@
 
 const { freshSession, encodeSession, decodeSession } = require('../../domain/agent/session');
 const { PLATFORMS, platformFromApp, platformOfSession } = require('../../domain/agent/platform');
+const { imageSize, screenScale } = require('../../domain/agent/screenScale');
 const { baseCatalog, catalogNames } = require('../../domain/agent/mcpCatalog');
 const { learnedToMcp, workflowToMcp, InMemoryAgentLearningStore } = require('../../domain/agent/learning');
 const { runProviderTurn } = require('../../infrastructure/conscious-brain');
@@ -141,6 +142,17 @@ class AgentTurnService {
       const { tools, workflowIdByTool } = await this.assembleTools(userId, apps, surface, platform, workflowAccess);
       const memory = await this.memoryRepository.forPrompt(userId);
 
+      // Android manda la captura achicada: el modelo da píxeles de la imagen y el
+      // cliente espera píxeles de pantalla (domain/agent/screenScale). La última
+      // imagen legible queda en la sesión, por si el modelo toca en un turno sin
+      // captura. Windows no pasa por aquí: su sesión y sus coordenadas no cambian.
+      let screenScaleOfTurn = null;
+      if (platform === PLATFORMS.ANDROID) {
+        const image = imageSize(body.state.screenshot) || session.imageSize || null;
+        if (image) session.imageSize = image;
+        screenScaleOfTurn = screenScale({ platform, state: body.state, image });
+      }
+
       const { session: next, turn } = await this.runProviderTurn({
         session,
         tools,
@@ -149,7 +161,8 @@ class AgentTurnService {
         apps,
         state: body.state,
         results: Array.isArray(body.results) ? body.results : [],
-        apiKey: config.apiKey
+        apiKey: config.apiKey,
+        screenScale: screenScaleOfTurn
       });
 
       // El modelo llama workflow_<nombre>; el cliente ejecuta por id (WorkflowPlayer).
