@@ -198,3 +198,14 @@ dueña**. Un commit de otro autor deja el despliegue en `BLOCKED`. Por eso el me
 la cuenta dueña del proyecto, y ese merge es el que dispara el despliegue.
 
 Verificado el 2026-09-16: el despliegue de producción sale del merge a `main`.
+
+### Cómo se dispara un despliegue
+
+El proyecto de Vercel es Hobby y solo despliega commits cuyo autor esté vinculado a la cuenta dueña.
+Un push de otra cuenta deja el despliegue en `BLOCKED` aunque el código sea correcto. Tres caminos,
+de menor a mayor esfuerzo:
+
+1. **Deploy hook.** Se crea una vez en el proyecto (Settings → Git → Deploy Hooks) y despliega `main`
+   al abrir esa URL. Es como salió el despliegue del 8 de septiembre.
+2. **Merge de la cuenta dueña.** El merge crea un commit suyo, y ese commit sí despliega.
+3. **Plan Pro con miembros**, que habilita a más cuentas a desplegar.
