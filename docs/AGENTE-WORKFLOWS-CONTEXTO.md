@@ -173,3 +173,28 @@ curl -s $B/api/v1/workflows -H "X-API-Key: $K"              # catálogo crudo
 
 En la app: 🎓 enseñar (countdown 3s → cambiar a la app objetivo), 🧭 (en Backend) para
 ejecutar a mano, 📜 para logs, badge arriba-derecha = ID de superficie.
+
+## La app Android como cliente del turno
+
+Desde `556263c..ef9cf18`, el turno `POST /api/v1/agent/turn` reconoce la app Android por la
+cabecera `X-Miracle-App: android_app` y guarda la plataforma en la sesión firmada del primer
+turno. A partir de ahí:
+
+- **Prompt y catálogo propios.** Android recibe `ANDROID_TEXT` y el catálogo de sus 25 acciones
+  reales, copiado de `Model.kt` del repo Android. Windows no cambia: su turno está fijado byte a
+  byte en `tests/fixtures/agent-platform/windows-snapshot.json`.
+- **Coordenadas en píxeles de pantalla.** La captura de Android viaja reducida; `src/domain/agent/screenScale.js`
+  reescala las coordenadas del modelo al tamaño real que reporta el cliente. Sin datos usables,
+  escala 1.
+- **Modelo propio opcional.** `MIRACLE_CONSCIOUS_LLM_MODEL_ANDROID_APP` y
+  `MIRACLE_CONSCIOUS_LLM_PROVIDER_ANDROID_APP` solo afectan a los hilos de `android_app` y quedan
+  congelados en la sesión. Sin ellas, Android usa la configuración general.
+- **Aislamiento por dueño.** El cerebro del turno ve los workflows de su API key más los globales.
+
+### Despliegue
+
+El proyecto de Vercel es Hobby: **solo despliega commits cuyo autor esté vinculado a la cuenta
+dueña**. Un commit de otro autor deja el despliegue en `BLOCKED`. Por eso el merge a `main` lo hace
+la cuenta dueña del proyecto, y ese merge es el que dispara el despliegue.
+
+Verificado el 2026-09-16: el despliegue de producción sale del merge a `main`.
