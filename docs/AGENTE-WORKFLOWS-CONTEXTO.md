@@ -196,3 +196,5 @@ turno. A partir de ahí:
 El proyecto de Vercel es Hobby: **solo despliega commits cuyo autor esté vinculado a la cuenta
 dueña**. Un commit de otro autor deja el despliegue en `BLOCKED`. Por eso el merge a `main` lo hace
 la cuenta dueña del proyecto, y ese merge es el que dispara el despliegue.
+
+Verificado el 2026-09-16: el despliegue de producción sale del merge a `main`.
