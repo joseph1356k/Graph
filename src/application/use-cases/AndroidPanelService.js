@@ -9,8 +9,8 @@
 
 const MASK_PREFIX = '••••'; // "••••"
 // Secretos: se enmascaran al leer y solo se sobrescriben si llegan en claro.
-const KEY_FIELDS = ['openai_key', 'gemini_key', 'deepgram_key'];
-const ALLOWED_PROVIDERS = ['OPENAI', 'GEMINI'];
+const KEY_FIELDS = ['openai_key', 'deepgram_key'];
+const ALLOWED_PROVIDERS = ['OPENAI'];
 // In-memory join cap for the users list: enough for the panel's aggregate
 // (prompt count + last prompt) without unbounded payloads.
 const USERS_PROMPT_JOIN_LIMIT = 5000;
@@ -133,11 +133,9 @@ class AndroidPanelService {
     const row = (await this.readConfigRow()) || {};
     return {
       openai_key: maskKey(row.openai_key),
-      gemini_key: maskKey(row.gemini_key),
       deepgram_key: maskKey(row.deepgram_key),
       default_provider: row.default_provider || 'OPENAI',
       default_openai_model: row.default_openai_model || '',
-      default_gemini_model: row.default_gemini_model || '',
       updated_at: row.updated_at || null
     };
   }
@@ -161,7 +159,7 @@ class AndroidPanelService {
       next.default_provider = provider;
     }
 
-    ['default_openai_model', 'default_gemini_model'].forEach((field) => {
+    ['default_openai_model'].forEach((field) => {
       const value = `${patch[field] == null ? '' : patch[field]}`.trim();
       if (value) {
         next[field] = value;

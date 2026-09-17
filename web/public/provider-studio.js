@@ -1059,11 +1059,9 @@
         configPill: document.getElementById('android-config-pill'),
         configForm: document.getElementById('android-config-form'),
         openaiKey: document.getElementById('android-openai-key'),
-        geminiKey: document.getElementById('android-gemini-key'),
         deepgramKey: document.getElementById('android-deepgram-key'),
         defaultProvider: document.getElementById('android-default-provider'),
         openaiModel: document.getElementById('android-openai-model'),
-        geminiModel: document.getElementById('android-gemini-model'),
         configRefresh: document.getElementById('android-config-refresh'),
         configSubmit: document.getElementById('android-config-submit'),
         configMessage: document.getElementById('android-config-message'),
@@ -1336,19 +1334,17 @@
 
     function fillConfig(config) {
         dom.openaiKey.value = config.openai_key || '';
-        dom.geminiKey.value = config.gemini_key || '';
         dom.deepgramKey.value = config.deepgram_key || '';
         dom.defaultProvider.value = config.default_provider || 'OPENAI';
         dom.openaiModel.value = config.default_openai_model || '';
-        dom.geminiModel.value = config.default_gemini_model || '';
-        [dom.openaiKey, dom.geminiKey, dom.deepgramKey].forEach((input) => {
+        [dom.openaiKey, dom.deepgramKey].forEach((input) => {
             input.type = 'password';
             const toggle = input.parentElement?.querySelector('.field-key-toggle');
             if (toggle) toggle.setAttribute('aria-pressed', 'false');
         });
 
-        const keysReady = [config.openai_key, config.gemini_key].filter(Boolean).length;
-        const activeModel = config.default_provider === 'GEMINI' ? config.default_gemini_model : config.default_openai_model;
+        const keysReady = [config.openai_key].filter(Boolean).length;
+        const activeModel = config.default_openai_model;
         const modelLabel = activeModel ? ` (${activeModel})` : '';
         dom.configMetric.textContent = `${config.default_provider || 'OPENAI'}${modelLabel} · ${config.updated_at ? `actualizada ${timeAgo(config.updated_at)}` : 'sin guardar'}`;
         setPill(dom.configPill, keysReady ? 'Configurado' : 'Sin keys', keysReady ? 'ready' : 'danger');
@@ -1375,11 +1371,9 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     openai_key: dom.openaiKey.value,
-                    gemini_key: dom.geminiKey.value,
                     deepgram_key: dom.deepgramKey.value,
                     default_provider: dom.defaultProvider.value,
-                    default_openai_model: dom.openaiModel.value,
-                    default_gemini_model: dom.geminiModel.value
+                    default_openai_model: dom.openaiModel.value
                 })
             });
             fillConfig(payload.config || {});
@@ -1697,7 +1691,7 @@
         });
     }
 
-    [dom.openaiKey, dom.geminiKey, dom.deepgramKey].forEach(bindKeyToggle);
+    [dom.openaiKey, dom.deepgramKey].forEach(bindKeyToggle);
 
     dom.configForm.addEventListener('submit', (event) => {
         submitConfig(event).catch((error) => setMessage(dom.configMessage, error.message, 'error'));
