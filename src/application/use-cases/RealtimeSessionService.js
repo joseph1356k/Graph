@@ -102,11 +102,14 @@ class RealtimeSessionService {
       throw upstreamError(message);
     }
 
-    // El shape documentado trae client_secret como objeto ({ value, expires_at });
-    // se acepta también un string plano por si la API lo simplifica.
-    const clientSecret = typeof body?.client_secret === 'string'
-      ? body.client_secret
-      : body?.client_secret?.value;
+    // Shape real de POST /v1/realtime/client_secrets (GA), verificado contra un
+    // log de producción 2026-09-17: la respuesta ES el objeto client_secret en
+    // sí ({ value, expires_at, session: {...} }), no un wrapper con una clave
+    // "client_secret" adentro -- a diferencia de lo que documentación vieja (de
+    // /v1/realtime/sessions, beta) sugería. Se mantiene el fallback anidado por
+    // si la forma cambia otra vez.
+    const clientSecret = body?.value
+      ?? (typeof body?.client_secret === 'string' ? body.client_secret : body?.client_secret?.value);
     const expiresAt = body?.expires_at ?? body?.client_secret?.expires_at ?? null;
 
     if (!clientSecret) {
