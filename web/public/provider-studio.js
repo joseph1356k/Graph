@@ -1059,13 +1059,9 @@
         configPill: document.getElementById('android-config-pill'),
         configForm: document.getElementById('android-config-form'),
         openaiKey: document.getElementById('android-openai-key'),
-        geminiKey: document.getElementById('android-gemini-key'),
         deepgramKey: document.getElementById('android-deepgram-key'),
-        miracleBase: document.getElementById('android-miracle-base'),
-        miracleKey: document.getElementById('android-miracle-key'),
         defaultProvider: document.getElementById('android-default-provider'),
         openaiModel: document.getElementById('android-openai-model'),
-        geminiModel: document.getElementById('android-gemini-model'),
         configRefresh: document.getElementById('android-config-refresh'),
         configSubmit: document.getElementById('android-config-submit'),
         configMessage: document.getElementById('android-config-message'),
@@ -1338,21 +1334,19 @@
 
     function fillConfig(config) {
         dom.openaiKey.value = config.openai_key || '';
-        dom.geminiKey.value = config.gemini_key || '';
         dom.deepgramKey.value = config.deepgram_key || '';
-        dom.miracleBase.value = config.miracle_api_base || '';
-        dom.miracleKey.value = config.miracle_api_key || '';
         dom.defaultProvider.value = config.default_provider || 'OPENAI';
         dom.openaiModel.value = config.default_openai_model || '';
-        dom.geminiModel.value = config.default_gemini_model || '';
-        [dom.openaiKey, dom.geminiKey, dom.deepgramKey, dom.miracleKey].forEach((input) => {
+        [dom.openaiKey, dom.deepgramKey].forEach((input) => {
             input.type = 'password';
             const toggle = input.parentElement?.querySelector('.field-key-toggle');
             if (toggle) toggle.setAttribute('aria-pressed', 'false');
         });
 
-        const keysReady = [config.openai_key, config.gemini_key].filter(Boolean).length;
-        dom.configMetric.textContent = `${config.default_provider || 'OPENAI'} · ${config.updated_at ? `actualizada ${timeAgo(config.updated_at)}` : 'sin guardar'}`;
+        const keysReady = [config.openai_key].filter(Boolean).length;
+        const activeModel = config.default_openai_model;
+        const modelLabel = activeModel ? ` (${activeModel})` : '';
+        dom.configMetric.textContent = `${config.default_provider || 'OPENAI'}${modelLabel} · ${config.updated_at ? `actualizada ${timeAgo(config.updated_at)}` : 'sin guardar'}`;
         setPill(dom.configPill, keysReady ? 'Configurado' : 'Sin keys', keysReady ? 'ready' : 'danger');
     }
 
@@ -1377,13 +1371,9 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     openai_key: dom.openaiKey.value,
-                    gemini_key: dom.geminiKey.value,
                     deepgram_key: dom.deepgramKey.value,
-                    miracle_api_base: dom.miracleBase.value,
-                    miracle_api_key: dom.miracleKey.value,
                     default_provider: dom.defaultProvider.value,
-                    default_openai_model: dom.openaiModel.value,
-                    default_gemini_model: dom.geminiModel.value
+                    default_openai_model: dom.openaiModel.value
                 })
             });
             fillConfig(payload.config || {});
@@ -1459,9 +1449,14 @@
             return;
         }
         state.users.forEach((user) => {
-            const card = document.createElement('button');
-            card.type = 'button';
+            const card = document.createElement('div');
             card.className = 'android-user-card';
+
+            // Botón real (no puede haber un <button> anidado dentro de otro):
+            // la zona clicable que abre el detalle vive separada del toggle.
+            const open = document.createElement('button');
+            open.type = 'button';
+            open.className = 'android-user-card-open';
 
             const name = document.createElement('strong');
             name.className = 'android-user-name';
@@ -1480,10 +1475,47 @@
             count.className = 'android-user-count';
             count.textContent = user.prompt_count === 1 ? '1 prompt' : `${user.prompt_count || 0} prompts`;
 
-            card.append(name, meta, seen, count);
-            card.addEventListener('click', () => openUser(user));
+            open.append(name, meta, seen, count);
+            open.addEventListener('click', () => openUser(user));
+
+            card.append(open, renderRealtimeToggle(user));
             dom.usersGrid.appendChild(card);
         });
+    }
+
+    // Toggle "Voz Live habilitada": refleja/edita graph_app_users.realtime_allowed
+    // para ese dispositivo. Vive fuera del botón que abre el detalle para no
+    // anidar controles interactivos y para no disparar la navegación al clickear.
+    function renderRealtimeToggle(user) {
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'android-realtime-toggle';
+        const setLabel = (allowed) => {
+            toggle.setAttribute('aria-pressed', allowed ? 'true' : 'false');
+            toggle.textContent = allowed ? 'Voz Live: activada' : 'Voz Live: desactivada';
+        };
+        setLabel(Boolean(user.realtime_allowed));
+
+        toggle.addEventListener('click', async (event) => {
+            event.stopPropagation();
+            const next = !user.realtime_allowed;
+            toggle.disabled = true;
+            try {
+                const payload = await fetchJson(`/api/android/users/${encodeURIComponent(user.device_id)}/realtime-allowed`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ allowed: next })
+                });
+                user.realtime_allowed = Boolean(payload.user?.realtime_allowed ?? next);
+                setLabel(user.realtime_allowed);
+            } catch (error) {
+                setMessage(dom.usersMessage, error.message || 'No fue posible actualizar la voz Live.', 'error');
+            } finally {
+                toggle.disabled = false;
+            }
+        });
+
+        return toggle;
     }
 
     async function loadUsers({ silent = false } = {}) {
@@ -1701,7 +1733,7 @@
         });
     }
 
-    [dom.openaiKey, dom.geminiKey, dom.deepgramKey, dom.miracleKey].forEach(bindKeyToggle);
+    [dom.openaiKey, dom.deepgramKey].forEach(bindKeyToggle);
 
     dom.configForm.addEventListener('submit', (event) => {
         submitConfig(event).catch((error) => setMessage(dom.configMessage, error.message, 'error'));

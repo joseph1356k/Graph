@@ -592,15 +592,6 @@
                                 </div>
                             </label>
                             <label class="field field-span-2">
-                                <span>Gemini key</span>
-                                <div class="field-key-row">
-                                    <input id="android-gemini-key" type="password" autocomplete="off" placeholder="AIza...">
-                                    <button type="button" class="field-key-toggle" id="android-gemini-key-toggle" aria-label="Mostrar API key" aria-pressed="false">
-                                        <svg class="field-key-toggle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                                    </button>
-                                </div>
-                            </label>
-                            <label class="field field-span-2">
                                 <span>Deepgram key</span>
                                 <div class="field-key-row">
                                     <input id="android-deepgram-key" type="password" autocomplete="off" placeholder="Clave de Deepgram">
@@ -609,33 +600,15 @@
                                     </button>
                                 </div>
                             </label>
-                            <label class="field field-span-2">
-                                <span>Backend Miracle (base)</span>
-                                <input id="android-miracle-base" type="text" autocomplete="off" placeholder="https://graph-eight-pied.vercel.app">
-                            </label>
-                            <label class="field field-span-2">
-                                <span>Miracle API key (/api/v1)</span>
-                                <div class="field-key-row">
-                                    <input id="android-miracle-key" type="password" autocomplete="off" placeholder="Clave de cliente del API publico">
-                                    <button type="button" class="field-key-toggle" id="android-miracle-key-toggle" aria-label="Mostrar API key" aria-pressed="false">
-                                        <svg class="field-key-toggle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                                    </button>
-                                </div>
-                            </label>
                             <label class="field">
                                 <span>Proveedor por defecto</span>
                                 <select id="android-default-provider">
                                     <option value="OPENAI">OPENAI</option>
-                                    <option value="GEMINI">GEMINI</option>
                                 </select>
                             </label>
                             <label class="field">
-                                <span>Modelo OpenAI por defecto</span>
-                                <input id="android-openai-model" type="text" autocomplete="off" placeholder="gpt-5.6-terra">
-                            </label>
-                            <label class="field">
-                                <span>Modelo Gemini por defecto</span>
-                                <input id="android-gemini-model" type="text" autocomplete="off" placeholder="gemini-3.5-flash">
+                                <span>Modelo OpenAI por defecto (tareas y razonamiento)</span>
+                                <input id="android-openai-model" type="text" autocomplete="off" placeholder="gpt-5.6-luna">
                             </label>
                         </div>
                         <div class="studio-actions">
@@ -644,6 +617,17 @@
                         </div>
                     </form>
                     <p id="android-config-message" class="form-message"></p>
+                    <div class="android-voice-info">
+                        <p class="android-config-note">
+                            <strong>Voz — fija, no distribuida desde acá:</strong>
+                            STT <code>deepgram nova-3</code> · TTS <code>openai gpt-4o-mini-tts</code>.
+                            Ambos reutilizan la OpenAI key / Deepgram key de arriba, pero el modelo no es
+                            configurable todavía: no hay selector.
+                            <em>Live (<code>gpt-realtime</code>) ya tiene endpoint de sesión efímera.
+                            El acceso es por whitelist: activá "Voz Live" por dispositivo en la lista de
+                            abajo — por defecto ningún dispositivo queda habilitado.</em>
+                        </p>
+                    </div>
                 </section>
 
                 <section class="android-users-section">

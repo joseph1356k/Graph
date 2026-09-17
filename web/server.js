@@ -51,6 +51,7 @@ const BiopsyExtractionService = require('../src/application/use-cases/BiopsyExtr
 const OrganizerProfileService = require('../src/application/use-cases/OrganizerProfileService');
 const ApiKeyService = require('../src/application/use-cases/ApiKeyService');
 const AndroidPanelService = require('../src/application/use-cases/AndroidPanelService');
+const RealtimeSessionService = require('../src/application/use-cases/RealtimeSessionService');
 // Módulo Windows App (agente de escritorio Ü, absorbido del backend viejo de
 // Vercel Functions): cerebro consciente + enseñanza por video + sus tarjetas.
 const AgentTurnService = require('../src/application/use-cases/AgentTurnService');
@@ -75,6 +76,7 @@ const createOpportunisticRescue = require('./api/opportunisticRescue');
 const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
 const registerOrganizerRoutes = require('./api/registerOrganizerRoutes');
 const registerAndroidPanelRoutes = require('./api/registerAndroidPanelRoutes');
+const registerRealtimeSessionRoutes = require('./api/registerRealtimeSessionRoutes');
 // Windows Live: core de telemetría/visualización por usuario del cliente Windows.
 const WindowsTelemetryService = require('../src/application/use-cases/WindowsTelemetryService');
 const WindowsPanelService = require('../src/application/use-cases/WindowsPanelService');
@@ -269,6 +271,9 @@ const apiKeyService = new ApiKeyService();
 // Android panel (Provider Studio): telemetry + distributed client config,
 // same Supabase project/service-role client as the clinical module.
 const androidPanelService = new AndroidPanelService(supabaseRestClient);
+// Voz Live (gpt-realtime): emite tokens efímeros sólo a dispositivos
+// habilitados en graph_app_users.realtime_allowed; la key real nunca sale de acá.
+const realtimeSessionService = new RealtimeSessionService(supabaseRestClient);
 // Windows Live: ingesta (cliente Windows -> Supabase) y lectura (dashboard).
 // El subconsciente sale del catálogo real (Neo4j) vía catalogService, scopeado
 // por owner = email del usuario.
@@ -561,7 +566,6 @@ function isMiracleMedicalProxyRequest(req) {
   '/api/account',
   '/api/visualize',
   '/api/providers',
-  '/api/android',
   // Solo el panel (lectura admin). '/api/windows/latest-installer' queda público.
   '/api/windows/users',
   // Catálogo de motores del laboratorio (las tabs del panel de logs).
@@ -570,6 +574,23 @@ function isMiracleMedicalProxyRequest(req) {
   '/api/studio/progress'
 ].forEach((routePrefix) => {
   app.use(routePrefix, requireAccountAuth, attachWorkflowAccess);
+});
+
+function isAndroidRealtimeSessionRequest(req) {
+  const method = `${req.method || ''}`.toUpperCase();
+  const path = `${req.originalUrl || req.path || req.url || ''}`.split('?')[0];
+  return method === 'POST' && path === '/api/android/realtime/session';
+}
+
+// '/api/android' es el panel Android del Provider Studio (admin-only), salvo
+// esta ruta puntual: la llama directo el celular, sin sesión de Provider
+// Studio — su propia autorización es la whitelist realtime_allowed, resuelta
+// dentro de RealtimeSessionService.
+app.use('/api/android', (req, res, next) => {
+  if (isAndroidRealtimeSessionRequest(req)) {
+    return next();
+  }
+  return requireAccountAuth(req, res, () => attachWorkflowAccess(req, res, next));
 });
 
 // Public API surface: authenticated only with a permanent client API key
@@ -1182,6 +1203,7 @@ registerMaintenanceRoutes(app, {
   noteRescueService: noteGenerationRescueService
 });
 registerAndroidPanelRoutes(app, { androidPanelService });
+registerRealtimeSessionRoutes(app, { realtimeSessionService });
 // Windows Live: ingesta bajo /api/v1 (X-API-Key) + lectura admin /api/windows/*.
 registerWindowsTelemetryRoutes(app, { windowsTelemetryService });
 registerWindowsPanelRoutes(app, { windowsPanelService });

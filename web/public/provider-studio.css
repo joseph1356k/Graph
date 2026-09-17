@@ -1210,6 +1210,17 @@ a.button:hover {
     line-height: 1.4;
 }
 
+.android-voice-info .android-config-note {
+    margin: 10px 0 0;
+}
+
+.android-voice-info code {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 1px 5px;
+    border-radius: 5px;
+    font-size: 0.74rem;
+}
+
 /* ------------------------------------------------------------------------ */
 /* Panel Android: usuarios / prompts / logs                                  */
 /* ------------------------------------------------------------------------ */
@@ -1295,26 +1306,67 @@ button.android-crumb:focus-visible {
 
 .android-user-card {
     display: grid;
-    gap: 5px;
+    gap: 9px;
     padding: 16px 18px;
     border: 1px solid var(--line-soft);
     border-radius: 16px;
     background: linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 42%), var(--panel);
     color: var(--ink);
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
     transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
-    -webkit-appearance: none;
-    appearance: none;
 }
 
 .android-user-card:hover,
-.android-user-card:focus-visible {
+.android-user-card:focus-within {
     transform: translateY(-2px);
     border-color: rgba(255, 255, 255, 0.55);
     box-shadow: 0 0 18px rgba(255, 255, 255, 0.1);
     outline: none;
+}
+
+/* Zona clicable que abre el detalle del dispositivo: el toggle de voz Live
+   vive fuera de este botón (no puede haber <button> anidado dentro de otro). */
+.android-user-card-open {
+    display: grid;
+    gap: 5px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.android-realtime-toggle {
+    justify-self: start;
+    padding: 5px 11px;
+    border: 1px solid var(--line-soft);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: border-color 140ms ease, color 140ms ease, background-color 140ms ease;
+}
+
+.android-realtime-toggle:hover {
+    color: var(--ink);
+    border-color: rgba(255, 255, 255, 0.55);
+}
+
+.android-realtime-toggle[aria-pressed="true"] {
+    color: var(--success);
+    border-color: var(--success);
+    background: rgba(157, 240, 172, 0.1);
+}
+
+.android-realtime-toggle:disabled {
+    opacity: 0.55;
+    cursor: wait;
 }
 
 .android-user-name {

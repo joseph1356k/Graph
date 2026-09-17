@@ -9,10 +9,8 @@
 
 const MASK_PREFIX = '••••'; // "••••"
 // Secretos: se enmascaran al leer y solo se sobrescriben si llegan en claro.
-// `miracle_api_key` es la key con la que la app Android consume /api/v1 del
-// propio Graph (organizador y pipeline), igual de secreta que las de proveedor.
-const KEY_FIELDS = ['openai_key', 'gemini_key', 'deepgram_key', 'miracle_api_key'];
-const ALLOWED_PROVIDERS = ['OPENAI', 'GEMINI'];
+const KEY_FIELDS = ['openai_key', 'deepgram_key'];
+const ALLOWED_PROVIDERS = ['OPENAI'];
 // In-memory join cap for the users list: enough for the panel's aggregate
 // (prompt count + last prompt) without unbounded payloads.
 const USERS_PROMPT_JOIN_LIMIT = 5000;
@@ -103,6 +101,22 @@ class AndroidPanelService {
     return Array.isArray(rows) ? rows : [];
   }
 
+  // Whitelist de voz Live: EXCLUSIVA del backend con service-role. Nunca
+  // expuesta a un UPDATE de cliente (ver migración 20260917120000: el
+  // privilegio de columna se revocó a anon/authenticated a propósito).
+  async setRealtimeAllowed(deviceId, allowed) {
+    const id = requireId(deviceId, 'deviceId');
+    const row = await this.supabase.update('graph_app_users', `device_id=eq.${id}`, {
+      realtime_allowed: Boolean(allowed)
+    });
+    if (!row) {
+      const error = new Error('Dispositivo no encontrado.');
+      error.statusCode = 404;
+      throw error;
+    }
+    return row;
+  }
+
   async getPromptLogs(promptId) {
     const id = requireId(promptId, 'promptId');
     const rows = await this.supabase.select(
@@ -135,13 +149,9 @@ class AndroidPanelService {
     const row = (await this.readConfigRow()) || {};
     return {
       openai_key: maskKey(row.openai_key),
-      gemini_key: maskKey(row.gemini_key),
       deepgram_key: maskKey(row.deepgram_key),
-      miracle_api_key: maskKey(row.miracle_api_key),
-      miracle_api_base: row.miracle_api_base || '',
       default_provider: row.default_provider || 'OPENAI',
       default_openai_model: row.default_openai_model || '',
-      default_gemini_model: row.default_gemini_model || '',
       updated_at: row.updated_at || null
     };
   }
@@ -165,8 +175,7 @@ class AndroidPanelService {
       next.default_provider = provider;
     }
 
-    // No es un secreto: es la URL base del backend que la app debe consumir.
-    ['default_openai_model', 'default_gemini_model', 'miracle_api_base'].forEach((field) => {
+    ['default_openai_model'].forEach((field) => {
       const value = `${patch[field] == null ? '' : patch[field]}`.trim();
       if (value) {
         next[field] = value;
