@@ -56,6 +56,16 @@ function registerAndroidPanelRoutes(app, deps = {}) {
     }
   });
 
+  app.post('/api/android/users/:deviceId/realtime-allowed', requireProviderAdmin, async (req, res) => {
+    try {
+      const user = await androidPanelService.setRealtimeAllowed(req.params.deviceId, req.body?.allowed);
+      res.json({ user });
+    } catch (error) {
+      console.error(`[Android Panel] setRealtimeAllowed error: ${error.message}`);
+      res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible actualizar la whitelist de voz Live.' });
+    }
+  });
+
   app.get('/api/android/client-config', requireProviderAdmin, async (req, res) => {
     try {
       res.json({ config: await androidPanelService.getClientConfig() });

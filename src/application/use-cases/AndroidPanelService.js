@@ -101,6 +101,22 @@ class AndroidPanelService {
     return Array.isArray(rows) ? rows : [];
   }
 
+  // Whitelist de voz Live: EXCLUSIVA del backend con service-role. Nunca
+  // expuesta a un UPDATE de cliente (ver migración 20260917120000: el
+  // privilegio de columna se revocó a anon/authenticated a propósito).
+  async setRealtimeAllowed(deviceId, allowed) {
+    const id = requireId(deviceId, 'deviceId');
+    const row = await this.supabase.update('graph_app_users', `device_id=eq.${id}`, {
+      realtime_allowed: Boolean(allowed)
+    });
+    if (!row) {
+      const error = new Error('Dispositivo no encontrado.');
+      error.statusCode = 404;
+      throw error;
+    }
+    return row;
+  }
+
   async getPromptLogs(promptId) {
     const id = requireId(promptId, 'promptId');
     const rows = await this.supabase.select(

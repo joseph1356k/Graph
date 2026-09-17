@@ -1449,9 +1449,14 @@
             return;
         }
         state.users.forEach((user) => {
-            const card = document.createElement('button');
-            card.type = 'button';
+            const card = document.createElement('div');
             card.className = 'android-user-card';
+
+            // Botón real (no puede haber un <button> anidado dentro de otro):
+            // la zona clicable que abre el detalle vive separada del toggle.
+            const open = document.createElement('button');
+            open.type = 'button';
+            open.className = 'android-user-card-open';
 
             const name = document.createElement('strong');
             name.className = 'android-user-name';
@@ -1470,10 +1475,47 @@
             count.className = 'android-user-count';
             count.textContent = user.prompt_count === 1 ? '1 prompt' : `${user.prompt_count || 0} prompts`;
 
-            card.append(name, meta, seen, count);
-            card.addEventListener('click', () => openUser(user));
+            open.append(name, meta, seen, count);
+            open.addEventListener('click', () => openUser(user));
+
+            card.append(open, renderRealtimeToggle(user));
             dom.usersGrid.appendChild(card);
         });
+    }
+
+    // Toggle "Voz Live habilitada": refleja/edita graph_app_users.realtime_allowed
+    // para ese dispositivo. Vive fuera del botón que abre el detalle para no
+    // anidar controles interactivos y para no disparar la navegación al clickear.
+    function renderRealtimeToggle(user) {
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'android-realtime-toggle';
+        const setLabel = (allowed) => {
+            toggle.setAttribute('aria-pressed', allowed ? 'true' : 'false');
+            toggle.textContent = allowed ? 'Voz Live: activada' : 'Voz Live: desactivada';
+        };
+        setLabel(Boolean(user.realtime_allowed));
+
+        toggle.addEventListener('click', async (event) => {
+            event.stopPropagation();
+            const next = !user.realtime_allowed;
+            toggle.disabled = true;
+            try {
+                const payload = await fetchJson(`/api/android/users/${encodeURIComponent(user.device_id)}/realtime-allowed`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ allowed: next })
+                });
+                user.realtime_allowed = Boolean(payload.user?.realtime_allowed ?? next);
+                setLabel(user.realtime_allowed);
+            } catch (error) {
+                setMessage(dom.usersMessage, error.message || 'No fue posible actualizar la voz Live.', 'error');
+            } finally {
+                toggle.disabled = false;
+            }
+        });
+
+        return toggle;
     }
 
     async function loadUsers({ silent = false } = {}) {
