@@ -1210,6 +1210,17 @@ a.button:hover {
     line-height: 1.4;
 }
 
+.android-voice-info .android-config-note {
+    margin: 10px 0 0;
+}
+
+.android-voice-info code {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 1px 5px;
+    border-radius: 5px;
+    font-size: 0.74rem;
+}
+
 /* ------------------------------------------------------------------------ */
 /* Panel Android: usuarios / prompts / logs                                  */
 /* ------------------------------------------------------------------------ */
