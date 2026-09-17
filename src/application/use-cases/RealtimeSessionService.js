@@ -5,8 +5,15 @@
 //
 // Deliberadamente simple: sin límite de gasto ni cola, eso quedó descartado
 // para esta ronda. Si hace falta, es una pieza aparte sobre este servicio.
+//
+// ENDPOINT: /v1/realtime/sessions es el de la API beta vieja y ya NO existe
+// (verificado 2026-09-17 contra api.openai.com sin pasar por este backend:
+// devuelve 404 "Invalid URL"). La GA actual es /v1/realtime/client_secrets,
+// con las opciones de sesión anidadas bajo "session" en vez de en la raíz del
+// body (verificado: el path da 401 "falta auth" en vez de 404, y con el body
+// plano viejo devolvía el mismo 404 — el body también cambió de forma).
 
-const OPENAI_REALTIME_SESSIONS_URL = 'https://api.openai.com/v1/realtime/sessions';
+const OPENAI_REALTIME_CLIENT_SECRETS_URL = 'https://api.openai.com/v1/realtime/client_secrets';
 const REALTIME_MODEL = 'gpt-realtime';
 
 function badRequest(message) {
@@ -68,13 +75,13 @@ class RealtimeSessionService {
       throw error;
     }
 
-    const response = await this.fetchImpl(OPENAI_REALTIME_SESSIONS_URL, {
+    const response = await this.fetchImpl(OPENAI_REALTIME_CLIENT_SECRETS_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`
       },
-      body: JSON.stringify({ model: REALTIME_MODEL })
+      body: JSON.stringify({ session: { type: 'realtime', model: REALTIME_MODEL } })
     });
 
     const text = await response.text();
