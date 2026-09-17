@@ -630,8 +630,8 @@
                                 </select>
                             </label>
                             <label class="field">
-                                <span>Modelo OpenAI por defecto</span>
-                                <input id="android-openai-model" type="text" autocomplete="off" placeholder="gpt-5.6-terra">
+                                <span>Modelo OpenAI por defecto (tareas y razonamiento)</span>
+                                <input id="android-openai-model" type="text" autocomplete="off" placeholder="gpt-5.6-luna">
                             </label>
                             <label class="field">
                                 <span>Modelo Gemini por defecto</span>
@@ -644,6 +644,15 @@
                         </div>
                     </form>
                     <p id="android-config-message" class="form-message"></p>
+                    <div class="android-voice-info">
+                        <p class="android-config-note">
+                            <strong>Voz — fija, no distribuida desde acá:</strong>
+                            STT <code>deepgram nova-3</code> · TTS <code>openai gpt-4o-mini-tts</code>.
+                            Ambos reutilizan la OpenAI key / Deepgram key de arriba, pero el modelo no es
+                            configurable todavía: no hay selector ni endpoint de voz en vivo.
+                            <em>Live (<code>gpt-realtime</code>) está decidido pero aún no conectado — en construcción.</em>
+                        </p>
+                    </div>
                 </section>
 
                 <section class="android-users-section">

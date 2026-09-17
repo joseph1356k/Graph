@@ -1352,7 +1352,9 @@
         });
 
         const keysReady = [config.openai_key, config.gemini_key].filter(Boolean).length;
-        dom.configMetric.textContent = `${config.default_provider || 'OPENAI'} · ${config.updated_at ? `actualizada ${timeAgo(config.updated_at)}` : 'sin guardar'}`;
+        const activeModel = config.default_provider === 'GEMINI' ? config.default_gemini_model : config.default_openai_model;
+        const modelLabel = activeModel ? ` (${activeModel})` : '';
+        dom.configMetric.textContent = `${config.default_provider || 'OPENAI'}${modelLabel} · ${config.updated_at ? `actualizada ${timeAgo(config.updated_at)}` : 'sin guardar'}`;
         setPill(dom.configPill, keysReady ? 'Configurado' : 'Sin keys', keysReady ? 'ready' : 'danger');
     }
 
