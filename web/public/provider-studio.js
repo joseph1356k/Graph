@@ -1061,8 +1061,6 @@
         openaiKey: document.getElementById('android-openai-key'),
         geminiKey: document.getElementById('android-gemini-key'),
         deepgramKey: document.getElementById('android-deepgram-key'),
-        miracleBase: document.getElementById('android-miracle-base'),
-        miracleKey: document.getElementById('android-miracle-key'),
         defaultProvider: document.getElementById('android-default-provider'),
         openaiModel: document.getElementById('android-openai-model'),
         geminiModel: document.getElementById('android-gemini-model'),
@@ -1340,12 +1338,10 @@
         dom.openaiKey.value = config.openai_key || '';
         dom.geminiKey.value = config.gemini_key || '';
         dom.deepgramKey.value = config.deepgram_key || '';
-        dom.miracleBase.value = config.miracle_api_base || '';
-        dom.miracleKey.value = config.miracle_api_key || '';
         dom.defaultProvider.value = config.default_provider || 'OPENAI';
         dom.openaiModel.value = config.default_openai_model || '';
         dom.geminiModel.value = config.default_gemini_model || '';
-        [dom.openaiKey, dom.geminiKey, dom.deepgramKey, dom.miracleKey].forEach((input) => {
+        [dom.openaiKey, dom.geminiKey, dom.deepgramKey].forEach((input) => {
             input.type = 'password';
             const toggle = input.parentElement?.querySelector('.field-key-toggle');
             if (toggle) toggle.setAttribute('aria-pressed', 'false');
@@ -1381,8 +1377,6 @@
                     openai_key: dom.openaiKey.value,
                     gemini_key: dom.geminiKey.value,
                     deepgram_key: dom.deepgramKey.value,
-                    miracle_api_base: dom.miracleBase.value,
-                    miracle_api_key: dom.miracleKey.value,
                     default_provider: dom.defaultProvider.value,
                     default_openai_model: dom.openaiModel.value,
                     default_gemini_model: dom.geminiModel.value
@@ -1703,7 +1697,7 @@
         });
     }
 
-    [dom.openaiKey, dom.geminiKey, dom.deepgramKey, dom.miracleKey].forEach(bindKeyToggle);
+    [dom.openaiKey, dom.geminiKey, dom.deepgramKey].forEach(bindKeyToggle);
 
     dom.configForm.addEventListener('submit', (event) => {
         submitConfig(event).catch((error) => setMessage(dom.configMessage, error.message, 'error'));
