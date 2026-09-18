@@ -50,12 +50,15 @@ const server = http.createServer(app);
 const supabaseRestClient = new SupabaseRestClient();
 const authorizer = new LiveVoiceDeviceAuthorizer(supabaseRestClient);
 
-// OJO ACÁ: Vercel entrega a la función el path de DESTINO del rewrite
-// (/api/android-live-session), no el de origen que pidió el celular
-// (/api/android/live/session) — mismo motivo por el que api/index.js
-// reconstruye a mano el path original desde ?path=. Sin este override,
-// attachLiveVoiceProxy compararía contra su default (el path de origen) y
-// rechazaría con 404 todo upgrade legítimo en producción.
-attachLiveVoiceProxy(server, { authorizer, path: '/api/android-live-session' });
+// OJO ACÁ: para un request HTTP normal, Vercel entrega a la función el path
+// de DESTINO del rewrite (/api/android-live-session) -- confirmado con
+// curl. Pero medido contra producción (2026-09-18), un WebSocket upgrade
+// real NO llegó con ese pathname: se aceptan los dos posibles (origen y
+// destino) en vez de asumir cuál es el real, ver el comentario largo en
+// liveVoiceProxy.js.
+attachLiveVoiceProxy(server, {
+  authorizer,
+  path: ['/api/android/live/session', '/api/android-live-session'],
+});
 
 module.exports = server;
