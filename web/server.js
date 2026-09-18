@@ -52,6 +52,8 @@ const OrganizerProfileService = require('../src/application/use-cases/OrganizerP
 const ApiKeyService = require('../src/application/use-cases/ApiKeyService');
 const AndroidPanelService = require('../src/application/use-cases/AndroidPanelService');
 const RealtimeSessionService = require('../src/application/use-cases/RealtimeSessionService');
+const LiveVoiceDeviceAuthorizer = require('../src/application/use-cases/LiveVoiceDeviceAuthorizer');
+const attachLiveVoiceProxy = require('./api/liveVoiceProxy');
 // Módulo Windows App (agente de escritorio Ü, absorbido del backend viejo de
 // Vercel Functions): cerebro consciente + enseñanza por video + sus tarjetas.
 const AgentTurnService = require('../src/application/use-cases/AgentTurnService');
@@ -274,6 +276,11 @@ const androidPanelService = new AndroidPanelService(supabaseRestClient);
 // Voz Live (gpt-realtime): emite tokens efímeros sólo a dispositivos
 // habilitados en graph_app_users.realtime_allowed; la key real nunca sale de acá.
 const realtimeSessionService = new RealtimeSessionService(supabaseRestClient);
+// Voz Live (gpt-live-1): reemplaza a gpt-realtime arriba. gpt-live-1 no tiene
+// token efímero, así que en vez de emitir un secreto de un solo uso, el
+// backend hace de proxy WebSocket (ver web/api/liveVoiceProxy.js) —
+// autorización con la misma whitelist, la key real nunca sale del backend.
+const liveVoiceDeviceAuthorizer = new LiveVoiceDeviceAuthorizer(supabaseRestClient);
 // Windows Live: ingesta (cliente Windows -> Supabase) y lectura (dashboard).
 // El subconsciente sale del catálogo real (Neo4j) vía catalogService, scopeado
 // por owner = email del usuario.
@@ -1265,6 +1272,10 @@ app.set('port', PORT);
 
 function startServer() {
   const server = http.createServer(app);
+  // En Vercel esto vive en la función dedicada api/android-live-session.js
+  // (ver vercel.json); acá se cuelga del mismo http.Server que sirve el
+  // resto de /api para que `npm start` se comporte igual en local.
+  attachLiveVoiceProxy(server, { authorizer: liveVoiceDeviceAuthorizer });
   server.listen(PORT, () => console.log(`[Server] Running on http://localhost:${PORT}`));
   return server;
 }

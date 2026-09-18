@@ -51,6 +51,7 @@
     "express-rate-limit": "^8.5.2",
     "jose": "^6.2.3",
     "neo4j-driver": "^6.0.1",
-    "playwright": "^1.59.1"
+    "playwright": "^1.59.1",
+    "ws": "^8.21.3"
   }
 }
