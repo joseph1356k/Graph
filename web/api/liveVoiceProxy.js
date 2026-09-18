@@ -186,11 +186,19 @@ function runRelay({ clientWs, upstreamUrl, apiKey, deviceId, WebSocketCtor, log 
  * server local (web/server.js), para tener el mismo comportamiento en los
  * dos entornos.
  *
- * `options.path` por defecto es LIVE_PROXY_PATH (lo que pide el celular:
- * /api/android/live/session), correcto para el server local sin rewrite.
- * En Vercel, la función recibe el path de DESTINO del rewrite
- * (/api/android-live-session), no el de origen — api/android-live-session.js
- * pasa ese path explícito para que coincida con lo que realmente llega.
+ * `options.path` acepta un string o un array de paths válidos; por defecto
+ * es [LIVE_PROXY_PATH] (lo que pide el celular: /api/android/live/session),
+ * correcto para el server local sin rewrite.
+ *
+ * MEDIDO CONTRA PRODUCCIÓN (2026-09-18): se asumía que en Vercel la función
+ * recibe el path de DESTINO del rewrite (/api/android-live-session) para
+ * un WebSocket upgrade, igual que para un request HTTP normal (que sí lo
+ * hace, confirmado con curl). Un cliente `ws` real contra el endpoint
+ * público dio 404 con esa única opción -- el upgrade real llega con OTRO
+ * pathname (probablemente el de origen, /api/android/live/session; Vercel
+ * parece tratar el routing de upgrades distinto al de requests HTTP
+ * normales). En vez de apostar a cuál es el real, se aceptan los dos: son
+ * rutas que controlamos nosotros mismos, sin costo de seguridad.
  */
 function attachLiveVoiceProxy(server, options = {}) {
   if (!(server instanceof http.Server)) {
@@ -200,7 +208,9 @@ function attachLiveVoiceProxy(server, options = {}) {
   if (!authorizer || typeof authorizer.requireAuthorizedDevice !== 'function') {
     throw new Error('attachLiveVoiceProxy requires an authorizer with requireAuthorizedDevice()');
   }
-  const targetPath = options.path || LIVE_PROXY_PATH;
+  const targetPaths = new Set(
+    (Array.isArray(options.path) ? options.path : [options.path || LIVE_PROXY_PATH]).filter(Boolean)
+  );
   const upstreamUrl = options.openaiLiveUrl || OPENAI_LIVE_URL;
   const WebSocketCtor = options.WebSocketCtor || WebSocket;
   const log = options.log || console.log;
@@ -219,7 +229,7 @@ function attachLiveVoiceProxy(server, options = {}) {
       return rejectUpgrade(socket, 400, STATUS_TEXT[400]);
     }
 
-    if (pathname !== targetPath) {
+    if (!targetPaths.has(pathname)) {
       // No es nuestra ruta: no la tocamos silenciosamente colgada — se
       // rechaza igual que un 404 normal de HTTP.
       return rejectUpgrade(socket, 404, STATUS_TEXT[404]);

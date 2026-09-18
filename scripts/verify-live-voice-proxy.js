@@ -205,6 +205,45 @@ async function testAceptaConPathDeDestinoExplicito() {
   }
 }
 
+async function testAceptaAmbosPathsCuandoSePasaUnArray() {
+  // Escenario real de producción (2026-09-18): un WebSocket upgrade real
+  // contra Vercel no llegó con el path de destino del rewrite como se
+  // asumía -- api/android-live-session.js ahora pasa los dos paths
+  // posibles (origen y destino) en vez de apostar a uno solo.
+  const openai = await startFakeOpenAi();
+  const proxy = await startProxyServer({
+    authorizedDeviceIds: ['dispositivo-1'],
+    openaiLiveUrl: `ws://127.0.0.1:${openai.port}`,
+    path: ['/api/android/live/session', '/api/android-live-session']
+  });
+  try {
+    for (const ruta of ['/api/android/live/session', '/api/android-live-session']) {
+      const ws = new WebSocket(`ws://127.0.0.1:${proxy.port}${ruta}?device_id=dispositivo-1`);
+      const resultado = await new Promise((resolve, reject) => {
+        ws.on('open', () => resolve({ opened: true }));
+        ws.on('unexpected-response', (req, res) => resolve({ opened: false, statusCode: res.statusCode }));
+        ws.on('error', reject);
+      });
+      assert.strictEqual(resultado.opened, true, `con un array de paths, «${ruta}» debía aceptarse`);
+      ws.close(1000, 'fin de prueba');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+
+    // Una ruta que NO está en el array sigue rechazándose.
+    const wsAjeno = new WebSocket(`ws://127.0.0.1:${proxy.port}/api/otra/cosa?device_id=dispositivo-1`);
+    const resultadoAjeno = await new Promise((resolve, reject) => {
+      wsAjeno.on('open', () => resolve({ opened: true }));
+      wsAjeno.on('unexpected-response', (req, res) => resolve({ opened: false, statusCode: res.statusCode }));
+      wsAjeno.on('error', reject);
+    });
+    assert.strictEqual(resultadoAjeno.opened, false, 'una ruta fuera del array debía rechazarse');
+    assert.strictEqual(resultadoAjeno.statusCode, 404);
+  } finally {
+    await proxy.close();
+    await openai.close();
+  }
+}
+
 async function testRelayTransparenteYCierreEnCascada() {
   const openai = await startFakeOpenAi();
   const proxy = await startProxyServer({
@@ -253,6 +292,7 @@ async function main() {
     ['proxy: rechaza sin device_id (400)', testRechazaSinDeviceId],
     ['proxy: rechaza sin OPENAI_LIVE_KEY configurada (500, nunca fallback silencioso)', testRechazaSinKeyConfigurada],
     ['proxy: acepta con el path de destino de Vercel (regresión rewrite)', testAceptaConPathDeDestinoExplicito],
+    ['proxy: acepta ambos paths cuando se pasa un array (regresión producción)', testAceptaAmbosPathsCuandoSePasaUnArray],
     ['proxy: relay transparente (texto y binario) + cierre en cascada', testRelayTransparenteYCierreEnCascada]
   ];
 
