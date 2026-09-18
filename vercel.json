@@ -9,6 +9,9 @@
       "includeFiles": "{chrome-extension-src,web/public}/**",
       "maxDuration": 60
     },
+    "api/android-live-session.js": {
+      "maxDuration": 300
+    },
     "api/miracle_runtime.py": {
       "includeFiles": "bounded/miracle-ai/**"
     }
@@ -23,6 +26,10 @@
     {
       "source": "/api/miracle-runtime/:path*",
       "destination": "/api/miracle_runtime?__miracle_target=:path*"
+    },
+    {
+      "source": "/api/android/live/session",
+      "destination": "/api/android-live-session"
     },
     {
       "source": "/api/:path*",
