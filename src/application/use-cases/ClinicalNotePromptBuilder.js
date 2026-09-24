@@ -20,7 +20,7 @@ const clauses = require('../prompts/PromptClauses');
 const NoteModeResolver = require('./NoteModeResolver');
 const { GROUNDING_LEVELS } = require('../../domain/clinical/grounding');
 
-const PROMPT_VERSION = clauses.promptVersion('clinical-note', '4');
+const PROMPT_VERSION = clauses.promptVersion('clinical-note', '5');
 // Vocabulario de la columna user_preferences.note_detail en producción
 // (concisa | estandar | detallada). 'estandar' no emite nada.
 const NOTE_DETAILS = Object.freeze(['concisa', 'estandar', 'detallada']);
@@ -41,6 +41,41 @@ const INTERPRETIVE_TASK = [
   '- Lo que el paciente dice de sí mismo se documenta como referido por el paciente; lo que el médico afirma, explora o encuentra se documenta como hallazgo. No mezcles las dos voces.',
   '- Sintetiza cuando corresponda, nunca a costa de un dato clínico: cifras, medidas, dosis, nombres de medicamentos, fechas, alergias y negaciones van completos.',
   '- Si el médico dictó explícitamente un texto para una sección ("escribe en el plan: …"), respeta ese texto.'
+].join('\n');
+
+// Retroalimentación de médicos (piloto de cardiología, 2026-09-23): la nota
+// traía los datos, pero el análisis era una lista de diagnósticos y el plan una
+// lista de órdenes sin su porqué. La historia clínica se escribe como la enseña
+// la semiología (Argente-Álvarez, cap. 1): síntoma y signo → síndrome →
+// diagnóstico, y cada conducta atada al hallazgo que la motiva. Aplica a toda
+// plantilla interpretativa, no sólo a cardiología: las secciones se reconocen
+// por su función, porque sus keys cambian en cada plantilla.
+const CLINICAL_REASONING = [
+  'RAZONAMIENTO CLÍNICO (SEMIOLOGÍA) — aplica a las secciones interpretativas:',
+  '- Una pregunta del médico no es un síntoma. "¿Le duele el pecho al caminar?" sólo se documenta según lo que el paciente respondió, con sus palabras y sus matices ("pasajero", "a veces", "antes sí, ahora no").',
+  '- Caracteriza cada síntoma con los atributos que el relato aporte: inicio y tiempo de evolución, localización, carácter, intensidad, irradiación, desencadenantes, atenuantes, síntomas acompañantes y evolución. Solo los que se dijeron.',
+  '- Distingue signo, sospecha y diagnóstico. Un diagnóstico sólo se escribe como tal si el médico lo afirmó o ya venía establecido en la historia. Lo que el médico describe como hallazgo o probabilidad ("tiene signos de", "parece que tiene", "lo más probable", "vamos a descartar") se escribe como hallazgo o sospecha, junto con los signos que lo sustentan: "Signos de insuficiencia venosa en pierna izquierda (venas tortuosas, piel ocre en tercio distal), en estudio", nunca "Insuficiencia venosa".',
+  '- Si no queda claro si algo ya es un diagnóstico, escríbelo como sospecha y añade un warning que lo pregunte: "¿Confirmas el diagnóstico de …?".',
+  '',
+  'SECCIÓN DE ANÁLISIS (la que la plantilla dedica al análisis, la impresión diagnóstica, la evolución o el concepto; su key cambia entre plantillas):',
+  'Es el corazón de la nota: un médico que lea SOLO esta sección debe saber en qué está el paciente, por qué vino, qué se decidió, por qué y cuál es el paso siguiente. Se redacta como texto cohesionado, en este orden y nunca al revés:',
+  '  1. Contexto: quién es el paciente (edad, sexo) con sus diagnósticos conocidos NOMBRADOS uno por uno (nunca "antecedentes anotados"), y por qué consulta o quién lo remite.',
+  '  2. Desarrollo: lo que refirió el paciente, lo que se encontró al examen, los estudios relevantes con sus cifras y lo que significan tal como el médico los interpretó. Agrupa por problema. Incluye lo que el médico dijo del control ("cifras fuera de metas pese a cuatro antihipertensivos").',
+  '  3. Conclusión y conducta: cada decisión con su justificación ("Por … se solicita …"). Agrupa los estudios bajo el problema o la hipótesis que investigan. Las decisiones de NO hacer algo también son conducta y llevan su motivo ("no se aumenta la antihipertensiva hasta descartar causas secundarias"). Cierra con el paso siguiente.',
+  '- Si la plantilla tiene otra sección para el plan, en el análisis la conducta va resumida y justificada; el detalle (dosis, lista de órdenes) queda en el plan.',
+  '',
+  'SECCIÓN DE PLAN O CONDUCTA (estudios, tratamiento, remisiones, control):',
+  '- Recorre la transcripción COMPLETA, incluido el final de la consulta y lo que el médico le pide a un asistente ("mándale…", "cárgale…", "le mandas…"): todo estudio, orden, cambio de medicamento, remisión y control que se decidió tiene que aparecer. Una orden omitida es un error grave.',
+  '- Cada estudio o tratamiento lleva su justificación. Si el médico dijo para qué, usa su motivo. Si no lo dijo, relaciónalo con los hechos de la consulta que lo motivan (síntomas, hallazgos, antecedentes o resultados que SÍ están en la transcripción), como lo haría el médico al escribir la historia. Nunca inventes un hallazgo para justificar una orden. Si ningún hecho de la consulta la explica, escríbela sin justificación y añade un warning.',
+  '- No mezcles objetivos: cada estudio va con el problema para el que se pidió. Un estudio para hipertensión secundaria no se justifica con la insuficiencia venosa, aunque se hayan dicho en la misma frase.',
+  '- Los cambios de medicamento van con la dosis anterior y la nueva, la frecuencia y el motivo, tal como se dijeron.',
+  '',
+  'FORMATO DE LECTURA (como escriben los médicos para leer rápido; la app respeta los saltos de línea):',
+  '- Separa cada bloque de información con una línea en blanco: en el análisis, un párrafo por parte (contexto, desarrollo, conducta) o por problema; en el plan, un grupo por problema.',
+  '- Dentro de un grupo, un elemento por línea precedido de "- " (una orden, un medicamento, un hallazgo). Si un grupo lleva encabezado, va en su propia línea y termina en dos puntos ("Estudios para hipertensión secundaria:").',
+  '- Nada de markdown: ni asteriscos, ni numerales, ni negritas. Nunca un bloque único y largo si la sección trae más de una idea.',
+  '',
+  'CONTRADICCIONES: si dos datos de la consulta se contradicen (p. ej. un informe dice "hipertensión pulmonar" y otro "baja probabilidad de hipertensión pulmonar"), consigna ambos con su fuente y añade un warning. No elijas uno.'
 ].join('\n');
 
 const PUNCTUATION_RULES = [
@@ -206,6 +241,7 @@ class ClinicalNotePromptBuilder {
       clauses.IDENTIFIER_FIDELITY,
       '═══ TAREA ═══',
       hasInterpretive ? INTERPRETIVE_TASK : '',
+      hasInterpretive ? CLINICAL_REASONING : '',
       PUNCTUATION_RULES,
       MEASURE_RULES,
       hasVerbatim ? verbatimTask(modes, sections) : '',

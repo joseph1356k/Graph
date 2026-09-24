@@ -24,6 +24,18 @@ check('locateFragment devuelve offsets en el original aunque haya tildes y espac
   assert.strictEqual(hit.quote, 'Cefalea intensa, sin náuseas');
 });
 
+check('locateFragment ignora la puntuación del STT pero no deja cambiar una cifra', () => {
+  const haystack = 'Depende. 60 cigarrillos. ¿Ex tabaquismo pesado? 60. ¿Y 60 cigarrillos al día? Actualmente sigue.';
+  const hit = text.locateFragment(haystack, 'Y 60 cigarrillos al día');
+  assert.ok(hit, 'la cita sin signos debe ubicarse');
+  assert.strictEqual(hit.quote, 'Y 60 cigarrillos al día');
+  assert.ok(text.locateFragment(haystack, 'ex tabaquismo pesado, 60'), 'una coma de más no descarta la cita');
+  assert.strictEqual(text.locateFragment(haystack, 'Y 70 cigarrillos al día'), null);
+  assert.strictEqual(text.locateFragment('TSH 29,75 del 10 de septiembre', 'TSH 29,57'), null);
+  assert.strictEqual(text.locateFragment('presión 140/70', 'presión 14070'), null);
+  assert.strictEqual(text.locateFragment('lo que sea', '¿?...'), null);
+});
+
 check('locateFragment devuelve null cuando la cita no existe', () => {
   assert.strictEqual(text.locateFragment('sin fiebre', 'con fiebre'), null);
   assert.strictEqual(text.locateFragment('lo que sea', ''), null);

@@ -78,10 +78,32 @@ function verbatimCoverage(content = '', source = '') {
   return hits / needle.length;
 }
 
+// Signos que el reconocimiento de voz pone o quita a su criterio. Para ubicar
+// una cita cuentan como espacio: «¿Y 60 cigarrillos al día?» y «60 cigarrillos
+// al día» son la misma cita. Antes una coma de diferencia bastaba para
+// descartarla, y la sección caía a "inferred" con el contenido correcto (piloto
+// de cardiología: 22 citas descartadas, 5 secciones marcadas "revisar"). «/» y
+// «-» no están en la lista porque cambian el dato (140/70, rótulo 26-3456). La
+// coma decimal sí: «3,5» se compara como «3 5» en los dos lados, así que una
+// cita sigue sin poder cambiar una cifra por otra; sólo deja de fallar por un signo.
+const CITATION_PUNCTUATION = /[.,;:¿?¡!"“”«»()…]/;
+
+/** normalizeComparable + la puntuación del STT tratada como espacio. Para ubicar citas. */
+function normalizeCitation(value = '') {
+  return stripDiacritics(value)
+    .split('')
+    .map((char) => (CITATION_PUNCTUATION.test(char) ? ' ' : char))
+    .join('')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
 /**
  * Índice del texto normalizado hacia el original: `normalized[i]` proviene de
  * `original[map[i]]`. Necesario para devolver offsets reales cuando la
- * comparación se hizo sin tildes ni espacios repetidos.
+ * comparación se hizo sin tildes, sin espacios repetidos y sin la puntuación
+ * del STT (misma normalización que normalizeCitation).
  */
 function buildNormalizedIndex(text = '') {
   const original = `${text ?? ''}`;
@@ -90,7 +112,7 @@ function buildNormalizedIndex(text = '') {
   let lastWasSpace = true; // así se descartan los espacios iniciales
   for (let index = 0; index < original.length; index += 1) {
     const char = original[index];
-    if (/\s/.test(char)) {
+    if (/\s/.test(char) || CITATION_PUNCTUATION.test(char)) {
       if (!lastWasSpace) {
         normalized += ' ';
         map.push(index);
@@ -119,7 +141,7 @@ function buildNormalizedIndex(text = '') {
  * por cada fragmento de una misma transcripción.
  */
 function locateFragment(haystack = '', fragment = '', index = null) {
-  const needle = normalizeComparable(fragment);
+  const needle = normalizeCitation(fragment);
   if (!needle) return null;
   const { normalized, map } = index || buildNormalizedIndex(haystack);
   const at = normalized.indexOf(needle);
@@ -136,6 +158,7 @@ function locateFragment(haystack = '', fragment = '', index = null) {
 module.exports = {
   stripDiacritics,
   normalizeComparable,
+  normalizeCitation,
   normalizeForVerbatim,
   verbatimCoverage,
   buildNormalizedIndex,
