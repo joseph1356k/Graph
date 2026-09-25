@@ -51,6 +51,24 @@ function esperaMs(intento) {
   return 200 * (2 ** n);
 }
 
+// LISTAS BLANCAS DEL LOG. La línea de log solo puede escribir nombres de causa de estas listas y
+// números; cualquier otra cosa sale como «otro» (ver lineaDeLog en la ruta). Así un valor crudo que
+// se cuele en una traza —la key en el mensaje de un error de red, el objetivo en un motivo— no llega
+// al log aunque otro código se equivoque.
+const CODIGOS = Object.freeze([
+  'ok', 'decisor_apagado', 'cuerpo_invalido', 'device_no_autorizado', 'autorizacion_no_disponible',
+  'upstream_rechazo', 'upstream_saturado', 'upstream_timeout', 'upstream_inalcanzable', 'upstream_ilegible',
+  'limite_de_uso', 'error_interno'
+]);
+const MOTIVOS = Object.freeze([
+  // validarPeticion
+  'cuerpo_sin_forma', 'device_id_ausente', 'device_id_largo', 'device_id_sin_forma',
+  'pantalla_ausente', 'pantalla_larga', 'pantalla_sin_forma', 'objetivo_ausente', 'objetivo_largo', 'objetivo_sin_forma',
+  'puertas_ausentes', 'puertas_demasiadas', 'puerta_larga', 'puerta_sin_forma',
+  // normalizarRespuesta
+  'sin_objeto', 'sin_eleccion', 'eleccion_fuera_de_lista', 'numero_invalido'
+]);
+
 const CONTROL = /[\u0000-\u001f\u007f\u0085\u2028\u2029]/;
 const FORMA_DE_PUERTA = /^(\d{1,3})\) (.+) \(([A-Za-z0-9_.\-]{1,40})\)$/;
 const FORMA_DE_DEVICE = /^[A-Za-z0-9_.:\-]+$/;
@@ -217,6 +235,8 @@ module.exports = {
   PLAZO_MS,
   INTENTOS_MAXIMOS,
   MODELO_POR_DEFECTO,
+  CODIGOS,
+  MOTIVOS,
   seReintenta,
   esperaMs,
   normalizarDeviceId,

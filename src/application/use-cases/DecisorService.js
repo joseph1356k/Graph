@@ -296,6 +296,7 @@ class DecisorService {
 }
 
 DecisorService.MODOS = MODOS;
+DecisorService.ESTADOS = ESTADOS;
 DecisorService.URL_SYSTEMONE = URL_SYSTEMONE;
 
 module.exports = DecisorService;

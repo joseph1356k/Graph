@@ -17,7 +17,7 @@
 // Nunca el objetivo, las etiquetas, la elección, la key ni el detalle de TypeSafe.
 
 const rateLimit = require('express-rate-limit');
-const { normalizarDeviceId, LIMITES } = require('../../src/domain/decisor/peticionSystemOne');
+const { normalizarDeviceId, LIMITES, CODIGOS, MOTIVOS } = require('../../src/domain/decisor/peticionSystemOne');
 
 const RUTA = '/api/v1/agent/decidir';
 const LIMITE_POR_DISPOSITIVO = 30;
@@ -38,17 +38,23 @@ function enmascararDeviceId(deviceId) {
   return `${visible.replace(/[^A-Za-z0-9_.:\-]/g, '?')}…`;
 }
 
+// LISTA BLANCA: la línea solo escribe nombres de causa conocidos y números. Todo lo demás, sea lo
+// que sea el valor, se escribe como «otro»: la traza viene de otro código y no se le cree.
+const OTRO = 'otro';
+const nombreConocido = (valor, permitidos) => (permitidos.includes(valor) ? valor : OTRO);
+const estadoHttp = (valor) => (Number.isInteger(valor) && valor >= 100 && valor <= 599 ? valor : OTRO);
+
 function lineaDeLog(deviceId, traza) {
   const partes = [
     '[agent/decidir]',
     `device=${enmascararDeviceId(deviceId)}`,
     `puertas=${Number.isFinite(traza.puertas) ? traza.puertas : 0}`,
-    `estado=${traza.estado}`,
-    `code=${traza.code || 'ok'}`,
+    `estado=${estadoHttp(traza.estado)}`,
+    `code=${nombreConocido(traza.code === undefined ? 'ok' : traza.code, CODIGOS)}`,
     `ms=${Number.isFinite(traza.ms) ? Math.round(traza.ms) : 0}`
   ];
-  if (traza.upstream) partes.push(`upstream=${traza.upstream}`);
-  if (traza.motivo) partes.push(`motivo=${traza.motivo}`);
+  if (traza.upstream) partes.push(`upstream=${estadoHttp(traza.upstream)}`);
+  if (traza.motivo) partes.push(`motivo=${nombreConocido(traza.motivo, MOTIVOS)}`);
   for (const cifra of ['confianza', 'cumplido', 'peligro']) {
     if (Number.isFinite(traza[cifra])) partes.push(`${cifra}=${traza[cifra]}`);
   }
@@ -115,6 +121,7 @@ function registerAgentDecisorRoutes(app, deps = {}) {
 
 module.exports = registerAgentDecisorRoutes;
 module.exports.enmascararDeviceId = enmascararDeviceId;
+module.exports.lineaDeLog = lineaDeLog;
 module.exports.LIMITE_POR_DISPOSITIVO = LIMITE_POR_DISPOSITIVO;
 module.exports.LIMITE_GLOBAL = LIMITE_GLOBAL;
 module.exports.RUTA = RUTA;
