@@ -61,6 +61,18 @@ const PANTALLAS = [
     espera: { decision: 'cumplido' } }
 ];
 
+// ¿A dónde se puede mandar la X-API-Key? A cualquier https, o a http SOLO si el host es exactamente
+// localhost, 127.0.0.1 o [::1]. Se analiza la URL (no se compara el comienzo del texto): así
+// `http://localhost.evil.com/x` o `http://localhost@evil.com/` no pasan por parecerse a localhost, y
+// una URL con usuario:clave dentro tampoco.
+function endpointSeguro(texto) {
+  let url;
+  try { url = new URL(texto); } catch { return false; }
+  if (url.username || url.password) return false;
+  if (url.protocol === 'https:') return Boolean(url.hostname);
+  return url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+}
+
 function argumentos(argv) {
   const a = { modo: 'dry-run', endpoint: '' };
   for (let i = 0; i < argv.length; i += 1) {
@@ -103,7 +115,7 @@ async function consultarEndpoint(url) {
   const clave = `${process.env.SONDA_GRAPH_API_KEY || ''}`.trim();
   const deviceId = `${process.env.SONDA_DEVICE_ID || ''}`.trim();
   if (!clave || !deviceId) throw new Error('faltan SONDA_GRAPH_API_KEY y SONDA_DEVICE_ID en el entorno (usa --env-file)');
-  if (!/^https:\/\//.test(url) && !/^http:\/\/(localhost|127\.0\.0\.1)/.test(url)) throw new Error('--endpoint tiene que ser https (o localhost)');
+  if (!endpointSeguro(url)) throw new Error('--endpoint tiene que ser https (o http solo hacia localhost, 127.0.0.1 o [::1])');
   return async (p) => {
     const r = await fetch(url, {
       method: 'POST',
@@ -176,7 +188,11 @@ async function main() {
   console.log('Estos aciertos son una muestra de diez pantallas: sirven para ver si Jev entiende Android, no para calibrar umbrales.');
 }
 
-main().catch((error) => {
-  console.error(`sonda: ${error.message}`);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(`sonda: ${error.message}`);
+    process.exit(1);
+  });
+}
+
+module.exports = { endpointSeguro };
