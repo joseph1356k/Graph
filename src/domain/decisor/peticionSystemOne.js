@@ -57,6 +57,13 @@ const FORMA_DE_DEVICE = /^[A-Za-z0-9_.:\-]+$/;
 
 const esTexto = (valor) => typeof valor === 'string';
 
+// El device_id tal como lo ven la validación, el autorizador (`trim()`) y el limitador de la ruta. Un
+// solo trim para los tres: si el limitador contara el texto crudo, rellenar el id con espacios
+// abriría una cuenta nueva por cada relleno y evadiría el tope.
+function normalizarDeviceId(valor) {
+  return typeof valor === 'string' ? valor.trim() : '';
+}
+
 // Devuelve { ok: true, valor } o { ok: false, motivo }. El motivo es un nombre
 // fijo: nunca lleva el valor recibido (podría traer lo que dijo una persona).
 function validarPeticion(cuerpo) {
@@ -65,8 +72,7 @@ function validarPeticion(cuerpo) {
   }
   const { device_id: deviceIdBruto, pantalla, objetivo, puertas } = cuerpo;
 
-  if (!esTexto(deviceIdBruto)) return { ok: false, motivo: 'device_id_ausente' };
-  const deviceId = deviceIdBruto.trim();
+  const deviceId = normalizarDeviceId(deviceIdBruto);
   if (!deviceId) return { ok: false, motivo: 'device_id_ausente' };
   if (deviceId.length > LIMITES.DEVICE_ID) return { ok: false, motivo: 'device_id_largo' };
   if (!FORMA_DE_DEVICE.test(deviceId)) return { ok: false, motivo: 'device_id_sin_forma' };
@@ -213,6 +219,7 @@ module.exports = {
   MODELO_POR_DEFECTO,
   seReintenta,
   esperaMs,
+  normalizarDeviceId,
   validarPeticion,
   construirPeticion,
   normalizarRespuesta

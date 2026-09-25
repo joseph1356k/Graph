@@ -17,6 +17,7 @@
 // Nunca el objetivo, las etiquetas, la elección, la key ni el detalle de TypeSafe.
 
 const rateLimit = require('express-rate-limit');
+const { normalizarDeviceId, LIMITES } = require('../../src/domain/decisor/peticionSystemOne');
 
 const RUTA = '/api/v1/agent/decidir';
 const LIMITE_POR_DISPOSITIVO = 30;
@@ -61,6 +62,8 @@ function registerAgentDecisorRoutes(app, deps = {}) {
   }
   const logger = deps.logger || console;
   const deviceDe = (req) => (req.body && typeof req.body === 'object' ? req.body.device_id : undefined);
+  // La cuenta de cada dispositivo va por su id NORMALIZADO, el mismo que valida y autoriza el servicio.
+  const claveDeDispositivo = (req) => normalizarDeviceId(deviceDe(req)).slice(0, LIMITES.DEVICE_ID);
 
   const alExceder = (req, res) => {
     logger.log(lineaDeLog(deviceDe(req), { estado: 429, code: 'limite_de_uso', ms: 0 }));
@@ -84,9 +87,9 @@ function registerAgentDecisorRoutes(app, deps = {}) {
   const limitePorDispositivo = rateLimit({
     ...opcionesComunes,
     limit: deps.limitePorDispositivo || LIMITE_POR_DISPOSITIVO,
-    keyGenerator: (req) => `${deviceDe(req)}`.slice(0, 64),
+    keyGenerator: (req) => claveDeDispositivo(req),
     // Sin un device_id de texto no hay a quién limitar: lo frena el tope global y el 400.
-    skip: (req) => apagado() || typeof deviceDe(req) !== 'string' || !deviceDe(req).trim()
+    skip: (req) => apagado() || !claveDeDispositivo(req)
   });
 
   app.post(RUTA, limiteGlobal, limitePorDispositivo, async (req, res) => {
