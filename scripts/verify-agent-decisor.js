@@ -142,7 +142,7 @@ async function levantar(opciones = {}) {
     limites = {},
     authorizer,
     usageRecorder,
-    conVentana = false,
+    servicioFalso,
     montarTurno = false
   } = opciones;
   const reloj = opciones.reloj || relojFalso();
@@ -150,7 +150,7 @@ async function levantar(opciones = {}) {
   const supabase = supabaseFalso(filas);
   const lineas = [];
   const logger = { log: (l) => lineas.push(`${l}`), warn: (l) => lineas.push(`${l}`), error: (l) => lineas.push(`${l}`) };
-  const servicio = new DecisorService({
+  const servicio = servicioFalso || new DecisorService({
     authorizer: authorizer || new LiveVoiceDeviceAuthorizer(supabase),
     fetchImpl,
     env,
@@ -276,6 +276,26 @@ async function d2() {
     assert.strictEqual(r.json.code, 'autorizacion_no_disponible');
     assert.strictEqual(h.fetchImpl.llamadas.length, 0);
     assert.ok(!r.texto.includes('supabase caído'), 'no se filtra el mensaje interno');
+  });
+  // Un fallo de PostgREST trae su propio statusCode (403 por service-role mala o RLS, 400 por consulta
+  // rota...). NO es «dispositivo no autorizado» ni «cuerpo inválido»: solo lo son los errores PROPIOS del
+  // autorizador. Cualquier otro es 503 autorizacion_no_disponible, para que el teléfono no pause Jev
+  // creyendo que no está en la lista ni lo dé por mal armado.
+  for (const codigoHttp of [400, 401, 403, 404, 500, 503]) {
+    const supabase = { async select() { throw Object.assign(new Error(`PostgREST ${codigoHttp} con texto propio`), { statusCode: codigoHttp, supabaseCode: 'PGRST301' }); } };
+    await con({ authorizer: new LiveVoiceDeviceAuthorizer(supabase) }, async (h) => {
+      const r = await h.post(cuerpoBueno());
+      assert.strictEqual(r.status, 503, `PostgREST ${codigoHttp}: estado ${r.status} ${r.texto.slice(0, 120)}`);
+      assert.strictEqual(r.json.code, 'autorizacion_no_disponible', `PostgREST ${codigoHttp}`);
+      assert.strictEqual(h.fetchImpl.llamadas.length, 0, `PostgREST ${codigoHttp}: no se llama a TypeSafe`);
+      assert.ok(!r.texto.includes('texto propio'), `PostgREST ${codigoHttp}: no se filtra el mensaje interno`);
+    });
+  }
+  // Y lo propio del autorizador sigue mapeándose a lo suyo.
+  await con({ filas: new Map() }, async (h) => {
+    const r = await h.post(cuerpoBueno());
+    assert.strictEqual(r.status, 403);
+    assert.strictEqual(r.json.code, 'device_no_autorizado');
   });
   // Autorizado: pasa, y la lectura es la de la whitelist compartida.
   await con({}, async (h) => {
@@ -565,7 +585,8 @@ async function d8() {
     ['403', { filas: new Map() }, cuerpoBueno()],
     ['apagado', { env: {} }, cuerpoBueno()],
     ['upstream 422 con eco', { guion: [{ respuesta: respuestaTypeSafe(422, { detail: `ECO-DEL-CUERPO ${OBJETIVO} Nuevo chat` }) }] }, cuerpoBueno()],
-    ['timeout', { plazoMs: 30, fetchImpl: cuelga() }, cuerpoBueno()]
+    ['timeout', { plazoMs: 30, fetchImpl: cuelga() }, cuerpoBueno()],
+    ['red caída con la key en el mensaje del error', { guion: [{ lanza: Object.assign(new TypeError(`fetch failed Bearer ${CLAVE_FALSA} ${OBJETIVO}`), { cause: { code: 'ECONNRESET', message: CLAVE_FALSA } }) }] }, cuerpoBueno()]
   ];
   for (const [nombre, opciones, cuerpo] of escenarios) {
     await con(opciones, async (h) => {
@@ -597,6 +618,30 @@ async function d8() {
     assert.strictEqual(h.lineas.length, 1);
     assert.ok(!/[\r\n]/.test(h.lineas[0]) && !h.lineas[0].includes('FALSA-LINEA'), h.lineas[0]);
   });
+  // La línea de log solo escribe nombres de causa conocidos y números: cualquier otra cosa sale como «otro»,
+  // aunque el servicio (por un fallo o una mutación) le pase un valor crudo.
+  {
+    const { lineaDeLog } = registerAgentDecisorRoutes;
+    const hostil = lineaDeLog(DEVICE, { estado: 502, code: CLAVE_FALSA, ms: 3, puertas: 3, upstream: CLAVE_FALSA, motivo: OBJETIVO, confianza: CLAVE_FALSA });
+    for (const canario of [CLAVE_FALSA, OBJETIVO, DEVICE]) assert.ok(!hostil.includes(canario), `la línea no debe traer «${canario}»: ${hostil}`);
+    assert.ok(hostil.includes('upstream=otro') && hostil.includes('motivo=otro') && hostil.includes('code=otro'), hostil);
+    const normal = lineaDeLog(DEVICE, { estado: 502, code: 'upstream_rechazo', ms: 3, puertas: 3, upstream: 422, motivo: 'puertas_demasiadas' });
+    assert.ok(normal.includes('upstream=422') && normal.includes('motivo=puertas_demasiadas') && normal.includes('code=upstream_rechazo'), normal);
+    // Los nombres que el servicio puede emitir están todos en la lista blanca.
+    for (const codigo of Object.keys(DecisorService.ESTADOS)) assert.ok(dominio.CODIGOS.includes(codigo), `código «${codigo}» fuera de la lista blanca`);
+    assert.ok(dominio.CODIGOS.includes('ok') && dominio.CODIGOS.includes('limite_de_uso') && dominio.CODIGOS.includes('error_interno'));
+    for (const cuerpo of [cuerpoBueno({ puertas: [] }), cuerpoBueno({ objetivo: 'o'.repeat(121) }), cuerpoBueno({ pantalla: '' }), cuerpoBueno({ puertas: ['Enviar'] }), cuerpoBueno({ puertas: Array.from({ length: 65 }, (_, i) => `${i + 1}) B (Button)`) }), {}, cuerpoBueno({ device_id: 'a b' })]) {
+      const v = dominio.validarPeticion(cuerpo);
+      assert.ok(!v.ok && dominio.MOTIVOS.includes(v.motivo), `motivo «${v.motivo}» fuera de la lista blanca`);
+    }
+  }
+  // Y de punta a punta por la ruta: un servicio que devuelve una traza hostil no la escribe en el log.
+  const servicioHostil = { modo: () => 'real', async decidir() { return { status: 502, json: { error: 'x', code: 'upstream_inalcanzable' }, traza: { estado: 502, code: 'upstream_inalcanzable', ms: 3, puertas: 3, upstream: CLAVE_FALSA, motivo: OBJETIVO } }; } };
+  await con({ servicioFalso: servicioHostil }, async (h) => {
+    await h.post(cuerpoBueno());
+    assert.strictEqual(h.lineas.length, 1);
+    assert.ok(!h.lineas[0].includes(CLAVE_FALSA) && !h.lineas[0].includes(OBJETIVO), `la traza hostil llegó al log: ${h.lineas[0]}`);
+  });
   // El enmascarado, tal cual lo pide el contrato.
   assert.strictEqual(registerAgentDecisorRoutes.enmascararDeviceId(DEVICE), 'aaaaaaaa…');
   assert.strictEqual(registerAgentDecisorRoutes.enmascararDeviceId(''), '(vacío)');
@@ -619,6 +664,19 @@ async function d9() {
     assert.strictEqual(h.fetchImpl.llamadas.length, 30, 'la 31 no llega a TypeSafe');
     const otro = await h.post(cuerpoBueno({ device_id: DEVICE_2 }));
     assert.strictEqual(otro.status, 200, 'otro dispositivo no paga el límite del primero');
+  });
+  // La cuenta va por el device_id NORMALIZADO (el mismo trim con el que valida el cuerpo y autoriza el
+  // autorizador): rellenarlo con espacios, tabuladores o espacios duros no abre una cuenta nueva.
+  await con({}, async (h) => {
+    const relleno = [' ', '\t', '\u00a0', ' \t '];
+    const estados = [];
+    for (let i = 0; i < 40; i += 1) {
+      const pad = relleno[i % relleno.length].repeat(i % 7 + 1);
+      estados.push((await h.post(cuerpoBueno({ device_id: i % 2 ? `${pad}${DEVICE}` : `${DEVICE}${pad}` }))).status);
+    }
+    assert.deepStrictEqual(estados.slice(0, 30), Array(30).fill(200), 'las 30 primeras pasan');
+    assert.deepStrictEqual(estados.slice(30), Array(10).fill(429), `la 31 y siguientes dan 429 aunque cambie el relleno: ${estados.join(',')}`);
+    assert.strictEqual(h.fetchImpl.llamadas.length, 30, 'solo 30 llegan a TypeSafe');
   });
   // Tope global de Android: repartido entre dispositivos también corta.
   await con({ limites: { limiteGlobal: 4 } }, async (h) => {
@@ -664,10 +722,52 @@ async function d10() {
   assert.strictEqual(corrida.status, 0, `verify-agent-platform debe seguir verde:\n${`${corrida.stdout}${corrida.stderr}`.split('\n').slice(-6).join('\n')}`);
 }
 
+// ---- D3b · la excepción E11 dice la verdad de lo que sale --------------------
+
+async function d3b() {
+  const doc = fs.readFileSync(path.join(ROOT, 'docs', 'privacy-egress-gateway.md'), 'utf8');
+  const fila = doc.split('\n').find((linea) => linea.startsWith('| **E11**'));
+  assert.ok(fila, 'la fila E11 existe en docs/privacy-egress-gateway.md');
+  const minusculas = fila.toLowerCase();
+  // Lo que Graph NO puede afirmar: que las etiquetas no lleven nombres o asuntos.
+  for (const [frase, porQue] of [
+    ['nombrar personas', 'dice que las etiquetas PUEDEN nombrar personas o asuntos'],
+    ['contactos', 'da ejemplos: contactos'],
+    ['asuntos de correo', 'da ejemplos: asuntos de correo'],
+    ['el teléfono es quien excluye', 'dice que el teléfono es quien excluye campos y apps sensibles'],
+    ['no puede verificar', 'admite que Graph no puede verificarlo'],
+    ['sin escudo', 'dice que no hay escudo de privacidad'],
+    ['retención', 'dice que TypeSafe no publica política de retención'],
+    ['apagado por defecto', 'dice que está apagado por defecto'],
+    ['no se loguea', 'dice que no se loguea ningún valor']
+  ]) {
+    assert.ok(minusculas.includes(frase), `la fila E11 ${porQue} (falta «${frase}»)`);
+  }
+  // La promesa falsa de antes: Graph no puede garantizar que salgan «sin contenido».
+  assert.ok(!minusculas.includes('sin campos de texto, sin contenido'), 'la fila E11 no promete «sin campos de texto, sin contenido»');
+}
+
+// ---- Sonda · el guard del endpoint no deja la X-API-Key en claro ------------
+
+async function guardDeLaSonda() {
+  const { endpointSeguro } = require('./sonda-del-decisor-android');
+  assert.strictEqual(typeof endpointSeguro, 'function', 'la sonda exporta endpointSeguro');
+  for (const bueno of [
+    'https://graph.example.com/api/v1/agent/decidir', 'https://graph.example.com', 'http://localhost:3000/api/v1/agent/decidir',
+    'http://localhost', 'http://localhost/x', 'http://127.0.0.1:8080/x', 'http://[::1]:3000/x'
+  ]) assert.strictEqual(endpointSeguro(bueno), true, `debe aceptar ${bueno}`);
+  for (const malo of [
+    'http://localhost.evil.com/x', 'http://127.0.0.1.evil.com/x', 'http://localhostx/', 'http://localhost@evil.com/x',
+    'http://localhost:80@evil.com/', 'http://127.0.0.1:8080@evil.com/x', 'http://evil.com/localhost', 'http://evil.com/?h=127.0.0.1',
+    'http://example.com/api', 'ftp://localhost/x', 'https://usuario:clave@graph.example.com/', 'localhost:3000', '', 'https://', 'javascript:alert(1)'
+  ]) assert.strictEqual(endpointSeguro(malo), false, `debe rechazar ${malo}`);
+}
+
 async function main() {
   await check('D1 · apagado por defecto: sin ANDROID_DECISOR_ENABLED o sin key contesta 503 decisor_apagado sin llamar a TypeSafe', d1);
   await check('D2 · sin device_id 400; ausente o sin realtime_allowed 403; nunca se llama a TypeSafe', d2);
   await check('D3 · Graph arma el cuerpo de TypeSafe (3 preguntas, jev-latest, sin duplicados); la key solo en Authorization', d3);
+  await check('D3b · la fila E11 del registro de excepciones dice lo que de verdad sale hacia TypeSafe', d3b);
   await check('D4 · más de 64 puertas, puerta de más de 80, objetivo de más de 120 o cuerpo sin forma: 400 sin llamar a TypeSafe', d4);
   await check('D5 · 429 y 529 se reintentan (200/400 ms, 3 intentos, dentro de 1.800 ms); 401 y 422 no', d5);
   await check('D6 · los fallos de TypeSafe salen con su código estable', d6);
@@ -675,6 +775,7 @@ async function main() {
   await check('D8 · una línea por llamada con device_id enmascarado y cifras; nunca objetivo, etiquetas, elección ni key', d8);
   await check('D9 · 30 por minuto por dispositivo y tope global de Android: 429 limite_de_uso', d9);
   await check('D10 · /api/v1/agent/turn y verify-agent-platform siguen como antes', d10);
+  await check('Sonda · el guard de --endpoint no acepta hosts que solo empiezan como localhost', guardDeLaSonda);
   console.log(`\nverify-agent-decisor: ${passed} checks ok, ${failed.length} fallidos`);
   process.exit(failed.length ? 1 : 0);
 }
