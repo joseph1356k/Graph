@@ -15,7 +15,7 @@ const SCAN_FILES = [path.join('web', 'server.js')];
 
 // Hosts de proveedores de IA. Cualquier mención fuera de la lista de abajo
 // falla el test.
-const PROVIDER_HOSTS = /(api\.openai\.com|openrouter\.ai|generativelanguage\.googleapis\.com|api\.deepgram\.com|stt-rt\.soniox\.com|api\.soniox\.com|anthropic\.com|services\.ai\.azure\.com|openai\.azure\.com)/;
+const PROVIDER_HOSTS = /(api\.openai\.com|openrouter\.ai|generativelanguage\.googleapis\.com|api\.deepgram\.com|stt-rt\.soniox\.com|api\.soniox\.com|anthropic\.com|services\.ai\.azure\.com|openai\.azure\.com|api\.typesafe\.ai)/;
 
 // Transportes que SÍ mandan datos a un proveedor, con la condición que cumplen.
 const TRANSPORTS = {
@@ -28,7 +28,8 @@ const TRANSPORTS = {
   'web/api/liveVoiceProxy.js': { shielded: false, kind: 'audio+eventos (relé WebSocket)', exception: 'E12' },
   'src/application/use-cases/RealtimeSessionService.js': { shielded: false, kind: 'token efímero (sin datos)', exception: 'E13' },
   'src/infrastructure/teach/GeminiVideoClient.js': { shielded: false, kind: 'video+texto', exception: 'E10' },
-  'src/application/use-cases/ClinicalRawTranscriptionService.js': { shielded: false, kind: 'audio', exception: 'E8' }
+  'src/application/use-cases/ClinicalRawTranscriptionService.js': { shielded: false, kind: 'audio', exception: 'E8' },
+  'src/application/use-cases/DecisorService.js': { shielded: false, kind: 'paquete+etiquetas+objetivo', exception: 'E11' }
 };
 
 // Archivos que nombran un proveedor sin mandarle nada (catálogos de precios,
