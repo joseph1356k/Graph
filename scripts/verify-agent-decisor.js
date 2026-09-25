@@ -736,7 +736,7 @@ async function d3b() {
     ['asuntos de correo', 'da ejemplos: asuntos de correo'],
     ['el teléfono es quien excluye', 'dice que el teléfono es quien excluye campos y apps sensibles'],
     ['no puede verificar', 'admite que Graph no puede verificarlo'],
-    ['sin escudo', 'dice que no hay escudo de privacidad'],
+    ['fuera del escudo', 'dice que va fuera del escudo de privacidad'],
     ['retención', 'dice que TypeSafe no publica política de retención'],
     ['apagado por defecto', 'dice que está apagado por defecto'],
     ['no se loguea', 'dice que no se loguea ningún valor']
