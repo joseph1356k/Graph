@@ -34,6 +34,7 @@ const {
   normalizarRespuesta
 } = require('../../domain/decisor/peticionSystemOne');
 const { FEATURES } = require('../../domain/usage/vocabulary');
+const { isOwnError: isAuthorizerOwnError } = require('./LiveVoiceDeviceAuthorizer');
 
 // El único endpoint de TypeSafe: todos los modelos se sirven por aquí.
 const URL_SYSTEMONE = 'https://api.typesafe.ai/v1/systemone';
@@ -144,9 +145,11 @@ class DecisorService {
     try {
       await this.authorizer.requireAuthorizedDevice(deviceId);
     } catch (error) {
-      // Nunca se copia el mensaje del autorizador: puede repetir el device_id.
-      if (error && error.statusCode === 403) return falla('device_no_autorizado', { puertas: puertas.length });
-      if (error && error.statusCode === 400) return falla('cuerpo_invalido', { motivo: 'device_id_ausente' }, ' (device_id_ausente).');
+      // Nunca se copia el mensaje del autorizador: puede repetir el device_id. Solo los errores PROPIOS
+      // del autorizador (marcados por él) significan «no autorizado» o «id mal formado»; el statusCode
+      // de un fallo de Supabase (403 de PostgREST, 400...) no cuenta: eso es «no pude comprobarlo».
+      if (isAuthorizerOwnError(error) && error.statusCode === 403) return falla('device_no_autorizado', { puertas: puertas.length });
+      if (isAuthorizerOwnError(error) && error.statusCode === 400) return falla('cuerpo_invalido', { motivo: 'device_id_ausente' }, ' (device_id_ausente).');
       return falla('autorizacion_no_disponible', { puertas: puertas.length });
     }
 
