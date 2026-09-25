@@ -67,9 +67,9 @@ async function testAuthorizerAutorizado() {
 
 // ---- Helpers para levantar un server HTTP efímero con el proxy montado ----
 
-function startProxyServer({ authorizedDeviceIds = [], openaiLiveUrl, envKey = 'una-key-de-prueba', path }) {
+function startProxyServer({ authorizedDeviceIds = [], openaiLiveUrl, envKey = 'una-key-de-prueba', path, log, logError, authorizer: authorizerOverride }) {
   const rows = new Map(authorizedDeviceIds.map((id) => [id, true]));
-  const authorizer = new LiveVoiceDeviceAuthorizer({
+  const authorizer = authorizerOverride || new LiveVoiceDeviceAuthorizer({
     async select(table, query) {
       const match = /device_id=eq\.([^&]+)/.exec(query);
       const id = match ? decodeURIComponent(match[1]) : '';
@@ -88,7 +88,7 @@ function startProxyServer({ authorizedDeviceIds = [], openaiLiveUrl, envKey = 'u
   const server = http.createServer((req, res) => {
     res.writeHead(400).end('esperaba un WebSocket');
   });
-  attachLiveVoiceProxy(server, { authorizer, openaiLiveUrl, path });
+  attachLiveVoiceProxy(server, { authorizer, openaiLiveUrl, path, log, logError });
 
   return new Promise((resolve) => {
     server.listen(0, '127.0.0.1', () => {
@@ -282,6 +282,196 @@ async function testRelayTransparenteYCierreEnCascada() {
   }
 }
 
+// ---- El device_id no se escribe en claro en los logs ----
+
+// UUID de telemetría del cliente Android 0.51+: 36 caracteres, es lo que
+// autoriza la voz. El enmascarado esperado se escribe a mano (8 + …) para que
+// la prueba no dependa del helper que verifica.
+const DEVICE_ID_LARGO = '3f2b8c1e-9d4a-4e7b-a1c6-5d0e8f7a2b39';
+const DEVICE_ID_ENMASCARADO = '3f2b8c1e…';
+
+function capturarLogs() {
+  const lineas = [];
+  return {
+    lineas,
+    log: (...args) => lineas.push(args.join(' ')),
+    logError: (...args) => lineas.push(args.join(' '))
+  };
+}
+
+function assertSinIdCompleto(lineas, mensaje) {
+  assert.ok(lineas.length > 0, `${mensaje}: no se capturó ninguna línea de log`);
+  for (const linea of lineas) {
+    assert.ok(!linea.includes(DEVICE_ID_LARGO), `${mensaje}: el device_id completo apareció en el log: ${linea}`);
+  }
+  assert.ok(
+    lineas.some((linea) => linea.includes(DEVICE_ID_ENMASCARADO)),
+    `${mensaje}: ninguna línea trae el id enmascarado «${DEVICE_ID_ENMASCARADO}»: ${JSON.stringify(lineas)}`
+  );
+}
+
+async function testLogDeRechazoNoLlevaElIdCompleto() {
+  const capturado = capturarLogs();
+  const proxy = await startProxyServer({ authorizedDeviceIds: [], log: capturado.log, logError: capturado.logError });
+  try {
+    const ws = new WebSocket(`ws://127.0.0.1:${proxy.port}/api/android/live/session?device_id=${DEVICE_ID_LARGO}`);
+    const resultado = await new Promise((resolve) => {
+      ws.on('unexpected-response', (req, res) => resolve({ rejected: true, statusCode: res.statusCode }));
+      ws.on('open', () => resolve({ rejected: false }));
+      ws.on('error', () => {});
+    });
+    assert.strictEqual(resultado.rejected, true);
+    assert.strictEqual(resultado.statusCode, 403, 'enmascarar el log no cambia el código que ve el cliente');
+    assertSinIdCompleto(capturado.lineas, 'camino rechazado (403)');
+  } finally {
+    await proxy.close();
+  }
+}
+
+async function testLogDeRechazoScrubbeaUnMensajeQueRepiteElId() {
+  // Defensa en profundidad: si algún día un mensaje de error del authorizer o
+  // de Supabase repite el id («dispositivo X no autorizado»), el log no lo filtra.
+  const capturado = capturarLogs();
+  const authorizer = {
+    async requireAuthorizedDevice(deviceId) {
+      const error = new Error(`el dispositivo ${deviceId} no está autorizado`);
+      error.statusCode = 403;
+      throw error;
+    }
+  };
+  const proxy = await startProxyServer({ authorizer, log: capturado.log, logError: capturado.logError });
+  try {
+    const ws = new WebSocket(`ws://127.0.0.1:${proxy.port}/api/android/live/session?device_id=${DEVICE_ID_LARGO}`);
+    const resultado = await new Promise((resolve) => {
+      ws.on('unexpected-response', (req, res) => resolve({ rejected: true, statusCode: res.statusCode }));
+      ws.on('open', () => resolve({ rejected: false }));
+      ws.on('error', () => {});
+    });
+    assert.strictEqual(resultado.statusCode, 403);
+    assertSinIdCompleto(capturado.lineas, 'mensaje de error que repite el id');
+  } finally {
+    await proxy.close();
+  }
+}
+
+async function testLogDeRechazoSinDeviceIdDiceVacio() {
+  const capturado = capturarLogs();
+  const proxy = await startProxyServer({ authorizedDeviceIds: [], log: capturado.log, logError: capturado.logError });
+  try {
+    const ws = new WebSocket(`ws://127.0.0.1:${proxy.port}/api/android/live/session`);
+    const resultado = await new Promise((resolve) => {
+      ws.on('unexpected-response', (req, res) => resolve({ rejected: true, statusCode: res.statusCode }));
+      ws.on('open', () => resolve({ rejected: false }));
+      ws.on('error', () => {});
+    });
+    assert.strictEqual(resultado.statusCode, 400);
+    assert.ok(
+      capturado.lineas.some((linea) => linea.includes('device_id=(vacío)')),
+      `sin device_id el log debía seguir diciendo (vacío): ${JSON.stringify(capturado.lineas)}`
+    );
+    // El mensaje sale INTACTO: sin el guard de scrubDeviceId, un id vacío hace
+    // text.split('') y el log quedaría «F(vacío)a(vacío)l(vacío)…».
+    assert.deepStrictEqual(
+      capturado.lineas,
+      ['[Live Voice Proxy] upgrade rechazado (device_id=(vacío)): Falta device_id.'],
+      'con device_id vacío el mensaje «Falta device_id.» debía salir intacto'
+    );
+  } finally {
+    await proxy.close();
+  }
+}
+
+// Un device_id corto (3 a 7 caracteres) no es un id real, y si aparece DENTRO
+// del mensaje de error no se toca el mensaje: sin el guard de scrubDeviceId,
+// «dispo» dentro de «dispositivo no autorizado…» se reemplazaría por su
+// enmascarado y el log quedaría ilegible. El enmascarado esperado se escribe a
+// mano (mitad del id, máx. 8) para no depender del helper.
+async function testLogDeRechazoConIdCortoNoDestrozaElMensaje() {
+  const MENSAJE = 'dispositivo no autorizado para voz Live';
+  const casos = [
+    ['dis', 'd…'],
+    ['disp', 'di…'],
+    ['dispo', 'di…'],
+    ['dispos', 'dis…'],
+    ['disposi', 'dis…']
+  ];
+  for (const [idCorto, enmascarado] of casos) {
+    const capturado = capturarLogs();
+    const proxy = await startProxyServer({ authorizedDeviceIds: [], log: capturado.log, logError: capturado.logError });
+    try {
+      const ws = new WebSocket(`ws://127.0.0.1:${proxy.port}/api/android/live/session?device_id=${idCorto}`);
+      const resultado = await new Promise((resolve) => {
+        ws.on('unexpected-response', (req, res) => resolve({ rejected: true, statusCode: res.statusCode }));
+        ws.on('open', () => resolve({ rejected: false }));
+        ws.on('error', () => {});
+      });
+      assert.strictEqual(resultado.statusCode, 403);
+      assert.deepStrictEqual(
+        capturado.lineas,
+        [`[Live Voice Proxy] upgrade rechazado (device_id=${enmascarado}): ${MENSAJE}`],
+        `id corto «${idCorto}»: el mensaje de error debía salir intacto`
+      );
+    } finally {
+      await proxy.close();
+    }
+  }
+}
+
+async function testLogDelRelayNoLlevaElIdCompleto() {
+  const capturado = capturarLogs();
+  const openai = await startFakeOpenAi();
+  const proxy = await startProxyServer({
+    authorizedDeviceIds: [DEVICE_ID_LARGO],
+    openaiLiveUrl: `ws://127.0.0.1:${openai.port}`,
+    log: capturado.log,
+    logError: capturado.logError
+  });
+  try {
+    const ws = new WebSocket(`ws://127.0.0.1:${proxy.port}/api/android/live/session?device_id=${DEVICE_ID_LARGO}`);
+    await new Promise((resolve, reject) => {
+      ws.on('open', resolve);
+      ws.on('unexpected-response', (req, res) => reject(new Error(`el upgrade debía aceptarse (HTTP ${res.statusCode})`)));
+      ws.on('error', reject);
+    });
+    const eco = new Promise((resolve) => ws.once('message', (data) => resolve(data.toString())));
+    ws.send('HOLA_DESDE_ANDROID');
+    assert.strictEqual(await eco, 'HOLA_DESDE_OPENAI', 'enmascarar el log no cambia el relay');
+    ws.close(1000, 'fin de prueba');
+
+    // El log del relay se escribe al cerrar la sesión: se espera a que salga.
+    const limite = Date.now() + 2000;
+    while (capturado.lineas.length === 0 && Date.now() < limite) {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    assertSinIdCompleto(capturado.lineas, 'camino autorizado (relay)');
+  } finally {
+    await proxy.close();
+    await openai.close();
+  }
+}
+
+async function testMaskDeviceId() {
+  const { maskDeviceId } = attachLiveVoiceProxy;
+  assert.strictEqual(typeof maskDeviceId, 'function', 'liveVoiceProxy debe exportar maskDeviceId');
+  // vacío / ausente / sólo espacios -> (vacío), igual que el log de antes
+  assert.strictEqual(maskDeviceId(''), '(vacío)');
+  assert.strictEqual(maskDeviceId(undefined), '(vacío)');
+  assert.strictEqual(maskDeviceId(null), '(vacío)');
+  assert.strictEqual(maskDeviceId('   '), '(vacío)');
+  // largo (UUID de 36): primeros 8 + …
+  assert.strictEqual(maskDeviceId(DEVICE_ID_LARGO), DEVICE_ID_ENMASCARADO);
+  assert.strictEqual(maskDeviceId(`  ${DEVICE_ID_LARGO}  `), DEVICE_ID_ENMASCARADO, 'mismo trim que el authorizer');
+  // exactamente 8: mostrar «los primeros 8» sería el id completo -> nunca se muestra entero
+  assert.strictEqual(maskDeviceId('12345678'), '1234…');
+  // corto: como mucho la mitad, jamás el id entero
+  assert.strictEqual(maskDeviceId('abcdef'), 'abc…');
+  assert.strictEqual(maskDeviceId('ab'), 'a…');
+  assert.strictEqual(maskDeviceId('a'), '…');
+  for (const corto of ['a', 'ab', 'abc', 'dispositivo-1', 'fantasma', '0123456789abcdef']) {
+    assert.ok(!maskDeviceId(corto).includes(corto), `«${corto}» no puede salir entero`);
+  }
+}
+
 async function main() {
   const pruebas = [
     ['authorizer: falta device_id -> 400', testAuthorizerFaltaDeviceId],
@@ -293,7 +483,13 @@ async function main() {
     ['proxy: rechaza sin OPENAI_LIVE_KEY configurada (500, nunca fallback silencioso)', testRechazaSinKeyConfigurada],
     ['proxy: acepta con el path de destino de Vercel (regresión rewrite)', testAceptaConPathDeDestinoExplicito],
     ['proxy: acepta ambos paths cuando se pasa un array (regresión producción)', testAceptaAmbosPathsCuandoSePasaUnArray],
-    ['proxy: relay transparente (texto y binario) + cierre en cascada', testRelayTransparenteYCierreEnCascada]
+    ['proxy: relay transparente (texto y binario) + cierre en cascada', testRelayTransparenteYCierreEnCascada],
+    ['log: el rechazo (403) no lleva el device_id completo, sí el enmascarado', testLogDeRechazoNoLlevaElIdCompleto],
+    ['log: un mensaje de error que repite el id tampoco lo filtra', testLogDeRechazoScrubbeaUnMensajeQueRepiteElId],
+    ['log: sin device_id el rechazo sigue diciendo (vacío) y el mensaje sale intacto', testLogDeRechazoSinDeviceIdDiceVacio],
+    ['log: un id corto (3-7) dentro del mensaje de error no lo destroza', testLogDeRechazoConIdCortoNoDestrozaElMensaje],
+    ['log: el cierre del relay autorizado no lleva el device_id completo', testLogDelRelayNoLlevaElIdCompleto],
+    ['maskDeviceId: vacío, corto y largo', testMaskDeviceId]
   ];
 
   for (const [nombre, fn] of pruebas) {

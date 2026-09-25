@@ -28,6 +28,10 @@
 const http = require('http');
 const { WebSocketServer, WebSocket } = require('ws');
 
+// maskDeviceId / scrubDeviceId: ningún log de este proxy lleva el device_id
+// completo (ver web/api/logRedaction.js para el porqué).
+const { maskDeviceId, scrubDeviceId } = require('./logRedaction');
+
 const LIVE_PROXY_PATH = '/api/android/live/session';
 const OPENAI_LIVE_URL = 'wss://api.openai.com/v1/live/sessions';
 
@@ -128,7 +132,7 @@ function runRelay({ clientWs, upstreamUrl, apiKey, deviceId, WebSocketCtor, log 
     closeSocket(upstream, code, reason);
     log(JSON.stringify({
       canal: 'live-voice-proxy',
-      device_id: deviceId,
+      device_id: maskDeviceId(deviceId),
       t: new Date().toISOString(),
       ms: Date.now() - startedAt,
       client_frames: stats.clientFrames,
@@ -248,7 +252,7 @@ function attachLiveVoiceProxy(server, options = {}) {
       })
       .catch((error) => {
         const statusCode = error.statusCode || 400;
-        logError(`[Live Voice Proxy] upgrade rechazado (device_id=${deviceId || '(vacío)'}): ${error.message}`);
+        logError(`[Live Voice Proxy] upgrade rechazado (device_id=${maskDeviceId(deviceId)}): ${scrubDeviceId(error.message, deviceId)}`);
         rejectUpgrade(socket, statusCode, STATUS_TEXT[statusCode] || STATUS_TEXT[400]);
       });
   });
@@ -260,3 +264,4 @@ module.exports = attachLiveVoiceProxy;
 module.exports.LIVE_PROXY_PATH = LIVE_PROXY_PATH;
 module.exports.OPENAI_LIVE_URL = OPENAI_LIVE_URL;
 module.exports.MAX_DURATION_MS = MAX_DURATION_MS;
+module.exports.maskDeviceId = maskDeviceId;
