@@ -369,8 +369,51 @@ async function testLogDeRechazoSinDeviceIdDiceVacio() {
       capturado.lineas.some((linea) => linea.includes('device_id=(vacío)')),
       `sin device_id el log debía seguir diciendo (vacío): ${JSON.stringify(capturado.lineas)}`
     );
+    // El mensaje sale INTACTO: sin el guard de scrubDeviceId, un id vacío hace
+    // text.split('') y el log quedaría «F(vacío)a(vacío)l(vacío)…».
+    assert.deepStrictEqual(
+      capturado.lineas,
+      ['[Live Voice Proxy] upgrade rechazado (device_id=(vacío)): Falta device_id.'],
+      'con device_id vacío el mensaje «Falta device_id.» debía salir intacto'
+    );
   } finally {
     await proxy.close();
+  }
+}
+
+// Un device_id corto (3 a 7 caracteres) no es un id real, y si aparece DENTRO
+// del mensaje de error no se toca el mensaje: sin el guard de scrubDeviceId,
+// «dispo» dentro de «dispositivo no autorizado…» se reemplazaría por su
+// enmascarado y el log quedaría ilegible. El enmascarado esperado se escribe a
+// mano (mitad del id, máx. 8) para no depender del helper.
+async function testLogDeRechazoConIdCortoNoDestrozaElMensaje() {
+  const MENSAJE = 'dispositivo no autorizado para voz Live';
+  const casos = [
+    ['dis', 'd…'],
+    ['disp', 'di…'],
+    ['dispo', 'di…'],
+    ['dispos', 'dis…'],
+    ['disposi', 'dis…']
+  ];
+  for (const [idCorto, enmascarado] of casos) {
+    const capturado = capturarLogs();
+    const proxy = await startProxyServer({ authorizedDeviceIds: [], log: capturado.log, logError: capturado.logError });
+    try {
+      const ws = new WebSocket(`ws://127.0.0.1:${proxy.port}/api/android/live/session?device_id=${idCorto}`);
+      const resultado = await new Promise((resolve) => {
+        ws.on('unexpected-response', (req, res) => resolve({ rejected: true, statusCode: res.statusCode }));
+        ws.on('open', () => resolve({ rejected: false }));
+        ws.on('error', () => {});
+      });
+      assert.strictEqual(resultado.statusCode, 403);
+      assert.deepStrictEqual(
+        capturado.lineas,
+        [`[Live Voice Proxy] upgrade rechazado (device_id=${enmascarado}): ${MENSAJE}`],
+        `id corto «${idCorto}»: el mensaje de error debía salir intacto`
+      );
+    } finally {
+      await proxy.close();
+    }
   }
 }
 
@@ -443,7 +486,8 @@ async function main() {
     ['proxy: relay transparente (texto y binario) + cierre en cascada', testRelayTransparenteYCierreEnCascada],
     ['log: el rechazo (403) no lleva el device_id completo, sí el enmascarado', testLogDeRechazoNoLlevaElIdCompleto],
     ['log: un mensaje de error que repite el id tampoco lo filtra', testLogDeRechazoScrubbeaUnMensajeQueRepiteElId],
-    ['log: sin device_id el rechazo sigue diciendo (vacío)', testLogDeRechazoSinDeviceIdDiceVacio],
+    ['log: sin device_id el rechazo sigue diciendo (vacío) y el mensaje sale intacto', testLogDeRechazoSinDeviceIdDiceVacio],
+    ['log: un id corto (3-7) dentro del mensaje de error no lo destroza', testLogDeRechazoConIdCortoNoDestrozaElMensaje],
     ['log: el cierre del relay autorizado no lleva el device_id completo', testLogDelRelayNoLlevaElIdCompleto],
     ['maskDeviceId: vacío, corto y largo', testMaskDeviceId]
   ];
