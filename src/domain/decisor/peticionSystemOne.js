@@ -10,8 +10,12 @@
 // sería un oráculo de pago abierto a cualquier dispositivo autorizado.
 //
 // PRIVACIDAD. A TypeSafe salen el paquete, el objetivo (≤120) y las etiquetas de
-// las puertas recortadas a ≤40 caracteres. Nunca el device_id, un selector, el
-// contenido de un campo ni el título de una ventana.
+// las puertas recortadas a ≤40 caracteres. Nunca el device_id ni las cabeceras
+// del teléfono. Las etiquetas pueden nombrar personas o asuntos (contactos,
+// títulos de chats, asuntos de correo) y el objetivo puede nombrar a alguien: el
+// teléfono es quien excluye los campos de texto y las apps sensibles; Graph solo
+// valida la forma y el tope de cada campo y no puede verificar el contenido.
+// Es la excepción E11 de docs/privacy-egress-gateway.md.
 
 // Límites estrictos: pasarse es 400, sin recortar en silencio. Lo único que se
 // recorta es la etiqueta al SALIR hacia TypeSafe (defensa en profundidad: el
