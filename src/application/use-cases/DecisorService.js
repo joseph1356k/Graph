@@ -210,7 +210,10 @@ class DecisorService {
           method: 'POST',
           headers: { Authorization: `Bearer ${clave}`, 'Content-Type': 'application/json' },
           body: cuerpo,
-          signal: control.signal
+          signal: control.signal,
+          // Un redirect (307 conserva método y cuerpo) mandaría el objetivo y las etiquetas a otro origen:
+          // no se sigue; sale como fallo de red (upstream_inalcanzable).
+          redirect: 'error'
         });
         estado = respuesta.status;
         texto = estado >= 200 && estado < 300 ? await respuesta.text() : '';
