@@ -388,6 +388,67 @@ async function d3() {
   });
 }
 
+// ---- D3c · un redirect no reenvía la petición a otro origen ------------------
+
+// Servidor local real que anota lo que le llega.
+function servidorLocal(manejador) {
+  const recibidas = [];
+  const server = http.createServer((req, res) => {
+    let cuerpo = '';
+    req.on('data', (t) => { cuerpo += t; });
+    req.on('end', () => {
+      recibidas.push({ url: req.url, cabeceras: req.headers, cuerpo });
+      manejador(req, res);
+    });
+  });
+  return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve({
+    recibidas, puerto: server.address().port, cerrar: () => new Promise((r) => server.close(r))
+  })));
+}
+
+async function d3c() {
+  // Con dos servidores locales reales: A contesta 307 hacia B. Un 307 conserva método y cuerpo, así que
+  //    seguirlo mandaría a B el objetivo y las etiquetas (y en la sonda, la X-API-Key).
+  const B = await servidorLocal((req, res) => { res.writeHead(200, { 'content-type': 'application/json' }); res.end('{}'); });
+  const A = await servidorLocal((req, res) => { res.writeHead(307, { Location: `http://127.0.0.1:${B.puerto}/desviado` }); res.end(); });
+  try {
+    const servicio = new DecisorService({
+      authorizer: { async requireAuthorizedDevice() { return {}; } },
+      env: { ANDROID_DECISOR_ENABLED: '1', TYPESAFE_API_KEY: CLAVE_FALSA },
+      apiUrl: `http://127.0.0.1:${A.puerto}/v1/systemone`
+    });
+    const r = await servicio.decidir(cuerpoBueno());
+    assert.strictEqual(A.recibidas.length, 1, 'A recibió la petición');
+    assert.strictEqual(B.recibidas.length, 0, `B no debe recibir nada del servicio: ${JSON.stringify(B.recibidas.map((x) => x.cuerpo)).slice(0, 120)}`);
+    assert.strictEqual(r.status, 502);
+    assert.strictEqual(r.json.code, 'upstream_inalcanzable');
+
+    // La sonda (--endpoint): la X-API-Key no puede llegar a B por un redirect de A.
+    const { consultarEndpoint } = require('./sonda-del-decisor-android');
+    const antes = { k: process.env.SONDA_GRAPH_API_KEY, d: process.env.SONDA_DEVICE_ID };
+    process.env.SONDA_GRAPH_API_KEY = CLAVE_FALSA;
+    process.env.SONDA_DEVICE_ID = 'sonda-12345678';
+    try {
+      const consultar = await consultarEndpoint(`http://127.0.0.1:${A.puerto}/api/v1/agent/decidir`);
+      await assert.rejects(() => consultar({ pantalla: 'com.ejemplo', objetivo: 'abrir algo', puertas: ['1) Uno (Button)'] }), 'la sonda falla ante un redirect');
+    } finally {
+      for (const [nombre, valor] of [['SONDA_GRAPH_API_KEY', antes.k], ['SONDA_DEVICE_ID', antes.d]]) {
+        if (valor === undefined) delete process.env[nombre]; else process.env[nombre] = valor;
+      }
+    }
+    assert.strictEqual(B.recibidas.length, 0, `B no debe recibir nada de la sonda (llegó: ${JSON.stringify(B.recibidas.map((x) => x.cabeceras['x-api-key'])).slice(0, 120)})`);
+    assert.ok(!JSON.stringify(B.recibidas).includes(CLAVE_FALSA), 'la key canario no llegó a B');
+  } finally {
+    await A.cerrar();
+    await B.cerrar();
+  }
+  // Y la llamada a TypeSafe le dice a fetch, explícitamente, que NO siga redirects.
+  await con({}, async (h) => {
+    await h.post(cuerpoBueno());
+    assert.strictEqual(h.fetchImpl.llamadas[0].init.redirect, 'error', 'la llamada a TypeSafe lleva redirect: error');
+  });
+}
+
 // ---- D4 · límites estrictos ------------------------------------------------
 
 async function d4() {
@@ -678,6 +739,27 @@ async function d9() {
     assert.deepStrictEqual(estados.slice(30), Array(10).fill(429), `la 31 y siguientes dan 429 aunque cambie el relleno: ${estados.join(',')}`);
     assert.strictEqual(h.fetchImpl.llamadas.length, 30, 'solo 30 llegan a TypeSafe');
   });
+  // La clave del limitador tiene tope de largo: el limitador corre ANTES de la validación, así que un id de
+  // 200 caracteres (válido por alfabeto, 400 después) no puede acabar como una clave de 200 caracteres.
+  {
+    const { claveDeDispositivo } = registerAgentDecisorRoutes;
+    assert.strictEqual(claveDeDispositivo('a'.repeat(200)).length, dominio.LIMITES.DEVICE_ID, 'la clave nunca supera 64 caracteres');
+    assert.strictEqual(claveDeDispositivo(`\t ${DEVICE} \u00a0`), DEVICE, 'la clave es el id recortado');
+    assert.strictEqual(claveDeDispositivo(undefined), '');
+    assert.strictEqual(claveDeDispositivo(12345), '');
+    // Por la ruta: ids distintos de 200 caracteres que comparten los 64 primeros cuentan en la MISMA clave.
+    await con({}, async (h) => {
+      const estados = [];
+      for (let i = 0; i < 40; i += 1) {
+        const id = `${'a'.repeat(64)}${String(i).padStart(136, 'b')}`;
+        assert.strictEqual(id.length, 200);
+        estados.push((await h.post(cuerpoBueno({ device_id: id }))).status);
+      }
+      assert.deepStrictEqual(estados.slice(0, 30), Array(30).fill(400), 'las 30 primeras llegan a la validación (id demasiado largo)');
+      assert.deepStrictEqual(estados.slice(30), Array(10).fill(429), `las siguientes las corta el limitador: ${estados.join(',')}`);
+      assert.strictEqual(h.fetchImpl.llamadas.length, 0);
+    });
+  }
   // Tope global de Android: repartido entre dispositivos también corta.
   await con({ limites: { limiteGlobal: 4 } }, async (h) => {
     const estados = [];
@@ -745,6 +827,12 @@ async function d3b() {
   }
   // La promesa falsa de antes: Graph no puede garantizar que salgan «sin contenido».
   assert.ok(!minusculas.includes('sin campos de texto, sin contenido'), 'la fila E11 no promete «sin campos de texto, sin contenido»');
+  // El comentario del código no puede prometer lo que la fila retiró.
+  const codigo = fs.readFileSync(path.join(ROOT, 'src', 'domain', 'decisor', 'peticionSystemOne.js'), 'utf8').replace(/\s*\n\/\/\s*/g, ' ').toLowerCase();
+  assert.ok(!codigo.includes('ni el título de una ventana') && !codigo.includes('contenido de un campo ni'), 'peticionSystemOne.js no promete «nunca el contenido de un campo ni el título de una ventana»');
+  for (const frase of ['pueden nombrar personas o asuntos', 'el teléfono es quien excluye', 'no puede verificar el contenido']) {
+    assert.ok(codigo.includes(frase), `el comentario PRIVACIDAD de peticionSystemOne.js dice «${frase}»`);
+  }
 }
 
 // ---- Sonda · el guard del endpoint no deja la X-API-Key en claro ------------
@@ -768,6 +856,7 @@ async function main() {
   await check('D2 · sin device_id 400; ausente o sin realtime_allowed 403; nunca se llama a TypeSafe', d2);
   await check('D3 · Graph arma el cuerpo de TypeSafe (3 preguntas, jev-latest, sin duplicados); la key solo en Authorization', d3);
   await check('D3b · la fila E11 del registro de excepciones dice lo que de verdad sale hacia TypeSafe', d3b);
+  await check('D3c · un redirect de TypeSafe o del endpoint no reenvía la petición ni la key a otro origen (servicio y sonda)', d3c);
   await check('D4 · más de 64 puertas, puerta de más de 80, objetivo de más de 120 o cuerpo sin forma: 400 sin llamar a TypeSafe', d4);
   await check('D5 · 429 y 529 se reintentan (200/400 ms, 3 intentos, dentro de 1.800 ms); 401 y 422 no', d5);
   await check('D6 · los fallos de TypeSafe salen con su código estable', d6);
