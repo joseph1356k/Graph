@@ -113,7 +113,9 @@ class RealtimeSessionService {
     const expiresAt = body?.expires_at ?? body?.client_secret?.expires_at ?? null;
 
     if (!clientSecret) {
-      console.error(`[Realtime Session] OpenAI no devolvió client_secret: ${text.slice(0, 300)}`);
+      // Nunca el cuerpo: si OpenAI cambió la forma, el secreto puede venir dentro
+      // de él bajo otra clave. Sólo el status y el largo, que alcanzan para diagnosticar.
+      console.error(`[Realtime Session] OpenAI no devolvió client_secret (status ${response.status}, cuerpo de ${text.length} caracteres, no se loguea)`);
       throw upstreamError('OpenAI Realtime no devolvió client_secret.');
     }
 

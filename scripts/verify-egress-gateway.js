@@ -23,6 +23,10 @@ const TRANSPORTS = {
   'src/infrastructure/conscious-brain/openaiBrain.js': { shielded: false, kind: 'capturas+texto', exception: 'E4' },
   'src/infrastructure/conscious-brain/geminiBrain.js': { shielded: false, kind: 'capturas+texto', exception: 'E4' },
   'src/infrastructure/conscious-brain/config.js': { shielded: false, kind: 'config', exception: 'E4' },
+  // Voz en tiempo real del celular (OpenAI): el relé lleva audio y eventos de la
+  // sesión; el servicio solo emite el token efímero (sin datos del usuario).
+  'web/api/liveVoiceProxy.js': { shielded: false, kind: 'audio+eventos (relé WebSocket)', exception: 'E12' },
+  'src/application/use-cases/RealtimeSessionService.js': { shielded: false, kind: 'token efímero (sin datos)', exception: 'E13' },
   'src/infrastructure/teach/GeminiVideoClient.js': { shielded: false, kind: 'video+texto', exception: 'E10' },
   'src/application/use-cases/ClinicalRawTranscriptionService.js': { shielded: false, kind: 'audio', exception: 'E8' }
 };
