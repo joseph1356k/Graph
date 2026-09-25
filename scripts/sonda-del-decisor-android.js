@@ -195,4 +195,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { endpointSeguro };
+module.exports = { endpointSeguro, consultarEndpoint };

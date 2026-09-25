@@ -61,6 +61,13 @@ function lineaDeLog(deviceId, traza) {
   return partes.join(' ');
 }
 
+// La cuenta de cada dispositivo en el limitador: su id NORMALIZADO (el mismo que valida y autoriza el
+// servicio) y con tope de largo, porque el limitador corre ANTES de la validación y un id enorme no
+// puede convertirse en una clave enorme guardada en memoria.
+function claveDeDispositivo(deviceId) {
+  return normalizarDeviceId(deviceId).slice(0, LIMITES.DEVICE_ID);
+}
+
 function registerAgentDecisorRoutes(app, deps = {}) {
   const decisorService = deps.decisorService || null;
   if (!app || !decisorService) {
@@ -68,8 +75,6 @@ function registerAgentDecisorRoutes(app, deps = {}) {
   }
   const logger = deps.logger || console;
   const deviceDe = (req) => (req.body && typeof req.body === 'object' ? req.body.device_id : undefined);
-  // La cuenta de cada dispositivo va por su id NORMALIZADO, el mismo que valida y autoriza el servicio.
-  const claveDeDispositivo = (req) => normalizarDeviceId(deviceDe(req)).slice(0, LIMITES.DEVICE_ID);
 
   const alExceder = (req, res) => {
     logger.log(lineaDeLog(deviceDe(req), { estado: 429, code: 'limite_de_uso', ms: 0 }));
@@ -93,9 +98,9 @@ function registerAgentDecisorRoutes(app, deps = {}) {
   const limitePorDispositivo = rateLimit({
     ...opcionesComunes,
     limit: deps.limitePorDispositivo || LIMITE_POR_DISPOSITIVO,
-    keyGenerator: (req) => claveDeDispositivo(req),
+    keyGenerator: (req) => claveDeDispositivo(deviceDe(req)),
     // Sin un device_id de texto no hay a quién limitar: lo frena el tope global y el 400.
-    skip: (req) => apagado() || !claveDeDispositivo(req)
+    skip: (req) => apagado() || !claveDeDispositivo(deviceDe(req))
   });
 
   app.post(RUTA, limiteGlobal, limitePorDispositivo, async (req, res) => {
@@ -122,6 +127,7 @@ function registerAgentDecisorRoutes(app, deps = {}) {
 module.exports = registerAgentDecisorRoutes;
 module.exports.enmascararDeviceId = enmascararDeviceId;
 module.exports.lineaDeLog = lineaDeLog;
+module.exports.claveDeDispositivo = claveDeDispositivo;
 module.exports.LIMITE_POR_DISPOSITIVO = LIMITE_POR_DISPOSITIVO;
 module.exports.LIMITE_GLOBAL = LIMITE_GLOBAL;
 module.exports.RUTA = RUTA;
