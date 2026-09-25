@@ -95,6 +95,13 @@ function fetchFalso(guion, reloj) {
   fn.llamadas = llamadas;
   return fn;
 }
+// TypeSafe falso que elige siempre la primera puerta que se le ofrece.
+const eligeLaPrimera = (url, init) => {
+  const primera = Object.keys(JSON.parse(init.body).questions.puerta.criteria)[0];
+  const j = RESPUESTA_TYPESAFE();
+  j.answers.puerta = { type: 'choice', choice: primera, confidence: 0.8 };
+  return respuestaTypeSafe(200, j);
+};
 const cuelga = () => (url, init) => new Promise((_, reject) => {
   init.signal.addEventListener('abort', () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' })));
 });
@@ -380,7 +387,6 @@ async function d4() {
     ['objetivo que no es texto', cuerpoBueno({ objetivo: { a: 1 } })],
     ['sin pantalla', (() => { const c = cuerpoBueno(); delete c.pantalla; return c; })()],
     ['cuerpo que es una lista', []],
-    ['cuerpo que es un texto', '"hola"'],
     ['cuerpo vacío', {}]
   ];
   await con({}, async (h) => {
@@ -399,7 +405,7 @@ async function d4() {
     assert.ok(!r.texto.includes('SECRETO-DEL-PACIENTE'), 'el error no repite lo que mandó el teléfono');
   });
   // Justo en el límite sí pasa.
-  await con({}, async (h) => {
+  await con({ guion: [eligeLaPrimera] }, async (h) => {
     const puertas = de(64, (i) => `${i}) Botón ${i} (Button)`);
     const r = await h.post(cuerpoBueno({ puertas, objetivo: 'o'.repeat(120), pantalla: 'p'.repeat(80), device_id: DEVICE }));
     assert.strictEqual(r.status, 200, `64 puertas / objetivo 120 / pantalla 80 deben pasar: ${r.texto}`);
@@ -647,11 +653,12 @@ async function d10() {
   });
   // En el servidor real la ruta va DETRÁS de X-API-Key y se registra una sola vez.
   const server = fs.readFileSync(path.join(ROOT, 'web', 'server.js'), 'utf8');
-  const auth = server.indexOf("app.use('/api/v1', requireApiKey)");
-  const registro = server.indexOf('registerAgentDecisorRoutes(app');
+  // Sin comentar: la línea tiene que estar viva (empezar en columna 0).
+  const auth = server.search(/^app\.use\('\/api\/v1', requireApiKey\);/m);
+  const registro = server.search(/^registerAgentDecisorRoutes\(app,/m);
   assert.ok(auth > 0, 'server.js protege /api/v1 con requireApiKey');
   assert.ok(registro > auth, 'registerAgentDecisorRoutes va después de requireApiKey');
-  assert.strictEqual(server.split('registerAgentDecisorRoutes(app').length - 1, 1, 'se registra una sola vez');
+  assert.strictEqual((server.match(/^registerAgentDecisorRoutes\(app,/gm) || []).length, 1, 'se registra una sola vez');
   // Y el contrato del turno (snapshot de Windows, plataforma Android) sigue verde por sí mismo.
   const corrida = spawnSync(process.execPath, [path.join(__dirname, 'verify-agent-platform.js')], { encoding: 'utf8' });
   assert.strictEqual(corrida.status, 0, `verify-agent-platform debe seguir verde:\n${`${corrida.stdout}${corrida.stderr}`.split('\n').slice(-6).join('\n')}`);

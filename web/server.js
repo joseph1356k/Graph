@@ -88,6 +88,8 @@ const registerWindowsPanelRoutes = require('./api/registerWindowsPanelRoutes');
 const StudioProgressService = require('../src/application/use-cases/StudioProgressService');
 const registerStudioProgressRoutes = require('./api/registerStudioProgressRoutes');
 const registerWindowsAgentRoutes = require('./api/registerWindowsAgentRoutes');
+const registerAgentDecisorRoutes = require('./api/registerAgentDecisorRoutes');
+const DecisorService = require('../src/application/use-cases/DecisorService');
 const TeachStepsInterpreter = require('../src/application/use-cases/TeachStepsInterpreter');
 const registerWindowsDistributionRoutes = require('./api/registerWindowsDistributionRoutes');
 const registerMcpRoutes = require('./api/registerMcpRoutes');
@@ -1222,6 +1224,11 @@ registerWindowsAgentRoutes(app, {
   teachVideoService,
   teachStepsInterpreter,
   usageRecorder
+});
+// Decisor Jev (TypeSafe) para Android: apagado salvo ANDROID_DECISOR_ENABLED, y solo
+// dispositivos con realtime_allowed (la misma whitelist que la voz Live).
+registerAgentDecisorRoutes(app, {
+  decisorService: new DecisorService({ authorizer: liveVoiceDeviceAuthorizer, usageRecorder })
 });
 registerWindowsDistributionRoutes(app, { windowsAppReleaseService });
 registerMcpRoutes(app, { agentWorkflowStore, workflowExecutor });

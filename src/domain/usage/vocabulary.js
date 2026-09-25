@@ -54,6 +54,8 @@ const FEATURES = Object.freeze({
   LIVE_VOICE: 'live_voice',
   LIVE_VISION: 'live_vision',
   AGENT_CHAT: 'agent_chat',
+  // Jev (TypeSafe) decide qué se toca en la app Android: POST /api/v1/agent/decidir.
+  DECISOR: 'decisor',
   PROVIDER_TEST: 'provider_test',
   UNKNOWN: 'unknown'
 });
