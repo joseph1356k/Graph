@@ -28,6 +28,10 @@
 const http = require('http');
 const { WebSocketServer, WebSocket } = require('ws');
 
+// maskDeviceId / scrubDeviceId: ningún log de este proxy lleva el device_id
+// completo (ver web/api/logRedaction.js para el porqué).
+const { maskDeviceId, scrubDeviceId } = require('./logRedaction');
+
 const LIVE_PROXY_PATH = '/api/android/live/session';
 const OPENAI_LIVE_URL = 'wss://api.openai.com/v1/live/sessions';
 
@@ -45,33 +49,6 @@ const DURATION_LIMIT_CLOSE_CODE = 4408; // rango privado 4000-4999 (RFC 6455)
 const DURATION_LIMIT_REASON = 'proxy_duration_limit_reconnect';
 
 const CLOSE_REASON_MAX_BYTES = 123; // límite del protocolo WS para el motivo de cierre
-
-// El device_id AUTORIZA la voz (graph_app_users.device_id + realtime_allowed:
-// quien lo repita gasta el OpenAI de Live), y desde el cliente Android 0.51 es
-// el UUID de telemetría. Los logs de Vercel los lee más gente que la que
-// debería poder repetirlo, así que ningún log lleva el id completo: sólo los
-// primeros MASK_PREFIX_LEN caracteres + «…», suficiente para correlacionar dos
-// líneas de la misma sesión. Un id de MASK_PREFIX_LEN o menos se recortaría a sí
-// mismo entero, así que ahí se muestra como mucho la mitad. Mismo trim que
-// LiveVoiceDeviceAuthorizer, para que el log describa el id que se autorizó.
-const MASK_PREFIX_LEN = 8;
-const EMPTY_DEVICE_ID_LABEL = '(vacío)';
-
-function maskDeviceId(deviceId) {
-  const id = `${deviceId == null ? '' : deviceId}`.trim();
-  if (!id) return EMPTY_DEVICE_ID_LABEL;
-  return `${id.slice(0, Math.min(MASK_PREFIX_LEN, Math.floor(id.length / 2)))}…`;
-}
-
-// Defensa en profundidad: el mensaje de un error (authorizer, Supabase) puede
-// repetir el id, y ese mensaje también va al log. Sólo se limpia un id lo bastante
-// largo para ser real (un UUID, un Android ID); uno de menos de MASK_PREFIX_LEN
-// caracteres reemplazaría fragmentos sueltos de cualquier mensaje.
-function scrubDeviceId(text, deviceId) {
-  const id = `${deviceId == null ? '' : deviceId}`.trim();
-  if (id.length < MASK_PREFIX_LEN) return `${text}`;
-  return `${text}`.split(id).join(maskDeviceId(id));
-}
 
 function truncateReason(reason) {
   const text = `${reason || ''}`;

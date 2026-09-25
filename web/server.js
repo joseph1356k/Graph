@@ -54,6 +54,7 @@ const AndroidPanelService = require('../src/application/use-cases/AndroidPanelSe
 const RealtimeSessionService = require('../src/application/use-cases/RealtimeSessionService');
 const LiveVoiceDeviceAuthorizer = require('../src/application/use-cases/LiveVoiceDeviceAuthorizer');
 const attachLiveVoiceProxy = require('./api/liveVoiceProxy');
+const { redactUrlForLog } = require('./api/logRedaction');
 // Módulo Windows App (agente de escritorio Ü, absorbido del backend viejo de
 // Vercel Functions): cerebro consciente + enseñanza por video + sus tarjetas.
 const AgentTurnService = require('../src/application/use-cases/AgentTurnService');
@@ -419,7 +420,8 @@ app.use('/miracle', express.static(miracleWorkspaceStaticRoot));
 app.use(express.static('web/public'));
 
 app.use((req, res, next) => {
-  console.log(`[HTTP] ${req.method} ${req.url}`);
+  // La URL va al log sin el device_id (path con UUID o ?device_id=): es el valor que autoriza la voz Live.
+  console.log(`[HTTP] ${req.method} ${redactUrlForLog(req.url)}`);
   next();
 });
 
