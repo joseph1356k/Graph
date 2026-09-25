@@ -120,7 +120,10 @@ async function consultarEndpoint(url) {
     const r = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-API-Key': clave, 'X-Miracle-App': 'android_app', 'X-Miracle-Feature': 'decisor' },
-      body: JSON.stringify({ device_id: deviceId, pantalla: p.pantalla, objetivo: p.objetivo, puertas: p.puertas })
+      body: JSON.stringify({ device_id: deviceId, pantalla: p.pantalla, objetivo: p.objetivo, puertas: p.puertas }),
+      // endpointSeguro solo valida la URL inicial: un endpoint permitido que respondiera 307 a otro origen
+      // reenviaría la X-API-Key (fetch solo quita Authorization al cambiar de origen) y el cuerpo.
+      redirect: 'error'
     });
     let json = null;
     try { json = await r.json(); } catch { /* sin JSON */ }
