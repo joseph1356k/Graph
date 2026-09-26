@@ -39,7 +39,9 @@ const LOOSE_SEQ = `${ANY_WORD}(?:\\s+${ANY_WORD}){0,5}`;
 // proveedor de transcripción no siempre capitaliza).
 const STRONG_PATIENT_ANCHOR = '(?:se\\s+llama|me\\s+llamo|mi\\s+nombre\\s+es|su\\s+nombre\\s+es|nombre\\s+(?:completo\\s+)?(?:del?\\s+|de\\s+la\\s+)?paciente\\s*(?:es|:)|identificad[oa]\\s+como|a\\s+nombre\\s+de)';
 // Anclas débiles: exigen mayúscula inicial en el nombre.
-const WEAK_PATIENT_ANCHOR = '(?:paciente\\s*:|paciente|señora?|sr\\.?|sra\\.?|don|doña|usuari[oa]|niñ[oa]|joven)';
+// Los familiares y acompañantes también son terceros identificables («su
+// esposa Martha Ruiz», «acompañante Pedro Gil»): mismo trato, mayúscula exigida.
+const WEAK_PATIENT_ANCHOR = '(?:paciente\\s*:|paciente|señora?|sr\\.?|sra\\.?|don|doña|usuari[oa]|niñ[oa]|joven|espos[oa]|herman[oa]|hij[oa]|madre|padre|mam[áa]|pap[áa]|acompañante|cuidador[a]?|familiar)';
 const DOCTOR_ANCHOR = '(?:soy\\s+(?:el|la)\\s+(?:doctora?|dra?\\.?|m[ée]dic[oa])|doctora?|dra?\\.|m[ée]dic[oa]\\s+tratante|enfermer[oa])';
 
 const STRONG_RE = new RegExp(`(?<![\\p{L}])${STRONG_PATIENT_ANCHOR}[ \\t]+(${LOOSE_SEQ})`, 'giu');
@@ -161,7 +163,7 @@ function detectNames(text) {
 /* Documento                                                            */
 /* ------------------------------------------------------------------ */
 
-const DOC_ANCHOR = '(?:c[ée]dula(?:\\s+de\\s+(?:ciudadan[íi]a|extranjer[íi]a))?|documento(?:\\s+de\\s+identidad)?|identificaci[óo]n|tarjeta\\s+de\\s+identidad|registro\\s+civil|pasaporte|nuip|(?<![\\p{L}])(?:cc|ti|ce|rc)(?![\\p{L}]))';
+const DOC_ANCHOR = '(?:c[ée]dula(?:\\s+de\\s+(?:ciudadan[íi]a|extranjer[íi]a))?|documento(?:\\s+de\\s+identidad)?|identificaci[óo]n|tarjeta\\s+de\\s+identidad|registro\\s+civil|pasaporte|nuip|(?<![\\p{L}])(?:cc|ti|ce|rc)(?![\\p{L}])|(?<![\\p{L}])(?:c\\.\\s?c|t\\.\\s?i|c\\.\\s?e|r\\.\\s?c)\\.?(?![\\p{L}]))';
 const DOC_VALUE = `(?:(?:[A-Z]{2,4}[\\s.:-]+)?[0-9][0-9 .\\-]{4,30}|(?:[A-Z]{2,4}\\s+)?[A-Za-z]{1,3}[-.]?[0-9]{4,12}|(?:${NUMERO_EN_PALABRAS})(?:[\\s,.-]+(?:${NUMERO_EN_PALABRAS}|y))+)`;
 const DOC_RE = new RegExp(`${DOC_ANCHOR}\\s*(?:n[úu]mero|nro\\.?|no\\.?|#|n[°º])?\\s*(?:es|:|del?\\s+paciente\\s*:?)?\\s*(${DOC_VALUE})`, 'giu');
 const CORRECTION_RE = /(?:repito|corrijo|perd[óo]n|mejor\s+dicho|es\s+decir)\s*[:,]?\s*([0-9][0-9 .\-]{4,30})/giu;
@@ -190,8 +192,15 @@ function detectDocuments(text) {
 /* Teléfono, correo, dirección                                          */
 /* ------------------------------------------------------------------ */
 
-const PHONE_ANCHOR_RE = /(?:celular|tel[ée]fono|tel\.?|whatsapp|contacto|m[óo]vil)(?:\s+(?:fijo|celular|m[óo]vil|de\s+contacto|de\s+la\s+casa|del\s+paciente|de\s+el\s+paciente|es|n[úu]mero))*\s*(?::|#|n[°º])?\s*((?:\+?57[\s.-]?)?(?:3\d{2}|60\d)[\s.-]?\d{3}[\s.-]?\d{4})(?!\d)/giu;
-const MOBILE_RE = /(?<![\d\p{L}+])3\d{9}(?![\d\p{L}])/gu;
+// El número: indicativo opcional («+57», «(+57)»), celular 3xx o fijo 60x
+// —con o sin paréntesis—, y el último bloque en 4 o en 2+2 («45 67»), que es
+// como se dicta.
+const PHONE_NUMBER = '(?:\\(?\\+?57\\)?[\\s.-]?)?\\(?(?:3\\d{2}|60\\d)\\)?[\\s.-]?\\d{3}[\\s.-]?(?:\\d{4}|\\d{2}[\\s.-]\\d{2})';
+const PHONE_ANCHOR_RE = new RegExp(`(?:celular|tel[ée]fono|tel\\.?|cel\\.?|whatsapp|contacto|m[óo]vil)(?:\\s+(?:fijo|celular|m[óo]vil|de\\s+contacto|de\\s+la\\s+casa|del\\s+paciente|de\\s+el\\s+paciente|es|n[úu]mero))*\\s*(?::|#|n[°º])?\\s*(${PHONE_NUMBER})(?!\\d)`, 'giu');
+// Sin ancla, solo el celular: seguido (3001234567) o en sus grupos 3-3-4 con un
+// único separador («300 123 4567», «+57 300-123-4567»). Esa forma exacta no la
+// tiene ningún valor clínico.
+const MOBILE_RE = /(?<![\d\p{L}+])(?:\+?57[\s.-]?)?3\d{2}(?:\d{7}|([\s.-])\d{3}\1\d{4})(?![\d\p{L}])/gu;
 
 function detectPhones(text) {
   const spans = [];
@@ -223,7 +232,10 @@ function detectEmails(text) {
 
 const ADDRESS_ANCHOR_RE = /(?:direcci[óo]n|vive\s+en|reside\s+en|residente\s+en|domicilio|domiciliad[oa]\s+en)\s*(?:es|:|de\s+residencia\s*:?)?\s*/giu;
 const VIAL_RE = /(?<![\p{L}])(?:calle|cll?\.?|carrera|cra\.?|cr\.?|kr\.?|kra\.?|avenida|av\.?|transversal|tv\.?|trans\.?|diagonal|dg\.?|diag\.?|manzana|mz\.?|casa|apartamento|apto\.?|barrio|vereda|kil[óo]metro|km\.?|conjunto|torre|bloque)(?![\p{L}])/iu;
-const ADDRESS_END_RE = /[.;\n]|\\n|"|\s+(?:tel[ée]fono|celular|correo|documento|c[ée]dula)\b/iu;
+// Un punto cierra la dirección salvo que sea de abreviatura («Cra.», «Cll.»,
+// «No.», «Apto.») o vaya seguido de una cifra: antes «dirección: Cra. 7 # 45-10»
+// no se tapaba y «Carrera 7 No. 45-10» salía como «[DIRECCION_1]. 45-10».
+const ADDRESS_END_RE = /(?<!(?:^|[^\p{L}])(?:cra|cr|kr|kra|cl|cll|av|tv|trans|dg|diag|mz|apto|km|no|nro|br|brr|urb|int|ed|edif))\.(?!\s*\d)|[;\n]|\\n|"|\s+(?:tel[ée]fono|celular|correo|documento|c[ée]dula)\b/iu;
 
 function detectAddresses(text) {
   const spans = [];

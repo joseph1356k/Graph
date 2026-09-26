@@ -797,6 +797,115 @@
         "150/95",
         "HTA"
       ]
+    },
+    {
+      "id": "r01",
+      "texto": "Cel: 300 123 4567, llamar después de las 5.",
+      "esperado": [
+        {
+          "type": "TELEFONO",
+          "value": "300 123 4567"
+        }
+      ],
+      "noTapar": [
+        "después de las 5"
+      ]
+    },
+    {
+      "id": "r02",
+      "texto": "celular 300 123 45 67 para confirmar la cita",
+      "esperado": [
+        {
+          "type": "TELEFONO",
+          "value": "300 123 45 67"
+        }
+      ]
+    },
+    {
+      "id": "r03",
+      "texto": "teléfono fijo (601) 234 5678, dejar mensaje",
+      "esperado": [
+        {
+          "type": "TELEFONO",
+          "value": "(601) 234 5678"
+        }
+      ]
+    },
+    {
+      "id": "r04",
+      "texto": "Si empeora, que llame al 300 123 4567 o consulte por urgencias.",
+      "esperado": [
+        {
+          "type": "TELEFONO",
+          "value": "300 123 4567"
+        }
+      ]
+    },
+    {
+      "id": "r05",
+      "texto": "Identificado con C.C. 1.023.456.789, consulta por lumbalgia.",
+      "esperado": [
+        {
+          "type": "DOCUMENTO",
+          "value": "1.023.456.789"
+        }
+      ]
+    },
+    {
+      "id": "r06",
+      "texto": "Dirección: Cra. 7 # 45-10. Refiere dolor torácico de 2 horas.",
+      "esperado": [
+        {
+          "type": "DIRECCION",
+          "value": "Cra. 7 # 45-10"
+        }
+      ],
+      "noTapar": [
+        "dolor torácico de 2 horas"
+      ]
+    },
+    {
+      "id": "r07",
+      "texto": "Vive en Carrera 7 No. 45-10, barrio Centro. Niega alergias.",
+      "esperado": [
+        {
+          "type": "DIRECCION",
+          "value": "Carrera 7 No. 45-10, barrio Centro"
+        }
+      ],
+      "noTapar": [
+        "Niega alergias"
+      ]
+    },
+    {
+      "id": "r08",
+      "texto": "Viene con su esposa Martha Ruiz, quien aporta la historia.",
+      "esperado": [
+        {
+          "type": "PACIENTE_NOMBRE",
+          "value": "Martha Ruiz"
+        }
+      ]
+    },
+    {
+      "id": "r09",
+      "texto": "Hijo menor sin complicaciones. Madre con hipertensión en control.",
+      "esperado": [],
+      "noTapar": [
+        "Hijo menor sin complicaciones",
+        "Madre con hipertensión"
+      ]
+    },
+    {
+      "id": "r10",
+      "texto": "Plaquetas 250.000, TA 120/80, FC 88, glucosa 110 mg/dl, dosis 500 mg cada 8 horas.",
+      "esperado": [],
+      "noTapar": [
+        "250.000",
+        "120/80",
+        "110 mg/dl",
+        "500 mg cada 8 horas"
+      ]
     }
   ]
 }
