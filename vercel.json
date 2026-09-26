@@ -7,7 +7,7 @@
   "functions": {
     "api/index.js": {
       "includeFiles": "{chrome-extension-src,web/public}/**",
-      "maxDuration": 60
+      "maxDuration": 300
     },
     "api/android-live-session.js": {
       "maxDuration": 300

@@ -64,6 +64,21 @@ async function captureCall(provider, run) {
   }
 
   {
+    const provider = providerWith({ TIMEOUT_MS: '60000' });
+    const calls = await captureCall(provider, async (p) => {
+      await p.chatExpectingJson([{ role: 'user', content: 'hola' }], { type: 'json_object' }, { timeoutMs: 160000 });
+      await p.chatWithUsage([{ role: 'user', content: 'hola' }], { timeoutMs: 90000 });
+      await p.chatWithUsage([{ role: 'user', content: 'hola' }], {});
+    });
+    check('un timeout por llamada gana al de la instancia solo en esa llamada', () => {
+      assert.strictEqual(calls[0].config.timeout, 160000);
+      assert.strictEqual(calls[1].config.timeout, 90000);
+      assert.strictEqual(calls[2].config.timeout, 60000, 'sin timeoutMs vuelve el de la instancia');
+      assert.ok(!('timeoutMs' in calls[0].payload), 'el timeout no viaja al proveedor');
+    });
+  }
+
+  {
     const provider = providerWith({ DISABLE_TEMPERATURE: '1' });
     const calls = await captureCall(provider, (p) => p.chatWithUsage([{ role: 'user', content: 'hola' }], { temperature: 0 }));
     check('DISABLE_TEMPERATURE omite el parámetro para modelos que lo rechazan', () => {

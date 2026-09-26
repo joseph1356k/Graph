@@ -5,7 +5,9 @@
 const assert = require('assert');
 const crypto = require('crypto');
 const express = require('express');
+const fs = require('fs');
 const http = require('http');
+const path = require('path');
 
 const SupabaseClinicalTemplateRepository = require('../src/infrastructure/repositories/SupabaseClinicalTemplateRepository');
 const SupabaseClinicalEncounterRepository = require('../src/infrastructure/repositories/SupabaseClinicalEncounterRepository');
@@ -592,6 +594,22 @@ async function main() {
       assert.deepStrictEqual(item.properties.grounding.enum, ['explicit', 'entailed', 'inferred', 'absent']);
       assert.ok(!('confidence' in item.properties), 'confidence lo calcula el código, no el modelo');
       assert.deepStrictEqual(schema.required, ['summary', 'sections', 'warnings', 'missing_required_sections']);
+    });
+
+    // 21b. Presupuesto de tiempo: la nota tiene su propio timeout, más largo que
+    // el genérico de 60 s y escalonado entre el de la web y el tope de Vercel.
+    // Con los dos en 60 s, Vercel mataba la función antes de que el timeout
+    // pudiera responder un error limpio.
+    await check('generate-note pide su propio timeout, dentro del tope de la función', () => {
+      const pedido = llm.state.lastOptions.timeoutMs;
+      assert.strictEqual(pedido, ClinicalNoteGeneratorService.noteTimeoutMs());
+      assert.ok(pedido > 60000, 'la nota no puede quedar con el timeout genérico de 60 s');
+      assert.ok(pedido <= 170000, 'debe cortar antes que la web (180 s) para que el médico reciba un error limpio');
+      const vercel = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8'));
+      const tope = vercel.functions['api/index.js'].maxDuration * 1000;
+      assert.ok(tope >= pedido + 60000, `maxDuration (${tope} ms) tiene que dejar margen sobre el timeout de la nota (${pedido} ms)`);
+      assert.strictEqual(ClinicalNoteGeneratorService.noteTimeoutMs({ CLINICAL_NOTE_LLM_TIMEOUT_MS: '900000' }), 280000, 'nunca por encima del tope de la función');
+      assert.strictEqual(ClinicalNoteGeneratorService.noteTimeoutMs({ CLINICAL_NOTE_LLM_TIMEOUT_MS: '120000' }), 120000);
     });
 
     // 22. Proveedor sin soporte de schema: un reintento con json_object y las

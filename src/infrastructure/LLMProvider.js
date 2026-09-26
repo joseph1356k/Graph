@@ -68,7 +68,9 @@ class LLMProvider {
 
     const prefix = this.envPrefix;
     // Sin timeout, un proveedor colgado se queda hasta que Vercel mata la
-    // función y responde HTML. 60 s cubre una nota larga con margen.
+    // función y responde HTML. 60 s es el presupuesto por defecto; la nota
+    // clínica, que es la llamada más larga, trae el suyo por llamada
+    // (`timeoutMs` en las opciones, ver ClinicalNoteGeneratorService).
     this.timeoutMs = Number(process.env[`${prefix}_LLM_TIMEOUT_MS`]) || 60000;
     // Escape para modelos que rechazan `temperature` (familias de razonamiento).
     this.sendTemperature = `${process.env[`${prefix}_LLM_DISABLE_TEMPERATURE`] || ''}`.trim() !== '1';
@@ -192,7 +194,12 @@ class LLMProvider {
   // la versión anterior anotaba consumo en 8 rutas y siempre con status 'ok',
   // de modo que AgentChat, SurfaceProfile, ClinicalNoteGenerator, las
   // sugerencias diagnósticas y todos los fallos no aparecían en el ledger.
-  async postChatCompletions(payload, usageOptions = {}) {
+  // `requestOptions.timeoutMs` sustituye el timeout de la instancia solo para
+  // esta llamada: lo usa quien tiene un presupuesto de tiempo propio.
+  async postChatCompletions(payload, usageOptions = {}, requestOptions = {}) {
+    const timeoutMs = Number(requestOptions?.timeoutMs) > 0
+      ? Number(requestOptions.timeoutMs)
+      : this.timeoutMs;
     const feature = usageOptions.feature || currentContext().feature || '';
     const descriptor = {
       provider: this.provider || 'unknown',
@@ -232,7 +239,7 @@ class LLMProvider {
       try {
         const response = await axios.post(`${this.baseUrl}/chat/completions`, outbound, {
           headers: this.getHeaders(),
-          timeout: this.timeoutMs
+          timeout: timeoutMs
         });
         data = response.data;
       } catch (error) {
@@ -292,7 +299,7 @@ class LLMProvider {
       model: options.model || this.model,
       messages,
       ...this.generationParams(options)
-    }, options.usage);
+    }, options.usage, { timeoutMs: options.timeoutMs });
 
     return {
       content: data.choices?.[0]?.message?.content?.trim() || '',
@@ -313,7 +320,7 @@ class LLMProvider {
       messages,
       response_format: responseFormat,
       ...this.generationParams(options)
-    }, options.usage);
+    }, options.usage, { timeoutMs: options.timeoutMs });
 
     return {
       content: data.choices?.[0]?.message?.content?.trim() || '{}',

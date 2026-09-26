@@ -12,6 +12,29 @@ const { withPrivacyScope, lastPrivacyResult } = require('../../infrastructure/pr
 // Nunca registra transcripción ni contenido de la nota (PHI).
 const JSON_OBJECT_FORMAT = Object.freeze({ type: 'json_object' });
 
+// Presupuesto de tiempo de la nota. Es la llamada más larga del sistema (una
+// transcripción entera de entrada, la nota entera de salida) y tenía el mismo
+// timeout que todo lo demás, 60 s, igual que el tope de la función en Vercel:
+// una nota que pasaba de ~59 s la mataba Vercel desde fuera. El médico recibía
+// un 504 sin CORS ("revisa tu conexión"), la consulta se quedaba en
+// note_generating para siempre y reintentar fallaba igual con la misma
+// transcripción.
+//
+// Los tres números van escalonados, y el orden importa:
+//   web (GENERATE_NOTE_TIMEOUT_MS) 180 s  >  este timeout 160 s + persistir
+//   función de Vercel (vercel.json)  300 s  >  todo lo anterior
+// Así el que corta primero es el proveedor, con un error limpio: la consulta
+// pasa a failed y el médico recibe NOTE_GENERATION_FAILED, no un 504.
+const DEFAULT_NOTE_TIMEOUT_MS = 160000;
+// Nunca por encima del tope de la función: ahí volvería el corte desde fuera.
+const MAX_NOTE_TIMEOUT_MS = 280000;
+
+function noteTimeoutMs(env = process.env) {
+  const configured = Number(env.CLINICAL_NOTE_LLM_TIMEOUT_MS);
+  const value = configured > 0 ? configured : DEFAULT_NOTE_TIMEOUT_MS;
+  return Math.min(value, MAX_NOTE_TIMEOUT_MS);
+}
+
 // Un proveedor que no soporta json_schema lo dice con un 400 que nombra el
 // response_format. Se recuerda a nivel de módulo: pagar un 400 por cada nota
 // para volver a descubrirlo sería absurdo.
@@ -83,7 +106,10 @@ class ClinicalNoteGeneratorService {
   callModel(plan, format, usage) {
     return withFeature(
       FEATURES.NOTE_GENERATION,
-      () => this.llmProvider.chatExpectingJson(plan.messages, format, { temperature: plan.temperature }),
+      () => this.llmProvider.chatExpectingJson(plan.messages, format, {
+        temperature: plan.temperature,
+        timeoutMs: noteTimeoutMs()
+      }),
       usage
     );
   }
@@ -262,6 +288,7 @@ class ClinicalNoteGeneratorService {
 }
 
 // Para los arneses: el flag de módulo sobrevive entre casos.
+ClinicalNoteGeneratorService.noteTimeoutMs = noteTimeoutMs;
 ClinicalNoteGeneratorService.resetSchemaSupport = () => { schemaRejected = false; };
 ClinicalNoteGeneratorService.schemaRejected = () => schemaRejected;
 
