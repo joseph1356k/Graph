@@ -14,6 +14,17 @@ function tokensIn(value) {
   return findTokens(JSON.stringify(value ?? '')).length;
 }
 
+// Envíos de AUDIO al proveedor de voz: no hay texto que tapar, así que nunca
+// llevan resultado del escudo. Son la excepción declarada E8
+// (docs/privacy-egress-gateway.md), no un envío «sin escudo». Antes se
+// contaban como tales y el informe no podía pasar NUNCA en una consulta
+// dictada: el portal registra sus minutos de voz con el mismo session_id.
+const DECLARED_AUDIO_FEATURES = new Set(['live_transcription', 'transcription', 'audio_processing']);
+
+function isDeclaredAudio(event) {
+  return !event.privacy && DECLARED_AUDIO_FEATURES.has(`${event.feature || ''}`);
+}
+
 async function main() {
   const id = `${process.argv[2] || ''}`.trim();
   if (!/^[0-9a-f-]{36}$/i.test(id)) {
@@ -40,11 +51,17 @@ async function main() {
   for (const event of events) {
     const p = event.privacy;
     const tokens = p ? Object.entries(p.tokens).map(([t, c]) => `${t}:${c}`).join(',') || '-' : '-';
-    console.log(`  ${`${event.at}`.slice(0, 24).padEnd(25)} ${`${event.feature}`.padEnd(20)} ${`${event.provider}/${event.model}`.slice(0, 30).padEnd(30)} ${(p ? p.mode : 'sin escudo').padEnd(8)} ${tokens.padEnd(35)} ${(p ? p.leak_scan : '-').padEnd(9)} ${(p ? p.rehydration : '-').padEnd(14)} ${p && p.posthoc_leak !== null ? (p.posthoc_leak ? 'FUGA' : 'ok') : '-'}`);
+    const mode = p ? p.mode : (isDeclaredAudio(event) ? 'audio E8' : 'sin escudo');
+    console.log(`  ${`${event.at}`.slice(0, 24).padEnd(25)} ${`${event.feature}`.padEnd(20)} ${`${event.provider}/${event.model}`.slice(0, 30).padEnd(30)} ${mode.padEnd(8)} ${tokens.padEnd(35)} ${(p ? p.leak_scan : '-').padEnd(9)} ${(p ? p.rehydration : '-').padEnd(14)} ${p && p.posthoc_leak !== null ? (p.posthoc_leak ? 'FUGA' : 'ok') : '-'}`);
   }
-  const enforced = events.filter((e) => e.privacy?.mode === 'enforce').length;
-  const leaks = events.filter((e) => e.privacy?.posthoc_leak === true).length;
-  const unshielded = events.filter((e) => !e.privacy || e.privacy.mode === 'off').length;
+  const audio = events.filter(isDeclaredAudio).length;
+  const textEvents = events.filter((e) => !isDeclaredAudio(e));
+  const enforced = textEvents.filter((e) => e.privacy?.mode === 'enforce').length;
+  const leaks = textEvents.filter((e) => e.privacy?.posthoc_leak === true).length;
+  const unshielded = textEvents.filter((e) => !e.privacy || e.privacy.mode === 'off').length;
+  // Una nota con un marcador sin resolver se guardó con un aviso, pero el
+  // médico pudo firmarla igual: el informe no puede darla por buena.
+  const incomplete = textEvents.filter((e) => e.privacy?.rehydration === 'incomplete').length;
 
   console.log('\nLo persistido dentro de Miracle (datos reales, sin marcadores):');
   const encounter = encounters?.[0];
@@ -68,13 +85,15 @@ async function main() {
 
   console.log('\nVeredicto:');
   const verdict = [];
-  if (events.length === 0) verdict.push('no hay envíos registrados para esta consulta');
+  if (textEvents.length === 0) verdict.push('no hay envíos de texto registrados para esta consulta');
   if (unshielded > 0) verdict.push(`${unshielded} envío(s) salieron sin escudo (modo off o anterior al escudo)`);
-  if (events.length > 0 && enforced < events.length - unshielded) verdict.push(`${events.length - unshielded - enforced} envío(s) en modo shadow (el original salió)`);
+  if (textEvents.length > 0 && enforced < textEvents.length - unshielded) verdict.push(`${textEvents.length - unshielded - enforced} envío(s) en modo shadow (el original salió)`);
   if (leaks > 0) verdict.push(`${leaks} envío(s) con fuga post-hoc`);
+  if (incomplete > 0) verdict.push(`${incomplete} envío(s) con marcadores que no se pudieron resolver`);
   if (persistedTokens > 0) verdict.push(`${persistedTokens} marcador(es) en lo persistido`);
+  if (audio > 0) console.log(`  ℹ ${audio} envío(s) de audio al proveedor de voz: excepción declarada E8, fuera del escudo de texto.`);
   if (verdict.length === 0) {
-    console.log('  ✅ Todos los envíos salieron protegidos (enforce), sin fugas post-hoc, y lo persistido tiene los datos reales.');
+    console.log('  ✅ Todos los envíos de texto salieron protegidos (enforce), sin fugas post-hoc ni marcadores sin resolver, y lo persistido tiene los datos reales.');
     process.exit(0);
   }
   for (const line of verdict) console.log(`  ⚠ ${line}`);

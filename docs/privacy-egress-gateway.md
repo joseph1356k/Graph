@@ -140,9 +140,14 @@ En `/api/v1/pipeline` un fallo del escudo no llega al cliente Windows como 503:
   `variables.consultationId`) para sembrar desde `consultations` y `patients`. Sin
   él, las líneas de identidad de la propia nota y los campos con etiqueta de
   identidad bastan.
-- La etapa `note` del pipeline y `/api/medical/notes/organized` se tapan en el
+- La etapa `note` del pipeline, `/api/medical/notes/organized` y el proxy del
+  editor (`POST /api/voice/orchestrator/events`, `web/server.js`) se tapan en el
   salto Node → runtime Python (`callMiracleRuntime`): el runtime no tiene otra
   fuente de datos, así que taparlo ahí equivale a taparlo antes del proveedor.
+  La respuesta se restaura entera (`restoreDeep`: nota, `note_updates`,
+  `agent_tasks`), no solo el campo que pinta la pantalla.
+  `verify-egress-gateway` exige que todo reenvío a ese endpoint, en cualquier
+  archivo, lleve `protectTexts` delante.
 - **Guarda de marcadores:** `NoteFieldMatcher.normalizeResult` y
   `DynamicValueResolver.resolve` descartan cualquier valor que traiga un marcador
   sin resolver. El cliente Windows escribe en SAP lo que recibe sin mirarlo, lo
@@ -210,3 +215,38 @@ consultas reales.
   `[NUMERO_n]`, un nombre suelto sin ancla puede no caer.
 - El escudo tapa texto. Las imágenes, el audio y el video son fronteras aparte
   (tabla de excepciones).
+- El runtime Python (`/api/miracle-runtime/*`) solo exige `X-Graph-Internal-Token`
+  si `GRAPH_INTERNAL_TOKEN` está definido. Sin esa variable en Vercel, cualquiera
+  puede llamarlo directo y saltarse Graph (y este escudo). Hay que definirla.
+
+## Revisión del 2026-09-26
+
+Lo que se corrigió tras la auditoría de ese día:
+
+- **Regla 2 de verdad.** El código registraba las semillas (paciente de la
+  consulta) como marcadores restaurables aunque la llamada nunca las enviara: con
+  una API key y un `consultation_id`, mandar «[PACIENTE_NOMBRE_1]» devolvía el
+  nombre y la cédula de ese paciente. Ahora solo se restauran entidades que el
+  `protect` de la llamada tapó en un texto saliente (`ProtectionMap.emitToken`).
+- **Proxy crudo cerrado.** `POST /api/voice/orchestrator/events` en `server.js`
+  reenviaba nota y transcripción al runtime sin escudo, sin login y sin figurar
+  en la tabla de excepciones. Pasa por `protectTexts` (funcionalidad
+  `clinical_structuring`).
+- **Marcadores deformados.** Con corchetes se aceptan también las formas cortas
+  que escribe el modelo (`[PACIENTE_1]`, `[NOMBRE_1]`, `[CEDULA_1]`, `[DOC_1]`,
+  `[TEL_1]`, `[CELULAR_1]`, `[DIR_1]`). Sin corchetes («PACIENTE NOMBRE 1») no se
+  adivinan, pero se cuentan: la rehidratación queda `incomplete` y la nota avisa.
+- **Detección.** Celular con «cel:» y con grupos «300 123 45 67», fijo con
+  paréntesis, celular 3-3-4 sin ancla, «C.C.» con puntos, direcciones con
+  «Cra.»/«No.», y familiares o acompañantes con nombre en mayúscula («su esposa
+  Martha Ruiz»). El corpus pasó a 76 casos, con precisión y recall 1.000.
+- **Modo mal escrito.** Un `PRIVACY_SHIELD_MODE*` con un valor que no es un modo
+  («enforced», «on») caía en silencio a shadow. Al arrancar, Graph escribe el modo
+  efectivo por funcionalidad y avisa de cada variable inválida.
+- **Informe de evidencia.** El audio al proveedor de voz se muestra como la
+  excepción E8, no como «sin escudo» (antes el informe no podía pasar nunca en una
+  consulta dictada), y un envío con marcadores sin resolver ya no se da por bueno.
+
+Sigue pendiente, y es lo primero: **el escudo corre en `shadow` por defecto**. Para
+que proteja algo hay que definir `PRIVACY_SHIELD_MODE=enforce` (o por
+funcionalidad) en Vercel.
