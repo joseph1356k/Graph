@@ -5,6 +5,8 @@
 // trabajo, y que un fallo suyo no tumbe el resto del mantenimiento.
 //   node scripts/verify-note-rescue.js
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 
 const NoteGenerationRescueService = require('../src/application/use-cases/NoteGenerationRescueService');
 
@@ -173,6 +175,29 @@ async function main() {
     const claim = rest.llamadas.find((l) => l.fn === 'claim_next_note_generation');
     assert.strictEqual(claim.args.p_lease_seconds, 120);
     assert.strictEqual(claim.args.p_max_attempts, 2);
+  });
+
+  // El claim vive en SQL: el doble de arriba no lo ejercita. Se lee la
+  // migración VIGENTE (la última que redefine la función) y se exige la regla.
+  await check('el claim elige consultas QUIETAS, no viejas, y recoge generaciones muertas', async () => {
+    const dir = path.join(__dirname, '..', 'supabase', 'migrations');
+    const define = /create or replace function public\.claim_next_note_generation/i;
+    const vigente = fs.readdirSync(dir)
+      .filter((f) => f.endsWith('.sql'))
+      .sort()
+      .filter((f) => define.test(fs.readFileSync(path.join(dir, f), 'utf8')))
+      .pop();
+    assert.ok(vigente, 'no se encontró la migración que define claim_next_note_generation');
+    const sql = fs.readFileSync(path.join(dir, vigente), 'utf8');
+    const cuerpo = sql.slice(sql.search(define));
+    // El encounter nace al EMPEZAR a grabar y el autoguardado lo deja en
+    // transcript_ready: por edad, toda consulta de más de 5 minutos era
+    // rescatable mientras el médico seguía hablando.
+    assert.match(cuerpo, /e\.updated_at\s*<\s*now\(\)\s*-\s*make_interval\(mins\s*=>\s*greatest\(p_min_age_minutes/);
+    assert.doesNotMatch(cuerpo, /e\.created_at\s*<\s*now\(\)/, 'la edad de la consulta no dice si el médico sigue grabando');
+    assert.match(cuerpo, /p_min_age_minutes int default 10/);
+    // Una generación que murió a mitad no se queda en note_generating para siempre.
+    assert.match(cuerpo, /e\.status = 'note_generating'\s+and e\.updated_at < now\(\) - interval '15 minutes'/);
   });
 
   // --- Rescate oportunista ---------------------------------------------------

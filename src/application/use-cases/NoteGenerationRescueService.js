@@ -15,10 +15,15 @@
 // ejecución la retoma en vez de dejarla bloqueada para siempre.
 //
 // LO QUE NO HACE
-// No compite con el flujo normal (solo mira consultas de más de 5 minutos) y no
-// toca las viejas (ventana de 24 horas). Reusa ClinicalNoteGeneratorService tal
-// cual, así que hereda el modo literal de patología, la versión IA de la nota y
-// la publicación al historial sin duplicar una línea.
+// No compite con el flujo normal: solo mira consultas QUIETAS, sin autoguardado
+// desde hace 10 minutos (claim_next_note_generation, migración
+// 20260926000000). Hasta el 2026-09-26 miraba la EDAD de la consulta —creada
+// hace más de 5 minutos— y como el encounter nace al empezar a grabar, generaba
+// notas con la transcripción a medias mientras el médico seguía hablando. Tampoco
+// toca las viejas (ventana de 24 horas). Sí recoge una generación que murió a
+// mitad (note_generating quieta 15 minutos). Reusa ClinicalNoteGeneratorService
+// tal cual, así que hereda el modo literal de patología, la versión IA de la nota
+// y la publicación al historial sin duplicar una línea.
 
 const DEFAULT_MAX_JOBS = 5;
 const DEFAULT_LEASE_SECONDS = 300;
