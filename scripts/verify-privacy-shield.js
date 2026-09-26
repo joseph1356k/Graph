@@ -324,6 +324,33 @@ async function main() {
       assert.strictEqual(prot.rehydration, 'incomplete');
     });
   });
+  // Regla 2 con su única excepción, a nivel de servicio y con las semillas
+  // reales de la base (un doble del repositorio).
+  class RepoFalso {
+    static isUuid() { return true; }
+    async doctorProfile() { return null; }
+    async patientById() { return { id: 'p-1', organization_id: null, nombre: 'Ana Torres Rincón', documento: 'CC 52.111.222', telefono: null }; }
+    async consultationIdentity() { return { id: 'c-1', organization_id: null, medico_id: null, patient_id: 'p-1', paciente_nombre: 'Ana Torres Rincón', paciente_documento: '52111222' }; }
+  }
+  const sinNombre = () => ({ model: 'x', messages: [{ role: 'system', content: 'Reglas.' }, { role: 'user', content: 'Consulta por cefalea de tres días. Organiza la nota: [PACIENTE_NOMBRE_1] [DOCUMENTO_1]' }], response_format: { type: 'json_object' } });
+  await check('consulta propia: el paciente registrado vuelve aunque nadie lo haya dicho', async () => {
+    const svc = new PrivacyShieldService({ env: { PRIVACY_SHIELD_MODE: 'enforce' }, seedRepository: new RepoFalso() });
+    const propio = { id: 'enc-9', doctor_id: null, patient_id: '11111111-1111-4111-8111-111111111111', transcript: 'Consulta por cefalea de tres días.', note_json: null };
+    await withPrivacyScope({ encounter: propio, encounterId: propio.id }, async () => {
+      const prot = await svc.protectChatPayload(sinNombre(), { feature: 'note_generation' });
+      const data = svc.restoreChatResponse({ choices: [{ message: { content: 'Nombre: [PACIENTE_NOMBRE_1]\nDocumento: [DOCUMENTO_1]' } }] }, prot);
+      assert.strictEqual(data.choices[0].message.content, 'Nombre: Ana Torres Rincón\nDocumento: CC 52.111.222');
+    });
+  });
+  await check('consultation_id con API key: la semilla no enviada NO sale por un marcador del cliente', async () => {
+    const svc = new PrivacyShieldService({ env: { PRIVACY_SHIELD_MODE: 'enforce' }, seedRepository: new RepoFalso() });
+    await withPrivacyScope({ consultationId: '22222222-2222-4222-8222-222222222222' }, async () => {
+      const prot = await svc.protectChatPayload(sinNombre(), { feature: 'field_matching' });
+      const data = svc.restoreChatResponse({ choices: [{ message: { content: 'Es [PACIENTE_NOMBRE_1], [DOCUMENTO_1]' } }] }, prot);
+      assert.strictEqual(data.choices[0].message.content, 'Es [PACIENTE_NOMBRE_1], [DOCUMENTO_1]');
+      assert.strictEqual(prot.rehydration, 'incomplete');
+    });
+  });
   await check('el ledger conserva las claves privacy* y sigue sin admitir contenido', () => {
     const sanitized = sanitizeMetadata({ privacyMode: 'enforce', privacyTokens: 'PACIENTE_NOMBRE:1', privacyPosthoc: false, prompt: 'Paciente Juan', privacyValue: 'Juan Pérez' });
     assert.deepStrictEqual(sanitized, { privacyMode: 'enforce', privacyTokens: 'PACIENTE_NOMBRE:1', privacyPosthoc: false });

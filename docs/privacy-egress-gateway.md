@@ -227,7 +227,10 @@ Lo que se corrigió tras la auditoría de ese día:
   consulta) como marcadores restaurables aunque la llamada nunca las enviara: con
   una API key y un `consultation_id`, mandar «[PACIENTE_NOMBRE_1]» devolvía el
   nombre y la cédula de ese paciente. Ahora solo se restauran entidades que el
-  `protect` de la llamada tapó en un texto saliente (`ProtectionMap.emitToken`).
+  `protect` de la llamada tapó en un texto saliente (`ProtectionMap.emitToken`),
+  más las semillas `trusted`: las de un encounter que el servicio ya verificó
+  como propio del que llama (el médico recupera el paciente de SU consulta, que
+  ya puede leer). Lo que llega por `consultation_id` con API key no lo es.
 - **Proxy crudo cerrado.** `POST /api/voice/orchestrator/events` en `server.js`
   reenviaba nota y transcripción al runtime sin escudo, sin login y sin figurar
   en la tabla de excepciones. Pasa por `protectTexts` (funcionalidad

@@ -10,7 +10,11 @@
 //      (el paciente de la consulta) NO la vuelve restaurable: hasta el
 //      2026-09-26 sí lo hacía, y bastaba mandar «[PACIENTE_NOMBRE_1]» con un
 //      consultation_id para que la respuesta trajera el nombre y el documento
-//      de ese paciente.
+//      de ese paciente. La única excepción son las semillas `trusted`: las de
+//      un encounter que el servicio ya verificó como PROPIO del que llama.
+//      Devolverle a ese médico el paciente de su propia consulta no le enseña
+//      nada que no pueda leer, y así «Nombre: [PACIENTE_NOMBRE_1]» sigue
+//      saliendo con el paciente registrado aunque nadie lo dijera en voz alta.
 //   3. Mismo valor ⇒ mismo marcador dentro de la llamada.
 
 const { TYPES, formatToken, replaceTokens, normalizeIdentityAliases, countDeformedTokens } = require('./tokens');
@@ -122,8 +126,12 @@ class ProtectionMap {
     return token;
   }
 
-  /** Registra un identificador conocido de antemano (paciente registrado, líneas de la nota…). */
-  addSeed({ type, value }) {
+  /**
+   * Registra un identificador conocido de antemano (paciente registrado,
+   * líneas de la nota…). `trusted` la vuelve restaurable aunque la llamada no
+   * la envíe: solo para datos de una consulta propia del que llama (regla 2).
+   */
+  addSeed({ type, value, trusted = false }) {
     const surface = `${value ?? ''}`.trim();
     if (!surface || !Object.values(TYPES).includes(type)) return null;
     const key = entityKeyFor(type, surface);
@@ -134,8 +142,9 @@ class ProtectionMap {
     else if (entity.source !== 'seed') entity.source = 'seed';
     // La forma de la semilla es el alias principal aunque nunca aparezca en el
     // texto: así «[PACIENTE_NOMBRE_1]» en la casilla de identificación devuelve
-    // el nombre registrado completo.
+    // el nombre registrado completo (si la entidad es restaurable).
     this.aliasToken(entity, surface);
+    if (trusted === true) this.emitted.add(`${entity.type}_${entity.n}`);
     return entity;
   }
 

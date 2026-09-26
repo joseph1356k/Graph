@@ -207,6 +207,13 @@ class PrivacyShieldService {
         }
       }
 
+      // Lo que sale del encounter es de una consulta que el servicio ya cargó
+      // y verificó como PROPIA del que llama (getOwnedEncounter, o el rescate
+      // en nombre de su médico): sus semillas son restaurables aunque la
+      // llamada no las envíe (regla 2 de ProtectionMap). Lo que llega por
+      // consultation_id —rutas con API key— no lo es.
+      const trusted = (list) => list.map((seed) => ({ ...seed, trusted: true }));
+
       if (encounter) {
         const patientId = `${encounter.patient_id ?? ''}`.trim();
         if (patientId) {
@@ -214,7 +221,7 @@ class PrivacyShieldService {
             const patient = await repo.patientById(patientId);
             if (patient && (!doctorOrganizationId || !patient.organization_id || patient.organization_id === doctorOrganizationId)) {
               const fromPatient = PrivacyShieldService.seedsFromPatient(patient);
-              seeds.push(...fromPatient);
+              seeds.push(...trusted(fromPatient));
               if (fromPatient.length) sources.push('paciente_registrado');
             } else if (patient) {
               this.logger.warn?.(`[Privacidad] paciente ${patientId} de otra organización: no se usa como semilla.`);
@@ -223,7 +230,7 @@ class PrivacyShieldService {
             // Un patient_id que no es uuid puede ser un nombre tecleado a mano.
             const typed = PrivacyShieldService.seedsFromText(`Nombre: ${patientId}`);
             if (typed.length) {
-              seeds.push(...typed);
+              seeds.push(...trusted(typed));
               sources.push('patient_id_texto');
             }
           }
@@ -231,12 +238,12 @@ class PrivacyShieldService {
         const transcript = `${encounter.transcript ?? ''}`;
         if (transcript.trim()) {
           const fromTranscript = PrivacyShieldService.seedsFromText(transcript);
-          seeds.push(...fromTranscript);
+          seeds.push(...trusted(fromTranscript));
           if (fromTranscript.length) sources.push('transcripcion');
         }
         if (encounter.note_json) {
           const fromNote = PrivacyShieldService.seedsFromNote(encounter.note_json);
-          seeds.push(...fromNote);
+          seeds.push(...trusted(fromNote));
           if (fromNote.length) sources.push('nota');
         }
       }
