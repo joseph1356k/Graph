@@ -74,6 +74,29 @@ class PrivacyShieldService {
     return normalizeModeValue(this.env.PRIVACY_SHIELD_MODE) || DEFAULT_MODE;
   }
 
+  /**
+   * Variables PRIVACY_SHIELD_MODE* con un valor que no es un modo. Un valor
+   * así cae EN SILENCIO al default (shadow): «enforced» u «on» dejaban el
+   * escudo sin tapar nada mientras quien lo configuró creía haberlo encendido.
+   * Se devuelven nombres, nunca se lanza: el arranque no debe caerse por esto.
+   */
+  invalidModeSettings() {
+    return Object.keys(this.env || {})
+      .filter((name) => name === 'PRIVACY_SHIELD_MODE' || name.startsWith('PRIVACY_SHIELD_MODE_'))
+      .filter((name) => `${this.env[name] ?? ''}`.trim() !== '' && !normalizeModeValue(this.env[name]))
+      .sort();
+  }
+
+  /** Modo efectivo por funcionalidad, para una línea de log al arrancar. */
+  describeModes(features = []) {
+    const base = normalizeModeValue(this.env.PRIVACY_SHIELD_MODE) || DEFAULT_MODE;
+    const overrides = [...new Set(features)]
+      .map((feature) => [feature, this.modeFor(feature)])
+      .filter(([, mode]) => mode !== base)
+      .map(([feature, mode]) => `${feature}=${mode}`);
+    return `por defecto ${base}${overrides.length ? ` · ${overrides.join(' · ')}` : ''}`;
+  }
+
   /* ---------------------------------------------------------------- */
   /* Semillas                                                           */
   /* ---------------------------------------------------------------- */
@@ -426,6 +449,21 @@ class PrivacyShieldService {
     if (!protection || protection.mode !== MODES.ENFORCE || !protection.map || typeof text !== 'string') return text;
     const before = protection.map.stats.unknownTokens;
     const restored = protection.map.restoreText(text);
+    protection.rehydration = protection.map.stats.unknownTokens > before ? 'incomplete' : 'complete';
+    return restored;
+  }
+
+  /**
+   * Como restoreText, pero sobre TODA una respuesta (objeto, array o texto).
+   * El runtime Python devuelve la nota organizada y además note_updates,
+   * agent_tasks y llm_debug; restaurar solo el campo que pinta la pantalla
+   * dejaba los demás con marcadores. La rehidratación se juzga una vez, sobre
+   * el conjunto.
+   */
+  restoreDeep(value, protection) {
+    if (!protection || protection.mode !== MODES.ENFORCE || !protection.map) return value;
+    const before = protection.map.stats.unknownTokens;
+    const restored = walkStrings(value, (text) => protection.map.restoreText(text), { skipKeys: new Set() });
     protection.rehydration = protection.map.stats.unknownTokens > before ? 'incomplete' : 'complete';
     return restored;
   }

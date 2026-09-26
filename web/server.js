@@ -19,6 +19,8 @@ const AiUsageRecorder = require('../src/application/use-cases/AiUsageRecorder');
 const PrivacyShieldService = require('../src/application/use-cases/PrivacyShieldService');
 const SupabasePatientSeedRepository = require('../src/infrastructure/repositories/SupabasePatientSeedRepository');
 const PrivacyLedgerReader = require('../src/infrastructure/privacy/PrivacyLedgerReader');
+const { withPrivacyScope } = require('../src/infrastructure/privacy/PrivacyContext');
+const { FEATURES } = require('../src/domain/usage/vocabulary');
 const UsageAttributionResolver = require('../src/application/use-cases/UsageAttributionResolver');
 const createUsageContextMiddleware = require('./api/attachUsageContext');
 
@@ -202,6 +204,21 @@ LLMProvider.setUsageRecorder(usageRecorder);
 const privacySeedRepository = new SupabasePatientSeedRepository(supabaseRestClient);
 const privacyShield = new PrivacyShieldService({ seedRepository: privacySeedRepository });
 LLMProvider.setPrivacyShield(privacyShield);
+// Una línea al arrancar con el modo EFECTIVO: sin ella, saber si el escudo
+// está tapando algo exigía leer las variables de Vercel. Y un valor mal
+// escrito («enforced», «on») caía en silencio a shadow: se nombra la variable,
+// nunca su valor.
+console.log(`[Privacidad] Escudo hacia la IA: ${privacyShield.describeModes([
+  FEATURES.NOTE_GENERATION,
+  FEATURES.ASISTENTE,
+  FEATURES.FIELD_MATCHING,
+  FEATURES.DYNAMIC_VALUES,
+  FEATURES.DIAGNOSIS_SUGGESTION,
+  FEATURES.CLINICAL_STRUCTURING
+])}.`);
+for (const name of privacyShield.invalidModeSettings()) {
+  console.warn(`[Privacidad] ${name} no es un modo válido (off | shadow | enforce): se ignora y rige el modo por defecto.`);
+}
 const privacyLedger = new PrivacyLedgerReader(supabaseRestClient);
 const usageAttributionResolver = new UsageAttributionResolver({
   supabaseClient: supabaseRestClient
@@ -909,14 +926,56 @@ app.post('/api/voice/stream-session', async (req, res) => {
   return res.status(503).json({ error: 'Miracle runtime unavailable' });
 });
 
+// El editor de Miracle y el plugin hablan con el runtime Python por aquí: es
+// el MISMO endpoint que /api/medical/notes/organized, y por el mismo motivo va
+// por el escudo. El runtime llama al proveedor de IA por su cuenta y no tiene
+// otra fuente de datos que lo que se le manda. Hasta el 2026-09-26 este proxy
+// reenviaba el cuerpo crudo —nota y transcripción— sin pasar por él, sin login
+// y sin figurar en el registro de excepciones.
 app.post('/api/voice/orchestrator/events', async (req, res) => {
-  if (await proxyMiracleRuntimeRequest(req, res, '/api/voice/orchestrator/events', {
-    method: 'POST',
-    body: JSON.stringify(req.body || {})
-  })) {
-    return;
+  const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
+  const segment = body.segment && typeof body.segment === 'object' ? body.segment : null;
+  const texts = {
+    noteTitle: typeof body.note_title === 'string' ? body.note_title : '',
+    noteContent: typeof body.note_content === 'string' ? body.note_content : '',
+    transcript: typeof segment?.transcript === 'string' ? segment.transcript : ''
+  };
+
+  let protection;
+  try {
+    protection = await withPrivacyScope(
+      { noteContent: texts.noteContent },
+      () => privacyShield.protectTexts(texts, { feature: FEATURES.CLINICAL_STRUCTURING })
+    );
+  } catch (error) {
+    // enforce falla cerrado: sin escudo, el texto no sale.
+    console.error(`[Miracle Runtime Proxy] /api/voice/orchestrator/events: ${error.code || 'error'} del escudo.`);
+    return res.status(error.statusCode || 503).json({ error: 'No fue posible proteger los datos del paciente antes de enviarlos a la IA.', code: error.code || 'PRIVACY_SHIELD_FAILED' });
   }
-  return res.status(503).json({ error: 'Miracle runtime unavailable' });
+
+  const outbound = protection.texts;
+  const forwarded = { ...body };
+  if (typeof body.note_title === 'string') forwarded.note_title = outbound.noteTitle;
+  if (typeof body.note_content === 'string') forwarded.note_content = outbound.noteContent;
+  if (segment && typeof segment.transcript === 'string') forwarded.segment = { ...segment, transcript: outbound.transcript };
+
+  try {
+    const response = await callMiracleRuntime(req, '/api/voice/orchestrator/events', {
+      method: 'POST',
+      body: forwarded
+    });
+    let payload = privacyShield.restoreDeep(response.body, protection);
+    if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+      payload = { ...payload, privacy: privacyShield.publicSummaryFor(protection) };
+    }
+    return res.status(response.statusCode).json(payload);
+  } catch (error) {
+    if (error.code === 'MIRACLE_RUNTIME_NOT_CONFIGURED') {
+      return res.status(503).json({ error: 'Miracle runtime unavailable' });
+    }
+    console.error(`[Miracle Runtime Proxy] /api/voice/orchestrator/events failed: ${error.message}`);
+    return res.status(error.statusCode || 502).json({ error: error.message || 'Miracle runtime unavailable' });
+  }
 });
 
 app.get('/api/voice/orchestrator/status', async (req, res) => {

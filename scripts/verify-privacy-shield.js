@@ -109,6 +109,23 @@ async function main() {
       ['PACIENTE_NOMBRE', 1, 1], ['PACIENTE_NOMBRE', 2, 1], ['PACIENTE_NOMBRE', 3, 1], ['DOCUMENTO', 1, 2], ['TELEFONO', 4, 1]
     ]);
   });
+  await check('con corchetes también las formas cortas y los sinónimos que abrevia el modelo', () => {
+    const found = tokens.findTokens('[PACIENTE_1] [NOMBRE_2] [Cédula 1] [DOC_3] [TEL_1] [CELULAR_2] [DIR_1] [NOMBRE_DEL_PACIENTE_4]');
+    assert.deepStrictEqual(found.map((t) => `${t.type}_${t.n}`), [
+      'PACIENTE_NOMBRE_1', 'PACIENTE_NOMBRE_2', 'DOCUMENTO_1', 'DOCUMENTO_3', 'TELEFONO_1', 'TELEFONO_2', 'DIRECCION_1', 'PACIENTE_NOMBRE_4'
+    ]);
+    assert.strictEqual(tokens.findTokens('[id_1] [nota 1] [Anexo 2]').length, 0, 'lo que no nombra un tipo no es un marcador');
+  });
+  await check('un marcador deformado sin corchetes no se adivina pero se cuenta', () => {
+    assert.strictEqual(tokens.countDeformedTokens('Paciente PACIENTE NOMBRE 1, DOCUMENTO 2, ver PACIENTE_1'), 3);
+    assert.strictEqual(tokens.countDeformedTokens('se revisó el documento 1 del expediente'), 0, 'la prosa en minúsculas no cuenta');
+    assert.strictEqual(tokens.countDeformedTokens('PACIENTE_NOMBRE_1 y [DOCUMENTO_1]'), 0, 'los válidos ya se restauraron o ya se contaron');
+    const map = new ProtectionMap({});
+    map.protectText('la paciente se llama Rosa Elena Díaz');
+    assert.strictEqual(map.restoreText('Nombre: [PACIENTE_1]'), 'Nombre: Rosa Elena Díaz');
+    assert.strictEqual(map.restoreText('Nombre: PACIENTE NOMBRE 1'), 'Nombre: PACIENTE NOMBRE 1');
+    assert.strictEqual(map.summary().unknownTokens, 1, 'la nota tiene que avisar, no decir que todo se resolvió');
+  });
   await check('sin corchetes solo la forma exacta: «el documento 1 dice» no es un marcador', () => {
     assert.strictEqual(tokens.findTokens('el documento 1 dice que Documento_1 tampoco').length, 0);
     assert.strictEqual(tokens.findTokens('valor DOCUMENTO_1 aquí').length, 1);
@@ -168,8 +185,28 @@ async function main() {
     const a = new ProtectionMap({ seeds: [{ type: 'PACIENTE_NOMBRE', value: 'Juan Pérez' }, { type: 'DOCUMENTO', value: '111' }] });
     const b = new ProtectionMap({ seeds: [{ type: 'PACIENTE_NOMBRE', value: 'Juan Pérez' }, { type: 'DOCUMENTO', value: '2222222' }] });
     a.protectText('Juan Pérez cédula 2222222'); b.protectText('Juan Pérez cédula 2222222');
-    assert.strictEqual(a.restoreText('[DOCUMENTO_1]'), '2222222' === a.tokenIndex.get('[DOCUMENTO_1]') ? '2222222' : a.tokenIndex.get('[DOCUMENTO_1]'));
     assert.notStrictEqual(a.tokenIndex.get('[DOCUMENTO_1]'), b.tokenIndex.get('[DOCUMENTO_1]'));
+    // En «a» el 2222222 es otra entidad (DOCUMENTO_2); su semilla «111» nunca
+    // se envió, así que su marcador no devuelve nada (regla 2 del mapa).
+    assert.strictEqual(a.restoreText('[DOCUMENTO_2]'), '2222222');
+    assert.strictEqual(a.restoreText('[DOCUMENTO_1]'), '[DOCUMENTO_1]');
+    assert.strictEqual(b.restoreText('[DOCUMENTO_1]'), '2222222');
+  });
+  await check('una semilla que la llamada no envió no se restaura: el marcador del cliente no saca datos', () => {
+    // El ataque: un cliente con API key manda un consultation_id y el texto
+    // «[PACIENTE_NOMBRE_1] [DOCUMENTO_1]». El escudo siembra el paciente de esa
+    // consulta; si la semilla fuera restaurable por sí sola, la respuesta
+    // traería su nombre y su cédula.
+    const map = new ProtectionMap({ seeds: [{ type: 'PACIENTE_NOMBRE', value: 'Ana Torres Rincón' }, { type: 'DOCUMENTO', value: 'CC 52.111.222' }] });
+    const enviado = map.protectText('Organiza esta nota: [PACIENTE_NOMBRE_1] [DOCUMENTO_1]');
+    assert.strictEqual(enviado, 'Organiza esta nota: [PACIENTE_NOMBRE_1] [DOCUMENTO_1]');
+    assert.strictEqual(map.restoreText('Es [PACIENTE_NOMBRE_1], [DOCUMENTO_1]'), 'Es [PACIENTE_NOMBRE_1], [DOCUMENTO_1]');
+    assert.strictEqual(map.summary().unknownTokens, 2, 'se cuentan como no resueltos: la nota lo avisa');
+    // Si el nombre SÍ viajó en la llamada, la semilla vuelve completa (la
+    // casilla de identificación se llena con el nombre registrado).
+    const otro = new ProtectionMap({ seeds: [{ type: 'PACIENTE_NOMBRE', value: 'Ana Torres Rincón' }] });
+    otro.protectText('la paciente Ana Torres refiere cefalea');
+    assert.strictEqual(otro.restoreText('Nombre: [PACIENTE_NOMBRE_1_2]'), 'Nombre: Ana Torres Rincón');
   });
 
   section('4 · Recorrido JSON');
@@ -240,6 +277,33 @@ async function main() {
     assert.strictEqual(svc.modeFor('note_generation'), 'enforce');
     assert.strictEqual(svc.modeFor('asistente'), 'shadow');
     assert.strictEqual(new PrivacyShieldService({ env: {} }).modeFor('x'), 'shadow');
+  });
+  await check('un modo mal escrito se delata: no cae en silencio a shadow', () => {
+    const svc = new PrivacyShieldService({ env: { PRIVACY_SHIELD_MODE: 'shadow', PRIVACY_SHIELD_MODE_NOTE_GENERATION: 'enforced', PRIVACY_SHIELD_MODE_ASISTENTE: 'enforce', PRIVACY_SHIELD_MODE_FIELD_MATCHING: '' } });
+    assert.deepStrictEqual(svc.invalidModeSettings(), ['PRIVACY_SHIELD_MODE_NOTE_GENERATION']);
+    assert.strictEqual(svc.modeFor('note_generation'), 'shadow', 'el valor inválido se ignora');
+    assert.strictEqual(svc.describeModes(['note_generation', 'asistente']), 'por defecto shadow · asistente=enforce');
+    assert.deepStrictEqual(new PrivacyShieldService({ env: {} }).invalidModeSettings(), []);
+  });
+  await check('restoreDeep devuelve los datos en TODA la respuesta del runtime, no solo en la nota', async () => {
+    const svc = new PrivacyShieldService({ env: { PRIVACY_SHIELD_MODE: 'enforce' } });
+    await withPrivacyScope({}, async () => {
+      const prot = await svc.protectTexts({ transcript: 'la paciente se llama Lucía Andrea Vélez, cédula 1.098.765.432' }, { feature: 'clinical_structuring' });
+      assert.ok(!prot.texts.transcript.includes('Lucía'));
+      const respuesta = {
+        resolved_note_content: 'Paciente [PACIENTE_NOMBRE_1], CC [DOCUMENTO_1].',
+        note_updates: [{ section: 'Identificación', text: '[PACIENTE_NOMBRE_1]' }],
+        agent_tasks: [{ title: 'Llamar a [PACIENTE_NOMBRE_1]' }]
+      };
+      const restaurada = svc.restoreDeep(respuesta, prot);
+      assert.strictEqual(restaurada.resolved_note_content, 'Paciente Lucía Andrea Vélez, CC 1.098.765.432.');
+      assert.strictEqual(restaurada.note_updates[0].text, 'Lucía Andrea Vélez');
+      assert.strictEqual(restaurada.agent_tasks[0].title, 'Llamar a Lucía Andrea Vélez');
+      assert.strictEqual(prot.rehydration, 'complete');
+      const conDesconocido = svc.restoreDeep({ a: '[TELEFONO_9]', b: 'ok' }, prot);
+      assert.strictEqual(conDesconocido.a, '[TELEFONO_9]');
+      assert.strictEqual(prot.rehydration, 'incomplete', 'se juzga sobre toda la respuesta, no sobre el último texto');
+    });
   });
   await check('enforce rechaza streaming y falla cerrado ante un error interno', async () => {
     const svc = new PrivacyShieldService({ env: { PRIVACY_SHIELD_MODE: 'enforce' } });

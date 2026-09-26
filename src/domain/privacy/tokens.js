@@ -27,13 +27,19 @@ const TYPE_LIST = Object.freeze(Object.values(TYPES));
 // Cómo se escribe cada tipo dentro de corchetes, incluidas las traducciones
 // que producen los modelos al copiar. Se normaliza antes de comparar (sin
 // tildes, sin separadores).
+//
+// Las formas cortas y los sinónimos («[PACIENTE_1]», «[NOMBRE_1]», «[CEDULA_1]»,
+// «[TEL_1]», «[CELULAR_1]») también son del modelo: al copiar un marcador lo
+// abrevia o lo traduce. Antes no se reconocían, así que ni se restauraban ni
+// se contaban, y la nota decía «rehidratación completa» con un marcador dentro
+// (revisión del 2026-09-26). Solo valen CON corchetes.
 const TYPE_PATTERNS = [
-  [TYPES.PACIENTE_NOMBRE, 'PACIENTE[ _-]?NOMBRE|NOMBRE[ _-]?PACIENTE|PATIENT[ _-]?NAME'],
-  [TYPES.DOCUMENTO, 'DOCUMENTO|DOCUMENT(?:[ _-]?NUMBER)?|ID[ _-]?DOCUMENT'],
-  [TYPES.TELEFONO, 'TEL[ÉE]FONO|PHONE(?:[ _-]?NUMBER)?|TELEPHONE'],
+  [TYPES.PACIENTE_NOMBRE, 'PACIENTE[ _-]?NOMBRE|NOMBRE[ _-]?(?:DEL[ _-]?)?PACIENTE|PATIENT[ _-]?NAME|PACIENTE|PATIENT|NOMBRE|NAME'],
+  [TYPES.DOCUMENTO, 'DOCUMENTO|DOCUMENT(?:[ _-]?NUMBER)?|ID[ _-]?DOCUMENT|C[ÉE]DULA|DOC'],
+  [TYPES.TELEFONO, 'TEL[ÉE]FONO|PHONE(?:[ _-]?NUMBER)?|TELEPHONE|CELULAR|CEL|M[ÓO]VIL|TEL'],
   [TYPES.CORREO, 'CORREO|E[ _-]?MAIL'],
-  [TYPES.DIRECCION, 'DIRECCI[ÓO]N|ADDRESS'],
-  [TYPES.NUMERO, 'N[ÚU]MERO|NUMBER']
+  [TYPES.DIRECCION, 'DIRECCI[ÓO]N|ADDRESS|DIR'],
+  [TYPES.NUMERO, 'N[ÚU]MERO|NUMBER|NUM']
 ];
 
 const BRACKETED_RE = new RegExp(
@@ -53,11 +59,14 @@ function normalizeTypeName(raw) {
     .toUpperCase()
     .replace(/[^A-Z]/g, '');
   if (flat.includes('PACIENTE') || flat.includes('PATIENT')) return TYPES.PACIENTE_NOMBRE;
+  if (flat === 'NOMBRE' || flat === 'NAME') return TYPES.PACIENTE_NOMBRE;
   if (flat.startsWith('DOCUMENT') || flat.startsWith('IDDOCUMENT')) return TYPES.DOCUMENTO;
+  if (flat === 'CEDULA' || flat === 'DOC') return TYPES.DOCUMENTO;
   if (flat.startsWith('TEL') || flat.startsWith('PHONE')) return TYPES.TELEFONO;
+  if (flat.startsWith('CEL') || flat === 'MOVIL') return TYPES.TELEFONO;
   if (flat.startsWith('CORREO') || flat.startsWith('EMAIL')) return TYPES.CORREO;
-  if (flat.startsWith('DIRECCION') || flat.startsWith('ADDRESS')) return TYPES.DIRECCION;
-  if (flat.startsWith('NUMERO') || flat.startsWith('NUMBER')) return TYPES.NUMERO;
+  if (flat.startsWith('DIRECCION') || flat.startsWith('ADDRESS') || flat === 'DIR') return TYPES.DIRECCION;
+  if (flat.startsWith('NUMERO') || flat.startsWith('NUMBER') || flat === 'NUM') return TYPES.NUMERO;
   return null;
 }
 
@@ -99,6 +108,22 @@ function findTokens(text) {
 
 function containsToken(text) {
   return findTokens(text).length > 0;
+}
+
+// Marcadores DEFORMADOS sin corchetes: «PACIENTE NOMBRE 1», «PACIENTE_1»,
+// «DOCUMENTO 2». No se restauran —sin corchetes, adivinar convertiría prosa en
+// el dato de alguien— pero se CUENTAN, para que la nota avise en vez de
+// afirmar que todo se resolvió. Solo en mayúsculas, que es como los copia el
+// modelo; «el documento 1» de la prosa va en minúsculas y no cuenta.
+const DEFORMED_RE = /(?<![\p{L}\p{N}_[])(?:PACIENTE(?:[ _]NOMBRE)?|NOMBRE[ _]PACIENTE|DOCUMENTO|C[ÉE]DULA|TEL[ÉE]FONO|CORREO|DIRECCI[ÓO]N)[ _]0*\d{1,4}(?![\p{L}\p{N}_\]])/gu;
+
+/** Cuántos marcadores deformados (sin corchetes, fuera de la gramática) quedan en un texto. */
+function countDeformedTokens(text) {
+  // Los marcadores válidos se apartan antes: esos ya se restauraron o ya se
+  // contaron como desconocidos.
+  const withoutValid = replaceTokens(`${text ?? ''}`, () => ' ');
+  const matches = withoutValid.match(DEFORMED_RE);
+  return matches ? matches.length : 0;
 }
 
 /**
@@ -146,6 +171,7 @@ module.exports = {
   formatToken,
   findTokens,
   containsToken,
+  countDeformedTokens,
   replaceTokens,
   normalizeIdentityAliases,
   normalizeTypeName

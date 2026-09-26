@@ -90,11 +90,12 @@ function registerMedicalRoutes(app, deps = {}) {
           }
         }
       });
-      const payload = orchestrated?.body || {};
-      if (protection && typeof payload.resolved_note_content === 'string') {
-        payload.resolved_note_content = privacyShield.restoreText(payload.resolved_note_content, protection);
-        payload.privacy = privacyShield.publicSummaryFor(protection);
-      }
+      // Se restaura TODA la respuesta, no solo la nota organizada: note_updates,
+      // agent_tasks y llm_debug también vuelven del runtime y antes salían al
+      // cliente con los marcadores puestos.
+      const payload = protection
+        ? { ...privacyShield.restoreDeep(orchestrated?.body || {}, protection), privacy: privacyShield.publicSummaryFor(protection) }
+        : (orchestrated?.body || {});
 
       recordUpstreamUsage(payload.usage, {
         feature: FEATURES.CLINICAL_STRUCTURING,

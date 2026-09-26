@@ -4,11 +4,16 @@
 //
 // Tres reglas que no se relajan:
 //   1. Un marcador restaura EXACTAMENTE la forma que tapó (alias por forma).
-//   2. Solo se restauran marcadores que ESTE mapa emitió: un marcador que
-//      venga en el texto del cliente es texto opaco, nunca el dato de nadie.
+//   2. Solo se restauran marcadores de entidades que ESTE mapa tapó en un
+//      texto saliente de la llamada: un marcador que venga en el texto del
+//      cliente es texto opaco, nunca el dato de nadie. Registrar una semilla
+//      (el paciente de la consulta) NO la vuelve restaurable: hasta el
+//      2026-09-26 sí lo hacía, y bastaba mandar «[PACIENTE_NOMBRE_1]» con un
+//      consultation_id para que la respuesta trajera el nombre y el documento
+//      de ese paciente.
 //   3. Mismo valor ⇒ mismo marcador dentro de la llamada.
 
-const { TYPES, formatToken, replaceTokens, normalizeIdentityAliases } = require('./tokens');
+const { TYPES, formatToken, replaceTokens, normalizeIdentityAliases, countDeformedTokens } = require('./tokens');
 const {
   NOT_WORD_BEFORE,
   NOT_WORD_AFTER,
@@ -57,6 +62,8 @@ class ProtectionMap {
     this.entities = [];
     this.nextN = {};
     this.tokenIndex = new Map();
+    // `${type}_${n}` de las entidades tapadas en un texto saliente (regla 2).
+    this.emitted = new Set();
     this.excludedTokens = new Set(excludedNames.flatMap((name) => nameTokens(name)));
     this.stats = { seeded: 0, detected: 0, occurrences: 0, byType: {}, leakRepaired: 0, restored: 0, unknownTokens: 0 };
     for (const seed of seeds) this.addSeed(seed);
@@ -132,11 +139,29 @@ class ProtectionMap {
     return entity;
   }
 
-  tokenFor(type, surface, source = 'detected') {
+  entityFor(type, surface, source = 'detected') {
     const key = entityKeyFor(type, surface);
     let entity = this.findEntity(type, key);
     if (!entity) entity = this.createEntity(type, key, source);
+    return entity;
+  }
+
+  tokenFor(type, surface, source = 'detected') {
+    return this.aliasToken(this.entityFor(type, surface, source), surface);
+  }
+
+  /**
+   * Marcador para un valor que SÍ se tapa en un texto saliente. Es lo único
+   * que vuelve restaurable a una entidad (regla 2); aliasToken a secas solo
+   * reserva el nombre del marcador.
+   */
+  emitToken(entity, surface) {
+    this.emitted.add(`${entity.type}_${entity.n}`);
     return this.aliasToken(entity, surface);
+  }
+
+  wasEmitted(type, n) {
+    return this.emitted.has(`${type}_${n}`);
   }
 
   /* ---------------------------------------------------------------- */
@@ -265,9 +290,8 @@ class ProtectionMap {
     let out = '';
     let cursor = 0;
     for (const span of spans) {
-      const token = span.entity
-        ? this.aliasToken(span.entity, span.value)
-        : this.tokenFor(span.type, span.value, 'detected');
+      const entity = span.entity || this.entityFor(span.type, span.value, 'detected');
+      const token = this.emitToken(entity, span.value);
       out += input.slice(cursor, span.start) + token;
       cursor = span.end;
       this.stats.occurrences += 1;
@@ -277,13 +301,16 @@ class ProtectionMap {
   }
 
   /**
-   * Devuelve los valores reales a un texto con marcadores. Solo los marcadores
-   * emitidos por este mapa; el resto se deja visible y se cuenta.
+   * Devuelve los valores reales a un texto con marcadores. Solo los de
+   * entidades que este mapa tapó en la llamada (regla 2); el resto se deja
+   * visible y se cuenta.
    */
   restoreText(text, { json = false } = {}) {
     const normalized = normalizeIdentityAliases(`${text ?? ''}`);
     const result = replaceTokens(normalized, (token) => {
-      const surface = this.tokenIndex.get(formatToken(token.type, token.n, token.k));
+      const surface = this.wasEmitted(token.type, token.n)
+        ? this.tokenIndex.get(formatToken(token.type, token.n, token.k))
+        : undefined;
       if (surface === undefined) {
         this.stats.unknownTokens += 1;
         return undefined;
@@ -291,6 +318,9 @@ class ProtectionMap {
       this.stats.restored += 1;
       return json ? JSON.stringify(surface).slice(1, -1) : surface;
     });
+    // Un marcador que el modelo deformó sin corchetes no se adivina, pero se
+    // cuenta: la rehidratación queda «incompleta» y la nota lo avisa.
+    this.stats.unknownTokens += countDeformedTokens(result);
     return result;
   }
 
@@ -344,7 +374,7 @@ class ProtectionMap {
         kept.push(span);
       }
       for (const span of kept.reverse()) {
-        out = out.slice(0, span.start) + this.aliasToken(entity, span.value) + out.slice(span.end);
+        out = out.slice(0, span.start) + this.emitToken(entity, span.value) + out.slice(span.end);
         repaired += 1;
       }
     }

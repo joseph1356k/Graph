@@ -107,12 +107,37 @@ function main() {
   assert.ok(/axios\.post\(`\$\{this\.baseUrl\}\/chat\/completions`, outbound/.test(llm), 'lo que sale es la copia tapada (outbound), no el payload original');
   ok('LLMProvider: protect → POST (copia tapada) → restore, en ese orden');
 
-  // 3. El salto Node → Python está tapado en las dos rutas que lo cruzan con texto clínico.
-  for (const file of ['web/api/registerPublicApiRoutes.js', 'web/api/registerMedicalRoutes.js']) {
+  // 3. El salto Node → Python está tapado en las rutas que lo cruzan con texto clínico.
+  for (const file of ['web/api/registerPublicApiRoutes.js', 'web/api/registerMedicalRoutes.js', 'web/server.js']) {
     const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
-    assert.ok(/privacyShield\.protectTexts/.test(text) && /privacyShield\.restoreText/.test(text), `${file} tapa y rehidrata el salto al runtime Python`);
+    assert.ok(/privacyShield\.protectTexts/.test(text) && /privacyShield\.restore(Text|Deep)/.test(text), `${file} tapa y rehidrata el salto al runtime Python`);
   }
-  ok('el salto Node → runtime Python pasa por el escudo (pipeline y /api/medical/notes/organized)');
+  ok('el salto Node → runtime Python pasa por el escudo (pipeline, /api/medical/notes/organized y el proxy del editor)');
+
+  // 3b. TODO reenvío a un endpoint del runtime que llama al proveedor con
+  //     texto clínico pasa por el escudo, esté en el archivo que esté. Hasta el
+  //     2026-09-26 server.js tenía un proxy crudo de
+  //     /api/voice/orchestrator/events —nota y transcripción, sin login— y el
+  //     punto 3 no lo veía porque solo miraba dos archivos escritos a mano.
+  const RUNTIME_LLM_ENDPOINTS = ['/api/voice/orchestrator/events'];
+  let forwards = 0;
+  for (const file of files) {
+    const text = fs.readFileSync(file, 'utf8');
+    for (const endpoint of RUNTIME_LLM_ENDPOINTS) {
+      const quoted = `['"\`]${endpoint.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}['"\`]`;
+      assert.ok(
+        !new RegExp(`proxyMiracleRuntimeRequest\\([^;]*?${quoted}`).test(text),
+        `${rel(file)} reenvía ${endpoint} en crudo con proxyMiracleRuntimeRequest: tiene que pasar por privacyShield.protectTexts`
+      );
+      for (const call of text.matchAll(new RegExp(`callMiracleRuntime\\([^,]+,\\s*${quoted}`, 'g'))) {
+        forwards += 1;
+        const before = text.slice(Math.max(0, call.index - 3000), call.index);
+        assert.ok(/privacyShield\.protectTexts\(/.test(before), `${rel(file)} llama ${endpoint} sin privacyShield.protectTexts antes`);
+      }
+    }
+  }
+  assert.ok(forwards >= 2, `se esperaban al menos 2 reenvíos al runtime (hubo ${forwards}): el test no puede quedar vacío`);
+  ok(`ningún reenvío al runtime que llama a la IA sale sin escudo (${forwards} reenvíos revisados)`);
 
   // 4. Las excepciones declaradas están escritas en el registro de excepciones.
   const doc = fs.readFileSync(path.join(ROOT, 'docs/privacy-egress-gateway.md'), 'utf8');
