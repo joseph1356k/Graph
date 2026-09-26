@@ -20,7 +20,8 @@ const clauses = require('../prompts/PromptClauses');
 const NoteModeResolver = require('./NoteModeResolver');
 const { GROUNDING_LEVELS } = require('../../domain/clinical/grounding');
 
-const PROMPT_VERSION = clauses.promptVersion('clinical-note', '5');
+// @6 (2026-09-26): la evidencia se pide corta y con tope. Ver EVIDENCE_RULE.
+const PROMPT_VERSION = clauses.promptVersion('clinical-note', '6');
 // Vocabulario de la columna user_preferences.note_detail en producción
 // (concisa | estandar | detallada). 'estandar' no emite nada.
 const NOTE_DETAILS = Object.freeze(['concisa', 'estandar', 'detallada']);
@@ -118,7 +119,7 @@ function verbatimTask(modes, sections) {
     '- La instrucción de cada sección sirve para saber QUÉ va ahí, nunca para reescribir el contenido.',
     '- Ante la duda entre respetar el dictado y mejorar la nota: respeta el dictado y añade un warning.',
     '- Una sección literal no dictada va a la frase prudente, nunca rellenada con datos de otra sección.',
-    '- En una sección literal, "evidence" es el propio fragmento dictado y "grounding" es "explicit".',
+    '- En una sección literal, "grounding" es "explicit" y "evidence" es solo el COMIENZO del fragmento dictado (sus primeras palabras, menos de 200 caracteres): el contenido ya es el dictado completo, no lo copies dos veces.',
     modes.allVerbatim
       ? '- "summary" describe el tipo de estudio y la muestra, nunca el hallazgo ni el diagnóstico. Si dudas, déjalo vacío.'
       : ''
@@ -130,13 +131,22 @@ const NOTE_DETAIL_DIRECTIVES = Object.freeze({
   detallada: 'PREFERENCIA DE REDACCIÓN — detallada: en las secciones interpretativas incluye la cronología, los matices y los negativos pertinentes que la conversación aporte. Detallado no es inventar: sigue sin haber nada que no esté en la transcripción.'
 });
 
+// La evidencia se pide CORTA y con tope porque es lo que más infla la salida
+// sin servir de nada: la nota tarda según cuánto texto escribe el modelo, y el
+// validador solo conserva MAX_EVIDENCE_FRAGMENTS (4) citas de
+// MAX_EVIDENCE_FRAGMENT_LENGTH (200) caracteres por sección; el resto se
+// descarta. En los evals grabados la evidencia era el 16–27 % de la salida, y en
+// una sección literal el modelo copiaba el dictado entero DOS veces (contenido y
+// evidencia). Pedir menos no cambia lo que se guarda.
+const EVIDENCE_RULE = '- "evidence": de uno a tres fragmentos TEXTUALES y CORTOS de la transcripción, copiados carácter a carácter: la frase exacta que sostiene el dato, de menos de 200 caracteres cada uno, nunca párrafos enteros. Si no puedes citar un fragmento literal, la sección no está soportada: frase prudente, grounding "absent", evidence [].';
+
 const OUTPUT_CONTRACT = [
   'CONTRATO DE SALIDA:',
   clauses.JSON_ONLY,
   '{"summary": string, "sections": [{"key": string, "label": string, "content": string, "grounding": "explicit"|"entailed"|"inferred"|"absent", "evidence": [string]}], "warnings": [string], "missing_required_sections": [string]}',
   '- "sections" contiene EXACTAMENTE las secciones de la plantilla: mismas keys, mismos labels, mismo orden. Ni una de más ni una de menos.',
   `- "content": el texto de la sección. Si no hay información, la frase prudente ("${MISSING_PHRASE}") con grounding "absent" y evidence [].`,
-  '- "evidence": uno o más fragmentos TEXTUALES de la transcripción, copiados carácter a carácter, de los que sale el contenido. Si no puedes citar un fragmento literal, la sección no está soportada: frase prudente, grounding "absent", evidence [].',
+  EVIDENCE_RULE,
   '- "summary": una o dos frases sobre de qué trató la consulta. Es el ÚNICO campo donde se permite resumir, y no puede contener datos que no estén ya en alguna sección.',
   '- "warnings": problemas reales: transcripción insuficiente, datos contradictorios, dudas de puntuación, nombres o cifras que el médico deba confirmar.',
   '- "missing_required_sections": keys de secciones OBLIGATORIAS que quedaron sin información.',

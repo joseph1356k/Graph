@@ -228,6 +228,19 @@ function main() {
     assert.ok(system.includes('copiados carácter a carácter'));
   });
 
+  // La nota tarda según cuánto escribe el modelo, y el validador solo guarda
+  // 4 citas de 200 caracteres por sección: pedir evidencia sin tope era pagar
+  // en segundos texto que luego se tira.
+  check('la evidencia se pide corta y con tope, alineada con lo que guarda el validador', () => {
+    const general = systemOf(builder.build({ transcript: 'x', templateSnapshot: snapshot({ specialty: 'medicina_general', sections: GENERAL_SECTIONS }) }));
+    assert.ok(general.includes('de uno a tres fragmentos TEXTUALES y CORTOS'));
+    assert.ok(general.includes('menos de 200 caracteres'));
+    assert.ok(!general.includes('uno o más fragmentos'), 'sin tope, el modelo copia párrafos enteros');
+    const literal = systemOf(builder.build({ transcript: 'x', templateSnapshot: snapshot({ specialty: 'patologia', sections: GENERAL_SECTIONS }) }));
+    assert.ok(literal.includes('solo el COMIENZO del fragmento dictado'), 'en literal no se copia el dictado dos veces');
+    assert.ok(!literal.includes('"evidence" es el propio fragmento dictado'));
+  });
+
   check('la preferencia de longitud sólo aparece para concisa/detallada y sólo en interpretativo', () => {
     const general = snapshot({ specialty: 'medicina_general', sections: GENERAL_SECTIONS });
     assert.ok(!systemOf(builder.build({ transcript: 'x', templateSnapshot: general })).includes('PREFERENCIA DE REDACCIÓN'));
