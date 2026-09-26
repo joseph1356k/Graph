@@ -35,6 +35,24 @@ const { maskDeviceId, scrubDeviceId } = require('./logRedaction');
 const LIVE_PROXY_PATH = '/api/android/live/session';
 const OPENAI_LIVE_URL = 'wss://api.openai.com/v1/live/sessions';
 
+// La key real de OpenAI se lee de OPENAI_LIVE_KEY o, si esa no está, de
+// openai_live_key. En el proyecto de Vercel la variable quedó cargada en
+// minúsculas (tipo sensible: Vercel no permite renombrarla) y en Vercel los
+// nombres distinguen mayúsculas, así que leer sólo el nombre exacto dejaba al
+// proxy en 500 con la key ya cargada. Gana la de mayúsculas.
+const LIVE_KEY_ENV_NAMES = ['OPENAI_LIVE_KEY', 'openai_live_key'];
+
+// Devuelve la key ya recortada, o '' si ningún nombre trae un valor. Es la ÚNICA
+// lectura de la key en el proxy: el valor es un secreto, nunca se loguea ni se
+// devuelve al cliente (el log de «no configurada» sólo nombra las variables).
+function readLiveKey(env = process.env) {
+  for (const name of LIVE_KEY_ENV_NAMES) {
+    const value = `${env[name] || ''}`.trim();
+    if (value) return value;
+  }
+  return '';
+}
+
 // Vercel Hobby, con Fluid compute (default desde 2025-04-23 para proyectos
 // nuevos — este es de junio 2026, así que lo tiene): el techo real de
 // duración de una función es 300s, default Y máximo, sin extended-duration
@@ -241,9 +259,9 @@ function attachLiveVoiceProxy(server, options = {}) {
 
     authorizer.requireAuthorizedDevice(deviceId)
       .then(() => {
-        const apiKey = `${process.env.OPENAI_LIVE_KEY || ''}`.trim();
+        const apiKey = readLiveKey();
         if (!apiKey) {
-          logError('[Live Voice Proxy] OPENAI_LIVE_KEY no configurada');
+          logError(`[Live Voice Proxy] ${LIVE_KEY_ENV_NAMES.join(' u ')} no configurada`);
           return rejectUpgrade(socket, 500, STATUS_TEXT[500]);
         }
         wss.handleUpgrade(req, socket, head, (clientWs) => {
@@ -264,4 +282,5 @@ module.exports = attachLiveVoiceProxy;
 module.exports.LIVE_PROXY_PATH = LIVE_PROXY_PATH;
 module.exports.OPENAI_LIVE_URL = OPENAI_LIVE_URL;
 module.exports.MAX_DURATION_MS = MAX_DURATION_MS;
+module.exports.readLiveKey = readLiveKey;
 module.exports.maskDeviceId = maskDeviceId;
