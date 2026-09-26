@@ -15,16 +15,28 @@
 // Sólo lee: la whitelist la escribe el backend con service-role desde el
 // panel (AndroidPanelService.setRealtimeAllowed), nunca este servicio.
 
+// Marca de los errores PROPIOS de este autorizador (falta el id / dispositivo no autorizado). El
+// statusCode solo no alcanza para distinguirlos: SupabaseRestClient también propaga el estado de
+// PostgREST (403 por service-role mala o RLS, 400 por consulta rota) en `statusCode`. Quien necesite
+// separar «este dispositivo no puede» de «no pude comprobarlo» mira esta marca, no el estado.
+const OWN_ERROR_MARK = 'liveVoiceDeviceAuthorizer';
+
 function badRequest(message) {
   const error = new Error(message);
   error.statusCode = 400;
+  error[OWN_ERROR_MARK] = true;
   return error;
 }
 
 function forbidden(message) {
   const error = new Error(message);
   error.statusCode = 403;
+  error[OWN_ERROR_MARK] = true;
   return error;
+}
+
+function isOwnError(error) {
+  return Boolean(error) && error[OWN_ERROR_MARK] === true;
 }
 
 class LiveVoiceDeviceAuthorizer {
@@ -53,3 +65,4 @@ class LiveVoiceDeviceAuthorizer {
 }
 
 module.exports = LiveVoiceDeviceAuthorizer;
+module.exports.isOwnError = isOwnError;
