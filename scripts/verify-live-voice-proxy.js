@@ -67,7 +67,11 @@ async function testAuthorizerAutorizado() {
 
 // ---- Helpers para levantar un server HTTP efímero con el proxy montado ----
 
-function startProxyServer({ authorizedDeviceIds = [], openaiLiveUrl, envKey = 'una-key-de-prueba', path, log, logError, authorizer: authorizerOverride }) {
+// `envKey` es el valor de OPENAI_LIVE_KEY y `envKeyLower` el de openai_live_key
+// (como se llama en el proyecto de Vercel); null = sin definir. Los dos se
+// guardan y se restauran al cerrar, para que ninguna prueba dependa del entorno
+// de quien la corre.
+function startProxyServer({ authorizedDeviceIds = [], openaiLiveUrl, envKey = 'una-key-de-prueba', envKeyLower = null, path, log, logError, authorizer: authorizerOverride }) {
   const rows = new Map(authorizedDeviceIds.map((id) => [id, true]));
   const authorizer = authorizerOverride || new LiveVoiceDeviceAuthorizer({
     async select(table, query) {
@@ -78,11 +82,14 @@ function startProxyServer({ authorizedDeviceIds = [], openaiLiveUrl, envKey = 'u
     }
   });
 
-  const previousKey = process.env.OPENAI_LIVE_KEY;
-  if (envKey === null) {
-    delete process.env.OPENAI_LIVE_KEY;
-  } else {
-    process.env.OPENAI_LIVE_KEY = envKey;
+  const nombresDeKey = { OPENAI_LIVE_KEY: envKey, openai_live_key: envKeyLower };
+  const previous = {};
+  for (const nombre of Object.keys(nombresDeKey)) previous[nombre] = process.env[nombre];
+  // Se borran los dos antes de escribir: en Windows process.env no distingue
+  // mayúsculas y un delete posterior pisaría al otro nombre.
+  for (const nombre of Object.keys(nombresDeKey)) delete process.env[nombre];
+  for (const [nombre, valor] of Object.entries(nombresDeKey)) {
+    if (valor !== null) process.env[nombre] = valor;
   }
 
   const server = http.createServer((req, res) => {
@@ -97,8 +104,10 @@ function startProxyServer({ authorizedDeviceIds = [], openaiLiveUrl, envKey = 'u
         server,
         port,
         close: () => new Promise((r) => {
-          if (previousKey === undefined) delete process.env.OPENAI_LIVE_KEY;
-          else process.env.OPENAI_LIVE_KEY = previousKey;
+          for (const nombre of Object.keys(previous)) delete process.env[nombre];
+          for (const [nombre, valor] of Object.entries(previous)) {
+            if (valor !== undefined) process.env[nombre] = valor;
+          }
           server.close(r);
         })
       });
@@ -111,8 +120,10 @@ function startProxyServer({ authorizedDeviceIds = [], openaiLiveUrl, envKey = 'u
 function startFakeOpenAi() {
   const server = http.createServer();
   const wss = new WebSocketServer({ server });
+  const authHeaders = []; // lo que OpenAI (falso) vio en cada conexión entrante
   wss.on('connection', (ws, req) => {
     ws.authHeader = req.headers['authorization'] || '';
+    authHeaders.push(ws.authHeader);
     ws.on('message', (data, isBinary) => {
       if (data.toString() === 'HOLA_DESDE_ANDROID') {
         ws.send('HOLA_DESDE_OPENAI');
@@ -124,7 +135,7 @@ function startFakeOpenAi() {
   return new Promise((resolve) => {
     server.listen(0, '127.0.0.1', () => {
       const { port } = server.address();
-      resolve({ server, port, close: () => new Promise((r) => server.close(r)) });
+      resolve({ server, port, authHeaders, close: () => new Promise((r) => server.close(r)) });
     });
   });
 }
@@ -472,6 +483,181 @@ async function testMaskDeviceId() {
   }
 }
 
+// ---- La key se lee de OPENAI_LIVE_KEY u openai_live_key ----
+//
+// En el proyecto de Vercel la variable está cargada como `openai_live_key`
+// (minúsculas, tipo sensible: Vercel no deja renombrarla) y en Vercel los
+// nombres distinguen mayúsculas. El proxy acepta los dos; si están los dos gana
+// OPENAI_LIVE_KEY. La key es un secreto: nunca sale en un log ni en una respuesta.
+
+// Valores canarios: si cualquiera aparece en un log, un header o un cuerpo, la
+// prueba falla. Uno por nombre, para que una fuga de cualquiera de los dos se vea.
+const CANARIO_MAYUS = 'sk-canario-MAYUS-4f9a1c7e2b';
+const CANARIO_MINUS = 'sk-canario-minus-8d2e7b5a90';
+const MENSAJE_SIN_KEY = '[Live Voice Proxy] OPENAI_LIVE_KEY u openai_live_key no configurada';
+
+function assertSinCanario(vistos, mensaje) {
+  assert.ok(vistos.length > 0, `${mensaje}: no se capturó nada que revisar (la prueba sería vacía)`);
+  for (const visto of vistos) {
+    for (const canario of [CANARIO_MAYUS, CANARIO_MINUS]) {
+      assert.ok(!visto.includes(canario), `${mensaje}: el valor de la key apareció en: ${visto}`);
+    }
+  }
+}
+
+// Abre un upgrade y devuelve todo lo que el cliente pudo ver del proxy: estado,
+// headers, cuerpo y (si el handshake se completa) el eco de un mensaje.
+function observarUpgrade(port, ruta) {
+  const ws = new WebSocket(`ws://127.0.0.1:${port}${ruta}`);
+  const visto = { abrio: false, statusCode: null, headers: {}, cuerpo: '', recibidos: [] };
+  return new Promise((resolve, reject) => {
+    const guardia = setTimeout(() => reject(new Error(`el upgrade a ${ruta} no terminó en 3 s`)), 3000);
+    const listo = () => { clearTimeout(guardia); resolve(visto); };
+    ws.on('upgrade', (res) => { visto.headers = res.headers; });
+    ws.on('open', () => {
+      visto.abrio = true;
+      ws.once('message', (data) => {
+        visto.recibidos.push(data.toString());
+        ws.close(1000, 'fin de prueba');
+      });
+      ws.send('HOLA_DESDE_ANDROID');
+    });
+    ws.on('close', listo);
+    ws.on('unexpected-response', (req, res) => {
+      visto.statusCode = res.statusCode;
+      visto.headers = res.headers;
+      res.on('data', (trozo) => { visto.cuerpo += trozo.toString(); });
+      res.on('end', listo);
+      res.on('close', listo);
+      res.on('error', listo);
+    });
+    ws.on('error', () => {}); // el rechazo ya llega por 'unexpected-response'
+  });
+}
+
+async function esperarLineas(capturado) {
+  const limite = Date.now() + 2000;
+  while (capturado.lineas.length === 0 && Date.now() < limite) {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+}
+
+async function testReadLiveKey() {
+  const { readLiveKey } = attachLiveVoiceProxy;
+  assert.strictEqual(typeof readLiveKey, 'function', 'liveVoiceProxy debe exportar readLiveKey');
+  assert.strictEqual(readLiveKey({}), '', 'sin ninguna: vacío');
+  assert.strictEqual(readLiveKey({ OPENAI_LIVE_KEY: 'MAYUS' }), 'MAYUS', 'solo mayúsculas');
+  assert.strictEqual(readLiveKey({ openai_live_key: 'minus' }), 'minus', 'solo minúsculas (el caso de Vercel)');
+  assert.strictEqual(readLiveKey({ OPENAI_LIVE_KEY: 'MAYUS', openai_live_key: 'minus' }), 'MAYUS', 'ambas: gana la de mayúsculas');
+  assert.strictEqual(readLiveKey({ OPENAI_LIVE_KEY: '   ', openai_live_key: 'minus' }), 'minus', 'mayúsculas solo espacios: cae a minúsculas');
+  assert.strictEqual(readLiveKey({ OPENAI_LIVE_KEY: '', openai_live_key: 'minus' }), 'minus', 'mayúsculas vacía: cae a minúsculas');
+  assert.strictEqual(readLiveKey({ OPENAI_LIVE_KEY: undefined, openai_live_key: 'minus' }), 'minus', 'mayúsculas ausente: cae a minúsculas');
+  assert.strictEqual(readLiveKey({ OPENAI_LIVE_KEY: '  ', openai_live_key: '\t\n' }), '', 'las dos solo espacios: vacío');
+  assert.strictEqual(readLiveKey({ OPENAI_LIVE_KEY: ' MAYUS \n' }), 'MAYUS', 'se recorta (mayúsculas)');
+  assert.strictEqual(readLiveKey({ openai_live_key: '\tminus ' }), 'minus', 'se recorta (minúsculas)');
+}
+
+// Cada caso pasa por el upgrade completo: lo que cuenta es la key con la que el
+// proxy le habla a OpenAI (el fake anota el Authorization que recibe).
+async function testUsaLaKeyDelNombreQueCorresponde() {
+  const casos = [
+    ['solo OPENAI_LIVE_KEY', { upper: CANARIO_MAYUS, lower: null }, CANARIO_MAYUS],
+    ['solo openai_live_key (como está en Vercel)', { upper: null, lower: CANARIO_MINUS }, CANARIO_MINUS],
+    ['ambas: gana OPENAI_LIVE_KEY', { upper: CANARIO_MAYUS, lower: CANARIO_MINUS }, CANARIO_MAYUS],
+    ['OPENAI_LIVE_KEY solo espacios + openai_live_key', { upper: '   ', lower: CANARIO_MINUS }, CANARIO_MINUS],
+    ['OPENAI_LIVE_KEY vacía + openai_live_key', { upper: '', lower: CANARIO_MINUS }, CANARIO_MINUS],
+    ['la key se recorta antes de mandarla', { upper: `  ${CANARIO_MAYUS}\n`, lower: null }, CANARIO_MAYUS]
+  ];
+  for (const [nombre, { upper, lower }, esperada] of casos) {
+    // En Windows process.env no distingue mayúsculas: dos nombres a la vez no
+    // se pueden representar. Esos casos los cubre testReadLiveKey con objetos planos.
+    if (process.platform === 'win32' && upper !== null && lower !== null) continue;
+    const capturado = capturarLogs();
+    const openai = await startFakeOpenAi();
+    const proxy = await startProxyServer({
+      authorizedDeviceIds: ['dispositivo-1'],
+      openaiLiveUrl: `ws://127.0.0.1:${openai.port}`,
+      envKey: upper,
+      envKeyLower: lower,
+      log: capturado.log,
+      logError: capturado.logError
+    });
+    try {
+      const visto = await observarUpgrade(proxy.port, '/api/android/live/session?device_id=dispositivo-1');
+      assert.strictEqual(visto.abrio, true, `${nombre}: el upgrade debía aceptarse (HTTP ${visto.statusCode})`);
+      assert.deepStrictEqual(visto.recibidos, ['HOLA_DESDE_OPENAI'], `${nombre}: el relay debía funcionar`);
+      assert.deepStrictEqual(openai.authHeaders, [`Bearer ${esperada}`], `${nombre}: key equivocada hacia OpenAI`);
+      await esperarLineas(capturado); // el log del relay sale al cerrar
+      assertSinCanario(
+        [...capturado.lineas, JSON.stringify(visto.headers), ...visto.recibidos],
+        `${nombre} (camino autorizado)`
+      );
+    } finally {
+      await proxy.close();
+      await openai.close();
+    }
+  }
+}
+
+async function testSinKeyOSoloEspaciosDa500ConLogSinValor() {
+  const casos = [
+    ['ninguna', null, null],
+    ['OPENAI_LIVE_KEY solo espacios', '   \t ', null],
+    ['openai_live_key solo espacios', null, ' \n '],
+    ['las dos solo espacios', '  ', '\t'],
+    ['las dos vacías', '', '']
+  ];
+  for (const [nombre, upper, lower] of casos) {
+    if (process.platform === 'win32' && upper !== null && lower !== null) continue; // ver arriba
+    const capturado = capturarLogs();
+    const openai = await startFakeOpenAi();
+    const proxy = await startProxyServer({
+      authorizedDeviceIds: ['dispositivo-1'],
+      openaiLiveUrl: `ws://127.0.0.1:${openai.port}`,
+      envKey: upper,
+      envKeyLower: lower,
+      log: capturado.log,
+      logError: capturado.logError
+    });
+    try {
+      const visto = await observarUpgrade(proxy.port, '/api/android/live/session?device_id=dispositivo-1');
+      assert.strictEqual(visto.abrio, false, `${nombre}: sin key no debe completar el handshake`);
+      assert.strictEqual(visto.statusCode, 500, `${nombre}: el código que ve el cliente no cambia`);
+      assert.strictEqual(visto.cuerpo, '', `${nombre}: la respuesta no lleva cuerpo`);
+      assert.deepStrictEqual(openai.authHeaders, [], `${nombre}: no debe conectarse a OpenAI sin key`);
+      // La línea entera, palabra por palabra: nombra los dos nombres y no lleva
+      // ningún valor (ni siquiera los espacios de una variable «vacía»).
+      assert.deepStrictEqual(capturado.lineas, [MENSAJE_SIN_KEY], `${nombre}: el log debía nombrar ambos nombres y nada más`);
+    } finally {
+      await proxy.close();
+      await openai.close();
+    }
+  }
+}
+
+async function testElValorDeLaKeyNoSaleEnElCaminoRechazado() {
+  // Con las dos keys cargadas y un dispositivo NO autorizado, el proxy rechaza
+  // (403) sin tocar la key: ni el log ni la respuesta pueden llevar su valor.
+  const capturado = capturarLogs();
+  const proxy = await startProxyServer({
+    authorizedDeviceIds: [],
+    envKey: CANARIO_MAYUS,
+    envKeyLower: CANARIO_MINUS,
+    log: capturado.log,
+    logError: capturado.logError
+  });
+  try {
+    const visto = await observarUpgrade(proxy.port, '/api/android/live/session?device_id=fantasma');
+    assert.strictEqual(visto.statusCode, 403);
+    assertSinCanario(
+      [...capturado.lineas, JSON.stringify(visto.headers), visto.cuerpo || '(sin cuerpo)'],
+      'camino rechazado (403)'
+    );
+  } finally {
+    await proxy.close();
+  }
+}
+
 async function main() {
   const pruebas = [
     ['authorizer: falta device_id -> 400', testAuthorizerFaltaDeviceId],
@@ -481,6 +667,10 @@ async function main() {
     ['proxy: rechaza dispositivo no autorizado antes del handshake (403)', testRechazaDispositivoNoAutorizado],
     ['proxy: rechaza sin device_id (400)', testRechazaSinDeviceId],
     ['proxy: rechaza sin OPENAI_LIVE_KEY configurada (500, nunca fallback silencioso)', testRechazaSinKeyConfigurada],
+    ['readLiveKey: mayúsculas, minúsculas, ambas, vacías y espacios', testReadLiveKey],
+    ['proxy: usa OPENAI_LIVE_KEY u openai_live_key (gana la de mayúsculas) y la manda a OpenAI', testUsaLaKeyDelNombreQueCorresponde],
+    ['proxy: sin key (o solo espacios) -> 500 y el log nombra ambos nombres, sin valor', testSinKeyOSoloEspaciosDa500ConLogSinValor],
+    ['proxy: el valor de la key no sale en logs ni respuesta (camino rechazado)', testElValorDeLaKeyNoSaleEnElCaminoRechazado],
     ['proxy: acepta con el path de destino de Vercel (regresión rewrite)', testAceptaConPathDeDestinoExplicito],
     ['proxy: acepta ambos paths cuando se pasa un array (regresión producción)', testAceptaAmbosPathsCuandoSePasaUnArray],
     ['proxy: relay transparente (texto y binario) + cierre en cascada', testRelayTransparenteYCierreEnCascada],
