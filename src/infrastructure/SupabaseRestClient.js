@@ -77,6 +77,23 @@ class SupabaseRestClient {
     return Array.isArray(body) ? body[0] : body;
   }
 
+  // Inserta la fila o, si ya hay una con esa clave (`onConflict`: la columna o columnas de un
+  // índice único), le actualiza SOLO las columnas que trae `row`. Una petición en vez de las dos
+  // de «mira si existe y luego inserta o actualiza». No devuelve la fila.
+  async upsert(table, row, onConflict) {
+    if (!onConflict) {
+      throw new Error(`SupabaseRestClient.upsert(${table}) necesita la clave del conflicto.`);
+    }
+    await this.request(`/${table}?on_conflict=${encodeURIComponent(onConflict)}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify(row)
+    });
+  }
+
   // Llama una función de Postgres (RPC). Se usa para las transiciones que
   // tienen que ser atómicas del lado de la base de datos (p. ej. reclamar un
   // trabajo de exportación con FOR UPDATE SKIP LOCKED, o confirmar una
