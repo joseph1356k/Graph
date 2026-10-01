@@ -131,9 +131,11 @@ async function main() {
     promptBuilder: new ClinicalNotePromptBuilder(), validationService: noteValidationService,
     consultationMirrorService: new ConsultationMirrorService(rest)
   });
+  const { loadDefaultIndex } = require('../src/application/knowledge/ClinicalGuidelineIndex');
   const assistantService = new ClinicalAssistantService({
     encounterService, llmProvider: llm, promptBuilder: new ClinicalAssistantPromptBuilder(),
-    validationService: new ClinicalAssistantValidationService(), noteValidationService
+    validationService: new ClinicalAssistantValidationService(), noteValidationService,
+    guidelineIndex: loadDefaultIndex()
   });
   const noteFieldMatcher = new NoteFieldMatcher(llm);
   const dynamicValueResolver = new DynamicValueResolver(llm);
@@ -274,6 +276,58 @@ async function main() {
       assert.ok(chat.body.answer.includes('23-45-67-75-43') || chat.body.answer.includes('2345677543'), chat.body.answer);
       assert.strictEqual(findTokens(chat.body.answer).length, 0);
       assert.strictEqual(chat.body.privacy.shielded, true);
+    });
+
+    // ---- 2b. Asistente v3: la nota EN PANTALLA siembra el escudo y las guías
+    // salen intactas ------------------------------------------------------------
+    // Un nombre que el médico acaba de escribir en la nota (y que no está en la
+    // transcripción ni en el paciente registrado) tiene que salir tapado igual.
+    provider.state.handler = (body, raw) => {
+      assertNoIdentifiers(raw, 'assistant chat con borrador');
+      const user = JSON.parse(body.messages[body.messages.length - 1].content);
+      assert.strictEqual(user.origen_nota, 'borrador');
+      const plan = user.nota_clinica.sections.find((s) => s.key === 'plan');
+      const acompanante = firstToken(plan.content, 'PACIENTE_NOMBRE');
+      assert.ok(typeof user.guias_clinicas === 'string' && user.guias_clinicas.includes('<guias_clinicas>'), 'la pregunta recupera guías');
+      assert.strictEqual(findTokens(user.guias_clinicas).length, 0, 'los extractos de guías no llevan marcadores');
+      assert.ok(user.guias_clinicas.includes('[G1] Hipertensión arterial en adultos'), user.guias_clinicas.slice(0, 200));
+      return {
+        respuesta: `Meta de presión 120–129 mmHg [G1]. Control con ${acompanante} en una semana.`,
+        respaldo: 'guia',
+        fuentes: [{ ref: 'G1' }],
+        faltantes: [],
+        alertas: [],
+        propuesta_nota: { motivo: 'Control anotado.', secciones: [{ key: 'plan', content: `Control en una semana; avisar a ${acompanante}.` }] },
+        seguimientos: []
+      };
+    };
+    const chatBorrador = await call('POST', '/api/clinical/assistant/chat', {
+      message: '¿Qué meta de presión arterial le pongo? Tiene hipertensión.',
+      encounter_id: encounterId,
+      note_json_draft: {
+        summary: 'Cefalea.',
+        sections: [
+          { key: 'motivo_de_consulta', label: 'Motivo de consulta', content: 'Cefalea de tres días.' },
+          { key: 'plan', label: 'Plan', content: 'Control en una semana. Acompañante: la paciente Ana Torres, hermana.' }
+        ]
+      }
+    });
+    await check('asistente v3: un nombre que solo está en la nota en pantalla sale tapado y vuelve real; las guías citadas salen íntegras', () => {
+      assert.strictEqual(chatBorrador.status, 200, JSON.stringify(chatBorrador.body));
+      assert.ok(chatBorrador.body.answer.includes('Ana Torres'), chatBorrador.body.answer);
+      assert.strictEqual(findTokens(chatBorrador.body.answer).length, 0);
+      assert.strictEqual(chatBorrador.body.support, 'guia');
+      assert.strictEqual(chatBorrador.body.sources[0].guideline_id, 'hipertension-arterial-adultos');
+      const proposal = chatBorrador.body.note_proposal;
+      assert.ok(proposal, 'hay propuesta');
+      assert.strictEqual(proposal.changed_sections[0].key, 'plan');
+      assert.ok(proposal.changed_sections[0].content.includes('Ana Torres'), 'la propuesta vuelve rehidratada');
+      assert.strictEqual(findTokens(JSON.stringify(proposal)).length, 0);
+      const event = usageEvents[usageEvents.length - 1];
+      assert.strictEqual(event.feature, 'asistente');
+      assert.ok(Number(event.metadata.guidelineHits) >= 1, JSON.stringify(event.metadata));
+      assert.strictEqual(event.metadata.noteSource, 'draft');
+      assert.ok(/PACIENTE_NOMBRE:\d+/.test(event.metadata.privacyTokens));
     });
 
     // ---- 3. Sugerencias diagnósticas: la evidencia literal sigue validando ------

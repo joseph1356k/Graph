@@ -15,6 +15,7 @@ const ClinicalNoteValidationService = require('../src/application/use-cases/Clin
 const ClinicalAssistantPromptBuilder = require('../src/application/use-cases/ClinicalAssistantPromptBuilder');
 const ClinicalAssistantValidationService = require('../src/application/use-cases/ClinicalAssistantValidationService');
 const ClinicalAssistantService = require('../src/application/use-cases/ClinicalAssistantService');
+const { loadDefaultIndex } = require('../src/application/knowledge/ClinicalGuidelineIndex');
 const registerClinicalRoutes = require('../web/api/registerClinicalRoutes');
 
 const DOCTOR_ID = '7b8a4c8e-1d2f-4a5b-9c3d-2e1f0a9b8c7d';
@@ -71,8 +72,22 @@ function createFakeSupabaseRestClient() {
   };
 }
 
+// Respuesta JSON por defecto del chat v3: lo que el modelo devuelve cuando el
+// caso no fija un `chatHandler`.
+const DEFAULT_CHAT_REPLY = Object.freeze({
+  respuesta: 'Respuesta clínica prudente del asistente.',
+  respaldo: 'general',
+  fuentes: [],
+  faltantes: [],
+  alertas: [],
+  propuesta_nota: null,
+  seguimientos: []
+});
+
 function createFakeLlm() {
   const state = { calls: [], chatHandler: null, jsonHandler: null };
+  const usage = { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 };
+  const isChatPrompt = (messages) => /Miracle Clinical Assistant/.test(`${messages?.[0]?.content || ''}`);
   return {
     state,
     hasApiKey: () => true,
@@ -80,16 +95,28 @@ function createFakeLlm() {
     model: 'test',
     async chat(messages) {
       state.calls.push({ kind: 'chat', messages });
-      return state.chatHandler ? state.chatHandler(messages) : 'Respuesta clínica prudente del asistente.';
+      return state.chatHandler ? state.chatHandler(messages) : DEFAULT_CHAT_REPLY.respuesta;
     },
     async chatWithUsage(messages) {
       state.calls.push({ kind: 'chat', messages });
-      const content = state.chatHandler ? state.chatHandler(messages) : 'Respuesta clínica prudente del asistente.';
-      return { content, usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 }, model: 'test', provider: 'test' };
+      const content = state.chatHandler ? state.chatHandler(messages) : DEFAULT_CHAT_REPLY.respuesta;
+      return { content, usage, model: 'test', provider: 'test' };
     },
     async chatExpectingJson(messages) {
       state.calls.push({ kind: 'json', messages });
       return JSON.stringify(state.jsonHandler ? state.jsonHandler(messages) : {});
+    },
+    // El chat v3 pide JSON. El manejador de chat puede devolver un objeto (lo
+    // normal) o un string (modelo que ignoró el contrato): el servicio tiene
+    // que sobrevivir a los dos.
+    async chatExpectingJsonWithUsage(messages) {
+      const chat = isChatPrompt(messages);
+      state.calls.push({ kind: chat ? 'chat' : 'json', messages });
+      const reply = chat
+        ? (state.chatHandler ? state.chatHandler(messages) : DEFAULT_CHAT_REPLY)
+        : (state.jsonHandler ? state.jsonHandler(messages) : {});
+      const content = typeof reply === 'string' ? reply : JSON.stringify(reply);
+      return { content, usage, model: 'test', provider: 'test' };
     },
     parseJsonObject(content) {
       return JSON.parse(content);
@@ -112,7 +139,10 @@ async function startServer({ restClient, llm }) {
     llmProvider: llm,
     promptBuilder: new ClinicalAssistantPromptBuilder(),
     validationService: new ClinicalAssistantValidationService(),
-    noteValidationService
+    noteValidationService,
+    // El índice real sobre el corpus commiteado: así se prueba también que
+    // el retrieval y el prompt encajan.
+    guidelineIndex: loadDefaultIndex()
   });
 
   const app = express();
@@ -700,6 +730,250 @@ async function main() {
       assert.ok(prompt.includes('El médico se llama Juan'));
       assert.ok(prompt.includes('únicamente al texto de "explanation"'), 'debe acotar el alcance');
     });
+
+    // -----------------------------------------------------------------------
+    // Chat v3: nota en pantalla, códigos, paciente, guías (RAG), respuesta
+    // estructurada, abstención y propuesta de nota.
+    // -----------------------------------------------------------------------
+    llm.state.chatHandler = null;
+    const draft = {
+      summary: 'Consulta por cefalea de tres días (borrador).',
+      sections: [
+        { key: 'motivo_consulta', label: 'Motivo de consulta', content: 'Cefalea de 3 días de evolución.' },
+        { key: 'enfermedad_actual', label: 'Enfermedad actual', content: 'Dolor intermitente que empeora con pantallas y mejora con reposo, con náuseas leves.' },
+        { key: 'plan', label: 'Plan', content: 'Plan EN PANTALLA: higiene del sueño y control en una semana.' },
+        { key: 'inventada', label: 'Inventada', content: 'Esto no está en la plantilla.' }
+      ]
+    };
+    const conBorrador = await call('POST', '/api/clinical/assistant/chat', {
+      message: '¿Qué le falta a esta nota?',
+      encounter_id: encounter.id,
+      note_json_draft: draft,
+      codes: [
+        { sistema: 'CIE-10', codigo: 'r51', descripcion: 'Cefalea', estado: 'aceptado', id: 'evil-id', name: 'evil-name' },
+        { sistema: 'OTRO', codigo: 'X', descripcion: 'no vale' },
+        { sistema: 'CUPS', codigo: '890205', descripcion: 'Consulta de primera vez por medicina general', estado: 'raro' }
+      ],
+      patient_context: { edad: 34, sexo: 'F', nombre: 'No debe viajar', documento: '123' }
+    });
+    await check('v3: la nota en pantalla manda sobre la persistida y las keys fuera del snapshot se descartan', () => {
+      assert.strictEqual(conBorrador.status, 200, JSON.stringify(conBorrador.body));
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(prompt.includes('Plan EN PANTALLA'), 'el borrador va al prompt');
+      assert.ok(!prompt.includes('pausas de pantalla y control si hay signos de alarma'), 'la nota persistida no viaja cuando hay borrador');
+      assert.ok(prompt.includes('"origen_nota":"borrador"'));
+      assert.ok(!prompt.includes('Esto no está en la plantilla'), 'una key ajena al snapshot no entra');
+      assert.strictEqual(conBorrador.body.used_context.note_draft, true);
+      assert.strictEqual(conBorrador.body.used_context.note_json, true);
+    });
+    await check('v3: códigos y paciente se sanean (whitelist, enums, sin nombre ni documento)', () => {
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(prompt.includes('"codigo":"R51"'), 'el código se normaliza a mayúsculas');
+      assert.ok(prompt.includes('"codigo":"890205"'));
+      assert.ok(!prompt.includes('evil'), 'campos fuera de la whitelist no viajan');
+      assert.ok(!prompt.includes('no vale'), 'un sistema desconocido se descarta');
+      assert.ok(prompt.includes('"paciente":{"edad":34,"sexo":"F"}'), 'edad y sexo viajan');
+      assert.ok(!prompt.includes('No debe viajar') && !prompt.includes('"documento"'), 'nombre y documento nunca');
+      assert.strictEqual(conBorrador.body.used_context.codes, true);
+      assert.strictEqual(conBorrador.body.used_context.patient, true);
+    });
+    await check('v3: la respuesta por defecto trae los campos nuevos y answer sigue siendo string', () => {
+      const body = conBorrador.body;
+      assert.strictEqual(typeof body.answer, 'string');
+      assert.strictEqual(body.answer, 'Respuesta clínica prudente del asistente.');
+      assert.strictEqual(body.support, 'general');
+      assert.deepStrictEqual(body.sources, []);
+      assert.deepStrictEqual(body.missing_information, []);
+      assert.deepStrictEqual(body.alarm_signs, []);
+      assert.deepStrictEqual(body.follow_up_questions, []);
+      assert.strictEqual(body.note_proposal, null);
+      assert.strictEqual(body.mode, 'clinical_chat');
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(prompt.includes('ABSTENCIÓN'), 'la regla de abstención está en el system prompt');
+      assert.ok(prompt.includes('PROPUESTA DE NOTA'));
+      assert.ok(prompt.includes('FORMATO DE SALIDA'));
+    });
+
+    // Guías: la pregunta recupera fragmentos y el modelo los cita.
+    llm.state.chatHandler = () => ({
+      respuesta: 'La meta de presión arterial sistólica es 120–129 mmHg si se tolera [G1]. Verifique función renal.',
+      respaldo: 'guia',
+      fuentes: [{ ref: 'G1' }],
+      faltantes: ['Creatinina reciente'],
+      alertas: ['Cefalea intensa con déficit neurológico'],
+      propuesta_nota: null,
+      seguimientos: ['¿Qué combinación inicial recomienda la guía?', '¿Y en embarazo?', 'tercera', 'cuarta de más']
+    });
+    const conGuia = await call('POST', '/api/clinical/assistant/chat', {
+      message: '¿Cuál es la meta de presión arterial en un paciente hipertenso?'
+    });
+    await check('v3 RAG: los extractos de guías entran al prompt numerados y la cita se resuelve', () => {
+      assert.strictEqual(conGuia.status, 200, JSON.stringify(conGuia.body));
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(prompt.includes('<guias_clinicas>'), 'los extractos viajan delimitados');
+      assert.ok(prompt.includes('[G1] Hipertensión arterial en adultos'), 'numerados y con título');
+      assert.ok(conGuia.body.used_context.guidelines >= 1);
+      assert.strictEqual(conGuia.body.support, 'guia');
+      assert.strictEqual(conGuia.body.sources.length, 1);
+      assert.strictEqual(conGuia.body.sources[0].ref, 'G1');
+      assert.strictEqual(conGuia.body.sources[0].guideline_id, 'hipertension-arterial-adultos');
+      assert.ok(conGuia.body.sources[0].title && conGuia.body.sources[0].year && conGuia.body.sources[0].section);
+      assert.ok(!('text' in conGuia.body.sources[0]), 'la fuente no repite el fragmento');
+      assert.ok(conGuia.body.answer.includes('[G1]'));
+      assert.deepStrictEqual(conGuia.body.missing_information, ['Creatinina reciente']);
+      assert.deepStrictEqual(conGuia.body.alarm_signs, ['Cefalea intensa con déficit neurológico']);
+      assert.strictEqual(conGuia.body.follow_up_questions.length, 3, 'máximo tres seguimientos');
+    });
+
+    // Referencia inventada en una pregunta sin guías: se descarta y se borra.
+    llm.state.chatHandler = () => ({
+      respuesta: 'Según la guía [G9] se recomienda reposo. Nada más [G1].',
+      respaldo: 'guia',
+      fuentes: [{ ref: 'G9' }, 'G1'],
+      faltantes: [],
+      alertas: [],
+      propuesta_nota: null,
+      seguimientos: []
+    });
+    const sinGuias = await call('POST', '/api/clinical/assistant/chat', {
+      message: 'buenos días, ¿cómo va todo?'
+    });
+    await check('v3 RAG: sin guías recuperadas el prompt lo dice y una cita inventada se descarta y se borra del texto', () => {
+      assert.strictEqual(sinGuias.status, 200, JSON.stringify(sinGuias.body));
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(prompt.includes('No se recuperaron guías clínicas'), 'aviso explícito de que no hay guías');
+      assert.ok(!prompt.includes('[G1] '), 'ningún extracto numerado en el mensaje');
+      assert.strictEqual(sinGuias.body.used_context.guidelines, 0);
+      assert.deepStrictEqual(sinGuias.body.sources, []);
+      assert.strictEqual(sinGuias.body.support, 'general', 'guia sin fuentes baja a general');
+      assert.ok(!sinGuias.body.answer.includes('[G9]') && !sinGuias.body.answer.includes('[G1]'), sinGuias.body.answer);
+      assert.strictEqual(sinGuias.body.answer, 'Según la guía se recomienda reposo. Nada más.');
+    });
+
+    // Abstención: respaldo insuficiente nunca sale con faltantes vacíos.
+    llm.state.chatHandler = () => ({
+      respuesta: 'No tengo una cifra confiable para esa dosis en falla hepática avanzada.',
+      respaldo: 'insuficiente',
+      fuentes: [],
+      faltantes: [],
+      alertas: [],
+      propuesta_nota: null,
+      seguimientos: []
+    });
+    const abstencion = await call('POST', '/api/clinical/assistant/chat', {
+      message: 'dosis exacta de un fármaco X en Child-Pugh C'
+    });
+    await check('v3 abstención: respaldo "insuficiente" con al menos un faltante', () => {
+      assert.strictEqual(abstencion.status, 200);
+      assert.strictEqual(abstencion.body.support, 'insuficiente');
+      assert.strictEqual(abstencion.body.missing_information.length, 1);
+      assert.ok(abstencion.body.answer.startsWith('No tengo una cifra'));
+    });
+
+    // Modelo que ignora el contrato y responde texto: la conversación sigue.
+    llm.state.chatHandler = () => 'Texto plano del modelo, sin JSON.';
+    const textoPlano = await call('POST', '/api/clinical/assistant/chat', { message: 'Hola' });
+    await check('v3: una respuesta sin JSON se devuelve como texto, respaldo general, sin propuesta', () => {
+      assert.strictEqual(textoPlano.status, 200);
+      assert.strictEqual(textoPlano.body.answer, 'Texto plano del modelo, sin JSON.');
+      assert.strictEqual(textoPlano.body.support, 'general');
+      assert.strictEqual(textoPlano.body.note_proposal, null);
+      assert.deepStrictEqual(textoPlano.body.sources, []);
+    });
+
+    // Propuesta de nota: solo las secciones devueltas que de verdad cambian,
+    // validadas contra el snapshot, con lo anterior para detectar deriva.
+    llm.state.chatHandler = () => ({
+      respuesta: 'Dejo el plan con el control en ocho días, como indicaste.',
+      respaldo: 'consulta',
+      fuentes: [],
+      faltantes: [],
+      alertas: [],
+      propuesta_nota: {
+        motivo: 'Se añadió el control en ocho días al plan.',
+        secciones: [
+          { key: 'plan', content: 'Higiene del sueño y control en ocho días.' },
+          { key: 'motivo_consulta', content: 'Cefalea de 3 días de evolución.' },
+          { key: 'inventada', content: 'No debe entrar.' }
+        ]
+      },
+      seguimientos: []
+    });
+    const patchesAntes = restClient.patchCalls.length;
+    const propuesta = await call('POST', '/api/clinical/assistant/chat', {
+      message: 'Cambia el plan: control en ocho días',
+      encounter_id: encounter.id,
+      note_json_draft: draft
+    });
+    await check('v3 propuesta: cambia solo lo devuelto que difiere, con previous_content, validado y sin persistir', () => {
+      assert.strictEqual(propuesta.status, 200, JSON.stringify(propuesta.body));
+      const proposal = propuesta.body.note_proposal;
+      assert.ok(proposal, 'hay propuesta');
+      assert.deepStrictEqual(proposal.changed_sections.map((s) => s.key), ['plan'], 'motivo no cambió y la inventada no existe');
+      assert.strictEqual(proposal.changed_sections[0].previous_content, 'Plan EN PANTALLA: higiene del sueño y control en una semana.');
+      assert.strictEqual(proposal.changed_sections[0].content, 'Higiene del sueño y control en ocho días.');
+      assert.strictEqual(proposal.changed_sections[0].label, 'Plan');
+      assert.deepStrictEqual(proposal.proposed_note_json.sections.map((s) => s.key), ['motivo_consulta', 'enfermedad_actual', 'plan'], 'mismas keys y orden del snapshot');
+      assert.strictEqual(proposal.explanation, 'Se añadió el control en ocho días al plan.');
+      assert.strictEqual(proposal.requires_physician_review, true);
+      assert.strictEqual(proposal.summary, null);
+      assert.strictEqual(restClient.patchCalls.length, patchesAntes, 'nunca persiste');
+      assert.strictEqual(propuesta.body.support, 'consulta');
+    });
+
+    // Nota firmada: aunque el modelo proponga, no hay propuesta.
+    const firmada = await call('POST', '/api/clinical/assistant/chat', {
+      message: 'Cambia el plan: control en ocho días',
+      encounter_id: encounter.id,
+      note_json_draft: draft,
+      note_editable: false
+    });
+    await check('v3 propuesta: con note_editable=false no hay propuesta y el prompt lo sabe', () => {
+      assert.strictEqual(firmada.status, 200);
+      assert.strictEqual(firmada.body.note_proposal, null);
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(prompt.includes('"nota_editable":false'));
+    });
+
+    // Sin encounter en Graph (consulta anterior al puente, supervisor): el
+    // borrador define las secciones y la propuesta se valida con un snapshot
+    // sintético.
+    const sinEncounter = await call('POST', '/api/clinical/assistant/chat', {
+      message: 'Cambia el plan: control en ocho días',
+      note_json_draft: { summary: 'x', sections: draft.sections.slice(0, 3) }
+    });
+    await check('v3 propuesta sin encounter: snapshot sintético a partir del borrador', () => {
+      assert.strictEqual(sinEncounter.status, 200, JSON.stringify(sinEncounter.body));
+      assert.strictEqual(sinEncounter.body.used_context.encounter, false);
+      assert.strictEqual(sinEncounter.body.used_context.note_draft, true);
+      const proposal = sinEncounter.body.note_proposal;
+      assert.ok(proposal, 'hay propuesta');
+      assert.deepStrictEqual(proposal.changed_sections.map((s) => s.key), ['plan']);
+      assert.deepStrictEqual(proposal.proposed_note_json.sections.map((s) => s.key), ['motivo_consulta', 'enfermedad_actual', 'plan']);
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(prompt.includes('Modo contextual con nota en pantalla'), 'modo propio para nota sin encounter');
+    });
+
+    // Propuesta idéntica a lo que ya hay: no se ofrece nada.
+    llm.state.chatHandler = () => ({
+      respuesta: 'La nota ya está bien.',
+      respaldo: 'consulta',
+      fuentes: [],
+      faltantes: [],
+      alertas: [],
+      propuesta_nota: { motivo: 'nada', secciones: [{ key: 'plan', content: 'Plan EN PANTALLA: higiene del sueño y control en una semana.' }] },
+      seguimientos: []
+    });
+    const sinCambios = await call('POST', '/api/clinical/assistant/chat', {
+      message: 'Revisa el plan',
+      encounter_id: encounter.id,
+      note_json_draft: draft
+    });
+    await check('v3 propuesta: si el contenido no cambia, note_proposal es null', () => {
+      assert.strictEqual(sinCambios.status, 200);
+      assert.strictEqual(sinCambios.body.note_proposal, null);
+    });
+    llm.state.chatHandler = null;
 
     console.log(`\n[verify-clinical-assistant] ${passed} verificaciones OK`);
   } finally {

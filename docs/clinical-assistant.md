@@ -179,21 +179,94 @@ Envelope estándar del módulo clínico `{ "error": { "code", "message" } }`:
 
 Todo lo que el asistente manda al proveedor —pregunta, historial, transcripción, nota, `screen_context`— pasa por el escudo de privacidad ([privacy-egress-gateway.md](privacy-egress-gateway.md)): los identificadores directos del paciente salen como marcadores y la respuesta vuelve con los datos reales. Las tres respuestas traen `privacy` (modo, conteos, resultado). Un marcador que venga en `history` o `message` desde el cliente es texto opaco: nunca se convierte en el dato de nadie. La validación de evidencia literal de las sugerencias sigue funcionando porque cada marcador restaura la forma exacta que tapó.
 
+## Chat v3 (2026-10-01): contexto completo, guías con RAG, abstención y propuesta de nota
+
+El chat pasó de texto libre a una respuesta **estructurada** (`clinical-assistant-chat@3`). Lo que
+cambia, de afuera hacia adentro:
+
+### Campos nuevos del payload (todos opcionales)
+
+| Campo | Qué es | Saneado en `ClinicalAssistantContextBuilder` |
+|---|---|---|
+| `note_json_draft` | la nota **tal como está en pantalla** (`{summary?, sections:[{key,label,content}]}`); manda sobre la persistida | 40 secciones, 8 000 chars c/u, 40 000 en total; con encounter, solo keys del `template_snapshot` |
+| `codes` | `[{sistema:'CIE-10'|'CUPS', codigo, descripcion, estado:'sugerido'|'aceptado'}]` | 20 códigos, descripción ≤ 160; campos fuera de la whitelist se descartan |
+| `patient_context` | `{edad?, sexo?:'F'|'M'}` — nunca nombre ni documento | enteros 0–120, enum |
+| `note_editable` | `false` cuando la nota está firmada | el servicio anula cualquier propuesta aunque el modelo la devuelva |
+
+Modos: con `encounter_id` (contextual: transcripción + nota); sin encounter pero con `note_json_draft`
+(contextual con nota en pantalla, sin transcripción: consulta anterior al puente o supervisor); sin nada (general).
+
+### Retrieval de guías clínicas (RAG léxico, sin proveedor externo)
+
+- Corpus: `knowledge/guias-clinicas/*.md` (una guía por archivo, cada `##` es un fragmento citable, metadatos
+  en la cabecera: `id`, `titulo`, `organismo`, `anio`, `fuente`, `especialidades`, `cie10`, `palabras_clave`,
+  `fecha_revision`, `revisado_por`). `npm run build:corpus` lo compila a `guidelines.corpus.json`, que **se commitea**
+  (en runtime se carga con `require`; nada de disco en Vercel). Cómo redactar una guía: `knowledge/guias-clinicas/README.md`.
+- Índice: `src/application/knowledge/ClinicalGuidelineIndex.js` — BM25 en memoria con normalización en español,
+  sinónimos (`sinonimos.json`: `hta` → `hipertension`, `curb65` → `curb 65 neumonia`…), peso extra a título y palabras
+  clave, boost por especialidad activa (×1.15) y por código CIE-10 de la consulta (×1.3). La consulta de búsqueda es la
+  pregunta del médico más el diagnóstico de la nota y las descripciones de los códigos.
+- Devuelve **vacío a propósito** cuando la pregunta no aporta términos propios («hola», «resume la consulta»): entonces
+  el mensaje al modelo dice «No se recuperaron guías clínicas: no cites ninguna». Máximo 6 fragmentos, 3 por guía,
+  ≈ 9 000 caracteres, numerados `[G1]…[Gn]` dentro de `<guias_clinicas>`.
+- Apagado de emergencia: `MIRACLE_ASSISTANT_RAG_DISABLED=1`. Tope: `MIRACLE_ASSISTANT_RAG_TOP_K` (default 6).
+- Privacidad: los fragmentos pasan por el escudo como cualquier texto; `verify-guideline-corpus.js` exige que ninguno
+  produzca marcadores (una cifra de dosis nunca debe salir tapada como si fuera un documento).
+
+### Respuesta
+
+```json
+{
+  "answer": "texto plano; cita [G1] cuando usa una guía",
+  "support": "consulta | guia | general | insuficiente",
+  "sources": [{ "ref": "G1", "guideline_id": "hipertension-arterial-adultos", "title": "…", "organism": "…", "year": 2024, "section": "…", "source": "…" }],
+  "missing_information": ["…"], "alarm_signs": ["…"], "follow_up_questions": ["hasta 3"],
+  "note_proposal": { "proposed_note_json": {…}, "changed_sections": [{ "key", "label", "content", "previous_content" }], "summary": null, "explanation": "…", "requires_physician_review": true } | null,
+  "used_context": { "encounter", "transcript", "note_json", "note_draft", "codes", "patient", "guidelines": 3, "screen_context", "doctor" },
+  "mode": "clinical_chat", "specialty", "privacy", "safety_notice", "suggested_actions": [], "usage"
+}
+```
+
+Lo que el prompt promete, `ClinicalAssistantResponseParser` lo comprueba: una referencia que no esté en lo recuperado
+se descarta de `sources` **y se borra del texto**; `respaldo: "guia"` sin fuente resuelta baja a `general`;
+`insuficiente` nunca llega con `missing_information` vacío. Si el modelo responde texto en vez de JSON, el texto es
+`answer` con `support: "general"` y sin propuesta: la conversación no se rompe. `answer` sigue siendo un string, así que
+`/api/v1/assistant/chat` y Provider Studio no cambian.
+
+### Propuesta de nota desde el chat
+
+Solo cuando el médico pide cambiar la nota, el modelo devuelve `propuesta_nota` con las secciones que cambian. El
+servicio toma como base la nota en pantalla (o la persistida), hace `mergeWithOriginalNote`, valida con
+`ClinicalNoteValidationService.validateAndRepair` contra el `template_snapshot` (o uno sintético cuando no hay
+encounter) usando la transcripción **más el mensaje del médico** como texto de evidencia (lo que el médico escribe en
+el chat es fuente legítima), y devuelve en `changed_sections` solo las secciones devueltas cuyo contenido difiere de la
+base, con `previous_content` para que la web detecte si el médico editó entre la propuesta y el clic. **Nunca persiste.**
+`proposed_note_json` no trae `discharge`: la web aplica `changed_sections` por clave sobre la nota actual.
+
+### Telemetría
+
+Cada llamada del chat registra en el ledger `promptVersion` (`clinical-assistant-chat@3…`), `guidelineHits` (cuántos
+fragmentos entraron) y `noteSource` (`draft` | `persisted` | `none`). Conteos y etiquetas, nunca texto.
+
 ## Seguridad y límites (resumen)
 
-El system prompt de chat (`ClinicalAssistantPromptBuilder.buildChatSystemPrompt`) se estructura en tres bloques: REGLAS INVIOLABLES (límite de rol frente a datos delimitados, no diagnóstico definitivo, no órdenes finales, no inventar datos, señalar incertidumbre y red flags), ESPECIALIDAD ACTIVA (solo la regla de la familia que aplica, no las siete) y ESTILO. Diferenciales y ajuste componen prompts propios y más cortos con las mismas cláusulas compartidas (`src/application/prompts/PromptClauses.js`). Transcripción, nota y pantalla viajan delimitadas (`<transcripcion>`, `<nota>`, `<pantalla>`) y el prompt declara que son datos, no instrucciones. La validación de salida refuerza lo verificable (evidencia literal, detección de lenguaje definitivo, estructura de nota). Sin PHI en logs (solo ids y conteos). `safety_notice` viaja en TODAS las respuestas. Temperaturas fijas: chat 0.4, diferenciales 0.2, ajuste 0.2. Cada llamada registra `promptVersion` en telemetría.
+El system prompt de chat (`ClinicalAssistantPromptBuilder.buildChatSystemPrompt`) se estructura en bloques: REGLAS INVIOLABLES (límite de rol frente a datos delimitados, no diagnóstico definitivo, no órdenes finales, no inventar datos, señalar incertidumbre y red flags), ESPECIALIDAD ACTIVA (solo la regla de la familia que aplica, no las siete), RESPALDO Y FUENTES (jerarquía consulta → guías recuperadas → conocimiento general), ABSTENCIÓN («es preferible no responder a responder mal»), DIFERENCIALES, PROPUESTA DE NOTA, ESTILO y FORMATO DE SALIDA (JSON). Diferenciales y ajuste componen prompts propios y más cortos con las mismas cláusulas compartidas (`src/application/prompts/PromptClauses.js`). Transcripción, nota, pantalla y guías viajan delimitadas (`<transcripcion>`, `<nota>`, `<pantalla>`, `<guias_clinicas>`) y el prompt declara que son datos, no instrucciones. La validación de salida refuerza lo verificable (evidencia literal, detección de lenguaje definitivo, estructura de nota, resolución de citas). Sin PHI en logs (solo ids y conteos). `safety_notice` viaja en TODAS las respuestas. Temperaturas fijas: chat 0.3, diferenciales 0.2, ajuste 0.2. Cada llamada registra `promptVersion` en telemetría.
 
 ## Limitaciones actuales
 
-- Las respuestas de chat son texto libre: la no-invención se exige por prompt pero no es verificable automáticamente (por eso el safety notice y la revisión médica).
-- En ajustes de nota, la estructura está garantizada (keys/orden/merge); el contenido textual final requiere revisión (`requires_physician_review`).
+- La no-invención en el texto de `answer` se exige por prompt y no es verificable automáticamente (por eso `support`, el safety notice y la revisión médica). Lo que sí se verifica: las citas a guías y la propuesta de nota.
+- El corpus de guías es un resumen curado (fuente y año en cada una, `revisado_por` vacío hasta que un médico la revise). El asistente lo presenta como orientativo.
+- En ajustes y propuestas de nota, la estructura está garantizada (keys/orden/merge); el contenido textual final requiere revisión (`requires_physician_review`).
 - `confidence` es autoreportada por el modelo (clampeada), no calibrada.
 - `suggested_actions` se devuelve vacío — reservado para acciones futuras del frontend.
-- No hay streaming de respuesta (una llamada, una respuesta).
+- No hay streaming de respuesta (una llamada, una respuesta). Con el prompt v3 completo conviene `MIRACLE_ASSISTANT_LLM_TIMEOUT_MS=50000` para que un modelo lento devuelva un error limpio antes del límite de 60 s de Vercel.
+- El borrador de transcripción (lo dictado y aún no guardado) no viaja: el chat usa la transcripción persistida.
 
 ## Tests
 
 ```bash
-npm run test:clinical-assistant-api   # 15 checks (fake LLM + fake Supabase + rutas reales)
-npm test                              # catálogo (8) + workflow (19) + asistente (15)
+npm run test:guidelines               # corpus al día + retrieval (consultas canónicas, negativos, boosts)
+npm run test:clinical-assistant-api   # ~42 checks (fake LLM + fake Supabase + rutas reales), incluye chat v3
+npm run test:privacy                  # el borrador en pantalla siembra el escudo; las guías salen íntegras
+npm test                              # todo lo anterior y el resto de suites
 ```

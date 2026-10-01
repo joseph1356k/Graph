@@ -1,0 +1,342 @@
+{
+  "hta": [
+    "hipertension"
+  ],
+  "has": [
+    "hipertension"
+  ],
+  "tension alta": [
+    "hipertension"
+  ],
+  "presion alta": [
+    "hipertension"
+  ],
+  "dm2": [
+    "diabetes"
+  ],
+  "dm": [
+    "diabetes"
+  ],
+  "diabetico": [
+    "diabetes"
+  ],
+  "diabetica": [
+    "diabetes"
+  ],
+  "hba1c": [
+    "hemoglobina glicosilada"
+  ],
+  "glicada": [
+    "glicosilada"
+  ],
+  "iam": [
+    "infarto"
+  ],
+  "sca": [
+    "sindrome coronario agudo"
+  ],
+  "angina": [
+    "sindrome coronario agudo"
+  ],
+  "epoc": [
+    "enfermedad pulmonar obstructiva cronica"
+  ],
+  "nac": [
+    "neumonia"
+  ],
+  "itu": [
+    "infeccion urinaria"
+  ],
+  "ivu": [
+    "infeccion urinaria"
+  ],
+  "cistitis": [
+    "infeccion urinaria"
+  ],
+  "pielonefritis": [
+    "infeccion urinaria"
+  ],
+  "eda": [
+    "diarrea"
+  ],
+  "gastroenteritis": [
+    "diarrea"
+  ],
+  "ira": [
+    "infeccion respiratoria aguda"
+  ],
+  "erc": [
+    "enfermedad renal cronica"
+  ],
+  "ic": [
+    "insuficiencia cardiaca"
+  ],
+  "icc": [
+    "insuficiencia cardiaca"
+  ],
+  "falla cardiaca": [
+    "insuficiencia cardiaca"
+  ],
+  "fa": [
+    "fibrilacion auricular"
+  ],
+  "acv": [
+    "ictus",
+    "evento cerebrovascular"
+  ],
+  "ecv": [
+    "ictus",
+    "evento cerebrovascular"
+  ],
+  "stroke": [
+    "ictus"
+  ],
+  "tep": [
+    "tromboembolismo pulmonar"
+  ],
+  "tvp": [
+    "trombosis venosa profunda"
+  ],
+  "oma": [
+    "otitis media aguda"
+  ],
+  "faringitis": [
+    "faringoamigdalitis"
+  ],
+  "amigdalitis": [
+    "faringoamigdalitis"
+  ],
+  "erge": [
+    "reflujo gastroesofagico"
+  ],
+  "reflujo": [
+    "reflujo gastroesofagico"
+  ],
+  "migrana": [
+    "cefalea"
+  ],
+  "jaqueca": [
+    "cefalea",
+    "migrana"
+  ],
+  "lumbago": [
+    "lumbalgia"
+  ],
+  "dolor lumbar": [
+    "lumbalgia"
+  ],
+  "pre eclampsia": [
+    "preeclampsia"
+  ],
+  "embarazada": [
+    "embarazo",
+    "gestante"
+  ],
+  "gestacion": [
+    "embarazo"
+  ],
+  "bebe": [
+    "lactante"
+  ],
+  "nino": [
+    "pediatrico"
+  ],
+  "nina": [
+    "pediatrico"
+  ],
+  "ninos": [
+    "pediatrico"
+  ],
+  "pediatria": [
+    "pediatrico"
+  ],
+  "antibiotico": [
+    "antibioticos"
+  ],
+  "atb": [
+    "antibioticos"
+  ],
+  "amoxi": [
+    "amoxicilina"
+  ],
+  "tmp smx": [
+    "trimetoprim sulfametoxazol"
+  ],
+  "trimetoprim": [
+    "trimetoprim sulfametoxazol"
+  ],
+  "colesterol": [
+    "dislipidemia"
+  ],
+  "trigliceridos": [
+    "dislipidemia"
+  ],
+  "estatina": [
+    "dislipidemia"
+  ],
+  "tiroides": [
+    "hipotiroidismo"
+  ],
+  "tsh": [
+    "hipotiroidismo"
+  ],
+  "hierro": [
+    "anemia ferropenica"
+  ],
+  "ferritina": [
+    "anemia ferropenica"
+  ],
+  "suicida": [
+    "suicidio"
+  ],
+  "ideacion": [
+    "suicidio"
+  ],
+  "sepsis": [
+    "sepsis septico"
+  ],
+  "qsofa": [
+    "sepsis"
+  ],
+  "curb": [
+    "curb 65 neumonia"
+  ],
+  "curb65": [
+    "curb 65 neumonia"
+  ],
+  "cie": [
+    "cie 10 codificacion"
+  ],
+  "cie10": [
+    "cie 10 codificacion"
+  ],
+  "codigo": [
+    "cie 10 codificacion"
+  ],
+  "codigos": [
+    "cie 10 codificacion"
+  ],
+  "codificar": [
+    "cie 10 codificacion"
+  ],
+  "deshidratacion": [
+    "deshidratacion diarrea"
+  ],
+  "fiebre sin foco": [
+    "fiebre lactante"
+  ],
+  "obeso": [
+    "obesidad"
+  ],
+  "fumador": [
+    "tabaquismo"
+  ],
+  "cigarrillo": [
+    "tabaquismo"
+  ],
+  "chikungunya": [
+    "dengue arbovirosis"
+  ],
+  "zika": [
+    "dengue arbovirosis"
+  ],
+  "pa": [
+    "presion arterial"
+  ],
+  "ta": [
+    "presion arterial"
+  ],
+  "hipertenso": [
+    "hipertension"
+  ],
+  "hipertensa": [
+    "hipertension"
+  ],
+  "hipertensos": [
+    "hipertension"
+  ],
+  "hipertensas": [
+    "hipertension"
+  ],
+  "asmatico": [
+    "asma"
+  ],
+  "asmatica": [
+    "asma"
+  ],
+  "anemico": [
+    "anemia ferropenica"
+  ],
+  "anemica": [
+    "anemia ferropenica"
+  ],
+  "deprimido": [
+    "depresion"
+  ],
+  "deprimida": [
+    "depresion"
+  ],
+  "ansioso": [
+    "ansiedad"
+  ],
+  "ansiosa": [
+    "ansiedad"
+  ],
+  "septico": [
+    "sepsis"
+  ],
+  "septica": [
+    "sepsis"
+  ],
+  "choque": [
+    "sepsis septico"
+  ],
+  "febril": [
+    "fiebre"
+  ],
+  "renal cronico": [
+    "enfermedad renal cronica"
+  ],
+  "nefropatia": [
+    "enfermedad renal cronica"
+  ],
+  "tromboembolismo": [
+    "tromboembolia venosa"
+  ],
+  "embolia": [
+    "tromboembolia venosa"
+  ],
+  "trombosis": [
+    "tromboembolia venosa"
+  ],
+  "ictus": [
+    "acv isquemico"
+  ],
+  "trombolisis": [
+    "acv isquemico trombolisis"
+  ],
+  "preeclampsia": [
+    "preeclampsia hipertension embarazo"
+  ],
+  "h pylori": [
+    "helicobacter pylori"
+  ],
+  "pylori": [
+    "helicobacter pylori"
+  ],
+  "gastritis": [
+    "dispepsia"
+  ],
+  "levotiroxina": [
+    "hipotiroidismo"
+  ],
+  "prenatal": [
+    "control prenatal embarazo"
+  ],
+  "tabaco": [
+    "tabaquismo"
+  ],
+  "vapeo": [
+    "tabaquismo"
+  ]
+}

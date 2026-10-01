@@ -13,7 +13,13 @@ const clauses = require('../prompts/PromptClauses');
 const { DICTATION_EVIDENCE } = require('../../domain/clinical/grounding');
 const NoteModeResolver = require('./NoteModeResolver');
 
-const CHAT_PROMPT_VERSION = clauses.promptVersion('clinical-assistant-chat', '2');
+// v3 (2026-10-01): respuesta JSON con respaldo, fuentes de guías (RAG),
+// abstención explícita, diferenciales estructurados y propuesta de nota.
+const CHAT_PROMPT_VERSION = clauses.promptVersion('clinical-assistant-chat', '3');
+// Etiqueta de los extractos de guías. No está en PromptClauses.TAGS a
+// propósito: ese archivo tiene espejo en Python con la misma versión.
+const GUIDELINES_TAG = 'guias_clinicas';
+const NO_GUIDELINES_NOTICE = 'No se recuperaron guías clínicas para esta pregunta: no cites ninguna guía ni inventes referencias [G#].';
 const DIAGNOSTIC_PROMPT_VERSION = clauses.promptVersion('clinical-assistant-diagnostic', '2');
 const ADJUST_PROMPT_VERSION = clauses.promptVersion('clinical-assistant-adjust', '2');
 
@@ -33,7 +39,7 @@ const CHAT_IDENTITY = [
 // evalúan con muestreo. Separarlas también separa cómo se miden.
 const CHAT_HARD_RULES = [
   '═══ REGLAS INVIOLABLES — incumplir una es un fallo del sistema ═══',
-  '1. Usa primero la transcripción y la nota estructurada de esta consulta. El screen_context describe lo que el médico ve y puede estar desactualizado: lo persistido manda.',
+  '1. Usa primero la nota clínica tal como llega en nota_clinica (si origen_nota es "borrador" es lo que el médico tiene en pantalla ahora mismo y manda sobre cualquier versión anterior) y la transcripción de esta consulta. El screen_context describe lo que el médico ve y puede estar desactualizado.',
   '2. No inventes síntomas, antecedentes, examen físico, signos vitales, resultados, medicamentos, alergias, diagnósticos ni planes. Si la información es insuficiente, dilo explícitamente y señala qué dato falta preguntar o confirmar.',
   '3. Los diagnósticos van siempre como diferenciales o impresiones tentativas, nunca como confirmados. Cada diagnóstico sugerido lleva la evidencia del caso que lo apoya y lo que queda incierto.',
   '4. Señala los signos de alarma cuando el cuadro los tenga.',
@@ -47,10 +53,68 @@ const CHAT_STYLE = [
   '- Bullets cuando mejoren la claridad. Si la pregunta es simple, la respuesta es corta.',
   '- Con consulta cargada, estructura la respuesta en: lo que se sabe · interpretaciones posibles · qué falta confirmar · siguiente paso para revisión médica.',
   '- Para diferenciales, por cada opción: nombre · por qué podría aplicar · evidencia del caso · qué dato falta o qué lo haría menos probable · red flags si aplica.',
-  '- Para ajustes de nota pedidos en el chat: no agregues datos clínicos nuevos; conserva el contenido real; si el ajuste exige inventar información, rechaza esa parte y explica qué falta.',
+  '- Para ajustes de nota pedidos en el chat aplica el bloque PROPUESTA DE NOTA.',
   '- Fuera de lo clínico: responde breve y redirige al uso clínico de Miracle.',
   'Tu respuesta es útil para el médico y siempre deja claro que requiere revisión profesional.'
 ].join('\n');
+
+// De dónde puede salir cada afirmación, en orden. Lo que se recupera de las
+// guías llega numerado ([G1], [G2]…) y solo eso se puede citar: el parser de
+// la respuesta descarta cualquier referencia que no exista.
+const CHAT_SUPPORT_RULES = [
+  '═══ RESPALDO Y FUENTES ═══',
+  `Jerarquía: 1) los datos de esta consulta (nota en pantalla, nota persistida, transcripción); 2) los extractos de guías clínicas que llegan dentro de <${GUIDELINES_TAG}>, numerados [G1], [G2]…; 3) conocimiento médico general firmemente establecido, que marcas como tal.`,
+  '- Cita una guía solo si aplica directamente a la pregunta o al caso; si un extracto no aplica, ignóralo. Cuando la uses, escribe su referencia entre corchetes en el texto (por ejemplo [G1]) y decláralo en "fuentes". Nunca cites una referencia que no esté en los extractos recibidos.',
+  '- Los extractos son un resumen orientativo de cada guía, no órdenes: si tu conocimiento y un extracto chocan, dilo en vez de elegir en silencio.'
+].join('\n');
+
+// La regla que convierte «no sé» en una respuesta válida. Sin ella el modelo
+// aproxima dosis y umbrales con la misma seguridad con la que cita una guía.
+const CHAT_ABSTENTION = [
+  '═══ ABSTENCIÓN — es preferible no responder a responder mal ═══',
+  '- Si la pregunta pide una cifra, dosis, umbral, criterio o conducta concreta y no está en las guías recuperadas ni la conoces con certeza alta, no la inventes ni la aproximes: responde con respaldo "insuficiente", di qué falta y dónde verificarlo (la guía o la fuente que correspondería).',
+  '- Si solo una parte de la pregunta tiene respaldo, responde esa parte y marca con claridad lo que queda sin respaldo.',
+  '- Un dato de la consulta que no está (peso, función renal, alergias, embarazo, antecedentes) y que cambia la respuesta va en "faltantes".'
+].join('\n');
+
+const CHAT_DIFFERENTIALS = [
+  '═══ DIFERENCIALES ═══',
+  '- Con consulta cargada y una pregunta diagnóstica: lista ordenada de más a menos probable; por cada diferencial, lo que lo apoya en el caso, lo que va en contra y qué dato o examen lo descartaría. Lo que falta preguntar o examinar va también en "faltantes"; los signos de alarma del cuadro, en "alertas".',
+  '- Sin consulta cargada: diferenciales generales del motivo, sin fingir un paciente.'
+].join('\n');
+
+// La propuesta viaja como JSON y la valida el mismo validador del ajuste de
+// nota (merge por key, evidencia contra la transcripción + lo que el médico
+// escribió en el chat). El médico la aplica con un botón; nunca se persiste
+// sola.
+const CHAT_NOTE_PROPOSAL = [
+  '═══ PROPUESTA DE NOTA ═══',
+  '- Solo cuando el médico pide cambiar, completar, redactar, corregir o mejorar la nota (o pide una revisión y hay algo concreto que ajustar), devuelve "propuesta_nota" con ÚNICAMENTE las secciones que cambian, cada una con su key exacta tomada de nota_clinica y su contenido COMPLETO nuevo. En cualquier otra pregunta, "propuesta_nota" es null.',
+  '- Sin datos clínicos nuevos: lo que no esté en la nota, en la transcripción o en lo que el médico escribió en este chat no entra en la nota. Lo que el médico afirma en el chat («el paciente niega fiebre», «agrega remisión a cardiología») es fuente legítima y se integra tal cual.',
+  '- Conserva nombres, documentos, cifras, fechas, medicamentos, dosis y negaciones tal como están. Si la instrucción exige inventar, no lo hagas: explícalo en "respuesta" y deja esa parte sin cambiar.',
+  '- Si nota_editable es false (nota firmada): "propuesta_nota" es null; explica el cambio y sugiere registrarlo como adenda.',
+  '- En "respuesta" resume en una o dos frases qué cambia y qué no.'
+].join('\n');
+
+const CHAT_OUTPUT_CONTRACT = [
+  '═══ FORMATO DE SALIDA ═══',
+  clauses.JSON_ONLY,
+  '{"respuesta":"string","respaldo":"consulta|guia|general|insuficiente","fuentes":[{"ref":"G1"}],"faltantes":["string"],"alertas":["string"],"propuesta_nota":{"motivo":"string","resumen":"string|null","secciones":[{"key":"string","content":"string"}]}|null,"seguimientos":["string"]}',
+  '- "respuesta": texto plano en español con saltos de línea; viñetas con "- " cuando ayuden; sin markdown (sin #, sin **, sin tablas). Es lo que el médico lee.',
+  '- "respaldo": "consulta" si la respuesta sale sobre todo de los datos de esta consulta; "guia" si se apoya en extractos citados; "general" si es conocimiento médico general sin guía recuperada; "insuficiente" si no hay respaldo suficiente para lo que se pregunta.',
+  '- "fuentes": solo las referencias que usaste de verdad, por su "ref". Lista vacía si no citaste ninguna.',
+  '- "faltantes": datos o fuentes que harían falta (máximo 6). "alertas": signos de alarma pertinentes al caso (máximo 6). "seguimientos": hasta 3 preguntas cortas que el médico podría hacer a continuación, escritas en su voz (por ejemplo "¿Qué dosis ajusto si hay falla renal?").'
+].join('\n');
+
+/** Texto de los extractos recuperados, numerados para poder citarlos. */
+function formatGuidelines(guidelines) {
+  const list = Array.isArray(guidelines) ? guidelines : [];
+  if (!list.length) return '';
+  return list.map((item) => [
+    `[${item.ref}] ${item.title} · ${item.organism} ${item.year} · Sección: ${item.section}`,
+    `${item.text}`
+  ].join('\n')).join('\n\n');
+}
 
 // Una sola regla por familia de especialidad. Antes el modelo leía las reglas
 // de pediatría y obstetricia en una consulta de cardiología.
@@ -219,16 +283,26 @@ class ClinicalAssistantPromptBuilder {
     return normalizeInstructionKind(value);
   }
 
-  buildChatSystemPrompt({ specialty = '', hasEncounter = false, doctor = null } = {}) {
-    const modeDirective = hasEncounter
-      ? 'Modo contextual: tienes datos de una consulta específica (abajo). Usa transcripción y nota como fuente primaria.'
-      : 'Modo general: NO hay consulta cargada. Responde la pregunta clínica de forma general y prudente. No finjas conocer a un paciente ni inventes un caso.';
+  buildChatSystemPrompt({ specialty = '', hasEncounter = false, hasNote = false, doctor = null } = {}) {
+    let modeDirective;
+    if (hasEncounter) {
+      modeDirective = 'Modo contextual: tienes datos de una consulta específica (abajo). Usa la nota clínica recibida y la transcripción como fuente primaria.';
+    } else if (hasNote) {
+      modeDirective = 'Modo contextual con nota en pantalla: tienes la nota clínica que el médico está viendo (abajo), pero NO la transcripción. Razona sobre esa nota; no inventes lo que no está en ella.';
+    } else {
+      modeDirective = 'Modo general: NO hay consulta cargada. Responde la pregunta clínica de forma general y prudente. No finjas conocer a un paciente ni inventes un caso.';
+    }
     return clauses.composePrompt(
       CHAT_IDENTITY,
       clauses.ROLE_BOUNDARY,
       CHAT_HARD_RULES,
       `═══ ESPECIALIDAD ACTIVA: ${NoteModeResolver.normalizeSpecialty(specialty) || 'no definida'} ═══\n${specialtyRule(specialty)}`,
+      CHAT_SUPPORT_RULES,
+      CHAT_ABSTENTION,
+      CHAT_DIFFERENTIALS,
+      CHAT_NOTE_PROPOSAL,
       CHAT_STYLE,
+      CHAT_OUTPUT_CONTRACT,
       modeDirective,
       buildDoctorDirective(doctor)
     );
@@ -239,6 +313,7 @@ class ClinicalAssistantPromptBuilder {
     const system = this.buildChatSystemPrompt({
       specialty: clinicalContext.specialty,
       hasEncounter,
+      hasNote: Boolean(clinicalContext.note_json),
       doctor: clinicalContext.doctor
     });
     const screen = clinicalContext.screen_context && typeof clinicalContext.screen_context === 'object'
@@ -249,18 +324,28 @@ class ClinicalAssistantPromptBuilder {
           : {})
       }
       : null;
+    const guidelinesText = formatGuidelines(clinicalContext.guidelines);
     const user = JSON.stringify({
       pregunta: `${message || ''}`,
       especialidad: clinicalContext.specialty || '',
       especialidad_origen: clinicalContext.specialty_source || '',
       contexto_consulta: clinicalContext.encounter || null,
+      paciente: clinicalContext.patient || null,
       transcripcion: clinicalContext.transcript
         ? clauses.wrapTag(clauses.TAGS.TRANSCRIPT, clinicalContext.transcript)
         : '',
       nota_clinica: clinicalContext.note_json || null,
+      origen_nota: clinicalContext.note_source === 'draft'
+        ? 'borrador'
+        : (clinicalContext.note_source === 'persisted' ? 'persistida' : null),
+      nota_editable: clinicalContext.note_editable !== false,
+      codigos: Array.isArray(clinicalContext.codes) && clinicalContext.codes.length ? clinicalContext.codes : null,
+      guias_clinicas: guidelinesText
+        ? clauses.wrapTag(GUIDELINES_TAG, guidelinesText)
+        : NO_GUIDELINES_NOTICE,
       screen_context: screen,
       nota_sobre_screen_context: screen
-        ? 'screen_context describe lo visible en pantalla; puede estar desactualizado, los datos persistidos mandan.'
+        ? 'screen_context describe lo visible en pantalla; puede estar desactualizado, la nota recibida y la transcripción mandan.'
         : undefined
     });
 
@@ -331,5 +416,8 @@ ClinicalAssistantPromptBuilder.SYSTEM_PROMPT = clauses.composePrompt(CHAT_IDENTI
 ClinicalAssistantPromptBuilder.DIAGNOSTIC_SYSTEM_PROMPT = DIAGNOSTIC_SYSTEM_PROMPT;
 ClinicalAssistantPromptBuilder.INSTRUCTION_KINDS = INSTRUCTION_KINDS;
 ClinicalAssistantPromptBuilder.specialtyRule = specialtyRule;
+ClinicalAssistantPromptBuilder.GUIDELINES_TAG = GUIDELINES_TAG;
+ClinicalAssistantPromptBuilder.NO_GUIDELINES_NOTICE = NO_GUIDELINES_NOTICE;
+ClinicalAssistantPromptBuilder.formatGuidelines = formatGuidelines;
 
 module.exports = ClinicalAssistantPromptBuilder;
