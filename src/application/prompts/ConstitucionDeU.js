@@ -1,12 +1,15 @@
 // La constitución de Ü: quién es, cómo habla, qué hace cuando le piden algo y
 // cómo trata a un médico o a una persona que lo usa en su día a día.
 //
-// Vive en DOS copias porque la leen dos programas que no comparten código:
+// Vive en TRES copias porque la leen tres programas que no comparten código:
 //   apps/windows/windows-client/src/Voice/ConstitucionDeU.cs   (la voz de Ü en Windows)
 //   services/graph/src/application/prompts/ConstitucionDeU.js  (el cerebro de Ü en Graph)
-// tools/monorepo/constitucion.sh compara los cuatro textos línea a línea (sin
-// mirar la sangría ni las líneas en blanco) y el CI de la raíz falla si difieren.
-// Edita las dos copias a la vez.
+//   apps/android/core/src/commonMain/kotlin/graph/core/domain/ConstitucionDeU.kt
+//                                                              (el cerebro local de Android)
+// tools/monorepo/constitucion.sh compara los cuatro textos de las otras dos con
+// los de esta tal como los ve cada programa (C# sin la sangría de su cierre,
+// Kotlin tras trimIndent), con la sangría de las viñetas incluida, y el CI de
+// la raíz falla si difieren. Edita las tres copias a la vez.
 //
 // Reglas de esta copia, para que el script la pueda leer:
 //   - cada texto va en un template literal SIN interpolar (nada de ${…}) y sin

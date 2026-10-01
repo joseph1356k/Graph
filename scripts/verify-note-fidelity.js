@@ -363,8 +363,8 @@ function main() {
     templateSnapshot: snapshot({ specialty: 'medicina_general', sections: GENERAL_SECTIONS })
   }));
 
-  check('@9: la versión sube a clinical-note@9', () => {
-    assert.ok(ClinicalNotePromptBuilder.PROMPT_VERSION.startsWith('clinical-note@9+clauses@'), ClinicalNotePromptBuilder.PROMPT_VERSION);
+  check('@10: la versión sube a clinical-note@10 (@9 trajo los warnings de usted; @10, una sola frase para lo que no se dijo)', () => {
+    assert.ok(ClinicalNotePromptBuilder.PROMPT_VERSION.startsWith('clinical-note@10+clauses@'), ClinicalNotePromptBuilder.PROMPT_VERSION);
   });
 
   check('@9: los warnings se le escriben al médico de usted («¿Confirmas…?» se copiaba y tuteaba)', () => {
@@ -452,6 +452,20 @@ function main() {
       assert.ok(!limite.includes('MEDIDAS DICTADAS, y no lleva warning'), `${specialty}: el «no lleva warning» a secas callaba la unidad que no se dictó`);
       assert.strictEqual(system.split('escribe en el plan').length, 2, `${specialty}: la regla del dictado vive en un solo sitio`);
     }
+  });
+
+  check('una sola frase para lo que no se dijo: la «No referido en la consulta.» de las plantillas de la web llega como «No mencionado en la consulta.»', () => {
+    const builder = new ClinicalNotePromptBuilder();
+    const user = builder.buildUser({ name: 'Consulta', specialty: '' }, { noteMode: 'interpretive', templateMode: 'interpretive', sections: [] },
+      [{ key: 'identificacion_del_paciente', label: 'Identificación', instruction: 'Si un dato no se dijo, escribe «No referido en la consulta.» en esa línea.' }], 'buenos días');
+    assert.ok(!user.includes('No referido'), 'el modelo no ve la segunda frase');
+    assert.ok(user.includes('escribe «No mencionado en la consulta.» en esa línea'), user.slice(0, 400));
+  });
+
+  check('un hallazgo se escribe como se dijo: un signo negativo no se cambia por el nombre de una enfermedad', () => {
+    const { identifierFidelity } = require('../src/application/prompts/PromptClauses');
+    const text = identifierFidelity();
+    assert.ok(text.includes('"sin signos de irritación peritoneal" no se vuelve "sin peritonitis"'));
   });
 
   console.log(`\n✅ Fidelidad y modos de la nota: ${checks} comprobaciones OK.`);

@@ -34,7 +34,16 @@ const speakerLabels = require('../../domain/clinical/speakerLabels');
 //    localización; la fuente de lo que solo dice el paciente llega al summary y
 //    a los warnings; lo que no se dijo no se escribe en la prosa (ni la edad ni
 //    el sexo); el análisis resume la conducta sin que eso choque con el summary.
-const PROMPT_VERSION = clauses.promptVersion('clinical-note', '9');
+const PROMPT_VERSION = clauses.promptVersion('clinical-note', '10');
+
+// UNA SOLA FRASE PARA LO QUE NO SE DIJO. Las plantillas de identificación de la web
+// (apps/web, sembradas por migración) piden «No referido en la consulta.», y la
+// nota pide «No mencionado en la consulta.». El modelo pequeño copiaba la de la
+// plantilla. La web lee las dos (patient-identity.ts las toma por el «No»), así que
+// aquí se traduce la de la plantilla antes de mandarla: el modelo ve una sola.
+function withOneMissingPhrase(instruction) {
+  return `${instruction || ''}`.replace(/No referido en la consulta\.?/g, clauses.MISSING_PHRASE);
+}
 // Vocabulario de la columna user_preferences.note_detail en producción
 // (concisa | estandar | detallada). 'estandar' no emite nada.
 const NOTE_DETAILS = Object.freeze(['concisa', 'estandar', 'detallada']);
@@ -340,7 +349,7 @@ class ClinicalNotePromptBuilder {
         order: section.order || index + 1,
         required: Boolean(section.required),
         mode: modes.sections.find((item) => item.key === section.key)?.mode || modes.templateMode,
-        instruction: `${section.instruction || ''}`
+        instruction: withOneMissingPhrase(section.instruction)
       }))
     };
     return [

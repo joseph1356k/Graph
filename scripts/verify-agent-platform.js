@@ -430,6 +430,22 @@ async function main() {
     assert.strictEqual(resolver.resolveApp(req, 'api_key'), 'mac_app');
   });
 
+  await check('el texto de un turno que no terminó no le llega al cliente: «Mandé el correo» junto a la llamada que abre el borrador no es la respuesta final', () => {
+    const body = {
+      id: 'r1',
+      output: [
+        { type: 'message', content: [{ type: 'output_text', text: 'Mandé el correo a Ana.' }] },
+        { type: 'function_call', call_id: 'f1', name: 'send_email', arguments: JSON.stringify({ to: 'ana@x.co', body: 'Llego tarde' }) }
+      ]
+    };
+    const conLlamada = parseTurn(JSON.parse(JSON.stringify(body)), { pending: [] }, {}, new Set(['send_email']), [], null, 'windows').turn;
+    assert.strictEqual(conLlamada.done, false);
+    assert.strictEqual(conLlamada.text, '', 'un turno con llamadas no lleva texto final');
+    const final = parseTurn({ id: 'r2', output: [body.output[0]] }, { pending: [] }, {}, new Set(['send_email']), [], null, 'windows').turn;
+    assert.strictEqual(final.done, true);
+    assert.strictEqual(final.text, 'Mandé el correo a Ana.', 'el turno que termina sí lleva su texto');
+  });
+
   await check('(h) OpenAI en Mac: type sin punto sale sin x ni y, ["CMD","L"] sale cmd+l, el doble clic y el clic derecho se conservan; en Windows y Android, lo de siempre', () => {
     const body = {
       id: 'resp_mac',

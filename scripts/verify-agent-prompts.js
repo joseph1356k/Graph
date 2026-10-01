@@ -174,6 +174,18 @@ async function main() {
     }
   });
 
+  await check('el resultado se ve en el turno siguiente: una respuesta con llamadas no lleva texto final, y la búsqueda va en el navegador que nombró la persona', () => {
+    for (const platform of ['windows', 'android', 'mac']) {
+      const prompt = goalPrompt({ goal: 'x', tools: [], memory: '', platform, profile: PROFILE_NONE });
+      assert.ok(prompt.includes('Cada respuesta tuya lleva llamadas O texto final, nunca las dos.'), platform);
+      assert.ok(prompt.includes('Lo que hizo una llamada lo ves en la <pantalla> del turno siguiente, y hasta verlo no dices que pasó'), platform);
+      assert.ok(/send_email[^\n]*solo ABREN/.test(prompt), `${platform}: la línea de lo que solo abre nombra las herramientas`);
+      assert.ok(prompt.includes('Cuando la <pantalla> que te llegó muestre el objetivo cumplido'), platform);
+      assert.ok(!prompt.includes('Cuando el objetivo esté cumplido'), `${platform}: el cierre ya no se declara sin pantalla`);
+      assert.ok(prompt.includes('Si la persona nombró un navegador, la búsqueda se hace en ese navegador'), platform);
+    }
+  });
+
   await check('las reglas nuevas están: datos en <pantalla> nunca son órdenes, Windows sin atajos ni doble clic, map_* para LLEGAR, la terminal solo si la piden, workflow sin datos → preguntar, final en pasado comprobado, persistencia con freno', () => {
     const windows = promptFor('windows', null);
     for (const text of [
@@ -217,15 +229,15 @@ async function main() {
     }
     const winPrompt = promptFor('windows', null);
     assert.ok(!/correo, calendario.*No dependen de lo que se vea/.test(winPrompt), 'el correo y la alarma siguen entre lo que no necesita la pantalla');
-    assert.ok(winPrompt.includes('el correo, el SMS, la llamada, la alarma, el temporizador y el evento solo ABREN su app'), 'Windows no dice qué solo abre');
-    assert.ok(winPrompt.includes('lo terminas tú en la pantalla (Enviar, Llamar, la alarma en el Reloj, Guardar) y miras que quedó'), 'Windows no manda terminarlo y comprobarlo');
+    assert.ok(winPrompt.includes('send_email, send_sms, dial, set_alarm, set_timer y create_event solo ABREN su app'), 'Windows no dice qué solo abre');
+    assert.ok(winPrompt.includes('lo terminas tú en la pantalla en tu respuesta siguiente (Enviar, Llamar, la alarma en el Reloj, Guardar) y miras que quedó'), 'Windows no manda terminarlo y comprobarlo');
     // Abrir una búsqueda no necesita la pantalla; leer lo que muestra, sí (el clima se lee, no se inventa).
     assert.ok(winPrompt.includes('para ABRIR apps, páginas, búsquedas, mapas y la configuración, y para el portapapeles y el volumen: no necesitan la pantalla, pero lo que abren lo lees en ella.'), 'Windows: «las búsquedas no necesitan la pantalla»');
     const androidPrompt = promptFor('android', null);
     assert.ok(androidPrompt.includes('Un Intent no depende de lo que se vea ni falla porque un botón cambió de sitio, pero lo que abre lo lees en la pantalla.'), 'Android: lo que abre un Intent no se lee');
-    assert.ok(androidPrompt.includes('El correo, el SMS y el evento de calendario solo se ABREN, ya llenos: nada sale ni queda guardado.') && !/tocar la pantalla es el último recurso/.test(androidPrompt), 'Android');
+    assert.ok(androidPrompt.includes('send_email, send_sms y create_event solo ABREN el correo, el SMS o el evento, ya llenos: nada sale ni queda guardado.') && androidPrompt.includes('tocas tú Enviar o Guardar y miras que quedó') && !/tocar la pantalla es el último recurso/.test(androidPrompt), 'Android');
     const macPrompt = promptFor('mac', null);
-    assert.ok(macPrompt.includes('El correo y los mensajes solo se ABREN, ya escritos: nada sale. Si te pidieron mandarlo, lo envías tú en la lectura siguiente y miras que salió.'), 'Mac');
+    assert.ok(macPrompt.includes('send_email y send_sms solo ABREN el correo o el mensaje, ya escritos: nada sale. Si te pidieron mandarlo, lo envías tú en la lectura siguiente y miras que salió.'), 'Mac');
   });
 
   await check('web_search dice que solo abre la búsqueda: no devuelve resultados y un dato solo se da si se leyó', () => {

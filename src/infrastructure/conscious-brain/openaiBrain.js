@@ -386,7 +386,10 @@ function parseTurn(body, s, state, mcpNames, apps, scale = null, platform = PLAT
     actions,
     question,
     done: pending.length === 0,
-    text,
+    // El texto es la respuesta final y solo vale en el turno que termina: un «Mandé el correo»
+    // escrito junto a la llamada que apenas abre el borrador no le llega al cliente, que lo
+    // guardaba como resumen y lo podía decir al final aunque nunca se comprobara.
+    text: pending.length === 0 ? text : '',
     needsScreenshot,
     narration: intents.find((intent) => intent) ?? '',
     speech,

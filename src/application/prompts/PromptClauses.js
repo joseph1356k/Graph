@@ -22,7 +22,7 @@
 // Lo que Ü es y cómo obedece NO vive aquí: está en ConstitucionDeU.js, que se
 // comparte palabra por palabra con la voz de Windows.
 
-const CLAUSES_VERSION = '2026-10-01.2';
+const CLAUSES_VERSION = '2026-10-01.3';
 
 // La ÚNICA frase para «no hay información». La usan el prompt de la nota, el
 // validador y las instrucciones por defecto de las plantillas: antes había
@@ -95,6 +95,7 @@ function identifierFidelity({
     '- Nunca normalices, traduzcas, "corrijas", completes ni aproximes un nombre propio o un número. Si se dijo "José David", se escribe "José David"; no se cambia por otro nombre parecido.',
     ...exceptions,
     '- Las negaciones se conservan: "niega fiebre" nunca se convierte en "fiebre", y "no toma medicamentos" nunca se resume omitiendo la negación.',
+    '- Un hallazgo se escribe como se dijo, también el negativo: "sin signos de irritación peritoneal" no se vuelve "sin peritonitis"; un signo no se cambia por el nombre de una enfermedad.',
     `- Si un nombre o un número llegó dudoso o incompleto, NO lo escribas a medias: ${onDoubt}`
   ].join('\n');
 }

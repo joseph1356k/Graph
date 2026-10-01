@@ -11,7 +11,7 @@ side, bump the version on both.
 """
 from __future__ import annotations
 
-CLAUSES_VERSION = "2026-10-01.2"
+CLAUSES_VERSION = "2026-10-01.3"
 
 ROLE_BOUNDARY_EN = "\n".join(
     [
