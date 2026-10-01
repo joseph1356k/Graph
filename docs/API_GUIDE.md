@@ -59,8 +59,8 @@ la plantilla:
 La respuesta trae `note.engine: "canonical-note"`, `note.note_json` (con
 `grounding` y evidencia verificada contra el transcript) y `note.content` en
 Markdown. Sin `template`, `note.engine` es `voice-scratchpad`: un bloque
-provisional, no la nota final. `POST /api/medical/notes/organized` queda
-deprecada a favor de esta ruta.
+provisional, no la nota final. `POST /api/medical/notes/organized`, que estaba
+deprecada a favor de esta ruta, se borró el 2026-10-01.
 
 Para usar autofill dentro del pipeline, envia `fields` y activa
 `"autofill": true`.

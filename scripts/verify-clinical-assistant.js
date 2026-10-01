@@ -1,5 +1,5 @@
 // Verifica el Asistente Clínico contextual: chat (modos general/contextual),
-// sugerencias diagnósticas por encounter y ajuste de nota. Corre contra un
+// sugerencias diagnósticas (el motor y su entrada de texto) y ajuste de nota. Corre contra un
 // Supabase fake en memoria y un LLM fake, levantando las rutas reales.
 //   node scripts/verify-clinical-assistant.js
 const assert = require('assert');
@@ -138,7 +138,7 @@ async function startServer({ restClient, llm }) {
     const text = await response.text();
     return { status: response.status, body: text ? JSON.parse(text) : null };
   }
-  return { server, call };
+  return { server, call, assistantService };
 }
 
 function seedEncounter(restClient, { withTranscript = true, withNote = true } = {}) {
@@ -187,7 +187,7 @@ function seedEncounter(restClient, { withTranscript = true, withNote = true } = 
 async function main() {
   const restClient = createFakeSupabaseRestClient();
   const llm = createFakeLlm();
-  const { server, call } = await startServer({ restClient, llm });
+  const { server, call, assistantService } = await startServer({ restClient, llm });
   const encounter = seedEncounter(restClient);
   const emptyEncounter = seedEncounter(restClient, { withTranscript: false, withNote: false });
   let passed = 0;
@@ -302,8 +302,11 @@ async function main() {
         suggested_next_questions: ['¿Hay fotofobia?']
       }]
     });
-    const diag = await call('POST', `/api/clinical/encounters/${encounter.id}/diagnostic-suggestions`, {});
-    await check('diagnostic-suggestions devuelve JSON válido con schema completo', () => {
+    // El contrato rico sale del motor (suggestFromText); la única ruta con
+    // cliente lo proyecta al contrato del plugin (más abajo). La ruta por
+    // encounter se borró el 2026-10-01: no tenía cliente.
+    const diag = { status: 200, body: await assistantService.suggestFromText({ noteContent: TRANSCRIPT, specialty: 'medicina_general' }) };
+    await check('sugerencias diagnósticas: JSON válido con schema completo', () => {
       assert.strictEqual(diag.status, 200);
       const s = diag.body.suggestions[0];
       assert.ok(s.title && s.rationale);
@@ -328,7 +331,9 @@ async function main() {
       assert.strictEqual(diag.body.definitive_language_hits, 1);
       const prompt = promptTextOf(llm.state.calls.at(-1));
       assert.ok(!prompt.includes('REGLAS INVIOLABLES'), 'el prompt de diferenciales no hereda el de chat');
-      assert.ok(prompt.includes('<transcripcion>'), 'la transcripción viaja delimitada');
+      const user = JSON.parse(llm.state.calls.at(-1).messages.at(-1).content);
+      assert.ok(user.nota_texto.startsWith('<nota>') && user.nota_texto.includes('empeora con exposición a pantallas'), 'la nota viaja delimitada');
+      assert.ok(!prompt.includes('"safety_notice"'), 'no se pide un aviso que el código descarta');
     });
 
     // Endpoint de texto plano (plugin): mismo motor, contrato antiguo proyectado.
@@ -386,21 +391,20 @@ async function main() {
         }
       ]
     });
-    const invented = await call('POST', `/api/clinical/encounters/${encounter.id}/diagnostic-suggestions`, {});
-    await check('no inventa examen físico: evidencia fuera de transcript/nota se descarta', () => {
+    const invented = { status: 200, body: await assistantService.suggestFromText({ noteContent: TRANSCRIPT }) };
+    await check('no inventa examen físico: evidencia fuera de la nota se descarta', () => {
       assert.strictEqual(invented.status, 200);
       assert.strictEqual(invented.body.suggestions.length, 1, 'la sugerencia sin evidencia real se descarta');
       const s = invented.body.suggestions[0];
       assert.deepStrictEqual(s.supporting_evidence, ['empeora con exposición a pantallas']);
     });
 
-    // 7. Encounter sin transcript ni nota -> lista vacía prudente (sin llamar LLM).
+    // 7. Sin material clínico -> se rechaza sin llamar al LLM.
     const callsBefore = llm.state.calls.length;
-    const emptyDiag = await call('POST', `/api/clinical/encounters/${emptyEncounter.id}/diagnostic-suggestions`, {});
-    await check('sin transcript ni nota: suggestions [] prudente sin llamar al LLM', () => {
-      assert.strictEqual(emptyDiag.status, 200);
-      assert.deepStrictEqual(emptyDiag.body.suggestions, []);
-      assert.ok(emptyDiag.body.safety_notice);
+    const emptyDiag = await assistantService.suggestFromText({ noteContent: '   ' }).then(() => null, (error) => error);
+    await check('sin nota: ASSISTANT_INVALID sin llamar al LLM', () => {
+      assert.ok(emptyDiag, 'una nota vacía no puede dar sugerencias');
+      assert.strictEqual(emptyDiag.code, 'ASSISTANT_INVALID');
       assert.strictEqual(llm.state.calls.length, callsBefore);
     });
 
@@ -448,7 +452,10 @@ async function main() {
       const prompt = promptTextOf(llm.state.calls.at(-1));
       assert.ok(!prompt.includes('REGLAS INVIOLABLES'), 'sin reglas de chat');
       assert.ok(!prompt.includes('Modo general'), 'sin modo de chat');
-      assert.ok(prompt.includes('<nota>'), 'la nota viaja delimitada');
+      // Antes esto pasaba solo porque la cláusula de rol LISTABA «<nota>»: la
+      // nota del ajuste viaja como JSON en nota_clinica, no etiquetada.
+      assert.ok(prompt.includes('"nota_clinica"'), 'la nota viaja como dato del JSON');
+      assert.ok(prompt.includes('<instruccion>') && prompt.includes('es la petición del médico'), 'la instrucción se obedece, no se declara dato');
       assert.ok(prompt.includes('PROHIBIDO'), 'reglas de rewrite presentes');
       assert.strictEqual(adjust.body.instruction_kind, 'rewrite');
       const chatPrompt = promptTextOf(llm.state.calls.find((c) => c.kind === 'chat'));
@@ -462,6 +469,7 @@ async function main() {
     llm.state.jsonHandler = (messages) => {
       const system = messages[0].content;
       assert.ok(system.includes('EXACTAMENTE lo dictado'), 'reglas de dictado en el system prompt');
+      assert.ok(system.includes('MEDIDAS DICTADAS') && system.includes('PUNTUACIÓN DICTADA'), 'el dictado del ajuste trae las mismas reglas que la nota');
       assert.ok(!system.includes('PROHIBIDO agregar'), 'sin las reglas de rewrite');
       return {
         note_json: {

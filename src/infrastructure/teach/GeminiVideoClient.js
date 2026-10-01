@@ -1,8 +1,12 @@
-// Enseñanza activa por video: un médico graba su pantalla usando el sistema del
-// hospital y narra en voz alta lo que hace; Gemini mira el video y extrae
-// CONOCIMIENTO REUTILIZABLE sobre cómo se opera el sistema — no datos clínicos
-// de un caso concreto (ver la regla de privacidad del prompt). Port de
+// Enseñanza activa por video: alguien graba su pantalla mientras hace una tarea
+// y narra en voz alta lo que hace; Gemini mira el video y extrae CONOCIMIENTO
+// REUTILIZABLE sobre cómo se usa el programa — no los datos de un caso concreto
+// (ver la regla de privacidad del prompt). Port de
 // Android/backend/src/teach/geminiVideo.ts.
+//
+// QUIÉN ENSEÑA cambia el dominio del prompt (teachSystemPrompt): un médico en su
+// software clínico, una persona en una tarea de su día a día, o —sin perfil—
+// alguien usando un programa. La regla de privacidad es la misma para los tres.
 //
 // REPARTO DE TRABAJO CON EL CLIENTE (y por qué):
 //   El mp4 NO puede pasar por una función de Vercel: el límite de payload es
@@ -20,10 +24,13 @@ const LLMProvider = require('../LLMProvider');
 const { fromGemini, toRecorderUsage } = require('../../domain/usage/providerUsage');
 const { FEATURES, API_FAMILIES } = require('../../domain/usage/vocabulary');
 const clauses = require('../../application/prompts/PromptClauses');
+const { PROFILE_KINDS, PROFILE_NONE } = require('../../domain/agent/profile');
 // EL MISMO PROMPT que el camino sin video, y por eso vive fuera de los dos (ver ese archivo).
-const { promptParaElVideo, respuesta } = require('../../domain/teach/interpretarPasos');
+const { promptParaElVideo, respuesta, INTERPRETACION_VERSION } = require('../../domain/teach/interpretarPasos');
 
-const PROMPT_VERSION = clauses.promptVersion('teach-video', '2026-09-07.1');
+// La versión lleva la de las reglas de interpretación: cambiarlas también cambia lo que se le pide al video.
+// 2026-10-01.2: el trato del summary y de las preguntas sigue a la constitución (sin «doctor» si no se sabe cuál; de tú, nunca de vos).
+const PROMPT_VERSION = clauses.promptVersion('teach-video', `2026-10-01.2+interp.${INTERPRETACION_VERSION}`);
 
 const BASE = 'https://generativelanguage.googleapis.com';
 
@@ -112,52 +119,95 @@ async function fileState(apiKey, fileUri) {
   return body.state ?? 'UNKNOWN';
 }
 
-const MEDICAL_TEACH_PROMPT = `
-Eres Ü, un asistente que ayudará a operar el sistema informático de un hospital (HIS/EHR u otro
-software clínico). Un MÉDICO acaba de grabar su pantalla mientras USA ese sistema, narrando en voz
-alta lo que hace — te está ENSEÑANDO cómo se opera, para que después tú puedas ayudar a otros
-usuarios con las mismas tareas.
+// El dominio de cada perfil: quién grabó, ejemplos de nota y de "app", y cómo se le habla.
+const TEACH_DOMAINS = Object.freeze({
+  [PROFILE_KINDS.MEDICO]: Object.freeze({
+    who: (specialtyName) => `un médico${specialtyName ? ` de ${specialtyName}` : ''} usando su software clínico (historia clínica, HIS/EHR, órdenes, SAP u otro sistema del hospital)`,
+    examples: [
+      '"Para admitir un paciente se usa el botón \'Nuevo ingreso\' en la pantalla principal, no el menú \'Pacientes\'."',
+      '"El campo \'Diagnóstico principal\' solo acepta códigos CIE-10; hay un buscador si se escribe texto."',
+      '"Las órdenes de laboratorio se firman digitalmente desde la pestaña \'Pendientes\', abajo a la derecha."'
+    ],
+    apps: '"HIS - Admisiones", "Laboratorio"',
+    privacyExtra: ', números de historia clínica, diagnósticos, resultados de laboratorio o medicamentos de un caso',
+    // El perfil no trae el nombre ni si es médico o médica: el título no se sabe, y la constitución
+    // dice que entonces no se pone.
+    address: 'En "summary" y en "questions" le hablas de usted, sin «doctor» ni «doctora»: no sabes cuál.'
+  }),
+  [PROFILE_KINDS.PERSONA]: Object.freeze({
+    who: () => 'una persona haciendo una tarea de su computador en su día a día (correo, banco, trámites, archivos)',
+    examples: [
+      '"Para pagar un servicio en el portal del banco se entra por \'Pagos\' y después \'Servicios públicos\', no por \'Transferencias\'."',
+      '"En el correo, los archivos se adjuntan con el clip de la barra de abajo."',
+      '"Los PDF de los trámites se guardan en la carpeta Documentos/Trámites."'
+    ],
+    apps: '"Gmail", "Portal del banco"',
+    privacyExtra: ', números de cuenta o de tarjeta',
+    address: 'En "summary" y en "questions" le hablas de tú, nunca de vos.'
+  }),
+  none: Object.freeze({
+    who: () => 'alguien usando un programa',
+    examples: [
+      '"Para crear un registro nuevo se usa el botón \'Nuevo\' de la barra superior, no el menú \'Archivo\'."',
+      '"El campo \'Fecha\' solo acepta el formato día/mes/año."',
+      '"Los cambios se guardan con el botón \'Guardar\' de abajo a la derecha; cerrar la ventana no guarda."'
+    ],
+    apps: '"Facturación", "Inventario"',
+    privacyExtra: '',
+    address: ''
+  })
+});
 
-Mira TODO el video (imagen + audio) y extrae CONOCIMIENTO SOBRE EL SISTEMA, organizado POR
-APLICACIÓN/MÓDULO. Buscamos hechos operativos reutilizables, NO datos de un caso concreto. Ejemplos
-del tipo de nota que sí sirve:
-- "Para admitir un paciente se usa el botón 'Nuevo ingreso' en la pantalla principal, no el menú
-  'Pacientes'."
-- "El campo 'Diagnóstico principal' solo acepta códigos CIE-10; hay un buscador si se escribe texto."
-- "Las órdenes de laboratorio se firman digitalmente desde la pestaña 'Pendientes', abajo a la
-  derecha."
+/**
+ * El system_instruction de la enseñanza por video, según quién enseña. `profile` es el de
+ * domain/agent/profile.js (normalizado: la especialidad sale del catálogo). Sin perfil, neutro.
+ * Un solo contrato de salida: el responseSchema; el prompt solo lo nombra.
+ */
+function teachSystemPrompt(profile = PROFILE_NONE) {
+  const kind = profile && profile.kind;
+  const domain = TEACH_DOMAINS[kind] || TEACH_DOMAINS.none;
+  const specialtyName = kind === PROFILE_KINDS.MEDICO ? `${profile.specialtyName || ''}`.trim() : '';
+  return `
+Eres Ü, el asistente que maneja el computador de la persona. Te llega el video de una demostración:
+${domain.who(specialtyName)} grabó su pantalla mientras hacía una tarea, narrando en voz alta lo que
+hacía. Te está ENSEÑANDO cómo se hace, para que después tú puedas hacerlo.
+
+Mira TODO el video (imagen y audio) y extrae CONOCIMIENTO SOBRE CÓMO SE USA el programa, organizado
+POR APLICACIÓN o módulo. Buscamos hechos operativos reutilizables, NO los datos de este caso.
+Ejemplos del tipo de nota que sí sirve:
+${domain.examples.map((example) => `- ${example}`).join('\n')}
 
 REGLA DE PRIVACIDAD, ABSOLUTA Y SIN EXCEPCIÓN:
-NUNCA registres en una nota ningún dato que identifique o describa a una persona concreta: nombres
-de pacientes, números de historia clínica o documento, fechas de nacimiento, diagnósticos
-específicos de un caso, resultados de laboratorio, medicaciones recetadas, o cualquier dato clínico
-ligado a un caso real que aparezca en pantalla durante la demostración. Si un ejemplo en el video
-usa datos de un paciente (real o de prueba), IGNORA esos datos por completo y quédate solo con EL
-PROCEDIMIENTO — cómo se navega, qué botón se pulsa, qué significa cada campo, en qué orden se hace
-algo. Ante cualquier duda de si un dato es identificable, OMÍTELO.
+NUNCA escribas en una nota un dato que identifique o describa a una persona concreta: nombres,
+números de documento, teléfonos, direcciones, fechas de nacimiento, contraseñas, datos de salud${domain.privacyExtra},
+ni nada ligado a un caso real que aparezca en pantalla. Si la demostración usa datos de alguien
+(reales o de prueba), ignóralos por completo y quédate solo con EL PROCEDIMIENTO: cómo se navega, qué
+botón se pulsa, qué significa cada campo, en qué orden se hace algo. Ante la duda de si un dato
+identifica a alguien, no lo escribas en ninguna nota, significado ni recuerdo.
 
-REGLAS ESTRICTAS (calidad sobre cantidad):
-- Cada nota: UNA frase, auto-contenida, sobre CÓMO FUNCIONA o CÓMO SE USA el sistema.
-- Incluye SOLO lo que entiendas con certeza muy alta y tenga valor real para operar el sistema
-  después. Ante la duda, fuera. No inventes procedimientos que no viste.
-- "app": el nombre visible del sistema o módulo al que aplica la nota (p.ej. "HIS - Admisiones",
-  "Laboratorio"). Si la nota es general y no pertenece a un módulo concreto, usa "".
-- Si algo importante quedó ambiguo y conviene confirmarlo con el médico, agrégalo en "questions"
-  (pregunta corta y natural). Máximo 3. Si no hace falta preguntar nada, deja la lista vacía.
-- Si el video no contiene nada confiable que guardar (o todo lo mostrado es dato de paciente sin
-  procedimiento reutilizable), devuelve items y questions vacíos.
+REGLAS DE LAS NOTAS (calidad sobre cantidad):
+- Cada nota: UNA frase, completa por sí sola, sobre CÓMO FUNCIONA o CÓMO SE USA el programa.
+- Solo lo que entiendas con certeza muy alta y sirva para hacer la tarea después. Para las NOTAS:
+  ante la duda, fuera. No inventes procedimientos que no viste.
+- "app": el nombre visible del programa o módulo al que aplica la nota (p. ej. ${domain.apps}). Si
+  la nota es general y no pertenece a uno concreto, "".
+- Si algo importante quedó ambiguo y conviene confirmarlo con quien te enseñó, agrégalo en
+  "questions" (pregunta corta y natural). Máximo 3; si no hace falta preguntar nada, lista vacía.
+- Si el video no tiene nada confiable que guardar (o todo era dato de alguien sin procedimiento
+  reutilizable), deja items y questions vacíos.
 
-Además, escribe un "summary": un resumen CORTO (1-3 frases), en primera persona y en tono
-profesional, de lo que ENTENDISTE sobre cómo se usa el sistema — para mostrárselo al médico. Si no
-aprendiste nada útil (o todo era dato clínico que debiste descartar), dilo con naturalidad.
-
-Responde SOLO JSON:
-{"summary": "...", "items": [{"app": "HIS - Admisiones", "note": "..."}], "questions": ["..."]}
+"summary": lo que ENTENDISTE de cómo se hace, en 1 a 3 frases cortas, en primera persona y con tu
+voz (cálida, clara, sin frases de máquina ni emojis), dirigido a quien te enseñó. Si no aprendiste
+nada útil, dilo con naturalidad.
+${domain.address ? `\n${domain.address}\n` : ''}
+Tu respuesta sigue el esquema: summary, items ({app, note}) y questions.
 `.trim();
+}
 
-// El schema hace cumplir la forma en el proveedor, no sólo en el prompt. La
-// regla de privacidad sigue viviendo en el prompt (un schema no puede
-// expresarla); detrás hay un verificador de PHI en el consumidor.
+// El schema hace cumplir la forma en el proveedor: es el ÚNICO contrato de
+// salida (el prompt solo lo nombra). La regla de privacidad sigue viviendo en
+// el prompt (un schema no puede expresarla); detrás hay un verificador de PHI
+// en el consumidor.
 const TEACH_RESPONSE_SCHEMA = Object.freeze({
   type: 'OBJECT',
   properties: {
@@ -222,6 +272,9 @@ function isTransient(status) {
 /**
  * El video ya está ACTIVE: pídele a Gemini el conocimiento del sistema.
  *
+ * `profile` (opcional) es quién enseña (domain/agent/profile.js): cambia el dominio del prompt.
+ * Sin él, el prompt neutro.
+ *
  * `steps` es opcional y es lo que el cliente Windows grabó de la demostración. Cuando viene, se le
  * pide ADEMÁS que interprete esos pasos (promptParaElVideo). Una sola llamada para las dos cosas y no
  * dos: el video es lo caro de subir y de mirar, y partirlo en dos generateContent duplicaría el
@@ -232,14 +285,14 @@ function isTransient(status) {
  * responseSchema se amplía con `campos`/`recuerdos` sólo cuando se piden: con el schema base el
  * modelo no podría emitirlos y la interpretación quedaría vacía en silencio.
  */
-async function processVideo(apiKey, fileUri, model, steps) {
+async function processVideo(apiKey, fileUri, model, steps, profile = PROFILE_NONE) {
   const conPasos = Array.isArray(steps) && steps.length > 0;
   const userText = conPasos
     ? `${TEACH_USER_TURN}\n\n${promptParaElVideo(steps)}`
     : TEACH_USER_TURN;
 
   const req = {
-    system_instruction: { parts: [{ text: MEDICAL_TEACH_PROMPT }] },
+    system_instruction: { parts: [{ text: teachSystemPrompt(profile) }] },
     contents: [
       {
         role: 'user',
@@ -344,4 +397,4 @@ function firstJsonObject(text) {
   return JSON.parse(text.slice(start, end + 1));
 }
 
-module.exports = { startUpload, fileState, processVideo, teachResponseSchema, PROMPT_VERSION, TEACH_RESPONSE_SCHEMA };
+module.exports = { startUpload, fileState, processVideo, teachSystemPrompt, teachResponseSchema, PROMPT_VERSION, TEACH_RESPONSE_SCHEMA };

@@ -121,10 +121,12 @@ function registerClinicalRoutes(app, deps = {}) {
 }
 
 // ---- Sugerencias diagnósticas por texto plano (contrato previo, sin cambios) ----
-// Adaptador: mismo prompt y misma verificación de evidencia que
-// /encounters/:id/diagnostic-suggestions; la salida se proyecta al contrato
-// antiguo {suggestions:[{title, rationale, supportingEvidence}], reviewNotice}
-// que lee web/public/trainer-plugin.js.
+// La ÚNICA entrada a los diferenciales (#3): la usa la extensión. Mismo prompt y
+// misma verificación de evidencia que el motor; la salida se proyecta al
+// contrato antiguo {suggestions:[{title, rationale, supportingEvidence}],
+// reviewNotice} que lee web/public/trainer-plugin.js. La ruta por encounter
+// (/encounters/:id/diagnostic-suggestions) se borró el 2026-10-01: no tenía
+// cliente.
 function registerLegacyDiagnosisRoute(app, { assistantService }) {
   app.post('/api/clinical/diagnosis-suggestions', async (req, res) => {
     const noteContent = typeof req.body?.noteContent === 'string'
@@ -366,17 +368,6 @@ function registerClinicalAssistantRoutes(app, deps) {
       res.json(result);
     } catch (error) {
       respondClinicalError(res, error, '[Clinical Assistant] note-adjustment:');
-    }
-  });
-
-  app.post('/api/clinical/encounters/:encounterId/diagnostic-suggestions', async (req, res) => {
-    try {
-      const result = await assistantService.suggestForEncounter(req.params.encounterId, {
-        doctorId: resolveDoctorId(req)
-      });
-      res.json(result);
-    } catch (error) {
-      respondClinicalError(res, error, '[Clinical Assistant] diagnostic-suggestions:');
     }
   });
 }

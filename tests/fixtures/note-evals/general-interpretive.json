@@ -18,7 +18,7 @@
   },
   "transcript": "Médico: Buenos días, José David, cuénteme qué lo trae hoy. Paciente: Doctor, llevo como tres días con un dolor de cabeza que va y viene. Médico: ¿Dónde le duele y cómo es el dolor? Paciente: Es en toda la frente, como una presión, empeora cuando paso mucho tiempo en el computador y mejora cuando descanso. Médico: ¿Ha tenido fiebre, vómito o cambios en la visión? Paciente: No, nada de eso. Niega fiebre, ni vómito, veo bien. Sí tengo un poco de náuseas a veces. Médico: ¿Toma algún medicamento? Paciente: Tomo losartán 50 mg cada día para la presión, hace dos años. No soy alérgico a nada que yo sepa. Médico: Muy bien. Por lo que me cuenta parece una cefalea de tipo tensional, pero vamos a vigilarla. Le recomiendo higiene del sueño, hidratación, pausas de pantalla cada hora y volver a control si aparece dolor súbito muy intenso, fiebre o alteraciones visuales.",
   "recorded_output": {
-    "summary": "Paciente con cefalea frontal opresiva de tres días de evolución, asociada a uso prolongado de pantallas, sin signos de alarma; hipertenso en tratamiento con losartán.",
+    "summary": "Consulta por cefalea frontal opresiva de tres días de evolución, que empeora con el uso prolongado del computador; refiere hipertensión en tratamiento con losartán.",
     "sections": [
       {
         "key": "motivo_consulta",
@@ -41,7 +41,7 @@
       {
         "key": "antecedentes",
         "label": "Antecedentes",
-        "content": "Hipertensión arterial en tratamiento con losartán 50 mg cada día desde hace dos años. Niega alergias conocidas.",
+        "content": "Refiere hipertensión en tratamiento con losartán 50 mg cada día desde hace dos años. Niega alergias conocidas.",
         "grounding": "explicit",
         "evidence": ["Tomo losartán 50 mg cada día para la presión, hace dos años", "No soy alérgico a nada que yo sepa"]
       },
@@ -79,7 +79,7 @@
       { "term": "vómito", "cues": ["niega", "no ", "sin "] },
       { "term": "alergias", "cues": ["niega", "no ", "sin "] }
     ],
-    "forbidden_terms": ["confirmado", "tensión arterial 1", "temperatura"],
+    "forbidden_terms": ["confirmado", "tensión arterial 1", "temperatura", "hipertenso en tratamiento", "paciente hipertenso", "por vía oral"],
     "absent_sections": ["examen_fisico"],
     "max_inferred": 0,
     "max_warnings": 0,

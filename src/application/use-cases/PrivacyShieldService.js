@@ -391,8 +391,19 @@ class PrivacyShieldService {
   /* Texto suelto (salto Node → runtime Python)                         */
   /* ---------------------------------------------------------------- */
 
-  async protectTexts(texts, { feature = '' } = {}) {
-    const mode = this.modeFor(feature);
+  /**
+   * @param {object} texts  { clave: texto } a tapar
+   * @param {object} options
+   * @param {string} options.feature  la feature del ledger (decide el modo)
+   * @param {string} [options.maxMode]  techo del modo para un salto que todavía no
+   *   puede ir tapado (p. ej. SHADOW: mide y deja el texto como está).
+   */
+  async protectTexts(texts, { feature = '', maxMode = '' } = {}) {
+    const configured = this.modeFor(feature);
+    const order = [MODES.OFF, MODES.SHADOW, MODES.ENFORCE];
+    const mode = maxMode && order.indexOf(maxMode) >= 0 && order.indexOf(configured) > order.indexOf(maxMode)
+      ? maxMode
+      : configured;
     const protection = { mode, feature, map: null, texts, leakScan: 'n/a', rehydration: 'n/a', posthoc: null, imageParts: 0, sha256: '', error: null, scope: currentPrivacyScope() };
     if (mode === MODES.OFF) return protection;
     try {

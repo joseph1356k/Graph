@@ -24,11 +24,16 @@ function toSnakeKey(value = '') {
     .slice(0, 80);
 }
 
+// La instrucción por defecto dice QUÉ va en la casilla; las reglas (no
+// inventar, frase prudente, literal o interpretativo) ya están en el prompt.
+// Antes repetía «únicamente explícito» y la frase prudente en cada casilla y
+// chocaba con el modo interpretativo.
 function defaultInstruction(label = '', { verbatim = false } = {}) {
+  const name = `${label}`.trim();
   if (verbatim) {
-    return `Copia en la sección "${`${label}`.trim()}" lo que el médico dictó para esa casilla, palabra por palabra y en el mismo orden, sin reformular, resumir ni reordenar. No inventes datos clínicos. Si la información no fue mencionada, indícalo con una frase prudente como "No mencionado en la consulta."`;
+    return `Lo que el médico dictó para "${name}", palabra por palabra y en el mismo orden.`;
   }
-  return `Redacta la sección "${`${label}`.trim()}" usando únicamente información mencionada de forma explícita en la transcripción. No inventes datos clínicos. Si la información no fue mencionada, indícalo con una frase prudente como "No mencionado en la consulta."`;
+  return `Redacta la sección "${name}" con lo que se dijo en la consulta sobre ese tema.`;
 }
 
 class ClinicalTemplateService {

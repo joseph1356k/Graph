@@ -132,8 +132,8 @@ class ClinicalAssistantService {
   // ---- Diferenciales: un solo motor, dos entradas ----
 
   async runDiagnostic(messages, { sessionId = '', transcript = '', noteJson = null, noteText = '', privacyScope = null } = {}) {
-    // Ámbito de privacidad: por encounter cuando lo hay; efímero (semillas
-    // desde el propio texto de la nota) en el endpoint de texto plano.
+    // Ámbito de privacidad: efímero, con semillas desde el propio texto de la
+    // nota (endpoint de texto plano).
     const { content, privacy } = await withPrivacyScope(privacyScope || {}, async () => {
       const raw = await withFeature(
       FEATURES.DIAGNOSIS_SUGGESTION,
@@ -153,42 +153,8 @@ class ClinicalAssistantService {
     return { ...result, privacy: privacy || null };
   }
 
-  // Por encounter (contrato rico, con transcripción y nota persistidas).
-  async suggestForEncounter(encounterId, { doctorId = null } = {}) {
-    const encounter = await this.encounterService.getOwnedEncounter(encounterId, { doctorId });
-    const { clinicalContext, fullTranscript } = contextBuilder.build({ encounter });
-
-    // Respuesta vacía prudente cuando no hay material clínico sobre el que razonar.
-    if (!fullTranscript && !clinicalContext.note_json) {
-      return {
-        suggestions: [],
-        safety_notice: ClinicalAssistantValidationService.SAFETY_NOTICE_DIAGNOSTIC
-      };
-    }
-    this.requireLlm();
-
-    try {
-      const messages = this.promptBuilder.buildDiagnosticMessages({ clinicalContext });
-      const result = await this.runDiagnostic(messages, {
-        sessionId: encounter.id,
-        privacyScope: { encounter, encounterId: encounter.id },
-        transcript: fullTranscript,
-        noteJson: encounter.note_json
-      });
-      console.log(`[Clinical Assistant] Encounter ${encounter.id}: ${result.suggestions.length} sugerencias diagnósticas.`);
-      return result;
-    } catch (error) {
-      if (isClinicalError(error)) {
-        throw error;
-      }
-      console.error(`[Clinical Assistant] diagnostic-suggestions falló: ${error.message}`);
-      throw clinicalError('ASSISTANT_FAILED', 'No fue posible generar sugerencias diagnósticas. Intenta de nuevo.');
-    }
-  }
-
-  // Por texto plano, sin encounter (endpoint del plugin). Mismo prompt, misma
-  // verificación de evidencia; el adaptador de la ruta proyecta al contrato
-  // antiguo.
+  // Por texto plano (endpoint del plugin, la única entrada con cliente). El
+  // adaptador de la ruta proyecta al contrato antiguo.
   async suggestFromText({ noteContent = '', specialty = '' } = {}) {
     const cleanNote = typeof noteContent === 'string' ? noteContent.trim() : '';
     if (!cleanNote) {

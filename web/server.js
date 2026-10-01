@@ -11,7 +11,6 @@ const SupabaseRestClient = require('../src/infrastructure/SupabaseRestClient');
 const SupabaseClinicalTemplateRepository = require('../src/infrastructure/repositories/SupabaseClinicalTemplateRepository');
 const SupabaseClinicalEncounterRepository = require('../src/infrastructure/repositories/SupabaseClinicalEncounterRepository');
 const SupabaseNoteExportRepository = require('../src/infrastructure/repositories/SupabaseNoteExportRepository');
-const SupabaseOrganizerProfileRepository = require('../src/infrastructure/repositories/SupabaseOrganizerProfileRepository');
 const MarkdownCatalogWriter = require('../src/infrastructure/file-system/MarkdownCatalogWriter');
 const UsageLedgerStore = require('../src/infrastructure/file-system/UsageLedgerStore');
 const SupabaseUsageEventStore = require('../src/infrastructure/usage/SupabaseUsageEventStore');
@@ -48,7 +47,6 @@ const MiracleSttProviderConfigService = require('../src/application/use-cases/Mi
 const MiracleAssistantProviderConfigService = require('../src/application/use-cases/MiracleAssistantProviderConfigService');
 const BiopsyPhotoProviderConfigService = require('../src/application/use-cases/BiopsyPhotoProviderConfigService');
 const BiopsyExtractionService = require('../src/application/use-cases/BiopsyExtractionService');
-const OrganizerProfileService = require('../src/application/use-cases/OrganizerProfileService');
 const ApiKeyService = require('../src/application/use-cases/ApiKeyService');
 const AndroidPanelService = require('../src/application/use-cases/AndroidPanelService');
 const RealtimeSessionService = require('../src/application/use-cases/RealtimeSessionService');
@@ -70,6 +68,8 @@ const registerExecutionIntelligenceRoutes = require('./api/registerExecutionInte
 const registerClinicalRoutes = require('./api/registerClinicalRoutes');
 const registerNoteExportRoutes = require('./api/registerNoteExportRoutes');
 const registerMedicalRoutes = require('./api/registerMedicalRoutes');
+const { withPrivacyScope } = require('../src/infrastructure/privacy/PrivacyContext');
+const { FEATURES } = require('../src/domain/usage/vocabulary');
 const registerUsageRoutes = require('./api/registerUsageRoutes');
 const registerMaintenanceRoutes = require('./api/registerMaintenanceRoutes');
 const SystemHealthAlertService = require('../src/application/use-cases/SystemHealthAlertService');
@@ -77,7 +77,6 @@ const ConsultationMirrorService = require('../src/application/use-cases/Consulta
 const NoteGenerationRescueService = require('../src/application/use-cases/NoteGenerationRescueService');
 const createOpportunisticRescue = require('./api/opportunisticRescue');
 const registerPublicApiRoutes = require('./api/registerPublicApiRoutes');
-const registerOrganizerRoutes = require('./api/registerOrganizerRoutes');
 const registerAndroidPanelRoutes = require('./api/registerAndroidPanelRoutes');
 const registerRealtimeSessionRoutes = require('./api/registerRealtimeSessionRoutes');
 // Windows Live: core de telemetría/visualización por usuario del cliente Windows.
@@ -263,15 +262,6 @@ const miracleSttProviderConfigService = new MiracleSttProviderConfigService();
 const miracleAssistantProviderConfigService = new MiracleAssistantProviderConfigService(assistantLlmProvider);
 const biopsyExtractionService = new BiopsyExtractionService({ llmProvider: biopsyLlmProvider });
 const miracleBiopsyProviderConfigService = new BiopsyPhotoProviderConfigService(biopsyLlmProvider);
-// "Hoja en blanco" para quien NO es médico (app Android): su system prompt se
-// genera a partir de lo que cuenta por voz y de capturas de sus reportes
-// actuales. Usa el proveedor de producto para escribir/aplicar el prompt y el
-// de visión (el mismo de Biopsia) para leer las capturas.
-const organizerProfileService = new OrganizerProfileService({
-  repository: new SupabaseOrganizerProfileRepository(supabaseRestClient),
-  llmProvider,
-  visionLlmProvider: biopsyLlmProvider
-});
 const apiKeyService = new ApiKeyService();
 // Android panel (Provider Studio): telemetry + distributed client config,
 // same Supabase project/service-role client as the clinical module.
@@ -304,8 +294,9 @@ const agentTurnService = new AgentTurnService({
   memoryRepository: agentMemoryRepository,
   learningStore: agentWorkflowStore
 });
-// Interpreta una demostración SIN video, por el proveedor de texto del cerebro. Es el respaldo
-// de process-video, no una segunda opinión: solo se llama cuando el video no pudo.
+// Interpreta una demostración SIN video, por el proveedor de texto de Graph (LLMProvider con
+// GRAPH_LLM_*, la tarjeta «Graph» del Provider Studio), NO por el del cerebro consciente. Es el
+// respaldo de process-video, no una segunda opinión: solo se llama cuando el video no pudo.
 const teachStepsInterpreter = new TeachStepsInterpreter({ llmProvider });
 
 const teachVideoService = new TeachVideoService({
@@ -496,17 +487,10 @@ app.use('/api/medical', costlyLimiter);
 app.use('/api/workflows/:id/note-field-matches', costlyLimiter);
 app.use('/api/clinical/diagnosis-suggestions', costlyLimiter);
 app.use('/api/clinical/encounters/:encounterId/generate-note', costlyLimiter);
-app.use('/api/clinical/encounters/:encounterId/diagnostic-suggestions', costlyLimiter);
 app.use('/api/clinical/assistant', costlyLimiter);
 app.use('/api/v1/pipeline', costlyLimiter);
 app.use('/api/v1/autofill/match', costlyLimiter);
 app.use('/api/v1/biopsy/extract', costlyLimiter);
-// Generar el system prompt de un usuario cuesta una llamada de visión por
-// captura más una de texto; organizar un reporte, una de texto. Solo los POST:
-// el GET del perfil es una lectura barata que la app hace en cada arranque.
-app.post('/api/v1/organizer/profiles', costlyLimiter);
-app.post('/api/v1/organizer/profiles/:deviceId/samples', costlyLimiter);
-app.post('/api/v1/organizer/organize', costlyLimiter);
 app.use('/api/providers/biopsy/test-extract', costlyLimiter);
 function isMiracleMedicalProxyRequest(req) {
   const method = `${req.method || ''}`.toUpperCase();
@@ -546,7 +530,6 @@ function isMiracleMedicalProxyRequest(req) {
 
 // Stateful clinical module: Supabase Bearer auth, isolated from the surfaces
 // above and from /api/v1. Sets req.clinicalUser (never req.user).
-// '/api/clinical/encounters' also covers the nested diagnostic-suggestions route.
 [
   '/api/clinical/templates',
   '/api/clinical/encounters',
@@ -909,15 +892,84 @@ app.post('/api/voice/stream-session', async (req, res) => {
   return res.status(503).json({ error: 'Miracle runtime unavailable' });
 });
 
+// Cada segmento dictado en el editor (la extensión y web/public/miracle) pasa
+// por aquí hacia el orquestador de voz Python, que llama al proveedor por su
+// cuenta.
+//
+// EXCEPCIÓN E14 (docs/privacy-egress-gateway.md): este salto se MIDE con el
+// escudo pero NO se tapa, ni con PRIVACY_SHIELD_MODE=enforce. El runtime guarda
+// entre segmentos el historial y el bloque de la nota tal como le llegaron, y el
+// mapa del escudo es por llamada: el [PACIENTE_NOMBRE_1] de un segmento puede ser
+// otra persona en el siguiente, y la nota saldría con el nombre de otro paciente
+// o con marcadores a la vista. Se levanta el techo cuando haya un mapa estable
+// por voice_session_id. La forma (tapar → runtime → rehidratar) se queda, para
+// que levantar el techo sea cambiar una línea.
+const ORCHESTRATOR_SHIELD_MAX_MODE = PrivacyShieldService.MODES.SHADOW;
+
 app.post('/api/voice/orchestrator/events', async (req, res) => {
-  if (await proxyMiracleRuntimeRequest(req, res, '/api/voice/orchestrator/events', {
-    method: 'POST',
-    body: JSON.stringify(req.body || {})
-  })) {
-    return;
+  const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
+  const segment = body.segment && typeof body.segment === 'object' ? body.segment : null;
+  const noteContent = typeof body.note_content === 'string' ? body.note_content : '';
+  const transcript = segment && typeof segment.transcript === 'string' ? segment.transcript : '';
+
+  let protection;
+  try {
+    protection = await withPrivacyScope(
+      { noteContent },
+      () => privacyShield.protectTexts({ transcript, noteContent }, { feature: FEATURES.CLINICAL_STRUCTURING, maxMode: ORCHESTRATOR_SHIELD_MAX_MODE })
+    );
+  } catch (error) {
+    console.error(`[Voice Orchestrator Proxy] escudo: ${error.message}`);
+    return res.status(error.statusCode || 503).json({ error: error.message || 'El escudo de privacidad no pudo proteger el texto.' });
   }
-  return res.status(503).json({ error: 'Miracle runtime unavailable' });
+
+  const outbound = { ...body };
+  if (typeof body.note_content === 'string') outbound.note_content = protection.texts.noteContent;
+  if (segment && typeof segment.transcript === 'string') outbound.segment = { ...segment, transcript: protection.texts.transcript };
+
+  try {
+    const response = await callMiracleRuntime(req, '/api/voice/orchestrator/events', {
+      method: 'POST',
+      body: JSON.stringify(outbound)
+    });
+    return res.status(response.statusCode).json(restoreOrchestratorPayload(response.body, protection));
+  } catch (error) {
+    if (error.code === 'MIRACLE_RUNTIME_NOT_CONFIGURED') {
+      return res.status(503).json({ error: 'Miracle runtime unavailable' });
+    }
+    console.error(`[Voice Orchestrator Proxy] /api/voice/orchestrator/events failed: ${error.message}`);
+    return res.status(error.statusCode || 502).json({ error: error.message || 'Miracle runtime unavailable' });
+  }
 });
+
+// Lo que el orquestador devuelve con texto clínico: la nota resuelta, el
+// contenido de cada actualización y los textos de las tareas. Sin modo enforce,
+// restoreText devuelve el texto tal cual.
+function restoreOrchestratorPayload(payload, protection) {
+  if (!payload || typeof payload !== 'object') return payload;
+  const restore = (value) => (typeof value === 'string' ? privacyShield.restoreText(value, protection) : value);
+  const restored = { ...payload };
+  if (typeof payload.resolved_note_content === 'string') {
+    restored.resolved_note_content = restore(payload.resolved_note_content);
+  }
+  if (Array.isArray(payload.note_updates)) {
+    restored.note_updates = payload.note_updates.map((update) => (
+      update && typeof update === 'object' ? { ...update, content: restore(update.content) } : update
+    ));
+  }
+  if (Array.isArray(payload.agent_tasks)) {
+    // A fondo: el texto de la tarea va anidado (task.payload.summary) y el editor lo pinta.
+    const restoreDeep = (value, depth = 0) => {
+      if (typeof value === 'string') return restore(value);
+      if (depth > 6 || !value || typeof value !== 'object') return value;
+      if (Array.isArray(value)) return value.map((item) => restoreDeep(item, depth + 1));
+      return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, restoreDeep(item, depth + 1)]));
+    };
+    restored.agent_tasks = payload.agent_tasks.map((task) => restoreDeep(task));
+  }
+  restored.privacy = privacyShield.publicSummaryFor(protection);
+  return restored;
+}
 
 app.get('/api/voice/orchestrator/status', async (req, res) => {
   if (await proxyMiracleRuntimeRequest(req, res, '/api/voice/orchestrator/status', {
@@ -1200,12 +1252,7 @@ registerClinicalRoutes(app, {
 // /api/v1/operations/exports (X-API-Key del ejecutor). Los middlewares de auth
 // ya están montados sobre esos prefijos.
 registerNoteExportRoutes(app, { noteExportService });
-registerMedicalRoutes(app, {
-  rawTranscriptionService,
-  callMiracleRuntime,
-  usageRecorder,
-  privacyShield
-});
+registerMedicalRoutes(app, { rawTranscriptionService });
 registerUsageRoutes(app, { usageDashboardService, usageRecorder });
 // Mantenimiento diario (cron de Vercel): limpieza + alerta de salud por correo.
 registerMaintenanceRoutes(app, {
@@ -1242,10 +1289,8 @@ registerPublicApiRoutes(app, {
   noteGeneratorService: clinicalNoteGeneratorService,
   assistantService: clinicalAssistantService,
   biopsyService: biopsyExtractionService,
-  organizerService: organizerProfileService,
   privacyShield
 });
-registerOrganizerRoutes(app, { organizerProfileService });
 
 app.post('/api/agent/chat', costlyLimiter, async (req, res) => {
   try {

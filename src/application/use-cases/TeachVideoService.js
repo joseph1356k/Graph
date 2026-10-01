@@ -4,10 +4,11 @@
 //
 //   POST /api/v1/teach/upload-token  → URLs firmadas (Gemini + archivo Supabase). Rápido.
 //   POST /api/v1/teach/file-state    → ¿el video ya está ACTIVE en Gemini? Bucle del cliente.
-//   POST /api/v1/teach/process-video → generateContent con el prompt médico + guarda notas.
+//   POST /api/v1/teach/process-video → generateContent con el prompt de enseñanza + guarda notas.
 //        Si el cuerpo trae `steps` (los pasos que el cliente grabó), en la MISMA llamada
 //        interpreta cuáles de esos valores eran datos de la corrida y qué significa cada
-//        elemento, y lo devuelve en `interpretation` sin guardarlo.
+//        elemento, y lo devuelve en `interpretation` sin guardarlo. Si trae `profile`
+//        (médico o persona), el prompt habla de su dominio; sin él, el neutro.
 //
 // OJO: la enseñanza SIEMPRE va contra Gemini (es quien entiende video),
 // independientemente del provider del cerebro consciente. Por eso tiene su
@@ -18,6 +19,7 @@ const geminiVideo = require('../../infrastructure/teach/GeminiVideoClient');
 const { signVideoUpload } = require('../../infrastructure/teach/SupabaseVideoStorage');
 const { resolveTeachConfig, teachVideoBucket } = require('../../infrastructure/conscious-brain/config');
 const { saneaPasos } = require('../../domain/teach/interpretarPasos');
+const { normalizeProfile } = require('../../domain/agent/profile');
 
 class TeachVideoService {
   /**
@@ -111,8 +113,9 @@ class TeachVideoService {
 
   /**
    * El video ya está ACTIVE: se le pide a Gemini el conocimiento del sistema
-   * (prompt médico) y se guardan las notas en la memoria del usuario — el mismo
-   * store que el bucle de ejecución ya usa para inyectar contexto en cada turno.
+   * (prompt de enseñanza según el perfil) y se guardan las notas en la memoria
+   * del usuario — el mismo store que el bucle de ejecución ya usa para inyectar
+   * contexto en cada turno.
    */
   async processVideo(body = {}) {
     const { config, error } = this.guard();
@@ -120,7 +123,11 @@ class TeachVideoService {
 
     const fileUri = `${body.fileUri || ''}`.trim();
     if (!fileUri) return { status: 400, json: { error: 'falta `fileUri`' } };
-    const userId = `${body.userId || ''}`.trim() || 'anon';
+    // Sin usuario las notas se devuelven igual pero no se guardan: la memoria de 'anon' la
+    // compartían todas las instalaciones sin usuario (ver SupabaseAgentMemoryRepository).
+    const userId = `${body.userId || ''}`.trim();
+    // Quién enseña: el nombre de la especialidad sale del catálogo, nunca del cliente.
+    const profile = normalizeProfile(body.profile);
 
     // LOS PASOS DE LA DEMOSTRACIÓN, si el cliente los manda. Son HECHOS que él ya grabó —qué
     // elemento se tocó, qué se tecleó, qué se decía—, y con ellos el modelo puede además decir cuál
@@ -133,10 +140,12 @@ class TeachVideoService {
     const steps = saneaPasos(body.steps);
 
     try {
-      const result = await this.geminiVideo.processVideo(config.apiKey, fileUri, config.model, steps);
+      const result = await this.geminiVideo.processVideo(config.apiKey, fileUri, config.model, steps, profile);
 
-      for (const note of result.notes) {
-        await this.memoryRepository.remember(userId, note.app, note.note);
+      if (userId) {
+        for (const note of result.notes) {
+          await this.memoryRepository.remember(userId, note.app, note.note);
+        }
       }
 
       // LA INTERPRETACIÓN NO SE GUARDA EN LA MEMORIA DEL USUARIO, y las notas sí. No es un olvido:

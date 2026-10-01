@@ -28,7 +28,7 @@ const PROVIDERS = {
   disabled: {
     id: 'disabled',
     label: 'Deshabilitado',
-    description: 'Apaga la hoja en blanco y deja solo el fallback heuristico actual.',
+    description: 'Apaga el orquestador de voz (el bloque de la consulta en la hoja en blanco) y deja solo el fallback heuristico actual.',
     requiresApiKey: false,
     requiresBaseUrl: false,
     requiresModel: false,

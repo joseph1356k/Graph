@@ -182,7 +182,7 @@ class AgentChat {
     const messages = [
       {
         role: 'system',
-        content: workflowAssistantPolicy.buildChatDecisionPrompt(context, workflows)
+        content: workflowAssistantPolicy.buildChatDecisionPrompt(context)
       },
       {
         role: 'user',

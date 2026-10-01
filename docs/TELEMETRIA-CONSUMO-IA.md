@@ -475,3 +475,7 @@ hacen `openaiBrain` y `geminiBrain`.
   `feature: diagnosis_suggestion`. Antes convivían dos motores (uno bajo `asistente`, otro bajo
   `diagnosis_suggestion`); ahora hay uno solo y toda su serie va bajo la segunda etiqueta. Un
   panel que sume `asistente` verá un escalón a la baja en esa fecha; es el mismo gasto, movido.
+- **2026-10-01**: la ruta por encounter se borra (no tenía cliente); `diagnosis_suggestion` queda
+  solo con la de texto plano. Se borra también el organizador (`/api/v1/organizer/*`): las
+  etiquetas `organizer_setup` y `organizer_structuring` se quedan para el histórico, pero nadie
+  nuevo las emite.

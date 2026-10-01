@@ -1,0 +1,207 @@
+{
+  "takenFrom": "e9d0d44 — lo que U.exe ve del turno (respuestas sin la sesión opaca y matriz de errores), sacado de windows-snapshot.json antes de reescribir los prompts (2026-10-01). Es el contrato con el cliente: no se regenera para arreglar un rojo.",
+  "conversations": {
+    "openai": [
+      {
+        "status": 200,
+        "json": {
+          "actions": [
+            {
+              "kind": "mcp",
+              "tool": "set_alarm",
+              "args": {
+                "hour": "7",
+                "minute": "0",
+                "message": ""
+              }
+            },
+            {
+              "kind": "mcp",
+              "tool": "workflow_wf_demo",
+              "args": {
+                "context": "",
+                "workflow_id": "wf_demo"
+              }
+            },
+            {
+              "kind": "tap",
+              "x": 10,
+              "y": 20
+            }
+          ],
+          "question": null,
+          "done": false,
+          "text": "",
+          "needsScreenshot": true,
+          "narration": "Pongo la alarma ⏰",
+          "speech": null,
+          "intents": [
+            "Pongo la alarma ⏰",
+            "Abro el HIS"
+          ]
+        }
+      },
+      {
+        "status": 200,
+        "json": {
+          "actions": [
+            {
+              "kind": "mcp",
+              "tool": "set_alarm",
+              "args": {
+                "hour": "7",
+                "minute": "0",
+                "message": ""
+              }
+            },
+            {
+              "kind": "mcp",
+              "tool": "workflow_wf_demo",
+              "args": {
+                "context": "",
+                "workflow_id": "wf_demo"
+              }
+            },
+            {
+              "kind": "tap",
+              "x": 10,
+              "y": 20
+            }
+          ],
+          "question": null,
+          "done": false,
+          "text": "",
+          "needsScreenshot": true,
+          "narration": "Pongo la alarma ⏰",
+          "speech": null,
+          "intents": [
+            "Pongo la alarma ⏰",
+            "Abro el HIS"
+          ]
+        }
+      }
+    ],
+    "gemini": [
+      {
+        "status": 200,
+        "json": {
+          "actions": [
+            {
+              "kind": "mcp",
+              "tool": "set_alarm",
+              "args": {
+                "hour": "7",
+                "minute": "0",
+                "message": ""
+              }
+            },
+            {
+              "kind": "mcp",
+              "tool": "workflow_wf_demo",
+              "args": {
+                "context": "",
+                "workflow_id": "wf_demo"
+              }
+            },
+            {
+              "kind": "tap",
+              "x": 10,
+              "y": 20
+            }
+          ],
+          "question": null,
+          "done": false,
+          "text": "",
+          "needsScreenshot": true,
+          "narration": "Pongo la alarma ⏰",
+          "speech": null,
+          "intents": [
+            "Pongo la alarma ⏰",
+            "Abro el HIS"
+          ]
+        }
+      },
+      {
+        "status": 200,
+        "json": {
+          "actions": [
+            {
+              "kind": "mcp",
+              "tool": "set_alarm",
+              "args": {
+                "hour": "7",
+                "minute": "0",
+                "message": ""
+              }
+            },
+            {
+              "kind": "mcp",
+              "tool": "workflow_wf_demo",
+              "args": {
+                "context": "",
+                "workflow_id": "wf_demo"
+              }
+            },
+            {
+              "kind": "tap",
+              "x": 10,
+              "y": 20
+            }
+          ],
+          "question": null,
+          "done": false,
+          "text": "",
+          "needsScreenshot": true,
+          "narration": "Pongo la alarma ⏰",
+          "speech": null,
+          "intents": [
+            "Pongo la alarma ⏰",
+            "Abro el HIS"
+          ]
+        }
+      }
+    ]
+  },
+  "errors": [
+    {
+      "name": "sin state",
+      "response": {
+        "status": 400,
+        "json": {
+          "error": "falta `state` (screen, uiContext, width, height)"
+        }
+      },
+      "providerCalls": 0
+    },
+    {
+      "name": "primer turno sin goal",
+      "response": {
+        "status": 400,
+        "json": {
+          "error": "el primer turno requiere `goal`"
+        }
+      },
+      "providerCalls": 0
+    },
+    {
+      "name": "sesión manipulada",
+      "response": {
+        "status": 400,
+        "json": {
+          "error": "sesión inválida: firma de sesión inválida"
+        }
+      },
+      "providerCalls": 0
+    },
+    {
+      "name": "cerebro deshabilitado y sesión manipulada",
+      "response": {
+        "status": 500,
+        "json": {
+          "error": "El cerebro consciente está deshabilitado (MIRACLE_CONSCIOUS_LLM_PROVIDER=disabled)."
+        }
+      },
+      "providerCalls": 0
+    }
+  ]
+}

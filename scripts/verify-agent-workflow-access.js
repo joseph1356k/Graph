@@ -7,6 +7,10 @@
 // MCP, con su nombre y su descripción: si el catálogo no se acota a la key que
 // llama, el modelo de un cliente lee y puede invocar lo que grabó otro.
 //
+// También la plataforma: cada cliente recibe solo los workflows que su dispositivo
+// reproduce (learning.js, workflowRunsOn): uno grabado en U.exe no le llega al
+// teléfono, ni uno del teléfono a U.exe.
+//
 // Se recorre la cadena REAL: requireApiKey → POST /api/v1/agent/turn →
 // AgentTurnService → AgentWorkflowStore → WorkflowCatalog. Solo son falsos el
 // repositorio y el cerebro (anota qué herramientas le llegaron). El repositorio
@@ -133,24 +137,34 @@ function visibleTo(access) {
   return { clause, params, visible: cypherPredicate(clause, params, 'w') };
 }
 
+// Workflows globales grabados en cada dispositivo, por el origen que guarda su enseñanza.
+const ROWS_BY_DEVICE = [
+  { id: 'wf_his', description: 'Admite un paciente en el HIS.', sourceOrigin: 'uia://his.exe', scope: 'global', steps: [step('Abrir HIS'), step('Guardar')] },
+  { id: 'wf_sap', description: 'Crea un pedido en SAP.', sourceOrigin: 'sapgui://QAS/VA01', scope: 'global', steps: [step('VA01')] },
+  { id: 'wf_web', description: 'Descarga la factura del portal.', sourceOrigin: 'web://portal.claro.com.co', scope: 'global', steps: [step('Descargar')] },
+  { id: 'wf_whatsapp', description: 'Le escribe a Sebas por WhatsApp.', sourceOrigin: 'android://com.whatsapp', scope: 'global', steps: [step('Abrir el chat')] },
+  { id: 'wf_sin_origen', description: 'Workflow viejo sin origen.', scope: 'global', steps: [step('Paso')] }
+];
+
 // Repositorio falso: guarda cada acceso recibido y filtra con la regla real.
 class FakeWorkflowRepository {
-  constructor() {
+  constructor(rows = ROWS) {
     this.calls = [];
+    this.rows = rows;
   }
 
   async getWorkflowRows(workflowId = null, access = null) {
     this.calls.push(access);
     const { visible } = visibleTo(access);
-    return ROWS
+    return this.rows
       .filter((row) => !workflowId || row.id === workflowId)
       .filter(visible)
       .flatMap((row) => row.steps.map((s) => ({ ...row, ...s, steps: undefined })));
   }
 }
 
-function mount() {
-  const repository = new FakeWorkflowRepository();
+function mount(rows = ROWS) {
+  const repository = new FakeWorkflowRepository(rows);
   const seen = [];
   const service = new AgentTurnService({
     memoryRepository: { forPrompt: async () => '' },
@@ -262,6 +276,36 @@ async function main() {
     const hostile = "api-client:a' OR true OR '";
     assert.ok(!visibleTo({ ownerId: hostile }).clause.includes(hostile), 'el dueño se pegó en la cláusula');
     assert.deepStrictEqual(ids({ ownerId: hostile }), ['global_sin_duenio', 'global_publicado', 'legado_sin_duenio']);
+  });
+
+  await check('cada plataforma recibe solo los workflows que su dispositivo reproduce: el teléfono, ni uia:// ni sapgui:// ni web://; U.exe, ni android://; lo que no dice su origen, los dos; el Mac, ninguno', async () => {
+    const workflowsOf = async (app) => (await turnWithKey(mount(ROWS_BY_DEVICE), KEY_A, app)).names.filter((name) => name.startsWith('workflow_')).sort();
+    assert.deepStrictEqual(await workflowsOf('android_app'), ['workflow_wf_sin_origen', 'workflow_wf_whatsapp']);
+    assert.deepStrictEqual(await workflowsOf(null), ['workflow_wf_his', 'workflow_wf_sap', 'workflow_wf_sin_origen', 'workflow_wf_web']);
+    assert.deepStrictEqual(await workflowsOf('mac_app'), []);
+  });
+
+  await check('el filtro de plataforma va ANTES del tope de 30: muchos workflows del PC no dejan al teléfono sin los suyos', async () => {
+    const many = Array.from({ length: 40 }, (_, i) => ({ id: `wf_pc_${i}`, description: 'Del PC.', sourceOrigin: 'uia://his.exe', scope: 'global', steps: [step('Paso')] }));
+    const rows = [...many, ROWS_BY_DEVICE[3]];
+    const phone = await turnWithKey(mount(rows), KEY_A, 'android_app');
+    assert.deepStrictEqual(phone.names.filter((name) => name.startsWith('workflow_')), ['workflow_wf_whatsapp']);
+    const pc = await turnWithKey(mount(rows), KEY_A);
+    assert.strictEqual(pc.names.filter((name) => name.startsWith('workflow_')).length, 30);
+  });
+
+  await check('un workflow sin origen pero con una app .exe en sus pasos es del PC (el store en memoria no trae origen)', async () => {
+    const service = new AgentTurnService({
+      memoryRepository: { forPrompt: async () => '' },
+      learningStore: { workflows: async () => [
+        { id: 'a', name: 'admitir', description: 'Admite.', steps: [{ action: 'Abrir HIS', app: 'his.exe' }] },
+        { id: 'b', name: 'chat', description: 'Escribe.', steps: [{ action: 'Abrir chat', app: 'com.whatsapp' }] }
+      ] }
+    });
+    const { tools } = await service.assembleTools('u', [], null, 'android');
+    assert.deepStrictEqual(tools.filter((tool) => tool.name.startsWith('workflow_')).map((tool) => tool.name), ['workflow_chat']);
+    const windows = await service.assembleTools('u', [], null, 'windows');
+    assert.deepStrictEqual(windows.tools.filter((tool) => tool.name.startsWith('workflow_')).map((tool) => tool.name), ['workflow_admitir', 'workflow_chat']);
   });
 
   await check('una key inválida no llega al turno (401) y no consulta el catálogo', async () => {

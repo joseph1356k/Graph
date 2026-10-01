@@ -9,6 +9,31 @@
 // configurado (o falla), cae a un Map en memoria del proceso: mismo
 // comportamiento degradado que tenía el backend original, para que el turno
 // del agente nunca muera por la memoria.
+//
+// SIN USUARIO NO HAY MEMORIA. Antes un cuerpo sin `userId` caía en la clave
+// 'anon', que compartían todas las instalaciones que no mandaban usuario: lo
+// que enseñaba una aparecía en el prompt de otra. Ahora '' y 'anon' no leen ni
+// escriben (los clientes viejos que mandaban 'anon' a mano tampoco).
+//
+// CON TOPES. La memoria viaja en el prompt de CADA turno: se guardan como mucho
+// MAX_STORED_PER_APP notas por app (las más recientes), sin repetir una que ya
+// está; al prompt van las MAX_NOTES_PER_APP más recientes de cada app y el
+// bloque se corta en MAX_PROMPT_CHARS.
+const MAX_STORED_PER_APP = 50;
+const MAX_NOTES_PER_APP = 20;
+const MAX_PROMPT_CHARS = 4000;
+// Una nota es una frase que le sirve a quien opere después; más larga que esto
+// es un volcado (una lista de códigos), y al prompt no le cabría junto a las demás.
+const MAX_NOTE_CHARS = 500;
+const GENERAL_TITLE = 'General';
+
+const NO_USER = new Set(['', 'anon']);
+const userKeyOf = (userId) => {
+  const key = `${userId ?? ''}`.trim();
+  return NO_USER.has(key.toLowerCase()) ? '' : key;
+};
+const sameNote = (a, b) => `${a}`.trim().toLowerCase() === `${b}`.trim().toLowerCase();
+
 class SupabaseAgentMemoryRepository {
   static TABLE = 'graph_agent_memory';
 
@@ -43,29 +68,51 @@ class SupabaseAgentMemoryRepository {
 
   /**
    * Notas durables del usuario, ya formateadas para el prompt (agrupadas por
-   * app). "" si no hay. Mismo formato que InMemoryMemoryStore.forPrompt del
-   * backend viejo — el prompt del cerebro depende de esta forma.
+   * app, «### <app>» y una nota por línea; las generales bajo «### General»).
+   * "" si no hay o si no hay usuario. Dentro de cada app van las más recientes,
+   * y el bloque entero se corta en MAX_PROMPT_CHARS sin partir una nota.
    */
   async forPrompt(userId) {
-    const memory = await this.loadMemory(userId);
-    const apps = Object.keys(memory);
-    if (apps.length === 0) return '';
+    const userKey = userKeyOf(userId);
+    if (!userKey) return '';
+    const memory = await this.loadMemory(userKey);
     let out = '';
-    for (const app of apps) {
-      const notes = Array.isArray(memory[app]) ? memory[app] : [];
-      out += `\n### ${app}\n`;
-      for (const note of notes) out += `- ${note}\n`;
+    for (const app of Object.keys(memory)) {
+      const notes = (Array.isArray(memory[app]) ? memory[app] : [])
+        .map((note) => `${note ?? ''}`.trim())
+        .filter(Boolean)
+        .slice(-MAX_NOTES_PER_APP)
+        .reverse();
+      if (notes.length === 0) continue;
+      const header = `### ${`${app}`.trim() || GENERAL_TITLE}\n`;
+      if (out.length + header.length > MAX_PROMPT_CHARS) break;
+      let section = header;
+      for (const note of notes) {
+        const line = `- ${note}\n`;
+        // continue y no break: una nota que no cabe no esconde las más cortas
+        // que vienen detrás (antes, una sola nota larga dejaba la app sin memoria).
+        if (out.length + section.length + line.length > MAX_PROMPT_CHARS) continue;
+        section += line;
+      }
+      if (section !== header) out += `${section}\n`;
     }
     return out.trim();
   }
 
-  /** Guarda una nota durable (p.ej. "el botón 'Nuevo ingreso' admite pacientes"). */
+  /**
+   * Guarda una nota durable (p.ej. "el botón 'Nuevo ingreso' admite pacientes").
+   * Sin usuario, vacía o repetida (sin mirar mayúsculas), no hace nada.
+   */
   async remember(userId, app, note) {
-    const key = `${app || ''}`; // "" agrupa las notas generales
-    const memory = await this.loadMemory(userId);
+    const userKey = userKeyOf(userId);
+    const text = `${note ?? ''}`.trim().slice(0, MAX_NOTE_CHARS);
+    if (!userKey || !text) return;
+    const key = `${app || ''}`.trim(); // "" agrupa las notas generales
+    const memory = await this.loadMemory(userKey);
     const notes = Array.isArray(memory[key]) ? memory[key] : [];
-    notes.push(note);
-    memory[key] = notes;
+    if (notes.some((existing) => sameNote(existing, text))) return;
+    notes.push(text);
+    memory[key] = notes.slice(-MAX_STORED_PER_APP);
 
     if (this.useSupabase()) {
       try {
@@ -79,7 +126,7 @@ class SupabaseAgentMemoryRepository {
               Prefer: 'resolution=merge-duplicates,return=minimal'
             },
             body: JSON.stringify({
-              user_key: userId,
+              user_key: userKey,
               memory,
               updated_at: new Date().toISOString()
             })
@@ -90,8 +137,10 @@ class SupabaseAgentMemoryRepository {
         console.error(`[AgentMemory] escritura Supabase falló (${error.message}); guardando en memoria del proceso.`);
       }
     }
-    this.fallback.set(userId, memory);
+    this.fallback.set(userKey, memory);
   }
 }
+
+SupabaseAgentMemoryRepository.LIMITS = Object.freeze({ MAX_STORED_PER_APP, MAX_NOTES_PER_APP, MAX_PROMPT_CHARS });
 
 module.exports = SupabaseAgentMemoryRepository;
