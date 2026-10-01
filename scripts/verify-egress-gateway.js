@@ -107,12 +107,30 @@ function main() {
   assert.ok(/axios\.post\(`\$\{this\.baseUrl\}\/chat\/completions`, outbound/.test(llm), 'lo que sale es la copia tapada (outbound), no el payload original');
   ok('LLMProvider: protect → POST (copia tapada) → restore, en ese orden');
 
-  // 3. El salto Node → Python está tapado en las dos rutas que lo cruzan con texto clínico.
-  for (const file of ['web/api/registerPublicApiRoutes.js', 'web/api/registerMedicalRoutes.js']) {
-    const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
-    assert.ok(/privacyShield\.protectTexts/.test(text) && /privacyShield\.restoreText/.test(text), `${file} tapa y rehidrata el salto al runtime Python`);
-  }
-  ok('el salto Node → runtime Python pasa por el escudo (pipeline y /api/medical/notes/organized)');
+  // 3. El salto Node → Python está tapado en las dos rutas que lo cruzan con texto clínico:
+  //    la etapa `note` del pipeline y el proxy del orquestador de voz (el editor de la
+  //    extensión y web/public/miracle). /api/medical/notes/organized se borró el 2026-10-01.
+  const pipeline = fs.readFileSync(path.join(ROOT, 'web/api/registerPublicApiRoutes.js'), 'utf8');
+  assert.ok(/privacyShield\.protectTexts/.test(pipeline) && /privacyShield\.restoreText/.test(pipeline), 'el pipeline tapa y rehidrata el salto al runtime Python');
+  const server = fs.readFileSync(path.join(ROOT, 'web/server.js'), 'utf8');
+  const proxyAt = server.indexOf("app.post('/api/voice/orchestrator/events'");
+  assert.ok(proxyAt >= 0, 'server.js registra el proxy del orquestador de voz');
+  const proxyEnd = server.indexOf('\n});', proxyAt);
+  const proxy = server.slice(proxyAt, proxyEnd);
+  assert.ok(/privacyShield\.protectTexts/.test(proxy), 'el proxy del orquestador pasa transcripción y nota por el escudo antes de llamar al runtime');
+  // E14: con un runtime que guarda historial y un mapa por llamada, tapar cambia el
+  // paciente entre segmentos. Hasta que haya mapa por sesión, el techo es shadow y
+  // la excepción está escrita en el registro.
+  assert.ok(/maxMode: ORCHESTRATOR_SHIELD_MAX_MODE/.test(proxy)
+    && /const ORCHESTRATOR_SHIELD_MAX_MODE = PrivacyShieldService\.MODES\.SHADOW;/.test(server),
+    'el proxy del orquestador declara su techo de shadow (E14) en vez de tapar con un mapa por llamada');
+  assert.ok(/\| \*\*E14\*\* \|/.test(fs.readFileSync(path.join(ROOT, 'docs/privacy-egress-gateway.md'), 'utf8')),
+    'y la excepción E14 está en el registro');
+  assert.ok(!/proxyMiracleRuntimeRequest/.test(proxy), 'el proxy del orquestador no reenvía el cuerpo original');
+  assert.ok(/restoreOrchestratorPayload\(/.test(proxy), 'el proxy del orquestador rehidrata lo que vuelve');
+  const proxyRestoreAt = server.indexOf('function restoreOrchestratorPayload(');
+  assert.ok(proxyRestoreAt >= 0 && /privacyShield\.restoreText/.test(server.slice(proxyRestoreAt, server.indexOf('\n}', proxyRestoreAt))), 'la rehidratación del proxy usa el escudo');
+  ok('el salto Node → runtime Python pasa por el escudo (pipeline tapado; proxy /api/voice/orchestrator/events medido, E14)');
 
   // 4. Las excepciones declaradas están escritas en el registro de excepciones.
   const doc = fs.readFileSync(path.join(ROOT, 'docs/privacy-egress-gateway.md'), 'utf8');

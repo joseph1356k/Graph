@@ -110,6 +110,14 @@ function evaluateNote(note, fixture, { transcript = '', modes = null } = {}) {
   if (Number.isFinite(expect.max_warnings) && warnings.length > expect.max_warnings) {
     failures.push(`warnings (${warnings.length}) > ${expect.max_warnings}: ${warnings[0]}`);
   }
+  // Lo que el médico tiene que resolver y la nota no puede callar (p. ej. que no dictó una
+  // impresión diagnóstica): algún warning tiene que nombrarlo.
+  const comparableWarnings = warnings.map((warning) => text.normalizeComparable(warning));
+  for (const term of Array.isArray(expect.required_warnings) ? expect.required_warnings : []) {
+    if (!comparableWarnings.some((warning) => warning.includes(text.normalizeComparable(term)))) {
+      failures.push(`falta un warning sobre "${term}"`);
+    }
+  }
 
   // 10. evidence_spans: cada offset apunta a texto real de la transcripción.
   if (expect.evidence_spans_valid && transcript) {

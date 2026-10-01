@@ -72,11 +72,41 @@ async function runRecorded(fixtures) {
     });
     assert.ok(invented.some((f) => f.includes('debía quedar ausente')) && invented.some((f) => f.includes('inferred')), `debe detectar el examen físico inventado: ${invented}`);
     const lostLiteral = degrade((copy) => {
-      copy.sections[2].content = 'Hipertensión arterial en tratamiento con losartán 500 mg cada día.';
+      copy.sections[2].content = 'Refiere hipertensión en tratamiento con losartán 500 mg cada día.';
     });
     assert.ok(lostLiteral.some((f) => f.includes('literal perdido: "losartán 50 mg"')), `debe detectar la dosis alterada: ${lostLiteral}`);
+    // clinical-note@9: lo que solo dice el paciente lleva su fuente también en el summary.
+    const noSource = degrade((copy) => {
+      copy.summary = copy.summary.replace('refiere hipertensión en tratamiento', 'hipertenso en tratamiento');
+    });
+    assert.ok(noSource.some((f) => f.includes('término prohibido presente: "hipertenso en tratamiento"')), `debe detectar el antecedente sin fuente en el summary: ${noSource}`);
     passed += 1;
-    console.log(`  ok ${passed}. las métricas detectan negación perdida, examen físico inventado y dosis alterada`);
+    console.log(`  ok ${passed}. las métricas detectan negación perdida, examen físico inventado, dosis alterada y antecedente sin fuente`);
+  }
+
+  // Sin impresión del médico, la nota no la escribe y un warning la pide (clinical-note@9).
+  const voces = fixtures.find((fixture) => fixture.id === 'varias-voces-el-medico-manda');
+  if (voces) {
+    const modes = NoteModeResolver.resolve(voces.template_snapshot);
+    const degrade = (mutate) => {
+      const copy = JSON.parse(JSON.stringify(voces.recorded_output));
+      mutate(copy);
+      const note = validation.validateAndRepair(copy, voces.template_snapshot, { transcript: voces.transcript, modes });
+      return evaluateNote(note, voces, { transcript: voces.transcript, modes }).failures;
+    };
+    const silent = degrade((copy) => { copy.warnings = []; });
+    assert.ok(silent.some((f) => f.includes('falta un warning sobre "impresión diagnóstica"')), `debe detectar que nadie pidió la impresión: ${silent}`);
+    const ownImpression = degrade((copy) => {
+      const analisis = copy.sections.find((section) => section.key === 'analisis');
+      analisis.content += '\n\nCuadro compatible con gastritis.';
+    });
+    assert.ok(ownImpression.some((f) => f.includes('término prohibido presente: "compatible con"')), `debe detectar una impresión que el médico no dio: ${ownImpression}`);
+    const mixedSources = degrade((copy) => {
+      copy.summary = 'Consulta por ardor epigástrico en paciente que refiere gastritis y diabetes.';
+    });
+    assert.ok(mixedSources.some((f) => f.includes('término prohibido presente: "gastritis y diabetes"')), `debe detectar la diabetes de la acompañante atribuida al paciente: ${mixedSources}`);
+    passed += 1;
+    console.log(`  ok ${passed}. las métricas detectan la impresión sin pedir, la impresión inventada y la fuente mezclada`);
   }
   return passed;
 }

@@ -10,11 +10,15 @@
 //  - La conversación la mantiene el servidor de OpenAI vía previous_response_id;
 //    cada turno reenvía computer_call_output (screenshot) y/o function_call_output.
 //  - Las acciones vienen en PÍXELES ABSOLUTOS del screenshot enviado; el cliente
-//    Windows captura a resolución real, así que la escala es 1. Android manda la
-//    captura achicada y el turno trae la escala (domain/agent/screenScale).
+//    Windows captura a resolución real, así que la escala es 1 (el Mac, un píxel
+//    por punto: también 1). Android manda la captura achicada y el turno trae la
+//    escala (domain/agent/screenScale).
+//  - Cada salida pendiente se contesta con el resultado de SU acción: los clientes
+//    devuelven un resultado por acción, no por llamada (ver actionIndex en parseTurn).
 
 const { goalPrompt, describeState, promptVersionFor, PROMPT_VERSION } = require('./prompt');
-const { platformOfSession } = require('../../domain/agent/platform');
+const { PLATFORMS, platformOfSession } = require('../../domain/agent/platform');
+const { profileOfSession } = require('../../domain/agent/profile');
 const { toScreen } = require('../../domain/agent/screenScale');
 const { ASSISTANT_TOOLS } = require('./tools');
 const LLMProvider = require('../LLMProvider');
@@ -28,7 +32,11 @@ function dataUri(b64) {
   return `data:image/png;base64,${b64}`;
 }
 
-/** Declaración de función (Responses API) desde una McpTool, con enum en las opciones. */
+/**
+ * Declaración de función (Responses API) desde una McpTool, con enum en las opciones. Un parámetro
+ * `optional` no va en `required`: el cliente lo tolera ausente, y declararlo obligatorio empuja al
+ * modelo a inventar un valor.
+ */
 function mcpFn(tool) {
   const properties = {};
   for (const param of tool.params) {
@@ -42,7 +50,7 @@ function mcpFn(tool) {
     type: 'function',
     name: tool.name,
     description: tool.description,
-    parameters: { type: 'object', properties, required: tool.params.map((param) => param.name) }
+    parameters: { type: 'object', properties, required: tool.params.filter((param) => !param.optional).map((param) => param.name) }
   };
 }
 
@@ -149,8 +157,9 @@ async function runOpenAiTurn(inp) {
   const s = JSON.parse(JSON.stringify(inp.session)); // copia mutable
   const { tools, mcpNames, memory, apps, state, results, apiKey } = inp;
   const platform = platformOfSession(s);
+  const profile = profileOfSession(s);
 
-  const stateBlock = describeState(state, platform);
+  const stateText = describeState(state, platform, inp.clock || null);
   const input = [];
 
   const userMessage = (text) => {
@@ -162,12 +171,12 @@ async function runOpenAiTurn(inp) {
   // El prompt del sistema va en `instructions` en CADA request: la Responses
   // API no lo hereda por previous_response_id. Antes iba como primer mensaje
   // de usuario, con lo que las reglas tenían el mismo rango que un "hola".
-  const instructions = goalPrompt({ goal: s.goal, tools, memory, stateBlock: '', platform });
+  const instructions = goalPrompt({ goal: s.goal, tools, memory, platform, profile });
 
   if (!s.previousId) {
-    userMessage(stateBlock);
+    userMessage(stateText);
   } else if (s.pending.length === 0) {
-    userMessage(`${s.continuationMessage || s.informText || 'Continúa.'}\n${stateBlock}`);
+    userMessage(`${s.continuationMessage || s.informText || 'Continúa.'}\n${stateText}`);
     s.continuationMessage = '';
     s.informText = '';
   } else {
@@ -187,11 +196,25 @@ async function runOpenAiTurn(inp) {
         input.push(functionOutput(call.id, call.internalOutput));
       } else if (call.name === 'speak') {
         input.push(functionOutput(call.id, 'ok'));
+      } else if (Number.isInteger(call.actionIndex)) {
+        input.push(functionOutput(call.id, results[call.actionIndex] ?? 'ok'));
       } else {
+        // Sesión emitida antes de actionIndex: el índice de la llamada, como siempre.
         input.push(functionOutput(call.id, results[i] ?? 'ok'));
       }
     });
     s.informText = '';
+    // La pantalla de ESTE turno, también cuando el anterior terminó en funciones:
+    // el prompt promete que cada turno trae <pantalla>, y sin esto, con OpenAI, el
+    // modelo solo veía la lectura vieja de la herramienta (en el Mac, con ids que
+    // ya no existen) y la captura que pidió map_look no le llegaba nunca. Si hubo
+    // una computer_call, la captura ya va en su salida: aquí va solo el texto.
+    const screenshotSent = s.pending.some((call) => call.isComputer);
+    const content = [{ type: 'input_text', text: stateText }];
+    if (state.screenshot && !screenshotSent) {
+      content.push({ type: 'input_image', image_url: dataUri(state.screenshot), detail: 'original' });
+    }
+    input.push({ type: 'message', role: 'user', content });
   }
 
   const reqBody = {
@@ -216,15 +239,22 @@ async function runOpenAiTurn(inp) {
     throw new Error(`OpenAI HTTP ${res.code}: ${res.body.slice(0, 200)}`);
   }
 
-  return parseTurn(JSON.parse(res.body), s, state, mcpNames, apps, inp.screenScale || null);
+  return parseTurn(JSON.parse(res.body), s, state, mcpNames, apps, inp.screenScale || null, platform);
 }
 
 function functionOutput(callId, output) {
   return { type: 'function_call_output', call_id: callId, output };
 }
 
-/** Traduce la respuesta de la Responses API a un BrainTurn + la sesión actualizada. */
-function parseTurn(body, s, state, mcpNames, apps, scale = null) {
+/**
+ * Traduce la respuesta de la Responses API a un BrainTurn + la sesión actualizada.
+ *
+ * `platform` cambia SOLO el Mac, que sabe más que los otros dos clientes: un `type` sin punto
+ * teclea en el foco (sin x ni y), un atajo llega entero («cmd+l») y el doble clic y el clic derecho
+ * se conservan. Windows y Android reciben lo de siempre (su contrato con el cliente no cambia).
+ */
+function parseTurn(body, s, state, mcpNames, apps, scale = null, platform = PLATFORMS.WINDOWS) {
+  const isMac = platform === PLATFORMS.MAC;
   s.previousId = asStr(body.id) || s.previousId;
   const items = asArr(body.output ?? body.outputs).map(asObj);
 
@@ -245,17 +275,28 @@ function parseTurn(body, s, state, mcpNames, apps, scale = null) {
     switch (asStr(a.type)) {
       case 'click':
       case 'double_click':
-      case 'left_click':
-        actions.push({ kind: 'tap', x: at(a, 'x', 'x'), y: at(a, 'y', 'y') });
+      case 'left_click': {
+        const x = at(a, 'x', 'x');
+        const y = at(a, 'y', 'y');
+        if (isMac && asStr(a.type) === 'double_click') actions.push({ kind: 'double_click', x, y });
+        else if (isMac && asStr(a.button).toLowerCase() === 'right') actions.push({ kind: 'right_click', x, y });
+        else actions.push({ kind: 'tap', x, y });
         break;
-      case 'type':
-        actions.push({ kind: 'type', x: at(a, 'x', 'x'), y: at(a, 'y', 'y'), text: asStr(a.text) });
+      }
+      case 'type': {
+        const x = at(a, 'x', 'x');
+        const y = at(a, 'y', 'y');
+        // El `type` de computer-use no lleva punto: en Mac se teclea donde está el foco.
+        if (isMac && (x < 0 || y < 0)) actions.push({ kind: 'type', text: asStr(a.text) });
+        else actions.push({ kind: 'type', x, y, text: asStr(a.text) });
         break;
+      }
       case 'keypress':
       case 'key': {
         const keys = asArr(a.keys).map(asStr).filter(Boolean);
         const single = asStr(a.key);
-        actions.push({ kind: 'key', key: mapKey(keys.length ? keys : single ? [single] : []) });
+        const pressed = keys.length ? keys : single ? [single] : [];
+        actions.push({ kind: 'key', key: isMac ? macKey(pressed) : mapKey(pressed) });
         break;
       }
       case 'scroll': {
@@ -310,10 +351,14 @@ function parseTurn(body, s, state, mcpNames, apps, scale = null) {
           args = asObj(item.arguments);
         }
         const call = { id, name, isComputer: false, safety };
+        // `intent` ya no se pide en el prompt; se sigue leyendo si llega (es inocuo y
+        // mantiene igual lo que el cliente recibe).
         if (name !== 'ask_user' && name !== 'speak') intents.push(asStr(args.intent));
         if (mcpNames.has(name)) {
           const cleanArgs = {};
           for (const [k, v] of Object.entries(args)) if (k !== 'intent') cleanArgs[k] = asStr(v);
+          // El cliente devuelve un resultado POR ACCIÓN; esta llamada se contesta con el de la suya.
+          call.actionIndex = actions.length;
           actions.push({ kind: 'mcp', tool: name, args: cleanArgs });
         } else if (name === 'list_apps') {
           call.internalOutput = JSON.stringify({ apps });
@@ -321,6 +366,9 @@ function parseTurn(body, s, state, mcpNames, apps, scale = null) {
           question = asStr(args.question);
         } else if (name === 'speak') {
           speech = asStr(args.text);
+        } else {
+          // Una función que no está declarada: no hay acción ni resultado que darle.
+          call.internalOutput = `No existe la herramienta «${name}». Usa solo las que tienes declaradas.`;
         }
         pending.push(call);
         break;
@@ -338,7 +386,10 @@ function parseTurn(body, s, state, mcpNames, apps, scale = null) {
     actions,
     question,
     done: pending.length === 0,
-    text,
+    // El texto es la respuesta final y solo vale en el turno que termina: un «Mandé el correo»
+    // escrito junto a la llamada que apenas abre el borrador no le llega al cliente, que lo
+    // guardaba como resumen y lo podía decir al final aunque nunca se comprobara.
+    text: pending.length === 0 ? text : '',
     needsScreenshot,
     narration: intents.find((intent) => intent) ?? '',
     speech,
@@ -347,12 +398,43 @@ function parseTurn(body, s, state, mcpNames, apps, scale = null) {
   return { session: s, turn };
 }
 
-/** Une los keys de un keypress a lo que espera el ejecutor del cliente (enter/back/…), o el primero. */
+const ARROWS = Object.freeze({ ARROWLEFT: 'left', ARROWRIGHT: 'right', ARROWUP: 'up', ARROWDOWN: 'down' });
+
+/**
+ * Une los keys de un keypress a lo que espera el ejecutor de Windows y Android: UNA tecla
+ * (enter/back/tab/flechas…), o la primera. Esos clientes no tienen atajos; el prompt lo dice.
+ */
 function mapKey(keys) {
   const up = keys.map((key) => key.toUpperCase());
   if (up.includes('ENTER') || up.includes('RETURN')) return 'enter';
   if (up.includes('ESC') || up.includes('ESCAPE')) return 'back';
-  return (keys[0] ?? '').toLowerCase();
+  const first = (keys[0] ?? '').toUpperCase();
+  return ARROWS[first] || first.toLowerCase();
+}
+
+// Nombres de computer-use → los del ejecutor del Mac (apps/mac/Sources/UMac/InputDriver.swift).
+const MAC_KEYS = Object.freeze({
+  META: 'cmd', CMD: 'cmd', COMMAND: 'cmd', SUPER: 'cmd', WIN: 'cmd',
+  CTRL: 'ctrl', CONTROL: 'ctrl',
+  ALT: 'alt', OPTION: 'alt',
+  SHIFT: 'shift',
+  ENTER: 'enter', RETURN: 'enter',
+  ESC: 'esc', ESCAPE: 'esc',
+  BACKSPACE: 'backspace', DELETE: 'delete', DEL: 'delete',
+  TAB: 'tab', SPACE: 'space',
+  HOME: 'home', END: 'end', PAGEUP: 'pageup', PAGEDOWN: 'pagedown',
+  ...ARROWS
+});
+
+/** Un keypress de computer-use → un atajo entero para el Mac: ["CMD","L"] → "cmd+l". */
+function macKey(keys) {
+  return keys
+    .map((key) => {
+      const up = `${key}`.trim().toUpperCase();
+      return MAC_KEYS[up] || up.toLowerCase();
+    })
+    .filter(Boolean)
+    .join('+');
 }
 
 function extractMessage(item) {
@@ -367,4 +449,4 @@ function extractMessage(item) {
   return asStr(item.text);
 }
 
-module.exports = { runOpenAiTurn, toolDeclarations };
+module.exports = { runOpenAiTurn, toolDeclarations, parseTurn };

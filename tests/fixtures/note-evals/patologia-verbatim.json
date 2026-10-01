@@ -20,7 +20,7 @@
       {
         "key": "descripcion_macroscopica",
         "label": "Descripción macroscópica",
-        "content": "Se recibe rotulado como lesión de espalda un fragmento de piel elíptico que mide dos por uno punto dos por cero punto cuatro centímetros, con una lesión pigmentada central de cero punto seis centímetros, bordes regulares. Se incluye totalmente en un bloque.",
+        "content": "Se recibe rotulado como lesión de espalda un fragmento de piel elíptico que mide 2 x 1.2 x 0.4 cm, con una lesión pigmentada central de 0.6 cm, bordes regulares. Se incluye totalmente en un bloque.",
         "grounding": "explicit",
         "evidence": ["Se recibe rotulado como lesión de espalda un fragmento de piel elíptico"]
       },
@@ -45,7 +45,7 @@
   "expect": {
     "note_mode": "verbatim",
     "required_filled": ["descripcion_macroscopica", "descripcion_microscopica", "diagnostico"],
-    "preserved_literals": ["cero punto seis", "sin atipia citológica", "márgenes libres"],
+    "preserved_literals": ["0.6 cm", "sin atipia citológica", "márgenes libres"],
     "negations": [
       { "term": "atipia", "cues": ["sin "] },
       { "term": "extensión", "cues": ["sin "] }

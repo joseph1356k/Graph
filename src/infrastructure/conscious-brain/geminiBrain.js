@@ -4,15 +4,18 @@
 //
 // Diferencias de protocolo frente a OpenAI, encapsuladas aquí:
 //  - La API de Gemini es STATELESS: no hay previous_response_id. Acarreamos el
-//    historial (`contents`) dentro de la sesión (imágenes de turnos pasados
-//    eliminadas para no reenviar screenshots).
+//    historial (`contents`) dentro de la sesión firmada, ACOTADO: las imágenes y
+//    las pantallas de turnos pasados se reemplazan por un marcador (solo la
+//    actual viaja entera). Un árbol de UI pesa 10-50 KB y un hilo puede llegar a
+//    40 turnos: sin esto el blob se acerca al límite de cuerpo de Vercel.
 //  - Computer-use se declara como FUNCIONES (computer_tap/type/scroll/swipe/key/
 //    wait) + `look` para pedir ver la pantalla; el modelo pasa coordenadas en
 //    píxeles del screenshot (a resolución real).
 //  - Las herramientas MCP, ask_user, speak y list_apps se declaran igual que en OpenAI.
 
 const { goalPrompt, describeState, geminiComputerUse, promptVersionFor, PROMPT_VERSION } = require('./prompt');
-const { platformOfSession } = require('../../domain/agent/platform');
+const { PLATFORMS, platformOfSession } = require('../../domain/agent/platform');
+const { profileOfSession } = require('../../domain/agent/profile');
 const { toScreen } = require('../../domain/agent/screenScale');
 const { ASSISTANT_TOOLS } = require('./tools');
 const LLMProvider = require('../LLMProvider');
@@ -98,7 +101,10 @@ function recordGeminiBrainUsage(input) {
   });
 }
 
-/** Declaración de una función Gemini a partir de una McpTool (params STRING, enum en opciones). */
+/**
+ * Declaración de una función Gemini a partir de una McpTool (params STRING, enum en opciones). Los
+ * parámetros `optional` no van en `required` (ver el mismo comentario en openaiBrain.js).
+ */
 function mcpFn(tool) {
   const properties = {};
   for (const param of tool.params) {
@@ -111,7 +117,7 @@ function mcpFn(tool) {
   return {
     name: tool.name,
     description: tool.description,
-    parameters: { type: 'OBJECT', properties, required: tool.params.map((param) => param.name) }
+    parameters: { type: 'OBJECT', properties, required: tool.params.filter((param) => !param.optional).map((param) => param.name) }
   };
 }
 
@@ -119,16 +125,24 @@ function fn(name, description, props, required) {
   return { name, description, parameters: { type: 'OBJECT', properties: props, required } };
 }
 
+// Las teclas que computer_key declara. El teléfono solo sabe ENTER y BACK
+// (GraphAccessibilityService.pressKey busca «back» y «home» dentro del nombre):
+// declararle 'backspace' sería salir de la pantalla en vez de borrar una letra, y
+// el prompt de Android ya dice que esas son las únicas.
+const DESKTOP_KEYS = Object.freeze(['enter', 'back', 'tab', 'backspace', 'delete', 'up', 'down', 'left', 'right', 'home', 'end', 'space']);
+const ANDROID_KEYS = Object.freeze(['enter', 'back']);
+
 /** Las funciones de computer-use + utilitarias que solo existen en el provider Gemini. */
-function builtinFns() {
+function builtinFns(platform) {
   const INT = { type: 'INTEGER' };
+  const keys = platform === PLATFORMS.ANDROID ? ANDROID_KEYS : DESKTOP_KEYS;
   return [
     fn('look', 'Toma una captura de la pantalla para VERLA antes de decidir dónde tocar. Úsala cuando necesites mirar.', {}, []),
     fn('computer_tap', 'Haz clic en un punto de la pantalla (píxeles de la imagen actual).', { x: INT, y: INT }, ['x', 'y']),
     fn('computer_type', 'Haz clic en un punto y escribe texto ahí.', { x: INT, y: INT, text: { type: 'STRING' } }, ['x', 'y', 'text']),
     fn('computer_scroll', 'Desliza la rueda del ratón.', { direction: { type: 'STRING', enum: ['up', 'down'] } }, ['direction']),
     fn('computer_swipe', 'Arrastra de un punto a otro.', { x1: INT, y1: INT, x2: INT, y2: INT }, ['x1', 'y1', 'x2', 'y2']),
-    fn('computer_key', 'Pulsa una tecla especial.', { key: { type: 'STRING', enum: ['enter', 'back', 'tab', 'backspace', 'delete', 'up', 'down', 'left', 'right', 'home', 'end', 'space'] } }, ['key']),
+    fn('computer_key', 'Pulsa una tecla especial.', { key: { type: 'STRING', enum: [...keys] } }, ['key']),
     fn('computer_wait', 'Espera unos milisegundos a que la pantalla reaccione.', { ms: INT }, ['ms']),
     // ask_user / speak / list_apps: misma declaración que en OpenAI (tools.js).
     ...ASSISTANT_TOOLS.map((tool) => fn(
@@ -140,8 +154,8 @@ function builtinFns() {
   ];
 }
 
-function systemPrompt(goal, tools, memory, width, height, platform) {
-  const base = goalPrompt({ goal, tools, memory, stateBlock: '', platform }).trim();
+function systemPrompt(goal, tools, memory, width, height, platform, profile) {
+  const base = goalPrompt({ goal, tools, memory, platform, profile }).trim();
   const addendum = geminiComputerUse({ width, height, platform });
   return `${base}\n\n${addendum}`;
 }
@@ -171,10 +185,13 @@ async function runGeminiTurn(inp) {
   const g = s.gemini;
   const { tools, mcpNames, memory, apps, state, results, apiKey } = inp;
   const platform = platformOfSession(s);
+  const profile = profileOfSession(s);
 
-  const stateBlock = describeState(state, platform);
+  const stateText = describeState(state, platform, inp.clock || null);
 
   // 1) Construye el nuevo turno de usuario: respuestas a las funciones pendientes + estado + imagen.
+  //    Cada función que produjo una acción se contesta con el resultado de SU acción (actionIndex);
+  //    una que no existe, con un error en vez de con el resultado de la siguiente.
   const parts = [];
   let actionIdx = 0;
   for (const p of g.pending) {
@@ -182,19 +199,21 @@ async function runGeminiTurn(inp) {
     if (p.name === 'list_apps') response = { apps };
     else if (p.name === 'ask_user') response = { result: s.informText || '(sin respuesta)' };
     else if (p.name === 'speak' || p.name === 'look') response = { result: 'ok' };
-    else response = { result: results[actionIdx++] ?? 'ok' }; // computer_* o MCP
+    else if (Number.isInteger(p.actionIndex)) response = { result: results[p.actionIndex] ?? 'ok' };
+    else if (p.unknown) response = { error: `No existe la herramienta «${p.name}». Usa solo las que tienes declaradas.` };
+    else response = { result: results[actionIdx++] ?? 'ok' }; // sesión emitida antes de actionIndex
     parts.push({ functionResponse: { name: p.name, response } });
   }
   s.informText = '';
-  parts.push({ text: g.history.length === 0 ? stateBlock : `Resultado aplicado. ${stateBlock}` });
+  parts.push({ text: g.history.length === 0 ? stateText : `Resultado aplicado. ${stateText}` });
   if (state.screenshot) parts.push({ inlineData: { mimeType: 'image/png', data: state.screenshot } });
   g.history.push({ role: 'user', parts });
 
   // 2) Llama a Gemini.
   const body = {
-    system_instruction: { parts: [{ text: systemPrompt(s.goal, tools, memory, state.width, state.height, platform) }] },
+    system_instruction: { parts: [{ text: systemPrompt(s.goal, tools, memory, state.width, state.height, platform, profile) }] },
     contents: g.history,
-    tools: [{ function_declarations: [...tools.map(mcpFn), ...builtinFns()] }],
+    tools: [{ function_declarations: [...tools.map(mcpFn), ...builtinFns(platform)] }],
     tool_config: { function_calling_config: { mode: 'AUTO' } },
     generationConfig: { temperature: 0.6 }
   };
@@ -224,36 +243,47 @@ async function runGeminiTurn(inp) {
     const name = asStr(fc.name);
     if (!name) continue;
     const args = asObj(fc.args);
-    pending.push({ name, argsJson: JSON.stringify(args) });
+    const call = { name, argsJson: JSON.stringify(args), actionIndex: null };
+    pending.push(call);
 
     if (mcpNames.has(name)) {
       const clean = {};
       for (const [k, v] of Object.entries(args)) if (k !== 'intent') clean[k] = asStr(v);
+      call.actionIndex = actions.length;
       actions.push({ kind: 'mcp', tool: name, args: clean });
       if (args.intent) intents.push(asStr(args.intent));
     } else if (COMPUTER_FNS.has(name)) {
       const action = toAction(name, args, inp.screenScale || null);
-      if (action) actions.push(action);
+      if (action) {
+        call.actionIndex = actions.length;
+        actions.push(action);
+      }
     } else if (name === 'ask_user') {
       question = asStr(args.question);
     } else if (name === 'speak') {
       speech = asStr(args.text);
+    } else if (name !== 'list_apps' && name !== 'look') {
+      call.unknown = true;
     }
     // list_apps / look: sin acción de cliente; se resuelven en el próximo turno.
   }
 
   g.pending = pending;
 
-  // 4) Acota el tamaño de la sesión: quita las imágenes de todo el historial
-  //    (solo la actual viaja fresca).
+  // 4) Acota el tamaño de la sesión: quita las imágenes y las pantallas de todo el
+  //    historial (la del próximo turno viaja fresca).
   stripImages(g.history);
+  stripScreens(g.history);
 
   const needsScreenshot = pending.some((p) => COMPUTER_FNS.has(p.name) || p.name === 'look');
   const turn = {
     actions,
     question,
     done: pending.length === 0,
-    text,
+    // El texto es la respuesta final y solo vale en el turno que termina: un «Mandé el correo»
+    // escrito junto a la llamada que apenas abre el borrador no le llega al cliente, que lo
+    // guardaba como resumen y lo podía decir al final aunque nunca se comprobara.
+    text: pending.length === 0 ? text : '',
     needsScreenshot,
     narration: intents.find((intent) => intent) ?? (text && actions.length ? text : ''),
     speech,
@@ -268,6 +298,27 @@ function stripImages(history) {
     const parts = asArr(asObj(content).parts);
     for (let i = 0; i < parts.length; i++) {
       if (asObj(parts[i]).inlineData) parts[i] = { text: '[captura previa omitida]' };
+    }
+  }
+}
+
+// El texto de estado que pone runGeminiTurn (describeState), con o sin «Resultado aplicado.».
+const STATE_TEXT = /^(Resultado aplicado\. )?Pantalla actual/;
+const OLD_SCREEN = '[pantalla anterior omitida]';
+
+/**
+ * Reemplaza las pantallas de los turnos de usuario pasados por un marcador. Los pares
+ * functionCall/functionResponse se quedan: son el hilo de lo que se hizo y lo que salió.
+ */
+function stripScreens(history) {
+  for (const content of history) {
+    if (asObj(content).role !== 'user') continue;
+    const parts = asArr(asObj(content).parts);
+    for (let i = 0; i < parts.length; i++) {
+      const text = asObj(parts[i]).text;
+      if (typeof text === 'string' && STATE_TEXT.test(text)) {
+        parts[i] = { text: text.startsWith('Resultado aplicado.') ? `Resultado aplicado. ${OLD_SCREEN}` : OLD_SCREEN };
+      }
     }
   }
 }

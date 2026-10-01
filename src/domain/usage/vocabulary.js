@@ -15,6 +15,7 @@ const APPS = Object.freeze({
   WEB_APP: 'web_app',            // portal clínico (Next.js) — médicos y secretarias
   WINDOWS_APP: 'windows_app',    // cliente Ü de escritorio (U.exe)
   ANDROID_APP: 'android_app',    // app Android
+  MAC_APP: 'mac_app',            // cliente Ü de Mac
   CHROME_EXTENSION: 'chrome_extension',
   BACKEND: 'backend',            // Graph atendiendo una petición HTTP propia
   SYSTEM: 'system',              // proceso interno sin petición HTTP (cron, mantenimiento)
@@ -31,8 +32,9 @@ const FEATURES = Object.freeze({
   NOTE_GENERATION: 'note_generation',
   NOTE_RESCUE: 'note_rescue',
   CLINICAL_STRUCTURING: 'clinical_structuring',
-  // "Hoja en blanco" para quien no es médico: generar su system prompt a
-  // medida (setup) y organizar cada reporte con él (structuring).
+  // El organizador para quien no es médico (/api/v1/organizer/*) se borró el
+  // 2026-10-01 sin haber tenido cliente. Los dos valores se quedan porque el
+  // ledger histórico los usa y la web los etiqueta; nadie nuevo los emite.
   ORGANIZER_SETUP: 'organizer_setup',
   ORGANIZER_STRUCTURING: 'organizer_structuring',
   DIAGNOSIS_SUGGESTION: 'diagnosis_suggestion',
@@ -51,6 +53,8 @@ const FEATURES = Object.freeze({
   DYNAMIC_VALUES: 'dynamic_values',
   CONSCIOUS_BRIDGE: 'conscious_bridge',
   TEACH_VIDEO: 'teach_video',
+  // La demostración interpretada SIN video (POST /api/v1/teach/interpret-steps).
+  TEACH_STEPS: 'teach_steps',
   LIVE_VOICE: 'live_voice',
   LIVE_VISION: 'live_vision',
   AGENT_CHAT: 'agent_chat',

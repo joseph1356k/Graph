@@ -90,14 +90,17 @@ Objeto plano con **solo** estos campos (whitelist; cualquier otro se descarta): 
 
 Array `[{role, content}]` con `role ∈ {user, assistant}` únicamente (cualquier otro role se descarta — anti prompt-injection). El backend conserva los últimos 12 mensajes, cada uno cap 4000 chars. Recomendado enviar los últimos 8 como hace el resto de la app.
 
-## 2. Sugerencias diagnósticas al final de la cita
+## 2. Sugerencias diagnósticas
 
 ```http
-POST /api/clinical/encounters/:encounter_id/diagnostic-suggestions
-Authorization: Bearer <supabase_access_token>
+POST /api/clinical/diagnosis-suggestions
 ```
 
-Sin body. Usa el encounter completo: transcript + note_json + specialty + template_snapshot.
+`{ noteContent, specialty? }` (auth local; lo usa el plugin del EMR demo). Es la **única** entrada al
+motor de diferenciales: la ruta por encounter (`POST /api/clinical/encounters/:encounter_id/diagnostic-suggestions`)
+se borró el 2026-10-01 porque no tenía cliente. La ruta proyecta la salida del motor al contrato del
+plugin, `{ suggestions: [{ title, rationale, supportingEvidence }], reviewNotice }`. El motor
+(`ClinicalAssistantService.suggestFromText`) devuelve internamente el contrato rico:
 
 ```json
 {
@@ -122,9 +125,9 @@ Garantías del backend (validación post-LLM, no solo prompt):
 - Máximo **5** sugerencias; `type` siempre `differential_or_working_impression`. Cada sugerencia trae `grounding` (`explicit|entailed|inferred`) y `confidence` se **calcula** desde él (1 / 0.8 / 0.4), no lo dicta el modelo.
 - **Cada `supporting_evidence` debe existir literalmente** en el transcript o en la nota (comparación sin acentos y con espacios colapsados). Evidencia inventada se elimina; una sugerencia sin evidencia real se **descarta entera** — así el modelo no puede "inventar examen físico".
 - Lenguaje definitivo ("diagnóstico confirmado", "se confirma", "definitivo") se **detecta, no se reescribe**: el texto queda intacto, la sugerencia baja a `grounding: "inferred"` (confidence 0.4), recibe la nota fija `Redacción definitiva detectada: tratar como hipótesis pendiente de confirmación.` al inicio de `against_or_uncertain`, y la respuesta trae el contador `definitive_language_hits`. (Antes un regex cambiaba "confirmado" por "a considerar" y alteraba hechos del paciente: «contacto confirmado de tuberculosis» salía como «contacto a considerar».)
-- Encounter sin transcript ni nota → `{ "suggestions": [] }` prudente (200, sin llamar al LLM).
+- Nota vacía → 400 sin llamar al LLM; más de 20.000 caracteres → 413.
 
-Nota: `POST /api/clinical/diagnosis-suggestions` (por contenido de nota suelto, auth local, usado por el plugin del EMR demo) es ahora un **adaptador** sobre este mismo motor: mismo prompt, misma verificación de evidencia, mismo provider del asistente (con fallback al provider de Graph si el del asistente no tiene key). Su contrato de salida no cambió: `{ suggestions: [{ title, rationale, supportingEvidence }], reviewNotice }`. El motor anterior en inglés (`ClinicalDiagnosisSuggestionService`) fue eliminado.
+El motor usa el provider del asistente (con fallback al provider de Graph si el del asistente no tiene key). El motor anterior en inglés (`ClinicalDiagnosisSuggestionService`) fue eliminado.
 
 ## 3. Ajuste de nota clínica
 

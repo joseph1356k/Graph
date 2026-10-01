@@ -174,15 +174,20 @@ curl -s $B/api/v1/workflows -H "X-API-Key: $K"              # catálogo crudo
 En la app: 🎓 enseñar (countdown 3s → cambiar a la app objetivo), 🧭 (en Backend) para
 ejecutar a mano, 📜 para logs, badge arriba-derecha = ID de superficie.
 
-## La app Android como cliente del turno
+## La app Android (y el Mac) como clientes del turno
 
 Desde `556263c..ef9cf18`, el turno `POST /api/v1/agent/turn` reconoce la app Android por la
 cabecera `X-Miracle-App: android_app` y guarda la plataforma en la sesión firmada del primer
 turno. A partir de ahí:
 
 - **Prompt y catálogo propios.** Android recibe `ANDROID_TEXT` y el catálogo de sus 25 acciones
-  reales, copiado de `Model.kt` del repo Android. Windows no cambia: su turno está fijado byte a
-  byte en `tests/fixtures/agent-platform/windows-snapshot.json`.
+  reales, copiado de `Model.kt` del repo Android. Lo que U.exe ve de un turno (acciones, pregunta,
+  texto, errores) es el contrato con el cliente, byte a byte, en
+  `tests/fixtures/agent-platform/windows-contract-e9d0d44.json`, y no se regenera. Lo que se le
+  manda al proveedor está en `windows-snapshot.json`, que se regenera a propósito con
+  `scripts/lib/write-windows-snapshot.js` cuando se cambia el prompt (la última vez, el 2026-10-01).
+- **Mac.** `X-Miracle-App: mac_app` recibe `MAC_TEXT` y el catálogo AX que el cliente Mac ejecuta
+  (`map_click`, `map_type`, `map_key`…), sin workflows; antes caía en Windows.
 - **Coordenadas en píxeles de pantalla.** La captura de Android viaja reducida; `src/domain/agent/screenScale.js`
   reescala las coordenadas del modelo al tamaño real que reporta el cliente. Sin datos usables,
   escala 1.
@@ -190,6 +195,10 @@ turno. A partir de ahí:
   `MIRACLE_CONSCIOUS_LLM_PROVIDER_ANDROID_APP` solo afectan a los hilos de `android_app` y quedan
   congelados en la sesión. Sin ellas, Android usa la configuración general.
 - **Aislamiento por dueño.** El cerebro del turno ve los workflows de su API key más los globales.
+- **Con quién habla.** Desde el 2026-10-01 el primer turno puede traer
+  `profile: { kind: "medico" | "persona", specialty }` (y la enseñanza también). Se normaliza con el
+  catálogo de especialidades (`src/domain/agent/profile.js`) y queda congelado en la sesión; añade
+  al prompt el bloque «QUIÉN TE HABLA» de la constitución de Ü. Sin perfil, el prompt no lo lleva.
 
 ### Despliegue
 

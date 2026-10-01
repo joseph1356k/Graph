@@ -340,13 +340,13 @@ POST /api/clinical/assistant/chat
 
 `{ message, encounter_id?, specialty?, screen_context?, history? }` → `{ answer, mode:"clinical_chat", specialty, used_context, safety_notice, suggested_actions }`. Sin `encounter_id` responde en modo general (no finge conocer un paciente); con `encounter_id` usa transcript + note_json + especialidad del snapshot.
 
-### 12. Sugerencias diagnósticas por encounter
+### 12. Sugerencias diagnósticas (por texto)
 
 ```http
-POST /api/clinical/encounters/:encounter_id/diagnostic-suggestions
+POST /api/clinical/diagnosis-suggestions
 ```
 
-Sin body → `{ suggestions:[{title,type,grounding,confidence,rationale,supporting_evidence,against_or_uncertain,red_flags_to_check,suggested_next_questions}], safety_notice, definitive_language_hits }`. Máx 5, tentativas, con evidencia literal verificada contra transcript/nota; `confidence` se deriva de `grounding` (explicit 1 / entailed 0.8 / inferred 0.4); lenguaje definitivo no se reescribe, baja a `inferred` con nota en `against_or_uncertain`; sin material clínico → `suggestions: []`. El endpoint `POST /api/clinical/diagnosis-suggestions` (`{ noteContent, specialty? }`, auth local, plugin) es un adaptador sobre este motor y mantiene su contrato `{ suggestions:[{title,rationale,supportingEvidence}], reviewNotice }`.
+`{ noteContent, specialty? }` (auth local, plugin) → `{ suggestions:[{title,rationale,supportingEvidence}], reviewNotice }`. Es la única entrada al motor de diferenciales: máx 5, tentativas, con evidencia literal verificada contra la nota; lenguaje definitivo no se reescribe, baja a `inferred`. Nota vacía → 400; más de 20.000 caracteres → 413. La ruta por encounter (`POST /api/clinical/encounters/:encounter_id/diagnostic-suggestions`) se borró el 2026-10-01: no tenía cliente.
 
 ### 13. Ajuste de nota (propuesta, no persiste)
 

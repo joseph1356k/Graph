@@ -6,14 +6,17 @@
 // (URL, Authorization, cuerpo) y la respuesta HTTP que vio el cliente.
 //
 // POR QUÉ ES UN HELPER Y NO VIVE EN EL TEST. El snapshot de Windows
-// (tests/fixtures/agent-platform/windows-snapshot.json) se sacó con ESTE archivo
-// contra el código anterior a la plataforma Android. verify-agent-platform.js lo
-// vuelve a correr contra el código actual: si los dos lados no usan exactamente
-// las mismas entradas, la comparación no prueba nada.
+// (tests/fixtures/agent-platform/windows-snapshot.json) se saca con ESTE archivo
+// (scripts/lib/write-windows-snapshot.js) y verify-agent-platform.js lo vuelve a
+// correr contra el código actual: si los dos lados no usan exactamente las mismas
+// entradas, la comparación no prueba nada. Lo que U.exe VE de esas mismas
+// conversaciones está congelado aparte, desde e9d0d44, en
+// tests/fixtures/agent-platform/windows-contract-e9d0d44.json.
 const registerWindowsAgentRoutes = require('../../web/api/registerWindowsAgentRoutes');
 const AgentTurnService = require('../../src/application/use-cases/AgentTurnService');
 const { baseCatalog } = require('../../src/domain/agent/mcpCatalog');
-const { learnedToMcp, workflowToMcp } = require('../../src/domain/agent/learning');
+const { workflowToMcp } = require('../../src/domain/agent/learning');
+const { normalizeProfile } = require('../../src/domain/agent/profile');
 const { goalPrompt } = require('../../src/infrastructure/conscious-brain/prompt');
 const { decodeSession } = require('../../src/domain/agent/session');
 
@@ -25,12 +28,27 @@ const ENV_FALLBACKS = [
 ];
 
 const MEMORY = 'WhatsApp:\n- "Sebas" es Sebastián Ríos';
-const LEARNED = [{ name: 'Chat WhatsApp', app: 'WhatsApp', description: 'Abre un chat por nombre.', elements: ['Buscar', 'Enviar'] }];
-const WORKFLOWS = [{ id: 'wf_demo', name: 'wf_demo', description: 'Abre el HIS en admisiones.', steps: [{ action: 'Abrir HIS', app: 'his.exe', subconscious: true }] }];
+// wf_demo es del PC (his.exe) y wf_tel del teléfono (android://): cada plataforma recibe solo el
+// suyo (learning.js, workflowRunsOn), así que Windows ve lo mismo que antes de existir wf_tel.
+const WORKFLOWS = [
+  { id: 'wf_demo', name: 'wf_demo', description: 'Abre el HIS en admisiones.', steps: [{ action: 'Abrir HIS', app: 'his.exe' }] },
+  { id: 'wf_tel', name: 'wf_tel', description: 'Le escribe a Sebas por WhatsApp.', sourceOrigin: 'android://com.whatsapp', steps: [{ action: 'Abrir el chat', app: 'com.whatsapp' }] }
+];
+
+// La hora, como la manda U.exe en cada turno (AgentLoop.cs): fija, para que el
+// «Ahora: …» del estado no cambie entre corridas.
+const CLOCK = Object.freeze({ timezone: 'America/Bogota', locale: 'es-CO', clientNowUtc: '2026-10-01T15:35:00Z' });
+
+// Los perfiles del cable (domain/agent/profile.js).
+const PROFILES = Object.freeze({
+  medico: Object.freeze({ kind: 'medico', specialty: 'cardiologia', specialtyName: 'Cardiología' }),
+  persona: Object.freeze({ kind: 'persona', specialty: '', specialtyName: '' })
+});
 
 const FIRST_BODY = {
   goal: 'Pon una alarma a las 7 y abre el HIS',
   userId: 'u-verify',
+  ...CLOCK,
   state: {
     screen: 'Escritorio',
     uiContext: 'Botón Inicio · Barra de tareas',
@@ -50,7 +68,8 @@ function secondBody(session) {
     session,
     state: { ...FIRST_BODY.state, screen: 'Reloj', uiContext: 'Alarmas · 07:00' },
     results: ['ok', 'ok', 'ok'],
-    inform: 'a las 7 de la mañana'
+    inform: 'a las 7 de la mañana',
+    ...CLOCK
   };
 }
 
@@ -121,7 +140,7 @@ function stubFetch() {
 function mountTurnRoute() {
   const service = new AgentTurnService({
     memoryRepository: { forPrompt: async () => MEMORY },
-    learningStore: { learnedTools: async () => LEARNED, workflows: async () => WORKFLOWS }
+    learningStore: { workflows: async () => WORKFLOWS }
   });
   let handler = null;
   const app = { post(path, fn) { if (path === '/api/v1/agent/turn') handler = fn; } };
@@ -144,15 +163,18 @@ async function callRoute(handler, body, appHeader) {
 
 /**
  * Conversación de dos turnos. `firstApp`/`secondApp` son el valor de la cabecera
- * X-Miracle-App en cada turno (null = sin cabecera). Devuelve un turno por
- * request, con lo que salió hacia el proveedor y lo que volvió al cliente.
+ * X-Miracle-App en cada turno (null = sin cabecera); `profile`, el perfil del cable
+ * en el primer turno (null = sin perfil, como una U.exe vieja). Devuelve un turno
+ * por request, con lo que salió hacia el proveedor y lo que volvió al cliente.
  */
-async function captureConversation({ env = {}, firstApp = null, secondApp = null } = {}) {
+async function captureConversation({ env = {}, firstApp = null, secondApp = null, profile = null } = {}) {
   return withEnv(env, async () => {
     const handler = mountTurnRoute();
     const fetchStub = stubFetch();
     try {
-      const first = await callRoute(handler, JSON.parse(JSON.stringify(FIRST_BODY)), firstApp);
+      const firstBody = JSON.parse(JSON.stringify(FIRST_BODY));
+      if (profile) firstBody.profile = profile;
+      const first = await callRoute(handler, firstBody, firstApp);
       const firstRequests = fetchStub.requests.splice(0);
       const second = first.json && first.json.session
         ? await callRoute(handler, secondBody(first.json.session), secondApp)
@@ -224,19 +246,30 @@ function readSession(token) {
   return withEnv({}, () => decodeSession(token));
 }
 
-/** Entradas fijas del prompt: con todo (memoria, aprendidas, workflows) y sin nada. */
+/**
+ * Entradas fijas del prompt: con todo (memoria y workflows), sin nada, y con todo
+ * más cada perfil.
+ */
 function promptInputs(tools) {
-  const full = [...tools, ...LEARNED.map(learnedToMcp), ...WORKFLOWS.map(workflowToMcp)];
+  const full = [...tools, ...WORKFLOWS.map(workflowToMcp)];
+  const withAll = { goal: FIRST_BODY.goal, tools: full, memory: MEMORY };
   return {
-    full: { goal: FIRST_BODY.goal, tools: full, memory: MEMORY, stateBlock: 'Pantalla actual: Escritorio' },
-    bare: { goal: FIRST_BODY.goal, tools, memory: '', stateBlock: '' }
+    full: withAll,
+    bare: { goal: FIRST_BODY.goal, tools, memory: '' },
+    medico: { ...withAll, profile: normalizeProfile(PROFILES.medico) },
+    persona: { ...withAll, profile: normalizeProfile(PROFILES.persona) }
   };
 }
 
 /** Prompt de Windows tal como lo arma goalPrompt sin indicar plataforma. */
 function windowsPrompts(prompt = goalPrompt, catalog = baseCatalog()) {
   const inputs = promptInputs(catalog);
-  return { full: prompt(inputs.full), bare: prompt(inputs.bare) };
+  return {
+    full: prompt(inputs.full),
+    bare: prompt(inputs.bare),
+    medico: prompt(inputs.medico),
+    persona: prompt(inputs.persona)
+  };
 }
 
 module.exports = {
@@ -248,7 +281,8 @@ module.exports = {
   windowsPrompts,
   PROVIDER_ENVS,
   FIRST_BODY,
+  CLOCK,
+  PROFILES,
   MEMORY,
-  LEARNED,
   WORKFLOWS
 };

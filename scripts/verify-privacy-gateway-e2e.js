@@ -277,24 +277,28 @@ async function main() {
     });
 
     // ---- 3. Sugerencias diagnósticas: la evidencia literal sigue validando ------
+    // Por la única entrada con cliente (/api/clinical/diagnosis-suggestions, la
+    // extensión): la ruta por encounter se borró el 2026-10-01 sin cliente. El
+    // ámbito de privacidad sale del propio texto de la nota.
     provider.state.handler = (body, raw) => {
-      assertNoIdentifiers(raw, 'diagnostic-suggestions');
+      assertNoIdentifiers(raw, 'diagnosis-suggestions');
       const user = JSON.parse(body.messages[body.messages.length - 1].content);
-      const donJuan = firstToken(user.transcripcion, 'PACIENTE_NOMBRE', 'don ');
+      const donJuan = firstToken(user.nota_texto, 'PACIENTE_NOMBRE', 'don ');
       return {
         suggestions: [{
           title: 'Cefalea tensional probable', type: 'differential_or_working_impression', confidence: 0.7,
           rationale: 'Cefalea de tres días que empeora con pantallas.',
-          supporting_evidence: ['cefalea de tres días', `don ${donJuan}, siga`],
+          supporting_evidence: [`don ${donJuan}, siga`, 'cefalea de tres días'],
           against_or_uncertain: [], red_flags_to_check: [], suggested_next_questions: []
         }]
       };
     };
-    const suggestions = await call('POST', `/api/clinical/encounters/${encounterId}/diagnostic-suggestions`);
+    const suggestions = await call('POST', '/api/clinical/diagnosis-suggestions', { noteContent: TRANSCRIPT_A });
     await check('sugerencias: la evidencia citada con marcador se restaura y pasa la validación literal', () => {
       assert.strictEqual(suggestions.status, 200, JSON.stringify(suggestions.body));
       assert.strictEqual(suggestions.body.suggestions.length, 1, JSON.stringify(suggestions.body));
-      assert.ok(suggestions.body.suggestions[0].supporting_evidence.includes('don Juan, siga'));
+      assert.strictEqual(suggestions.body.suggestions[0].supportingEvidence, 'don Juan, siga');
+      assert.strictEqual(findTokens(JSON.stringify(suggestions.body)).length, 0);
     });
 
     // ---- 4. Operations: pipeline note + autofill con consultation_id ------------

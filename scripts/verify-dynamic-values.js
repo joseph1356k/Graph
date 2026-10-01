@@ -229,6 +229,46 @@ function fakeLlm(values, { calls = { count: 0 } } = {}) {
     assert.ok(result.matches.every((m) => typeof m.confidence === 'number'));
   });
 
+  await check('el field matcher no devuelve una frase prudente como valor, salvo que sea una opción del select', async () => {
+    const NoteFieldMatcher = require('../src/application/use-cases/NoteFieldMatcher');
+    const matcher = new NoteFieldMatcher(null);
+    const result = matcher.normalizeResult({
+      matches: [
+        { stepOrder: 1, value: 'No mencionado en la consulta.', grounding: 'explicit', evidence: 'x' },
+        { stepOrder: 2, value: 'No referido', grounding: 'explicit', evidence: 'etnia no referida' },
+        { stepOrder: 3, value: 'No referido', grounding: 'explicit', evidence: 'x' },
+        { stepOrder: 4, value: 'Cefalea', grounding: 'explicit', evidence: 'cefalea' }
+      ]
+    }, null, [
+      { stepOrder: 1, actionType: 'input' },
+      { stepOrder: 2, actionType: 'select', allowedOptions: [{ value: 'No referido', label: 'No referido' }, { value: 'Mestizo' }] },
+      { stepOrder: 3, actionType: 'input' }
+    ]);
+    assert.deepStrictEqual(result.matches.map((m) => [m.stepOrder, m.value]), [[2, 'No referido'], [4, 'Cefalea']]);
+  });
+
+  await check('si se descartó una frase prudente, el formulario deja de estar listo para enviar', async () => {
+    const NoteFieldMatcher = require('../src/application/use-cases/NoteFieldMatcher');
+    const matcher = new NoteFieldMatcher(null);
+    const fields = [{ stepOrder: 1, actionType: 'input' }, { stepOrder: 2, actionType: 'input' }];
+    const conHueco = matcher.normalizeResult({
+      readyToSubmit: true,
+      submitReason: 'todos los obligatorios llenos',
+      matches: [
+        { stepOrder: 1, value: 'No mencionado en la consulta.', grounding: 'explicit', evidence: 'x' },
+        { stepOrder: 2, value: 'Cefalea', grounding: 'explicit', evidence: 'cefalea' }
+      ]
+    }, null, fields);
+    assert.strictEqual(conHueco.readyToSubmit, false, 'el campo que el modelo contaba como lleno quedó vacío');
+    assert.ok(/sin dato/.test(conHueco.submitReason), conHueco.submitReason);
+    const completo = matcher.normalizeResult({
+      readyToSubmit: true,
+      submitReason: 'todos los obligatorios llenos',
+      matches: [{ stepOrder: 2, value: 'Cefalea', grounding: 'explicit', evidence: 'cefalea' }]
+    }, null, fields);
+    assert.strictEqual(completo.readyToSubmit, true, 'sin descartes, manda lo que diga el modelo');
+  });
+
   if (failures > 0) {
     console.error(`\n${failures} verificación(es) fallaron.`);
     process.exit(1);

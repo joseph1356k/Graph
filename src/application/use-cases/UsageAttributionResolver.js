@@ -105,7 +105,7 @@ class UsageAttributionResolver {
       return APPS.WEB_APP;
     }
     if (authPath === 'api_key') {
-      const nativas = [APPS.WINDOWS_APP, APPS.ANDROID_APP, APPS.CHROME_EXTENSION, APPS.WEB_APP];
+      const nativas = [APPS.WINDOWS_APP, APPS.ANDROID_APP, APPS.MAC_APP, APPS.CHROME_EXTENSION, APPS.WEB_APP];
       return nativas.includes(declared) ? declared : APPS.WINDOWS_APP;
     }
     return declared !== APPS.UNKNOWN ? declared : APPS.BACKEND;
