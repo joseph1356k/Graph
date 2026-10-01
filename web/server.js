@@ -85,6 +85,8 @@ const WindowsTelemetryService = require('../src/application/use-cases/WindowsTel
 const WindowsPanelService = require('../src/application/use-cases/WindowsPanelService');
 const registerWindowsTelemetryRoutes = require('./api/registerWindowsTelemetryRoutes');
 const registerWindowsPanelRoutes = require('./api/registerWindowsPanelRoutes');
+const WindowsDeviceService = require('../src/application/use-cases/WindowsDeviceService');
+const registerWindowsDeviceRoutes = require('./api/registerWindowsDeviceRoutes');
 const StudioProgressService = require('../src/application/use-cases/StudioProgressService');
 const registerStudioProgressRoutes = require('./api/registerStudioProgressRoutes');
 const registerWindowsAgentRoutes = require('./api/registerWindowsAgentRoutes');
@@ -289,6 +291,8 @@ const liveVoiceDeviceAuthorizer = new LiveVoiceDeviceAuthorizer(supabaseRestClie
 // por owner = email del usuario.
 const windowsTelemetryService = new WindowsTelemetryService(supabaseRestClient);
 const windowsPanelService = new WindowsPanelService({ catalogService, supabaseRestClient });
+// Una credencial por instalación de Windows (spec 076 de apps/windows): quién es cada una y si entra.
+const windowsDeviceService = new WindowsDeviceService(supabaseRestClient);
 // Bitácora de avances del laboratorio: la mitad humana del banco de pruebas
 // (la mitad automática se deriva de la telemetría en src/domain/windowsEngines.js).
 const studioProgressService = new StudioProgressService(supabaseRestClient);
@@ -579,6 +583,8 @@ function isMiracleMedicalProxyRequest(req) {
   '/api/providers',
   // Solo el panel (lectura admin). '/api/windows/latest-installer' queda público.
   '/api/windows/users',
+  // Las instalaciones de Windows: listar, aprobar y revocar exige el mismo admin.
+  '/api/windows/devices',
   // Catálogo de motores del laboratorio (las tabs del panel de logs).
   '/api/windows/engines',
   // Bitácora de avances del laboratorio: leer y escribir exige el mismo admin.
@@ -607,6 +613,11 @@ app.use('/api/android', (req, res, next) => {
 // Public API surface: authenticated only with a permanent client API key
 // (MIRACLE_API_KEYS). No session-token fallback.
 app.use('/api/v1', requireApiKey);
+// La compuerta de las instalaciones de Windows, justo detrás de la API key: con una clave de las
+// que nombra WINDOWS_DEVICE_GATE_LABELS —la embebida en el instalador, que es pública— todo lo
+// demás de /api/v1 exige además la credencial de una instalación APROBADA. Nace apagada (variable
+// vacía): no toca nada ni consulta la base. Ver web/api/registerWindowsDeviceRoutes.js.
+app.use('/api/v1', registerWindowsDeviceRoutes.createDeviceGate({ windowsDeviceService }));
 
 // ---- Contexto de atribución del consumo de IA ------------------------------
 // Va AQUÍ, después de toda la autenticación y antes de cualquier ruta: para
@@ -1219,6 +1230,13 @@ registerRealtimeSessionRoutes(app, { realtimeSessionService });
 // Windows Live: ingesta bajo /api/v1 (X-API-Key) + lectura admin /api/windows/*.
 registerWindowsTelemetryRoutes(app, { windowsTelemetryService });
 registerWindowsPanelRoutes(app, { windowsPanelService });
+registerWindowsDeviceRoutes(app, {
+  windowsDeviceService,
+  // Para encender la compuerta desde el panel: el mismo servicio con el que el panel ya escribe las
+  // API keys en las variables de su proyecto, y las etiquetas que existen de verdad.
+  vercelEnvService: apiKeyService.vercelEnvService,
+  etiquetasConocidas: () => apiKeyService.status().keys.map((entry) => entry.label)
+});
 registerStudioProgressRoutes(app, { studioProgressService });
 registerWindowsAgentRoutes(app, {
   agentTurnService,
