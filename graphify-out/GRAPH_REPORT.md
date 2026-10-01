@@ -1,17 +1,17 @@
-# Graph Report - Graph  (2026-09-17)
+# Graph Report - Graph  (2026-10-01)
 
 ## Corpus Check
-- 357 files · ~386,572 words
+- 394 files · ~468,932 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 12 file(s) not represented in the graph (top: .css 6, (none) 4, .example 1)
 
 ## Summary
-- 4147 nodes · 8195 edges · 233 communities (184 shown, 38 thin omitted)
-- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 534 edges (avg confidence: 0.86)
+- 4696 nodes · 9637 edges · 246 communities (211 shown, 35 thin omitted)
+- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 788 edges (avg confidence: 0.87)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `eef80d66`
+- Built from commit: `5b444793`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -27,84 +27,84 @@
 - verify-note-export-real-postgres.js
 - popup.js
 - generate-institutional-templates-seed.js
-- ClinicalAssistantPromptBuilder.js
+- verify-clinical-assistant-features.js
 - AgentTurnService.js
 - openaiBrain.js
 - MiracleSettings
 - WorkflowPlayer
-- Windows Panel Telemetry Service
+- windowsEngines.js
 - requireAuth.js
 - web_app.py
-- MiracleContext
-- AgentChat.js
+- voice_orchestration/service.py
+- withFeature
 - Neo4j Workflow Repository
 - miracle/app.js
 - demo-note-export-e2e.js
-- withPrivacyScope
-- web/api/registerPublicApiRoutes.js — fachada pública
+- ClinicalAssistantService.js
+- verify-live-voice-proxy.js
 - scripts
 - verify-clinical-workflow.js
 - Admin Workspace UI
-- ClinicalAssistantService.js
+- NoteExportService.js (contrato de exportación)
 - notes.py
-- ConsultationMirrorService.js
+- profile.js
 - Graph README
 - content.js
-- verify-note-fidelity.js
+- PromptClauses.js
 - auth-gate.js
 - build-chrome-extension.js
 - DOM Page Context Capture
-- computeSignatureHash
+- liveVoiceProxy.js
 - MiracleWorkspaceStore
 - Windows Element Inspector
-- cli.py
+- miracle_agent/config.py
 - dependencies
 - registerWorkflowRoutes.js
 - POST /api/v1/pipeline
-- Clinical Note Export
+- clinicalError
 - WorkflowCatalog
 - AndroidPanelService
 - BiopsyExtractionService.js
 - TeachVideoProviderConfigService.js
 - web/server.js — composition root
 - manifest.json
-- verify-dynamic-values.js
+- WorkflowBranchPlanner
 - ExecutionIntelligenceService
 - create
 - Neo4jDriver
 - WindowsAppReleaseService
 - LLMProvider
-- Vercel Deployment Config
-- knowledge.py
-- verify-note-rescue.js
+- vercel.json
+- MiracleContext
+- ref_assert
 - UsageDashboardService.js
-- OrganizerProfileService
+- verify-agent-decisor.js
 - requireClinicalAuth.js
 - dev-logs.js
-- notes/service.py
-- System Readiness Audit
-- Chrome Extension Auth Verification
+- contrato.js
+- audit-system-readiness.js
+- verify-chrome-extension-auth.js
 - API Key Management
 - LearningSessionService
 - SurfaceProfileService
 - TeachVideoService.js
 - registerPublicApiRoutes.js
 - SAP GUI Surface Docs
-- registerWindowsAgentRoutes.js
+- Modo consciente (computer-use, agent/turn)
 - UsageContext.js
 - Soniox STT Context Builder
 - Extension Background Session
 - detectors.js
-- Note Export DB Verification
+- verify-note-exports-db.js
 - WorkflowExecutionGuideBuilder
 - registerClinicalRoutes.js
 - SAP GUI COM Inspector
-- Operations Executor Simulation Script
+- verify-telemetria-windows.js
 - ClinicalNotePromptBuilder
-- ClinicalNoteValidationService.js
+- verify-note-evals.js
 - ClinicalTemplateService.js
-- Windows Telemetry Ingestion
-- agentTurnCapture.js
+- WindowsTelemetryService.js
+- verify-agent-platform.js
 - Clinical Review UI Confirmation
 - createDictation
 - Account and Usage Dashboard
@@ -131,24 +131,24 @@
 - Miracle Assistant Provider Config
 - Miracle Product LLM Provider Config
 - PARTE I — Los prompts, literales
-- prompt.js
-- Usage Ledger Storage
+- verify-agent-prompts.js
+- peticionSystemOne.js
 - plugin-api.js
 - PrivacyShieldService.js
 - geminiBrain.js
-- Agent Workflow Store
-- config.js
+- ClinicalAssistantPromptBuilder.js
+- DecisorService.js
 - VercelProjectEnvService.js
 - createWorkspaceController
 - Errores y hallazgos
-- Markdown Catalog Writer
-- Supabase Agent Memory
+- ref_path
+- SupabaseAgentMemoryRepository.js
 - GeminiVideoClient.js
 - verify-agent-workflow-access.js
 - createStateManager
 - studio-docs.js
-- Vercel Build Script
-- ConsciousProviderConfigService
+- verify-windows-devices.js
+- ConsciousProviderConfigService.js
 - ProtectionMap
 - Graphify en el equipo
 - UI Tree Visual Inspection
@@ -156,36 +156,36 @@
 - Workflow Run Timing Metrics
 - App Launch Strategy Ladder
 - verify-note-export-flow.js
-- Live E2E API Testing
-- Clinical Note Export
+- verify-explicit-modes.js
+- ClinicalNoteValidationService.js
 - Plugin Surface Adapters
 - Workflow Overlay Bridge
 - verify-ai-usage-telemetry.js
 - Graph Visualization Query
-- verify-workflow-learning.js
+- renderLogs
 - NoteFieldMatcher.js
-- Note Preview Rendering
-- tokens.js
+- WindowsDeviceService.js
+- ProtectionMap.js
 - Backend Capabilities API Contract
 - Live Plan Verification
 - Telemetría de consumo de IA — tokens, costos y atribución
 - Android Panel Routes
-- Maintenance Routes
+- 001 — Los logs de Ü Windows dejan de llenar la base
 - Studio Progress Routes
 - main
-- Windows Distribution Routes
+- verify-windows-release.js
 - API Server Entry
 - verify-privacy-shield.js
 - PrivacyShieldService
 - SupabaseNoteExportRepository
 - ClinicalNotePromptBuilder.js
-- PromptClauses.js
+- Qué pasó con cada prompt
 - create
 - Service Worker Shell Cache
 - Step Row Rendering
 - WorkflowAssistantPolicy.js
 - Miracle Agent Module
-- registerMcpRoutes.js
+- learning.js
 - SystemHealthAlertService
 - verify-ai-usage-pricing.js
 - create
@@ -196,37 +196,37 @@
 - verify-workflow-assistant-policy.js
 - AiUsageRecorder.js
 - ClinicalEncounterService.js
-- interpretarPasos.js
+- android-live-session.js
 - pricing.js
 - createProductLlmController
 - verify-egress-gateway.js
 - NoteModeResolver.js
 - createEditorController
-- createVoiceStreamingController
-- El escudo de privacidad: qué sale hacia los proveedores de IA, y qué no
+- OpenAICompatibleProductLLMClient
+- callMiracleRuntime
 - verify-public-pipeline.js
-- ClinicalNoteGeneratorService
+- ClinicalNoteGeneratorService.js
 - SupabaseUsageEventStore
 - windows-lab.js
-- MIRACLE_NOTES_SYSTEM_PROMPTS.md
 - PARTE III — Dónde llega cada prompt y en qué estado está
+- WindowsPanelService.js
 - Recomendaciones estructurales
 - UsageAttributionResolver
 - SupabasePatientSeedRepository
 - SupabaseRestClient
 - plugin-host.js
 - create
-- verify-consultation-mirror.js
-- verify-health-alerts.js
-- RealtimeSessionService.js
-- identitySection.js
+- registerAgentDecisorRoutes.js
+- registerWindowsDeviceRoutes.js
+- verify-realtime-session.js
+- Step.js
 - Vision Live
-- fakeSupabase.js
+- ref_crypto
 - NoteGenerationRescueService
 - start
-- SystemHealthAlertService.js
-- verify-prompt-clauses.js
-- WorkflowDecisionNormalizer
+- textNormalize.js
+- ClinicalAssistantValidationService.js
+- NNN — <el resultado, no el área>
 - PrivacyLedgerReader.js
 - DOC: HIPÓTESIS — nodos = ubicaciones, aristas = transiciones
 - El casador de campos
@@ -236,32 +236,45 @@
 - PCMProcessor
 - api.js
 - WorkflowRecorder.cs
-- conftest.py
+- verify-diarizacion.js
 - CLAUDE.md
+- verify-sondeo-de-exportes.js
+- WorkflowLearner.js
+- SupabaseClinicalTemplateRepository.js
+- sonda-del-decisor-android.js
+- verify-dynamic-values.js
+- Workflow.js
+- 003 — Preguntar por exportes y registrarse dejan de gastar la cuota de logs
+- SupabaseClinicalEncounterRepository.js
+- 004 — cada instalación de Ü para Windows tiene su credencial, y la clave del instalador solo sirve para presentarse
+- grounding.js
+- Arquitectura y Plan del Refactor (Graph)
+- 005 — Una sola Ü: el cerebro obedece, sabe con quién habla y sus herramientas dicen lo que hacen
+- relojFalso
 
 ## God Nodes (most connected - your core abstractions)
 1. `create()` - 75 edges
-2. `clinicalError()` - 37 edges
-3. `MiracleContext` - 36 edges
-4. `main()` - 36 edges
+2. `MiracleContext` - 36 edges
+3. `main()` - 36 edges
+4. `clinicalError()` - 36 edges
 5. `MiracleSettings` - 34 edges
 6. `scripts` - 34 edges
-7. `withFeature()` - 31 edges
+7. `withFeature()` - 32 edges
 8. `PARTE I — Los prompts, literales` - 31 edges
 9. `Neo4jWorkflowRepository` - 30 edges
-10. `mount()` - 28 edges
+10. `main()` - 29 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Chrome MV3 manifest — host_permissions <all_urls>` --semantically_similar_to--> `chrome-extension-src/graph-trainer (host wrapper)`  [INFERRED] [semantically similar]
-  architecture-infrastructure.md → README.md
-- `Fase de aprendizaje (enseñar un formulario)` --semantically_similar_to--> `Bucle central: grabar → persistir → catalogar → replay`  [INFERRED] [semantically similar]
-  como-funciona-el-sistema.md → README.md
-- `app/web_app.py — composición ASGI/Starlette` --semantically_similar_to--> `api/miracle_runtime.py — entrada ASGI Python`  [INFERRED] [semantically similar]
-  bounded/miracle-ai/README.md → architecture-infrastructure.md
-- `Decisión: eliminar Supabase por completo` --conceptually_related_to--> `SupabaseRestClient.js — PostgREST service-role`  [AMBIGUOUS]
-  ARQUITECTURA_Y_PLAN.md → architecture-infrastructure.md
-- `WorkflowExecutor.js (replay)` --semantically_similar_to--> `WorkflowExecutor.js — planes fail-closed`  [EXTRACTED] [semantically similar]
-  README.md → architecture-infrastructure.md
+- `25. Miracle product LLM — orquestador de voz (organiza la nota en tiempo real)` --references--> `_build_orchestrator_instructions()`  [INFERRED]
+  docs/MIRACLE_NOTES_SYSTEM_PROMPTS.md → bounded/miracle-ai/src/miracle_agent/integrations/product_llm/note_orchestrator_adapter.py
+- `Verificador que acompaña al prompt` --references--> `ClinicalNoteValidationService`  [INFERRED]
+  docs/MIRACLE_NOTES_SYSTEM_PROMPTS.md → src/application/use-cases/ClinicalNoteValidationService.js
+- `⚪ E-17 — Los prompts del portal viven fuera del sistema de prompts` --references--> `LLMProvider`  [INFERRED]
+  docs/MIRACLE_NOTES_SYSTEM_PROMPTS.md → src/infrastructure/LLMProvider.js
+- `Pendiente (fuera de esta pasada)` --references--> `LLMProvider`  [INFERRED]
+  docs/MIRACLE_NOTES_SYSTEM_PROMPTS.md → src/infrastructure/LLMProvider.js
+- `Promesas` --references--> `LLMProvider`  [INFERRED]
+  docs/specs/000-lo-heredado.md → src/infrastructure/LLMProvider.js
 
 ## Import Cycles
 - None detected.
@@ -269,13 +282,13 @@
 ## Hyperedges (group relationships)
 - **Contrato público /api/v1 (pipeline, streaming, autofill, workflows, assistant)** — web_public_api_docs, web_public_autofill_api_docs, web_public_api_docs_assistant_chat_endpoint, web_public_autofill_api_docs_learning_sessions_endpoint, web_public_autofill_api_docs_workflows_endpoint, web_public_api_docs_apikey_auth [EXTRACTED 0.90]
 - **Cadena única del producto: aprender campos → transcribir → organizar nota → autofill** — arquitectura_y_plan_graph_engine, arquitectura_y_plan_miracle_flow, bounded_miracle_ai_readme_integrations_deepgram, bounded_miracle_ai_readme_integrations_product_llm, src_application_use_cases_notefieldmatcher, como_funciona_el_sistema_human_confirmation [EXTRACTED 0.90]
-- **Ciclo de exportación de nota firmada al HIS (encolar → claim → result → exportada)** — docs_note_export_contract_note_export_service, docs_note_export_contract_signature_hash, docs_note_export_contract_claim_endpoint, docs_note_export_contract_state_machine, architecture_infrastructure_graph_note_exports_table, scripts_simulate_operations_executor [EXTRACTED 0.95]
+- **Clasificación de causa raíz del inspector** — web_public_studio_docs_motor_inspector_elementos_inspectordiagnostics, web_public_studio_docs_motor_inspector_elementos_causa_sin_etiqueta, web_public_studio_docs_motor_inspector_elementos_causa_etiqueta_ambigua, web_public_studio_docs_motor_inspector_elementos_no_resoluble, web_public_studio_docs_motor_inspector_elementos_fragil [EXTRACTED 0.90]
 - **Pipeline de generación de nota clínica sobre el template_snapshot** — docs_clinical_api_contract_template_snapshot, src_application_use_cases_clinicalnotepromptbuilder, src_application_use_cases_clinicalnotegeneratorservice, src_application_use_cases_clinicalnotevalidationservice, docs_clinical_api_contract_note_json, src_application_use_cases_consultationmirrorservice [EXTRACTED 0.90]
 - **Los tres recorridos de la pantalla SAP (campos, visual, árbol)** — web_public_studio_docs_motor_escaneo_sapgui_readfields, web_public_studio_docs_motor_escaneo_sapgui_readvisibleelements, web_public_studio_docs_motor_escaneo_sapgui_treenodes, web_public_studio_docs_motor_escaneo_sapgui_session [EXTRACTED 0.90]
-- **Clasificación de causa raíz del inspector** — web_public_studio_docs_motor_inspector_elementos_inspectordiagnostics, web_public_studio_docs_motor_inspector_elementos_causa_sin_etiqueta, web_public_studio_docs_motor_inspector_elementos_causa_etiqueta_ambigua, web_public_studio_docs_motor_inspector_elementos_no_resoluble, web_public_studio_docs_motor_inspector_elementos_fragil [EXTRACTED 0.90]
+- **Ciclo de exportación de nota firmada al HIS (encolar → claim → result → exportada)** — docs_note_export_contract_note_export_service, docs_note_export_contract_signature_hash, docs_note_export_contract_claim_endpoint, docs_note_export_contract_state_machine, architecture_infrastructure_graph_note_exports_table, scripts_simulate_operations_executor [EXTRACTED 0.95]
 - **Flujo de alineación al punto de arranque (locator → escalera → mismatch)** — web_public_studio_docs_motor_localizador_superficie_surfacelocator, web_public_studio_docs_motor_navegacion_superficie_surfacenavigator, web_public_studio_docs_motor_navegacion_superficie_escalera, web_public_studio_docs_motor_localizador_superficie_surfacemismatch, web_public_studio_docs_motor_localizador_superficie_resumeindexfor [INFERRED 0.80]
 
-## Communities (233 total, 38 thin omitted)
+## Communities (246 total, 35 thin omitted)
 
 ### Community 0 - "web/server.js"
 Cohesion: 0.02
@@ -286,152 +299,148 @@ Cohesion: 0.06
 Nodes (98): activate(), aggregateEngines(), appendLogs(), appGroup(), appRadius(), authedFetch(), authedSend(), authToken() (+90 more)
 
 ### Community 2 - "trainer-plugin.js"
-Cohesion: 0.07
+Cohesion: 0.06
 Nodes (88): apiClient(), appendAgentMessage(), applySurfaceProfileToOptions(), bindControls(), bindControlsDelegated(), bindMiracleNoteEditorTyping(), buildMountOptions(), clearMiracleDiagnosisSuggestions() (+80 more)
 
 ### Community 3 - "provider-studio.js"
 Cohesion: 0.05
-Nodes (113): ApiKeyService.generate → triggerRedeploy, POST /api/v1/enroll (planeado), requireApiKey (validación env + DB), WindowsDeviceService + graph_windows_devices (planeado), vis-network standalone UMD library, Assistant Lab Chat Page, appendMessage, authenticatedFetch (assistant lab) (+105 more)
+Nodes (112): ApiKeyService.generate → triggerRedeploy, POST /api/v1/enroll (planeado), requireApiKey (validación env + DB), WindowsDeviceService + graph_windows_devices (planeado), vis-network standalone UMD library, Assistant Lab Chat Page, appendMessage, authenticatedFetch (assistant lab) (+104 more)
 
 ### Community 4 - "Assistant Runtime Overlay UI"
 Cohesion: 0.07
 Nodes (76): bindDragHandlers(), cancelPendingMove(), clamp(), clearChatComposer(), clearSpeech(), clearSpotlight(), clearUserSpeech(), closeChatComposer() (+68 more)
 
 ### Community 5 - "note_orchestrator_adapter.py"
-Cohesion: 0.07
-Nodes (32): OpenAICompatibleProductLLMClient, ProductLLMClientError, RuntimeError, _env_str(), ProductLLMSettings, ProductLLMAgentTask, ProductLLMNoteUpdate, ProductLLMOrchestratorInput (+24 more)
+Cohesion: 0.08
+Nodes (38): ProductLLMSettings, ProductLLMAgentTask, ProductLLMNoteUpdate, ProductLLMOrchestratorInput, ProductLLMOrchestratorOutput, ProductLLMUsageMetrics, VoiceTranscriptSegment, _append_latest_segment() (+30 more)
 
 ### Community 6 - "recorder.js"
-Cohesion: 0.10
+Cohesion: 0.09
 Nodes (65): apiClient(), appendActivity(), buildAttributeSelector(), buildClickIntentId(), buildPendingClickIntent(), buildSurfaceHints(), clearPendingClickIntent(), collectAlternativeTargets() (+57 more)
 
 ### Community 7 - "verify-clinical-assistant.js"
-Cohesion: 0.08
-Nodes (27): assert, ClinicalAssistantPromptBuilder, ClinicalAssistantService, ClinicalAssistantValidationService, ClinicalEncounterService, ClinicalNoteValidationService, ClinicalTemplateService, createFakeLlm() (+19 more)
+Cohesion: 0.15
+Nodes (20): assert, ClinicalAssistantPromptBuilder, ClinicalAssistantService, ClinicalAssistantValidationService, ClinicalEncounterService, ClinicalNoteValidationService, ClinicalTemplateService, createFakeLlm() (+12 more)
 
 ### Community 8 - "verify-note-export-real-postgres.js"
-Cohesion: 0.15
-Nodes (17): assert, check(), { computeSignatureHash }, fs, http, main(), NoteExportService, path (+9 more)
+Cohesion: 0.13
+Nodes (19): Hallazgos, Cierre, assert, check(), { computeSignatureHash }, fs, http, main() (+11 more)
 
 ### Community 9 - "popup.js"
-Cohesion: 0.10
-Nodes (46): Panel de cuenta (login usuario/clave), Ajuste Backend URL, buildExecutionDiagnosticSummary(), buildSessionTraceSummary(), buildVoiceLogSummary(), clearLogs(), collectErrorContextWindows(), escapeHtml() (+38 more)
+Cohesion: 0.14
+Nodes (27): clearLogs(), escapeHtml(), EXECUTION_LOG_SCOPES, getActiveTabId(), getLocalStorage(), getStorage(), Vista de mejoras / overlay sobre la página, init() (+19 more)
 
 ### Community 10 - "generate-institutional-templates-seed.js"
 Cohesion: 0.14
 Nodes (20): buildSectionInputs(), buildSql(), buildTemplates(), capitalize(), clinicalSpecialties, ClinicalTemplateService, conciseInstruction(), crypto (+12 more)
 
-### Community 11 - "ClinicalAssistantPromptBuilder.js"
-Cohesion: 0.05
-Nodes (46): assert, captureRoutes(), { chromium }, ClinicalAssistantPromptBuilder, ClinicalAssistantService, ClinicalAssistantValidationService, contentTypeFor(), createAssistantService() (+38 more)
+### Community 11 - "verify-clinical-assistant-features.js"
+Cohesion: 0.14
+Nodes (25): playwright, assert, captureRoutes(), { chromium }, ClinicalAssistantPromptBuilder, ClinicalAssistantService, ClinicalAssistantValidationService, contentTypeFor() (+17 more)
 
 ### Community 12 - "AgentTurnService.js"
-Cohesion: 0.08
-Nodes (31): src/infrastructure/conscious-brain (OpenAI/Gemini), AgentTurnService, apiKeyForFrozenProvider(), { baseCatalog, catalogNames }, { freshSession, encodeSession, decodeSession }, { imageSize, screenScale }, { learnedToMcp, workflowToMcp, InMemoryAgentLearningStore }, missingKeyMessageForProvider() (+23 more)
+Cohesion: 0.06
+Nodes (42): src/infrastructure/conscious-brain (OpenAI/Gemini), AgentTurnService, apiKeyForFrozenProvider(), { baseCatalog, catalogNames }, { freshSession, encodeSession, decodeSession }, { imageSize, screenScale }, missingKeyMessageForProvider(), { normalizeProfile } (+34 more)
 
 ### Community 13 - "openaiBrain.js"
-Cohesion: 0.13
-Nodes (24): { runGeminiTurn }, { runOpenAiTurn }, runProviderTurn(), { API_FAMILIES, FEATURES }, asArr(), asObj(), { ASSISTANT_TOOLS }, assistantFn() (+16 more)
+Cohesion: 0.11
+Nodes (26): { runGeminiTurn }, { runOpenAiTurn }, runProviderTurn(), { API_FAMILIES, FEATURES }, ARROWS, asArr(), asObj(), { ASSISTANT_TOOLS } (+18 more)
 
 ### Community 14 - "MiracleSettings"
-Cohesion: 0.09
-Nodes (24): MiracleSettings, create_voice_routes(), Route, VoiceStreamSession, Protocol, RuntimeError, VoiceStreamingError, VoiceStreamingProvider (+16 more)
+Cohesion: 0.10
+Nodes (25): MiracleSettings, VoiceStreamSession, Protocol, RuntimeError, VoiceStreamingError, VoiceStreamingProvider, VoiceStreamingService, _build_deepgram_websocket_url() (+17 more)
 
 ### Community 15 - "WorkflowPlayer"
 Cohesion: 0.19
 Nodes (15): AgentWorkflowStore.matchesSurface, WorkflowExecutionGuideBuilder (LLM organizador), WorkflowLearner (título autogenerado), DOC: Coincidencia de superficie y estado — los 3 escenarios, valueMode (fixed | dynamic | flexible), DOC: SurfaceReadiness — el motor de carga de UI, DOC: WorkflowPlayer — motor de ejecución subconsciente, DOC: Enseñanza — cómo un workflow entra al sistema (+7 more)
 
-### Community 16 - "Windows Panel Telemetry Service"
-Cohesion: 0.10
-Nodes (27): APP_LABELS, appCoordinate(), appLabel(), badRequest(), clampLimit(), { decorateEvent, summarizeEngines }, requireEmail(), WindowsPanelService (+19 more)
+### Community 16 - "windowsEngines.js"
+Cohesion: 0.22
+Nodes (15): addToTally(), BY_APP, BY_KIND, BY_TAG, decorateEvent(), emptyTally(), engineForEvent(), ENGINES (+7 more)
 
 ### Community 17 - "requireAuth.js"
 Cohesion: 0.12
-Nodes (32): attachWorkflowAccess(), authenticateRequest(), createLocalAdminPayload(), createLocalAdminSession(), createLocalAnonymousSession(), crypto, extractApiKey(), extractToken() (+24 more)
+Nodes (33): attachWorkflowAccess(), authenticateRequest(), createLocalAdminPayload(), createLocalAdminSession(), createLocalAnonymousSession(), crypto, extractApiKey(), extractToken() (+25 more)
 
 ### Community 18 - "web_app.py"
-Cohesion: 0.14
-Nodes (11): create_notes_app(), create_runtime_routes(), setup_product_llm(), Route, ProductLLMProviderSpec, ProductLLMSetupError, ProductLLMSetupPayload, ProductLLMSetupService (+3 more)
+Cohesion: 0.07
+Nodes (21): create_notes_app(), create_notes_routes(), Route, create_runtime_routes(), setup_product_llm(), Route, create_voice_routes(), Route (+13 more)
 
-### Community 19 - "MiracleContext"
+### Community 19 - "voice_orchestration/service.py"
 Cohesion: 0.11
-Nodes (22): MiracleContext, create_voice_orchestration_routes(), orchestrate_voice_event(), Route, VoiceOrchestratorAgentTask, VoiceOrchestratorEvent, VoiceOrchestratorNoteUpdate, VoiceOrchestratorResponse (+14 more)
+Nodes (20): create_voice_orchestration_routes(), orchestrate_voice_event(), Route, VoiceOrchestratorAgentTask, VoiceOrchestratorEvent, VoiceOrchestratorNoteUpdate, VoiceOrchestratorResponse, VoiceOrchestratorSegment (+12 more)
 
-### Community 20 - "AgentChat.js"
-Cohesion: 0.18
-Nodes (6): AgentChat, { FEATURES }, HISTORY_ROLES, { withFeature }, workflowAssistantPolicy, WorkflowDecisionNormalizer
+### Community 20 - "withFeature"
+Cohesion: 0.14
+Nodes (8): AgentChat, { FEATURES }, HISTORY_ROLES, { withFeature }, workflowAssistantPolicy, WorkflowDecisionNormalizer, WorkflowDecisionNormalizer, withFeature()
 
 ### Community 22 - "miracle/app.js"
-Cohesion: 0.17
-Nodes (16): appendVoiceDebug(), classifyVoiceDebugEntry(), clearVoiceDebug(), dom, getFilteredVoiceDebugEntries(), loadVoiceOrchestrationStatus(), onFinalTranscript(), onRecordingStarted() (+8 more)
+Cohesion: 0.09
+Nodes (29): ref, appendVoiceDebug(), classifyVoiceDebugEntry(), clearVoiceDebug(), dom, getFilteredVoiceDebugEntries(), loadVoiceOrchestrationStatus(), onFinalTranscript() (+21 more)
 
 ### Community 23 - "demo-note-export-e2e.js"
-Cohesion: 0.19
-Nodes (14): assert, { computeSignatureHash }, { createFakeSupabase }, express, http, main(), NoteExportService, outcome (+6 more)
-
-### Community 24 - "withPrivacyScope"
-Cohesion: 0.19
-Nodes (6): ClinicalAssistantService, withPrivacyScope(), createUpstreamUsageRecorder, { FEATURES }, registerMedicalRoutes(), { withPrivacyScope }
-
-### Community 25 - "web/api/registerPublicApiRoutes.js — fachada pública"
 Cohesion: 0.11
-Nodes (19): registerMcpRoutes.js — JSON-RPC MCP stateless, registerPublicApiRoutes.js — /api/v1, requireAuth.js — realm local (sesión/API key), WorkflowExecutor.js — planes fail-closed, registerMcpRoutes.js — servidor MCP JSON-RPC, SurfaceLocator.cs — el "URL de Windows", valueMode por step (fixed/dynamic/flexible), WorkflowPlayer.cs (+11 more)
+Nodes (23): assert, { computeSignatureHash }, { createFakeSupabase }, express, http, main(), NoteExportService, outcome (+15 more)
+
+### Community 24 - "ClinicalAssistantService.js"
+Cohesion: 0.12
+Nodes (15): ref_async_hooks, ClinicalAssistantPromptBuilder, ClinicalAssistantService, ClinicalAssistantValidationService, { clinicalError, isClinicalError }, contextBuilder, { FEATURES }, NoteModeResolver (+7 more)
+
+### Community 25 - "verify-live-voice-proxy.js"
+Cohesion: 0.13
+Nodes (55): assert, assertLogDeCierre(), assertRechazoVistoPorElCelular(), assertSinCanario(), assertSinIdCompleto(), assertSinSecretosDelUpstream(), attachLiveVoiceProxy, capturarLogs() (+47 more)
 
 ### Community 26 - "scripts"
 Cohesion: 0.06
 Nodes (34): scripts, audit:readiness, build:chrome-extension, build:vercel, demo:note-export, evidencia:privacidad, simulate:operations, start (+26 more)
 
 ### Community 27 - "verify-clinical-workflow.js"
-Cohesion: 0.14
-Nodes (20): assert, ClinicalEncounterService, ClinicalNoteGeneratorService, ClinicalNotePromptBuilder, ClinicalNoteValidationService, ClinicalTemplateService, createFakeLlm(), createFakeSupabaseRestClient() (+12 more)
+Cohesion: 0.13
+Nodes (21): assert, ClinicalEncounterService, ClinicalNoteGeneratorService, ClinicalNotePromptBuilder, ClinicalNoteValidationService, ClinicalTemplateService, createFakeLlm(), createFakeSupabaseRestClient() (+13 more)
 
 ### Community 28 - "Admin Workspace UI"
-Cohesion: 0.17
+Cohesion: 0.16
 Nodes (23): actionButton(), actionLink(), appendLogEntry(), authenticatedFetch(), clearLogs(), copyLogs(), ensureLogPanel(), getAccessToken() (+15 more)
 
-### Community 29 - "ClinicalAssistantService.js"
-Cohesion: 0.11
-Nodes (18): Contrato API Clínica — Miracle Backend, ClinicalEncounter, ClinicalTemplate, Máquina de estados del encounter, NoteJson, template_snapshot congelado, Asistente Clínico Contextual — Backend, Quién manda sobre cada dato de una consulta (+10 more)
+### Community 29 - "NoteExportService.js (contrato de exportación)"
+Cohesion: 0.13
+Nodes (15): graph_note_exports — cola durable en Postgres, requireClinicalAuth.js — JWT Supabase vía JWKS, Contrato API Clínica — Miracle Backend, ClinicalEncounter, ClinicalTemplate, Máquina de estados del encounter, NoteJson, template_snapshot congelado (+7 more)
 
 ### Community 30 - "notes.py"
-Cohesion: 0.23
-Nodes (19): annotate_heading_paths(), BlockContext, build_context_packet(), build_history_entry(), build_note_blocks(), build_session_diff(), _classify_block_change(), ContextPacket (+11 more)
+Cohesion: 0.19
+Nodes (22): annotate_heading_paths(), BlockContext, build_context_packet(), build_history_entry(), build_note_blocks(), build_session_diff(), _classify_block_change(), ContextPacket (+14 more)
 
-### Community 31 - "ConsultationMirrorService.js"
-Cohesion: 0.21
-Nodes (9): ConsultationMirrorService, deriveMotivo(), noteJsonToSections(), { specialtyDisplayName }, toStoreConsultationType(), transcriptTextToTurns(), normalizeSpecialtyCode(), SPECIALTY_NAMES (+1 more)
+### Community 31 - "profile.js"
+Cohesion: 0.27
+Nodes (10): catalogCode(), CODE_BY_NAME, normalizeProfile(), plain(), PROFILE_KINDS, PROFILE_NONE, profileOfSession(), { SPECIALTY_NAMES, normalizeSpecialtyCode } (+2 more)
 
 ### Community 32 - "Graph README"
-Cohesion: 0.15
-Nodes (16): Chrome MV3 manifest — host_permissions <all_urls>, Arquitectura y Plan del Refactor (Graph), Decisión: Deepgram como proveedor STT canónico, Motor Graph (aprendizaje y replay de workflows), Flujo clínico Miracle (voz → nota → autofill), Pipeline unificado en streaming SSE (propuesto), Decisión: eliminar Supabase por completo, trainer-plugin.js (mega-archivo a dividir) (+8 more)
+Cohesion: 0.13
+Nodes (17): Chrome MV3 manifest — host_permissions <all_urls>, WorkflowExecutor.js — planes fail-closed, trainer-plugin.js (mega-archivo a dividir), valueMode por step (fixed/dynamic/flexible), Valores dinámicos en workflows, bindTo — compartir valor entre pasos, Sustitución dinámica por contexto en el plan, Regla fail-closed: campo dinámico sin dato falla el plan (+9 more)
 
 ### Community 33 - "content.js"
 Cohesion: 0.14
 Nodes (29): bootstrap(), buildElementSelector(), buildSelectedElementPayload(), collectElementContextTrail(), createExtensionAuthBridge(), dispatchAuthChanged(), ensureWidget(), getMode() (+21 more)
 
-### Community 34 - "verify-note-fidelity.js"
-Cohesion: 0.21
-Nodes (13): assert, ClinicalEncounterService, ClinicalNotePromptBuilder, ClinicalTemplateService, GENERAL_SECTIONS, main(), NoteModeResolver, PATHOLOGY_SECTIONS (+5 more)
+### Community 34 - "PromptClauses.js"
+Cohesion: 0.09
+Nodes (22): assert, ClinicalEncounterService, ClinicalNotePromptBuilder, ClinicalTemplateService, GENERAL_SECTIONS, main(), NoteModeResolver, PATHOLOGY_SECTIONS (+14 more)
 
 ### Community 35 - "auth-gate.js"
 Cohesion: 0.14
 Nodes (18): buildOverlay(), createParticleField(), step(), ensureOverlay(), ensureStyle(), hideOverlay(), init(), readStoredSession() (+10 more)
 
 ### Community 36 - "build-chrome-extension.js"
-Cohesion: 0.13
-Nodes (20): Dashboard — Extension Releases, build(), ensureDir(), { EXTENSION_DIR_NAME, collectExtensionFiles, buildReadme }, fs, outputRoot, path, removeDir() (+12 more)
+Cohesion: 0.12
+Nodes (21): Dashboard — Extension Releases, build(), ensureDir(), { EXTENSION_DIR_NAME, collectExtensionFiles, buildReadme }, fs, outputRoot, path, removeDir() (+13 more)
 
 ### Community 37 - "DOM Page Context Capture"
 Cohesion: 0.20
 Nodes (20): buildAttributeSelector(), buildControlSnapshot(), buildDomPathSelector(), buildPageContext(), capturePageSnapshot(), controlPriority(), controlTypeForElement(), describeControlGroup() (+12 more)
 
-### Community 38 - "computeSignatureHash"
-Cohesion: 0.24
-Nodes (9): assert, {
-  canonicalSignaturePayload,
-  computeSignatureHash,
-  signatureHashMatches
-}, path, vector, VECTOR_PATH, canonicalSignaturePayload(), computeSignatureHash(), { createHash } (+1 more)
+### Community 38 - "liveVoiceProxy.js"
+Cohesion: 0.09
+Nodes (37): archivosJs(), assert, fs, fuenteLineas(), leerFuente(), main(), path, { redactUrlForLog } (+29 more)
 
 ### Community 39 - "MiracleWorkspaceStore"
 Cohesion: 0.16
@@ -441,13 +450,13 @@ Nodes (7): buildBlocks(), diffSummary(), ensureDir(), fs, MiracleWorkspaceStore,
 Cohesion: 0.12
 Nodes (20): SelectedTreeNode (fila del árbol por selección), SurfaceDetector (lista cerrada saplogon/sapgui), windowsEngines.js (catálogo de motores del backend), Doc: Inspector de elementos, causa=ETIQUETA-AMBIGUA, causa=SIN-ETIQUETA, DiagnoseSap (comparación por Id), DiagnoseUia (comparación por Bounds) (+12 more)
 
-### Community 41 - "cli.py"
-Cohesion: 0.24
-Nodes (7): ArgumentParser, build_parser(), main(), _parse_custom_terms_env(), Path, Custom STT vocabulary env value: one term per line (commas also split)., ensure_knowledge_base()
+### Community 41 - "miracle_agent/config.py"
+Cohesion: 0.29
+Nodes (5): _parse_custom_terms_env(), Custom STT vocabulary env value: one term per line (commas also split)., _env_str(), dotenv, os
 
 ### Community 42 - "dependencies"
-Cohesion: 0.20
-Nodes (10): dependencies, archiver, axios, body-parser, dotenv, express, express-rate-limit, jose (+2 more)
+Cohesion: 0.18
+Nodes (11): dependencies, archiver, axios, body-parser, dotenv, express, express-rate-limit, jose (+3 more)
 
 ### Community 43 - "registerWorkflowRoutes.js"
 Cohesion: 0.18
@@ -457,13 +466,9 @@ Nodes (16): isDependencyUnavailable(), publicErrorMessage(), statusForError(), b
 Cohesion: 0.25
 Nodes (14): Miracle Backend API (v1), POST /api/v1/autofill/match, Guía para consumir la API de Miracle, POST /api/v1/pipeline, POST /api/v1/transcription/session, Miracle API Documentation Page, X-API-Key permanent API key auth, POST /api/v1/assistant/chat (+6 more)
 
-### Community 45 - "Clinical Note Export"
-Cohesion: 0.33
-Nodes (3): clinicalError(), NoteExportService, toPublicExport()
-
-### Community 46 - "WorkflowCatalog"
-Cohesion: 0.06
-Nodes (20): assert, capturingRepo(), Neo4jWorkflowRepository, Step, assert, Step, treeStepData, WorkflowExecutor (+12 more)
+### Community 45 - "clinicalError"
+Cohesion: 0.31
+Nodes (4): Las fases, clinicalError(), NoteExportService, toPublicExport()
 
 ### Community 47 - "AndroidPanelService"
 Cohesion: 0.20
@@ -478,32 +483,40 @@ Cohesion: 0.31
 Nodes (4): PROVIDERS, { resolveTeachConfig }, TeachVideoProviderConfigService, VercelProjectEnvService
 
 ### Community 50 - "web/server.js — composition root"
-Cohesion: 0.20
-Nodes (11): api/index.js — adaptador Vercel, api/miracle_runtime.py — entrada ASGI Python, integrations/deepgram|soniox/streaming.py, Riesgo: estado persistido en /tmp efímero, UsageLedgerStore — ledger JSONL en /tmp, features/voice/service.py — mint de credenciales STT, web/server.js — composition root, Guía de migración Vercel → AWS/Azure (+3 more)
+Cohesion: 0.12
+Nodes (18): api/index.js — adaptador Vercel, api/miracle_runtime.py — entrada ASGI Python, integrations/deepgram|soniox/streaming.py, registerMcpRoutes.js — JSON-RPC MCP stateless, registerPublicApiRoutes.js — /api/v1, requireAuth.js — realm local (sesión/API key), Riesgo: estado persistido en /tmp efímero, UsageLedgerStore — ledger JSONL en /tmp (+10 more)
 
 ### Community 51 - "manifest.json"
 Cohesion: 0.15
 Nodes (12): action, default_popup, default_title, background, service_worker, content_scripts, description, host_permissions (+4 more)
 
-### Community 52 - "verify-dynamic-values.js"
-Cohesion: 0.06
-Nodes (21): assert, DynamicValueResolver, executorWith(), patientWorkflow(), Step, WorkflowExecutor, TransversalWorkflowComposer, WorkflowBranch (+13 more)
+### Community 52 - "WorkflowBranchPlanner"
+Cohesion: 0.07
+Nodes (15): TransversalWorkflowComposer, WorkflowBranch, WorkflowBranchLearning, TransversalWorkflowComposer, WorkflowBranch, WorkflowBranchPlanner, TransversalWorkflowComposer, WorkflowBranchPlanner (+7 more)
 
 ### Community 54 - "create"
 Cohesion: 0.06
 Nodes (85): create(), applyInputStep(), applyNativeSelectValue(), applyNativeSelectWithKeyboardFallback(), applyRuntimeDecisionToPlan(), applySelectStep(), buildDiagnosticKey(), buildRuntimeAbortError() (+77 more)
 
-### Community 58 - "Vercel Deployment Config"
-Cohesion: 0.13
-Nodes (14): includeFiles, maxDuration, includeFiles, buildCommand, crons, framework, functions, api/index.js (+6 more)
+### Community 56 - "WindowsAppReleaseService"
+Cohesion: 0.18
+Nodes (7): 002 — «Distribuir App» publica: manda el mensaje que el workflow exige, Diagnóstico: qué se midió, Evidencia (2026-09-30), Las fases, Lo que NO entra, Promesas, WindowsAppReleaseService
 
-### Community 59 - "knowledge.py"
-Cohesion: 0.26
-Nodes (10): Path, safe_workspace_path(), write_markdown(), create_knowledge_file(), knowledge_path(), KnowledgeFile, list_knowledge_files(), Path (+2 more)
+### Community 57 - "LLMProvider"
+Cohesion: 0.11
+Nodes (12): 8. Cambios mecánicos, sin discusión, 🔴 E-01 — `temperature` sin fijar en todas las llamadas clínicas, Cómo se demuestra, El claim, y su alcance, El escudo de privacidad: qué sale hacia los proveedores de IA, y qué no, Limitaciones conocidas, Los marcadores, Modos (+4 more)
 
-### Community 60 - "verify-note-rescue.js"
-Cohesion: 0.33
-Nodes (6): assert, encounter(), fakeGenerator(), fakeRest(), main(), NoteGenerationRescueService
+### Community 58 - "vercel.json"
+Cohesion: 0.12
+Nodes (16): maxDuration, includeFiles, maxDuration, includeFiles, buildCommand, crons, framework, functions (+8 more)
+
+### Community 59 - "MiracleContext"
+Cohesion: 0.09
+Nodes (31): _build_runtime_app(), argparse, ArgumentParser, build_parser(), main(), Path, MiracleContext, Path (+23 more)
+
+### Community 60 - "ref_assert"
+Cohesion: 0.17
+Nodes (10): ref_assert, assert, grounding, text, assert, encounter(), fakeGenerator(), fakeRest() (+2 more)
 
 ### Community 61 - "UsageDashboardService.js"
 Cohesion: 0.14
@@ -514,9 +527,9 @@ Nodes (14): {
   ENVIRONMENT_VALUES
 }, BREAKDOWN_DIMENSIONS, deltaOf(), isoOrNull(), { listRates, findRateByModel, PRICING_VERSION }, RANGE_PRESETS, textList(), UsageDashboardService (+6 more)
 
-### Community 62 - "OrganizerProfileService"
-Cohesion: 0.08
-Nodes (25): assert, buildApp(), createFakeLlmProvider(), createFakeSupabaseRestClient(), crypto, express, http, main() (+17 more)
+### Community 62 - "verify-agent-decisor.js"
+Cohesion: 0.13
+Nodes (39): assert, check(), con(), cuerpoBueno(), d1(), d10(), d2(), d3() (+31 more)
 
 ### Community 63 - "requireClinicalAuth.js"
 Cohesion: 0.16
@@ -526,41 +539,45 @@ Nodes (21): jose, csvEscape(), extractBearer(), hasValidInternalKey(), registerU
 Cohesion: 0.32
 Nodes (10): append(), clearLogs(), copyLogs(), installCapture(), installStyles(), mount(), nowStamp(), renderEntry() (+2 more)
 
-### Community 65 - "notes/service.py"
-Cohesion: 0.16
-Nodes (9): create_notes_routes(), Route, NotesSessionState, NoteTabSession, NotesWorkspaceService, load_notes_session(), Path, save_notes_session() (+1 more)
+### Community 65 - "contrato.js"
+Cohesion: 0.13
+Nodes (22): ref_os, ambar, celdas(), cola(), correr(), correrTodos(), ESTADO, fs (+14 more)
 
-### Community 66 - "System Readiness Audit"
-Cohesion: 0.31
-Nodes (12): addCheck(), auditMiracleRuntime(), auditNeo4j(), auditStaticConfiguration(), canConnect(), checks, envValue(), isPlaceholder() (+4 more)
+### Community 66 - "audit-system-readiness.js"
+Cohesion: 0.27
+Nodes (13): ref_net, addCheck(), auditMiracleRuntime(), auditNeo4j(), auditStaticConfiguration(), canConnect(), checks, envValue() (+5 more)
 
-### Community 67 - "Chrome Extension Auth Verification"
-Cohesion: 0.22
-Nodes (12): assert, createStorageArea(), extensionRoot, fs, main(), path, root, sendMessage() (+4 more)
+### Community 67 - "verify-chrome-extension-auth.js"
+Cohesion: 0.20
+Nodes (13): ref_vm, assert, createStorageArea(), extensionRoot, fs, main(), path, root (+5 more)
 
 ### Community 68 - "API Key Management"
 Cohesion: 0.29
 Nodes (8): ApiKeyService, crypto, keyId(), maskKey(), parseKeys(), sanitizeLabel(), serializeKeys(), VercelProjectEnvService
 
+### Community 69 - "LearningSessionService"
+Cohesion: 0.12
+Nodes (18): Arquitectura de la API pública (/api/v1), web/api/registerPublicApiRoutes.js — fachada pública, requireApiKey — auth por MIRACLE_API_KEYS, POST /api/v1/operations/exports/claim, Visión: superficies agnósticas + SDK, surface_config — config por superficie, Identidad de superficie (req.surface desde el label de la key), claimNext() (+10 more)
+
 ### Community 71 - "TeachVideoService.js"
-Cohesion: 0.19
-Nodes (7): geminiVideo, { resolveTeachConfig, teachVideoBucket }, { saneaPasos }, { signVideoUpload }, TeachVideoService, sanitize(), signVideoUpload()
+Cohesion: 0.15
+Nodes (20): geminiVideo, { normalizeProfile }, { resolveTeachConfig, teachVideoBucket }, { saneaPasos }, { signVideoUpload }, TeachVideoService, androidAppConfig(), consciousEffort() (+12 more)
 
 ### Community 72 - "registerPublicApiRoutes.js"
-Cohesion: 0.15
-Nodes (15): renderNoteMarkdown(), boolFlag(), ClinicalEncounterService, ClinicalTemplateService, createUpstreamUsageRecorder, crypto, { FEATURES }, { isClinicalError } (+7 more)
+Cohesion: 0.14
+Nodes (17): renderNoteMarkdown(), agentKeyNames(), boolFlag(), ClinicalEncounterService, ClinicalTemplateService, createUpstreamUsageRecorder, crypto, { FEATURES } (+9 more)
 
 ### Community 73 - "SAP GUI Surface Docs"
 Cohesion: 0.21
 Nodes (13): Doc: Escaneo SAP GUI, Identity (sapgui://SID/TCODE), SAP GUI Scripting (API COM), SapGuiSurface, Divergencia de los dos sintetizadores de ID, SurfaceIdentity (Origin, Pathname, Title), UiaSurface.Identity (segundo sintetizador de ID), Doc: Superficies (IUiSurface) (+5 more)
 
-### Community 74 - "registerWindowsAgentRoutes.js"
-Cohesion: 0.22
-Nodes (9): Contexto para el agente de WORKFLOWS, Modo consciente (computer-use, agent/turn), Modo subconsciente (workflows aprendidos vía MCP), API_FAMILIES, { API_FAMILIES, ACTOR_TYPES }, createUpstreamUsageRecorder(), toInt(), { FEATURES, API_FAMILIES, normalizeFeature } (+1 more)
+### Community 74 - "Modo consciente (computer-use, agent/turn)"
+Cohesion: 1.00
+Nodes (3): Contexto para el agente de WORKFLOWS, Modo consciente (computer-use, agent/turn), Modo subconsciente (workflows aprendidos vía MCP)
 
 ### Community 75 - "UsageContext.js"
-Cohesion: 0.06
-Nodes (38): note_json_ai — versión congelada de la IA, { clinicalError, isClinicalError }, { FEATURES }, JSON_OBJECT_FORMAT, { withFeature }, { withPrivacyScope, lastPrivacyResult }, { FEATURES }, runtimeExecutionPolicy (+30 more)
+Cohesion: 0.08
+Nodes (28): 5. Cambios de backend (Graph), { FEATURES }, runtimeExecutionPolicy, { withFeature }, { FEATURES }, { runAsSystem }, clauses, { FEATURES } (+20 more)
 
 ### Community 76 - "Soniox STT Context Builder"
 Cohesion: 0.21
@@ -571,12 +588,16 @@ Cohesion: 0.32
 Nodes (10): getSettings(), getValidSession(), proxyApiFetch(), readStoredSession(), responsePayload(), signInWithLocalAdmin(), signOut(), storageGet() (+2 more)
 
 ### Community 78 - "detectors.js"
-Cohesion: 0.08
-Nodes (44): ACCENT_CLASSES, DECENAS, digitosDePalabras(), digitsOf(), isCommonWordName(), NAME_PARTICLES, NOMBRES_QUE_SON_PALABRAS, normalizeToken() (+36 more)
+Cohesion: 0.09
+Nodes (37): ACCENT_CLASSES, DECENAS, digitosDePalabras(), documentKey(), isCommonWordName(), NAME_PARTICLES, NOMBRES_QUE_SON_PALABRAS, normalizeToken() (+29 more)
 
-### Community 79 - "Note Export DB Verification"
-Cohesion: 0.24
-Nodes (10): DATABASE_URL, { execFileSync, execSync, exec }, path, psqlCommand(), REPO_ROOT, runPsql(), runPsqlAsync(), shellQuote() (+2 more)
+### Community 79 - "verify-note-exports-db.js"
+Cohesion: 0.22
+Nodes (11): ref_child_process, DATABASE_URL, { execFileSync, execSync, exec }, path, psqlCommand(), REPO_ROOT, runPsql(), runPsqlAsync() (+3 more)
+
+### Community 80 - "WorkflowExecutionGuideBuilder"
+Cohesion: 0.23
+Nodes (3): 17. Clasificador de `valueMode`, 🟠 E-05 — Cinco prompts se envían como una sola línea (`.join(' ')`), WorkflowExecutionGuideBuilder
 
 ### Community 81 - "registerClinicalRoutes.js"
 Cohesion: 0.16
@@ -586,32 +607,36 @@ Nodes (19): CLINICAL_ERROR_STATUS, isClinicalError(), canManageInstitutional(), 
 Cohesion: 0.17
 Nodes (12): Check (SurfaceAvailability con motivo), HitTest (FindByPosition nativo de SAP), PublishChangedFields (ObservedStep por campo cambiado), PumpMain (bomba de mensajes y enganche de eventos), ResolveEngine (enganche COM por reflexión), SapComEvents.TryHook (sinks COM por introspección), ScriptingEngine (cache del motor), Session (primera conexión, primera sesión) (+4 more)
 
-### Community 83 - "Operations Executor Simulation Script"
-Cohesion: 0.45
-Nodes (10): claimNext(), executeInHis(), headers(), log(), main(), options, parseArgs(), processOne() (+2 more)
+### Community 83 - "verify-telemetria-windows.js"
+Cohesion: 0.18
+Nodes (20): cerrar(), Pendiente, saltar(), Salto, appDeMentira(), assert, baseContada(), createFakeSupabase (+12 more)
 
-### Community 85 - "ClinicalNoteValidationService.js"
-Cohesion: 0.05
-Nodes (53): evaluateNote(), isPrudentEmpty(), noteText(), sentencesOf(), text, assert, grounding, text (+45 more)
+### Community 84 - "ClinicalNotePromptBuilder"
+Cohesion: 0.17
+Nodes (7): 🟠 E-03 — Contradicción interna en el prompt #1: `summary` vs. «no resumas», Orden de trabajo, PARTE II — Análisis: errores y recomendaciones, Plan de acción sugerido, Resumen ejecutivo, buildResponseFormat(), ClinicalNotePromptBuilder
+
+### Community 85 - "verify-note-evals.js"
+Cohesion: 0.18
+Nodes (17): evaluateNote(), isPrudentEmpty(), noteText(), sentencesOf(), text, assert, ClinicalNoteValidationService, { evaluateNote } (+9 more)
 
 ### Community 86 - "ClinicalTemplateService.js"
-Cohesion: 0.11
-Nodes (16): ALLOWED_HISTORY_ROLES, build(), ClinicalTemplateService, DOCTOR_ADDRESS_VALUES, DOCTOR_DETAIL_VALUES, resolveSpecialty(), sanitizeDoctor(), sanitizeHistory() (+8 more)
+Cohesion: 0.12
+Nodes (15): ALLOWED_HISTORY_ROLES, build(), ClinicalTemplateService, DOCTOR_ADDRESS_VALUES, DOCTOR_DETAIL_VALUES, resolveSpecialty(), sanitizeDoctor(), sanitizeHistory() (+7 more)
 
-### Community 87 - "Windows Telemetry Ingestion"
-Cohesion: 0.27
-Nodes (6): badRequest(), KNOWN_KINDS, normEmail(), toDetail(), toIso(), WindowsTelemetryService
+### Community 87 - "WindowsTelemetryService.js"
+Cohesion: 0.16
+Nodes (10): badRequest(), entero(), KNOWN_KINDS, normEmail(), { plantillaDeLog }, sinTextoRepetido(), toDetail(), toIso() (+2 more)
 
-### Community 88 - "agentTurnCapture.js"
-Cohesion: 0.08
-Nodes (44): AgentTurnService, { baseCatalog }, callRoute(), CANNED, captureConversation(), captureErrors(), continueConversation(), { decodeSession } (+36 more)
+### Community 88 - "verify-agent-platform.js"
+Cohesion: 0.06
+Nodes (59): AgentTurnService, { baseCatalog }, callRoute(), CANNED, captureConversation(), captureErrors(), CLOCK, continueConversation() (+51 more)
 
 ### Community 89 - "Clinical Review UI Confirmation"
 Cohesion: 0.25
 Nodes (5): confirmAll(), describe(), mark(), unmark(), updateChip()
 
 ### Community 90 - "createDictation"
-Cohesion: 0.18
+Cohesion: 0.17
 Nodes (22): chooseMimeType(), createDictation(), attachFinalizeWatcher(), closeSocket(), dispose(), endSonioxStream(), ensureMicrophone(), flushSonioxSegment() (+14 more)
 
 ### Community 91 - "Account and Usage Dashboard"
@@ -623,12 +648,12 @@ Cohesion: 0.22
 Nodes (10): Miracle runtime README (voz → nota), Implementation Principles, Writing first — la escritura es la interfaz, Product Vision, Orquestar agentes de Openclaw desde la nota, UX Notepad Shell, Simplicidad tipo Bloc de notas, Workspaces README (+2 more)
 
 ### Community 93 - "app/web_app.py — composición ASGI/Starlette"
-Cohesion: 0.17
-Nodes (12): LLMProvider.js — transporte Chat Completions, features/notes — workspace Markdown, features/voice — sesión de streaming, features/voice_orchestration, integrations/deepgram — streaming STT, integrations/product_llm — organizador de la nota, app/web_app.py — composición ASGI/Starlette, El audio nunca pasa por el servidor central (+4 more)
+Cohesion: 0.20
+Nodes (10): features/notes — workspace Markdown, features/voice — sesión de streaming, features/voice_orchestration, integrations/deepgram — streaming STT, integrations/product_llm — organizador de la nota, app/web_app.py — composición ASGI/Starlette, El audio nunca pasa por el servidor central, requirements.txt (runtime Python) (+2 more)
 
 ### Community 95 - "vocabulary.js"
-Cohesion: 0.11
-Nodes (33): { APPS, ACTOR_TYPES, ATTRIBUTION_SOURCES, normalizeApp, normalizeFeature }, { APPS, normalizeApp }, platformFromApp(), buildIdempotencyKey(), buildUsageEvent(), { calculateCost }, crypto, isoDate() (+25 more)
+Cohesion: 0.09
+Nodes (38): { APPS, ACTOR_TYPES, ATTRIBUTION_SOURCES, normalizeApp, normalizeFeature }, { APPS, normalizeApp }, platformFromApp(), buildIdempotencyKey(), buildUsageEvent(), { calculateCost }, crypto, isoDate() (+30 more)
 
 ### Community 96 - "UI Selector Resolution Engine"
 Cohesion: 0.22
@@ -639,20 +664,20 @@ Cohesion: 0.22
 Nodes (10): Doc: SurfaceLocator, AgentLoop (ScreenState + telemetría analyze), SurfaceLocator (URL de Windows), SurfaceNavigator (consumidor del locator), Doc: SurfaceNavigator, AppAligner (predecesor hardcodeado), Aprendizaje consciente → subconsciente (paso app:<proceso> en orden 0), SurfaceLocator (única señal válida de llegada) (+2 more)
 
 ### Community 98 - "miracle_runtime.py"
-Cohesion: 0.27
-Nodes (10): app(), _build_runtime_app(), _ensure_runtime_root(), _expected_internal_token(), _is_authorized_internal_request(), Path, _rewrite_scope(), _send_json() (+2 more)
+Cohesion: 0.17
+Nodes (14): app(), _ensure_runtime_root(), _expected_internal_token(), _is_authorized_internal_request(), Path, _rewrite_scope(), _send_json(), _sync_dir() (+6 more)
 
 ### Community 99 - "NoteExportService.js"
-Cohesion: 0.14
-Nodes (15): graph_note_exports — cola durable en Postgres, registerWindowsPanelRoutes.js — SSE polleado, requireClinicalAuth.js — JWT Supabase vía JWKS, Riesgo: service-role key salta RLS en tablas ajenas, SupabaseRestClient.js — PostgREST service-role, NoteExportService.js (contrato de exportación), NoteSignatureHash.js — hash compartido con Notes, Estados de la exportación (pending→claimed→completed) (+7 more)
+Cohesion: 0.18
+Nodes (14): registerWindowsPanelRoutes.js — SSE polleado, Riesgo: service-role key salta RLS en tablas ajenas, SupabaseRestClient.js — PostgREST service-role, { buildNoteExportPayload }, { clinicalError }, { computeSignatureHash, signatureHashMatches }, RETRYABLE, ROLES_THAT_EXPORT_ANY_CONSULTATION (+6 more)
 
 ### Community 100 - "package.json"
 Cohesion: 0.10
 Nodes (17): src/domain/entities/Step.js (valueMode), author, description, express, keywords, license, main, name (+9 more)
 
 ### Community 101 - "vision-live/server.js"
-Cohesion: 0.06
-Nodes (27): esbuild, @google/genai, declarations(), functions, handlerFor(), dependencies, express, @google/genai (+19 more)
+Cohesion: 0.05
+Nodes (30): esbuild, @google/genai, ref_node_fs, ref_node_path, ref_node_url, declarations(), functions, handlerFor() (+22 more)
 
 ### Community 102 - "Studio Progress Service"
 Cohesion: 0.28
@@ -667,7 +692,7 @@ Cohesion: 0.28
 Nodes (3): applyLocalSession(), createLocalSession(), init()
 
 ### Community 105 - "Plugin Learning Bridge"
-Cohesion: 0.33
+Cohesion: 0.31
 Nodes (5): captureTranscript(), emit(), events(), reset(), stopSession()
 
 ### Community 106 - "SAP UI Field Reading"
@@ -687,8 +712,8 @@ Cohesion: 0.10
 Nodes (30): AgentTurnService, assert, cannedFor(), check(), computerActions(), converse(), { decodeSession }, expected() (+22 more)
 
 ### Community 110 - "DynamicValueResolver.js"
-Cohesion: 0.17
-Nodes (10): buildPrompt(), buildResponseFormat(), clauses, { containsToken }, DynamicValueResolver, { FEATURES }, grounding, PROMPT_VERSION (+2 more)
+Cohesion: 0.16
+Nodes (11): 🟠 E-04 — `confidence` sin escala definida en ningún prompt, buildPrompt(), buildResponseFormat(), clauses, { containsToken }, DynamicValueResolver, { FEATURES }, grounding (+3 more)
 
 ### Community 111 - "Graph Provider Config"
 Cohesion: 0.36
@@ -703,32 +728,36 @@ Cohesion: 0.36
 Nodes (3): MiracleProductLlmProviderConfigService, PROVIDERS, VercelProjectEnvService
 
 ### Community 114 - "PARTE I — Los prompts, literales"
-Cohesion: 0.07
-Nodes (30): 10. Lector de capturas de formato (visión), 11. Contrato de salida del organizador, 12. Miracle Note Field Matcher, 13. Resolvedor de valores dinámicos, 14. Asistente de captura clínica en página, 15. Graph Runtime Execution Intelligence, 16. Redactor de guías de ejecución, 17. Clasificador de `valueMode` (+22 more)
+Cohesion: 0.08
+Nodes (24): 10. Lector de capturas de formato (visión), 11. Contrato de salida del organizador, 12. Miracle Note Field Matcher, 13. Resolvedor de valores dinámicos, 15. Graph Runtime Execution Intelligence, 16. Redactor de guías de ejecución, 18. Resumidor de workflows, 19. Generador de perfiles de superficie (+16 more)
 
-### Community 115 - "prompt.js"
-Cohesion: 0.09
-Nodes (27): { baseCatalog }, { goalPrompt, describeState }, main(), { PLATFORMS }, redact(), { resolveConsciousConfig }, { toolDeclarations }, ANDROID_STREAM (+19 more)
+### Community 115 - "verify-agent-prompts.js"
+Cohesion: 0.05
+Nodes (58): 29. Enseñanza por video — MEDICAL_TEACH_PROMPT, 🟡 E-12 — `memoryBlock` inyecta memoria del usuario cruda en el system prompt, { baseCatalog }, { goalPrompt, describeState }, main(), { PLATFORMS }, redact(), { resolveConsciousConfig } (+50 more)
 
-### Community 116 - "Usage Ledger Storage"
-Cohesion: 0.32
-Nodes (3): fs, path, UsageLedgerStore
+### Community 116 - "peticionSystemOne.js"
+Cohesion: 0.17
+Nodes (12): mostrarDryRun(), DecisorService, construirPeticion(), esperaMs(), esProbabilidad(), estadoDeLaPantalla(), esTexto(), idParaTypeSafe() (+4 more)
 
 ### Community 117 - "plugin-api.js"
 Cohesion: 0.36
 Nodes (7): buildUrl(), createClient(), createJsonRequest(), installBranchObservationWrapper(), normalizeBaseUrl(), waitForAuthReady(), withAuth()
 
 ### Community 118 - "PrivacyShieldService.js"
-Cohesion: 0.12
-Nodes (22): crypto, { currentPrivacyScope, recordPrivacyResult }, { detectAll, ROLES }, MODES, { nameTokens, documentKey }, normalizeModeValue(), { posthocLeakCheck, findIdentitySection, parseIdentityLines }, ProtectionMap (+14 more)
+Cohesion: 0.13
+Nodes (18): crypto, { currentPrivacyScope, recordPrivacyResult }, { detectAll, ROLES }, MODES, { nameTokens, documentKey }, { posthocLeakCheck, findIdentitySection, parseIdentityLines }, SYSTEM_RULE, { transformTextOrJson, tryParseJson, walkStrings } (+10 more)
 
 ### Community 119 - "geminiBrain.js"
-Cohesion: 0.13
-Nodes (26): check(), toScreen(), { API_FAMILIES, FEATURES }, asArr(), asInt(), asObj(), { ASSISTANT_TOOLS }, asStr() (+18 more)
+Cohesion: 0.07
+Nodes (48): 22. Addendum de Ü para Gemini, assert, { ASSISTANT_TOOLS }, check(), clauses, { currentContext }, fakeLlm(), { goalPrompt, PROMPT_VERSION: BRAIN_PROMPT_VERSION } (+40 more)
 
-### Community 121 - "config.js"
-Cohesion: 0.33
-Nodes (14): PROVIDERS, { resolveConsciousConfig }, androidAppConfig(), consciousEffort(), env(), fallbackModel(), geminiFallbackKey(), missingKeyMessage() (+6 more)
+### Community 120 - "ClinicalAssistantPromptBuilder.js"
+Cohesion: 0.09
+Nodes (20): ADDRESS_DIRECTIVES, ADJUST_HARD_RULES_COMMON, ADJUST_IDENTITY, ADJUST_PROMPT_VERSION, ADJUST_ROLE_BOUNDARY, ADJUST_RULES_REWRITE, CHAT_HARD_RULES, CHAT_IDENTITY (+12 more)
+
+### Community 121 - "DecisorService.js"
+Cohesion: 0.11
+Nodes (18): ESTADOS, etiquetaDe(), { FEATURES }, { isOwnError: isAuthorizerOwnError }, MENSAJES, MODOS, PALABRAS_PELIGROSAS, PALABRAS_VACIAS (+10 more)
 
 ### Community 122 - "VercelProjectEnvService.js"
 Cohesion: 0.22
@@ -739,20 +768,29 @@ Cohesion: 0.22
 Nodes (21): createWorkspaceController(), activateTab(), applyTabToEditor(), buildSessionPayload(), buildTab(), closeTab(), createUntitledTab(), getActiveTab() (+13 more)
 
 ### Community 124 - "Errores y hallazgos"
-Cohesion: 0.10
-Nodes (21): 🔴 E-01 — `temperature` sin fijar en todas las llamadas clínicas, 🔴 E-02 — La nota clínica no verifica que `evidence` exista en la transcripción, 🟠 E-03 — Contradicción interna en el prompt #1: `summary` vs. «no resumas», 🟠 E-04 — `confidence` sin escala definida en ningún prompt, 🟠 E-05 — Cinco prompts se envían como una sola línea (`.join(' ')`), 🟠 E-06 — `degradeDefinitiveLanguage` reescribe hechos clínicos, no sólo aserciones del modelo, 🟠 E-07 — Dos motores de diferenciales y tres organizadores de notas, con reglas distintas, 🟠 E-08 — Riesgo de inyección indirecta en el organizador de no-médicos (+13 more)
+Cohesion: 0.15
+Nodes (13): 🔴 E-02 — La nota clínica no verifica que `evidence` exista en la transcripción, 🟠 E-06 — `degradeDefinitiveLanguage` reescribe hechos clínicos, no sólo aserciones del modelo, 🟠 E-08 — Riesgo de inyección indirecta en el organizador de no-médicos, 🟡 E-09 — Ningún prompt declara que el contenido del usuario es *dato*, no instrucción, 🟡 E-11 — El prompt de Ü no tiene ninguna barrera de acciones irreversibles, 🟡 E-13 — Ü tiene autoridad distinta según el proveedor, 🟡 E-14 — Reglas de no invención duplicadas en 9 redacciones distintas, 🟡 E-15 — Prompts sin versión, sin evals y sin telemetría propia (+5 more)
 
-### Community 125 - "Markdown Catalog Writer"
-Cohesion: 0.33
-Nodes (3): fs, MarkdownCatalogWriter, path
+### Community 125 - "ref_path"
+Cohesion: 0.09
+Nodes (16): ref_fs, ref_path, fs, outputDirectory, path, projectRoot, sourceDirectory, assert (+8 more)
+
+### Community 126 - "SupabaseAgentMemoryRepository.js"
+Cohesion: 0.36
+Nodes (4): NO_USER, sameNote(), SupabaseAgentMemoryRepository, userKeyOf()
 
 ### Community 127 - "GeminiVideoClient.js"
-Cohesion: 0.14
-Nodes (15): clauses, { FEATURES, API_FAMILIES }, firstJsonObject(), { fromGemini, toRecorderUsage }, INTERPRETATION_SCHEMA_PROPERTIES, isTransient(), LLMProvider, MEDICAL_TEACH_PROMPT (+7 more)
+Cohesion: 0.08
+Nodes (31): clauses, { FEATURES }, PROMPT_VERSION, {
+  promptSinVideo,
+  saneaPasos,
+  respuesta,
+  INTERPRETACION_VERSION
+}, TeachStepsInterpreter, { withFeature }, FORMA_DE_LA_RESPUESTA, src_domain_teach_interpretarpasos_interpretacion_version (+23 more)
 
 ### Community 128 - "verify-agent-workflow-access.js"
-Cohesion: 0.17
-Nodes (17): AgentTurnService, AgentWorkflowStore, assert, check(), cypherPredicate(), failed, FakeWorkflowRepository, main() (+9 more)
+Cohesion: 0.18
+Nodes (18): AgentTurnService, AgentWorkflowStore, assert, check(), cypherPredicate(), failed, FakeWorkflowRepository, main() (+10 more)
 
 ### Community 129 - "createStateManager"
 Cohesion: 0.24
@@ -762,13 +800,17 @@ Nodes (11): createStateManager(), clearPersistedFields(), hydrate(), isPersistab
 Cohesion: 0.46
 Nodes (5): escapeHtml(), inline(), openDoc(), render(), renderMarkdown()
 
-### Community 131 - "Vercel Build Script"
-Cohesion: 0.33
-Nodes (5): fs, outputDirectory, path, projectRoot, sourceDirectory
+### Community 131 - "verify-windows-devices.js"
+Cohesion: 0.16
+Nodes (19): promesa(), assert, cargarLaRutaDeLasClaves(), CLAVES, COMPUERTA, con(), crypto, express (+11 more)
+
+### Community 132 - "ConsciousProviderConfigService.js"
+Cohesion: 0.31
+Nodes (4): ConsciousProviderConfigService, PROVIDERS, { resolveConsciousConfig }, VercelProjectEnvService
 
 ### Community 133 - "ProtectionMap"
-Cohesion: 0.22
-Nodes (4): digitRunPattern(), escapeRegExp(), tokenToPattern(), ProtectionMap
+Cohesion: 0.21
+Nodes (7): digitRunPattern(), digitsOf(), escapeRegExp(), nameTokens(), tokenToPattern(), entityKeyFor(), ProtectionMap
 
 ### Community 134 - "Graphify en el equipo"
 Cohesion: 0.11
@@ -794,9 +836,13 @@ Nodes (6): acceso-directo-inicio (.lnk del menú Inicio), Capa 1 — llegar a la
 Cohesion: 0.16
 Nodes (14): assert, check(), { computeSignatureHash }, { createFakeSupabase }, express, http, main(), NoteExportService (+6 more)
 
-### Community 141 - "Clinical Note Export"
-Cohesion: 0.90
-Nodes (4): acceptedCodes(), buildNoteExportPayload(), normalizeSections(), renderNoteText()
+### Community 140 - "verify-explicit-modes.js"
+Cohesion: 0.18
+Nodes (7): ref_node_assert, assert, STEPS, assert, capturingRepo(), Neo4jWorkflowRepository, Step
+
+### Community 141 - "ClinicalNoteValidationService.js"
+Cohesion: 0.24
+Nodes (15): src_application_prompts_promptclauses_missing_phrase, capitalizeFirst(), { clinicalError }, ClinicalNoteValidationService, evidenceFragments(), grounding, isPrudentEmptyContent(), isPrudentPhrase() (+7 more)
 
 ### Community 142 - "Plugin Surface Adapters"
 Cohesion: 0.70
@@ -808,7 +854,7 @@ Nodes (4): buildOverlayItems(), buildStepEvidence(), buildStepFootnote(), buildS
 
 ### Community 144 - "verify-ai-usage-telemetry.js"
 Cohesion: 0.07
-Nodes (24): { ACTOR_TYPES, ATTRIBUTION_SOURCES, APPS, FEATURES }, AiUsageRecorder, assert, {
+Nodes (26): Registro de excepciones (lo que el escudo NO cubre), { ACTOR_TYPES, ATTRIBUTION_SOURCES, APPS, FEATURES }, AiUsageRecorder, assert, {
   buildUsageEvent,
   sanitizeMetadata,
   toDatabaseRow
@@ -819,23 +865,27 @@ Nodes (24): { ACTOR_TYPES, ATTRIBUTION_SOURCES, APPS, FEATURES }, AiUsageRecorde
   fromDeepgram,
   createStreamUsageAccumulator,
   toRecorderUsage
-}, { runWithContext, withFeature, runAsSystem, currentContext }, UsageAttributionResolver (+16 more)
+}, { runWithContext, withFeature, runAsSystem, currentContext } (+18 more)
 
-### Community 146 - "verify-workflow-learning.js"
-Cohesion: 0.15
-Nodes (17): assert, { ASSISTANT_TOOLS }, clauses, { currentContext }, fakeLlm(), { goalPrompt, PROMPT_VERSION: BRAIN_PROMPT_VERSION }, main(), { runGeminiTurn } (+9 more)
+### Community 146 - "renderLogs"
+Cohesion: 0.20
+Nodes (17): buildExecutionDiagnosticSummary(), buildSessionTraceSummary(), buildVoiceLogSummary(), collectErrorContextWindows(), formatLogEntry(), isAlertDiagnostic(), isDiagnosticEntry(), isErrorDiagnostic() (+9 more)
 
 ### Community 147 - "NoteFieldMatcher.js"
-Cohesion: 0.16
-Nodes (11): { containsToken }, { FEATURES }, grounding, NoteFieldMatcher, {
+Cohesion: 0.15
+Nodes (12): { containsToken }, { FEATURES }, grounding, { isPrudentEmptyContent }, NoteFieldMatcher, {
   PROMPT_VERSION,
   buildNoteFieldMatchingPrompt,
   buildNoteFieldMatchingResponseFormat
-}, { withFeature }, { withPrivacyScope, lastPrivacyResult }, buildNoteFieldMatchingPrompt() (+3 more)
+}, { withFeature }, { withPrivacyScope, lastPrivacyResult } (+4 more)
 
-### Community 149 - "tokens.js"
-Cohesion: 0.19
-Nodes (15): { findTokens }, main(), PrivacyLedgerReader, SupabaseRestClient, tokensIn(), BARE_RE, BRACKETED_RE, containsToken() (+7 more)
+### Community 148 - "WindowsDeviceService.js"
+Cohesion: 0.22
+Nodes (8): codigoDe(), crypto, ESTADOS, fallo(), formaDeCredencial(), huellaDe(), texto(), WindowsDeviceService
+
+### Community 149 - "ProtectionMap.js"
+Cohesion: 0.10
+Nodes (26): { findTokens }, main(), PrivacyLedgerReader, SupabaseRestClient, tokensIn(), src_domain_privacy_canon_not_word_after, src_domain_privacy_canon_not_word_before, src_domain_privacy_detectors_doctor_anchor (+18 more)
 
 ### Community 150 - "Backend Capabilities API Contract"
 Cohesion: 0.67
@@ -843,43 +893,55 @@ Nodes (3): Estructura destino backend/capabilities, openapi.yaml — contrato v1
 
 ### Community 153 - "Telemetría de consumo de IA — tokens, costos y atribución"
 Cohesion: 0.12
-Nodes (17): 10. Cómo agregar cosas, 11. Limitaciones (lo que todavía no se puede medir), 12. Variables de entorno, 1. Arquitectura encontrada (antes de este trabajo), 2. Problemas detectados, 3. Decisión técnica, 4. Cambios de base de datos, 5. Cambios de backend (Graph) (+9 more)
+Nodes (14): 10. Cómo agregar cosas, 11. Limitaciones (lo que todavía no se puede medir), 12. Variables de entorno, 1. Arquitectura encontrada (antes de este trabajo), 2. Problemas detectados, 6. Cambios en las apps cliente, 7 bis. Qué contesta el panel, 7. Permisos y aislamiento (+6 more)
+
+### Community 155 - "001 — Los logs de Ü Windows dejan de llenar la base"
+Cohesion: 0.17
+Nodes (12): 001 — Los logs de Ü Windows dejan de llenar la base, Cierre, Las fases, Lo que NO entra, Límites que se aceptan, Promesas, engineCatalog(), isAuthorized() (+4 more)
 
 ### Community 157 - "main"
-Cohesion: 0.19
-Nodes (14): http, assert, assertNoIdentifiers(), ClinicalNotePromptBuilder, createFakeChatCompletions, createFakeSupabase, express, firstToken() (+6 more)
+Cohesion: 0.24
+Nodes (13): assert, assertNoIdentifiers(), ClinicalNotePromptBuilder, createFakeChatCompletions, createFakeSupabase, express, firstToken(), FORBIDDEN (+5 more)
+
+### Community 158 - "verify-windows-release.js"
+Cohesion: 0.16
+Nodes (10): assert, fakeGithub(), fs, path, { promesa, cerrar }, ROOT, service(), WindowsAppReleaseService (+2 more)
 
 ### Community 162 - "verify-privacy-shield.js"
-Cohesion: 0.17
-Nodes (16): assert, check(), fs, main(), { normalizeComparable }, path, { posthocLeakCheck }, PrivacyShieldService (+8 more)
+Cohesion: 0.15
+Nodes (20): assert, check(), fs, main(), { normalizeComparable }, path, { posthocLeakCheck }, PrivacyShieldService (+12 more)
 
 ### Community 163 - "PrivacyShieldService"
-Cohesion: 0.21
-Nodes (4): PrivacyShieldService, documentKey(), nameTokens(), entityKeyFor()
+Cohesion: 0.16
+Nodes (7): normalizeModeValue(), PrivacyShieldService, ProtectionMap, sha256(), shieldError(), currentPrivacyScope(), recordPrivacyResult()
 
 ### Community 164 - "SupabaseNoteExportRepository"
 Cohesion: 0.16
 Nodes (4): CONSULTATION_COLUMNS, eq(), EXPORT_COLUMNS, SupabaseNoteExportRepository
 
 ### Community 165 - "ClinicalNotePromptBuilder.js"
-Cohesion: 0.12
-Nodes (14): Modo literal (especialidades de reporte), buildResponseFormat(), clauses, { GROUNDING_LEVELS }, IDENTITY, INTERPRETIVE_TASK, MEASURE_RULES, NOTE_DETAIL_DIRECTIVES (+6 more)
+Cohesion: 0.09
+Nodes (20): Modo literal (especialidades de reporte), clauses, CLINICAL_REASONING, DOCTOR_PRIORITY, FIDELITY_EXCEPTIONS, { GROUNDING_LEVELS }, IDENTITY, INTERPRETIVE_TASK (+12 more)
 
-### Community 166 - "PromptClauses.js"
-Cohesion: 0.12
-Nodes (9): EN, GROUNDING_SCALE, IDENTIFIER_FIDELITY, IRREVERSIBLE_ACTIONS, NO_INVENTION_CLINICAL, ROLE_BOUNDARY, TAGS, clauses (+1 more)
+### Community 166 - "Qué pasó con cada prompt"
+Cohesion: 0.17
+Nodes (8): 4. Ajuste de nota clínica, 5. Preferencias de trato del médico (fragmentos inyectados), Qué pasó con cada prompt, adjustOutputContract(), adjustRulesDictation(), buildDoctorDirective(), ClinicalAssistantPromptBuilder, specialtyRule()
 
 ### Community 168 - "create"
-Cohesion: 0.43
+Cohesion: 0.32
 Nodes (7): create(), isAnonymousUser(), resetWorkflow(), setLearningAvailable(), startWorkflow(), stopWorkflow(), syncRecorderStatus()
 
 ### Community 176 - "WorkflowAssistantPolicy.js"
-Cohesion: 0.19
-Nodes (15): BEHAVIOR, buildChatDecisionPrompt(), buildSharedBehaviorPrompt(), buildStyleBlock(), clauses, DECISION_CONTRACT, NO_TEST_DATA, PROMPT_VERSION (+7 more)
+Cohesion: 0.16
+Nodes (17): 14. Asistente de captura clínica en página, 🟡 E-10 — El prompt #14 mezcla dominio clínico con residuos de otro dominio, BEHAVIOR, buildChatDecisionPrompt(), buildSharedBehaviorPrompt(), buildStyleBlock(), clauses, DECISION_CONTRACT (+9 more)
 
-### Community 179 - "registerMcpRoutes.js"
-Cohesion: 0.26
-Nodes (12): { LEARNED_VIA, WORKFLOW_VIA }, learnedToMcp(), sanitize(), workflowToMcp(), registerMcpRoutes(), handleRequest(), scopedWorkflows(), rpcError() (+4 more)
+### Community 179 - "learning.js"
+Cohesion: 0.13
+Nodes (18): AgentWorkflowStore, { workflowRunsOn }, DEVICE_BY_SCHEME, { PLATFORMS }, sanitize(), { WORKFLOW_VIA }, workflowDevice(), workflowRunsOn() (+10 more)
+
+### Community 180 - "SystemHealthAlertService"
+Cohesion: 0.07
+Nodes (23): Generación de Notas Clínicas — Diseño, assert, ClinicalNoteGeneratorService, ConsultationMirrorService, ENCOUNTER, fakeRest(), main(), NOTE (+15 more)
 
 ### Community 181 - "verify-ai-usage-pricing.js"
 Cohesion: 0.15
@@ -890,8 +952,8 @@ Cohesion: 0.26
 Nodes (10): create(), bindControls(), bindLongPressGesture(), clearLongPressTimer(), closeWorkflowPanel(), openChatPanel(), openWorkflowPanel(), toggleWorkflowPanel() (+2 more)
 
 ### Community 183 - "PARTE IV — Kit de reescritura"
-Cohesion: 0.15
-Nodes (13): 0. Lo que quitaría, en una lista, 1. `src/application/prompts/PromptClauses.js` (nuevo), 2. #01 — Clinical Note Generator, reescrito, 3. #04 — Ajuste de nota, sin el prompt de chat, 4. #02 — Clinical Assistant, con jerarquía, 5. #25 — Orquestador de voz, alineado con #01, 6. #18 — Resumidor, que sepa que escribe un título, 7. #21 — Ü, el bloque que falta (+5 more)
+Cohesion: 0.17
+Nodes (12): 0. Lo que quitaría, en una lista, 1. `src/application/prompts/PromptClauses.js` (nuevo), 2. #01 — Clinical Note Generator, reescrito, 3. #04 — Ajuste de nota, sin el prompt de chat, 4. #02 — Clinical Assistant, con jerarquía, 5. #25 — Orquestador de voz, alineado con #01, 6. #18 — Resumidor, que sepa que escribe un título, 7. #21 — Ü, el bloque que falta (+4 more)
 
 ### Community 186 - "LLMProvider.js"
 Cohesion: 0.18
@@ -909,24 +971,20 @@ Nodes (7): AiUsageRecorder, { buildUsageEvent }, { currentContext }, errorCodeOf
 Cohesion: 0.19
 Nodes (6): ClinicalEncounterService, { clinicalError }, CONSULTATION_TYPES, NoteModeResolver, STATUSES, buildInlineSnapshot()
 
-### Community 190 - "interpretarPasos.js"
-Cohesion: 0.27
-Nodes (9): {
-  promptSinVideo,
-  saneaPasos,
-  respuesta
-}, TeachStepsInterpreter, FORMA_DE_LA_RESPUESTA, listaDePasos(), promptParaElVideo(), promptSinVideo(), reglasDeInterpretacion(), respuesta() (+1 more)
+### Community 190 - "android-live-session.js"
+Cohesion: 0.13
+Nodes (12): app, attachLiveVoiceProxy, authorizer, express, http, LiveVoiceDeviceAuthorizer, path, server (+4 more)
 
 ### Community 191 - "pricing.js"
-Cohesion: 0.24
-Nodes (11): calculateCost(), canonicalModelName(), { COST_STATUSES }, findRate(), findRateByModel(), normalizeKey(), roundUsd(), snapshotOf() (+3 more)
+Cohesion: 0.22
+Nodes (12): calculateCost(), canonicalModelName(), { COST_STATUSES }, findRate(), findRateByModel(), normalizeKey(), RATE_CARDS, roundUsd() (+4 more)
 
 ### Community 192 - "createProductLlmController"
 Cohesion: 0.37
 Nodes (12): createProductLlmController(), bindEvents(), currentProvider(), handleProviderChange(), handleSubmit(), hideOverlay(), loadStatus(), renderCurrentConfig() (+4 more)
 
 ### Community 193 - "verify-egress-gateway.js"
-Cohesion: 0.21
+Cohesion: 0.20
 Nodes (11): assert, fs, main(), NON_EGRESS, path, rel(), ROOT, SCAN_DIRS (+3 more)
 
 ### Community 194 - "NoteModeResolver.js"
@@ -937,17 +995,21 @@ Nodes (11): DEFAULT_VERBATIM_SPECIALTIES, describeReason(), isVerbatimSpecialty(
 Cohesion: 0.35
 Nodes (11): createEditorController(), applyExternalContentChange(), bindEvents(), flushPendingChangeCapture(), mergeContextIntoTab(), requestContextPacket(), requestHistoryEntry(), scheduleAutosave() (+3 more)
 
-### Community 196 - "createVoiceStreamingController"
-Cohesion: 0.36
-Nodes (9): createVoiceStreamingController(), bindEvents(), dispose(), readTranscriptValue(), renderTranscript(), startRecording(), stopRecording(), syncUi() (+1 more)
+### Community 196 - "OpenAICompatibleProductLLMClient"
+Cohesion: 0.19
+Nodes (6): OpenAICompatibleProductLLMClient, ProductLLMClientError, RuntimeError, socket, urllib_error, urllib_request
 
-### Community 197 - "El escudo de privacidad: qué sale hacia los proveedores de IA, y qué no"
-Cohesion: 0.18
-Nodes (11): Cómo se demuestra, El claim, y su alcance, El escudo de privacidad: qué sale hacia los proveedores de IA, y qué no, Limitaciones conocidas, Los marcadores, Modos, Operations / SAP, Piezas (+3 more)
+### Community 197 - "callMiracleRuntime"
+Cohesion: 0.25
+Nodes (8): Operations / SAP, buildMiracleProxyRequestBody(), callMiracleRuntime(), extractQueryString(), probeMiracleSidecar(), proxyMiracleRuntimeRequest(), resolveMiracleRuntimeUrl(), resolvePublicAppBaseUrl()
 
 ### Community 198 - "verify-public-pipeline.js"
 Cohesion: 0.29
 Nodes (10): assert, ClinicalNoteGeneratorService, ClinicalNotePromptBuilder, ClinicalNoteValidationService, createFakeLlm(), { currentContext }, express, http (+2 more)
+
+### Community 199 - "ClinicalNoteGeneratorService.js"
+Cohesion: 0.15
+Nodes (10): LLMProvider.js — transporte Chat Completions, note_json_ai — versión congelada de la IA, Catálogo de providers LLM por superficie, { clinicalError, isClinicalError }, ClinicalNoteGeneratorService, { FEATURES }, JSON_OBJECT_FORMAT, looksLikeSchemaRejection() (+2 more)
 
 ### Community 200 - "SupabaseUsageEventStore"
 Cohesion: 0.31
@@ -957,17 +1019,17 @@ Nodes (3): toDatabaseRow(), SupabaseUsageEventStore, { toDatabaseRow }
 Cohesion: 0.36
 Nodes (8): buildBand(), buildStation(), buildToolbar(), h(), haystack(), ignite(), matches(), onEvent()
 
-### Community 202 - "MIRACLE_NOTES_SYSTEM_PROMPTS.md"
-Cohesion: 0.22
-Nodes (8): Cimientos compartidos, Evals, Lo que se movió a código, Miracle Notes — Inventario completo de system prompts, PARTE V — Estado tras la implementación (2026-09-02), Pendiente (fuera de esta pasada), Qué pasó con cada prompt, Índice
+### Community 202 - "PARTE III — Dónde llega cada prompt y en qué estado está"
+Cohesion: 0.12
+Nodes (18): A. Portal web del médico — 9 prompts, B. App Miracle Notes (dictado en vivo) — 1 prompt, C. Endpoints sin cliente en estos repos — 5 prompts, Cimientos compartidos, D. Plugin en el EMR del hospital — 9 prompts, E. App de Windows — el asistente Ü — 3 prompts, Evals, F. Herramientas internas — 2 prompts (+10 more)
 
-### Community 203 - "PARTE III — Dónde llega cada prompt y en qué estado está"
-Cohesion: 0.22
-Nodes (9): A. Portal web del médico — 9 prompts, B. App Miracle Notes (dictado en vivo) — 1 prompt, C. Endpoints sin cliente en estos repos — 5 prompts, D. Plugin en el EMR del hospital — 9 prompts, E. App de Windows — el asistente Ü — 3 prompts, F. Herramientas internas — 2 prompts, Los cuatro choques, y cómo se resuelven, Orden de trabajo (+1 more)
+### Community 203 - "WindowsPanelService.js"
+Cohesion: 0.21
+Nodes (9): Diagnóstico: qué se midió, APP_LABELS, appCoordinate(), appLabel(), badRequest(), clampLimit(), { decorateEvent, summarizeEngines }, requireEmail() (+1 more)
 
 ### Community 204 - "Recomendaciones estructurales"
-Cohesion: 0.22
-Nodes (9): PARTE II — Análisis: errores y recomendaciones, Plan de acción sugerido, R-1. Una capa de cláusulas compartidas, R-2. Jerarquía explícita dentro de cada prompt, R-3. Un único motor por capacidad, R-4. Verificar en código lo que el prompt promete, R-5. Evals antes de tocar nada, Recomendaciones estructurales (+1 more)
+Cohesion: 0.33
+Nodes (6): R-1. Una capa de cláusulas compartidas, R-2. Jerarquía explícita dentro de cada prompt, R-3. Un único motor por capacidad, R-4. Verificar en código lo que el prompt promete, R-5. Evals antes de tocar nada, Recomendaciones estructurales
 
 ### Community 208 - "plugin-host.js"
 Cohesion: 0.36
@@ -977,41 +1039,49 @@ Nodes (6): canUseChromeRuntime(), createExtensionFetch(), createHost(), createSt
 Cohesion: 0.36
 Nodes (6): create(), applySurfaceProfileToOptions(), getPageContext(), hydrateSurfaceProfile(), isAnonymousUser(), isGenericWorkflowDescription()
 
-### Community 210 - "verify-consultation-mirror.js"
-Cohesion: 0.36
-Nodes (7): assert, ClinicalNoteGeneratorService, ConsultationMirrorService, ENCOUNTER, fakeRest(), main(), NOTE
+### Community 210 - "registerAgentDecisorRoutes.js"
+Cohesion: 0.21
+Nodes (14): cuelga(), d8(), CODIGOS, LIMITES, MOTIVOS, normalizarDeviceId(), claveDeDispositivo(), enmascararDeviceId() (+6 more)
 
-### Community 211 - "verify-health-alerts.js"
-Cohesion: 0.36
-Nodes (6): assert, ENV_LIMPIO, fakeRestClient(), main(), SystemHealthAlertService, withEnv()
+### Community 211 - "registerWindowsDeviceRoutes.js"
+Cohesion: 0.24
+Nodes (13): AGENT_KEYS, { etiquetasDeLaCompuerta }, etiquetasPermitidas(), porQueNo(), registerAgentKeysRoute(), createDeviceGate(), etiquetasDeLaCompuerta(), MENSAJES (+5 more)
 
-### Community 212 - "RealtimeSessionService.js"
-Cohesion: 0.39
-Nodes (4): badRequest(), forbidden(), RealtimeSessionService, upstreamError()
+### Community 212 - "verify-realtime-session.js"
+Cohesion: 0.16
+Nodes (20): assert, conLogs(), fakeFetch(), fakeSupabase(), main(), montarRuta(), RealtimeSessionService, registerRealtimeSessionRoutes (+12 more)
 
-### Community 213 - "identitySection.js"
-Cohesion: 0.36
-Nodes (7): classify(), findIdentitySection(), { findTokens }, { normalizeToken }, parseIdentityLines(), posthocLeakCheck(), { PRUDENT_VALUE }
+### Community 213 - "Step.js"
+Cohesion: 0.19
+Nodes (9): assert, Step, treeStepData, WorkflowExecutor, Step, normalizeText(), parseAllowedOptions(), parseJsonObject() (+1 more)
 
 ### Community 214 - "Vision Live"
 Cohesion: 0.25
 Nodes (7): Agregar function callings, Arranque, Configuración, Configuración sensible, Cómo funciona una prueba, Notas técnicas, Vision Live
 
-### Community 215 - "fakeSupabase.js"
-Cohesion: 0.43
-Nodes (4): applyFilters(), crypto, matches(), valueOf()
+### Community 215 - "ref_crypto"
+Cohesion: 0.27
+Nodes (6): ref_crypto, applyFilters(), crypto, matches(), valueOf(), crypto
 
 ### Community 217 - "start"
 Cohesion: 0.33
 Nodes (3): start(), handleVisibility(), resize()
 
-### Community 218 - "SystemHealthAlertService.js"
-Cohesion: 0.33
-Nodes (3): Generación de Notas Clínicas — Diseño, Exportación de nota clínica a la historia clínica, SEVERITY_ORDER
+### Community 218 - "textNormalize.js"
+Cohesion: 0.27
+Nodes (12): buildNormalizedIndex(), joinDigitRuns(), locateFragment(), markNumberSeparators(), normalizeCitation(), normalizeComparable(), normalizeForVerbatim(), NUMBER_WORDS (+4 more)
 
-### Community 219 - "verify-prompt-clauses.js"
-Cohesion: 0.33
-Nodes (4): assert, clauses, fs, path
+### Community 219 - "ClinicalAssistantValidationService.js"
+Cohesion: 0.21
+Nodes (8): 🟠 E-07 — Dos motores de diferenciales y tres organizadores de notas, con reglas distintas, ClinicalAssistantValidationService, coerceStringArray(), DEFINITIVE_PATTERNS, detectDefinitiveLanguage(), grounding, noteJsonToPlainText(), text
+
+### Community 220 - "NNN — <el resultado, no el área>"
+Cohesion: 0.17
+Nodes (10): 000 — Lo heredado, Fuera del contrato, Promesas, Cierre, Diagnóstico: qué se midió, Hallazgos, Las fases, Lo que NO entra (+2 more)
+
+### Community 221 - "PrivacyLedgerReader.js"
+Cohesion: 0.38
+Nodes (3): Piezas, privacyFromMetadata(), PrivacyLedgerReader
 
 ### Community 222 - "DOC: HIPÓTESIS — nodos = ubicaciones, aristas = transiciones"
 Cohesion: 0.33
@@ -1041,35 +1111,83 @@ Nodes (3): fetchJSON(), resolveAuthToken(), resolveMiracleUrl()
 Cohesion: 0.67
 Nodes (3): WorkflowRecorder.cs, WorkflowTeachSession.cs, POST /api/v1/learning/sessions (+steps/finish)
 
+### Community 230 - "verify-diarizacion.js"
+Cohesion: 0.26
+Nodes (11): assert, ClinicalNotePromptBuilder, CONVERSACION, main(), plan(), ProtectionMap, SECTIONS, snapshot() (+3 more)
+
+### Community 232 - "verify-sondeo-de-exportes.js"
+Cohesion: 0.29
+Nodes (11): assert, { computeSignatureHash }, consultaFirmada(), { createFakeSupabase }, createFakeSupabaseSimple, graph(), main(), NoteExportService (+3 more)
+
+### Community 233 - "WorkflowLearner.js"
+Cohesion: 0.31
+Nodes (3): Workflow, WorkflowExecutionGuideBuilder, WorkflowLearner
+
+### Community 234 - "SupabaseClinicalTemplateRepository.js"
+Cohesion: 0.31
+Nodes (4): humanizeSpecialty(), SELECT_COLUMNS, SupabaseClinicalTemplateRepository, toDomain()
+
+### Community 235 - "sonda-del-decisor-android.js"
+Cohesion: 0.36
+Nodes (9): argumentos(), coincide(), consultarEndpoint(), consultarTypeSafe(), endpointSeguro(), juzgar(), main(), PANTALLAS (+1 more)
+
+### Community 236 - "verify-dynamic-values.js"
+Cohesion: 0.28
+Nodes (6): assert, DynamicValueResolver, executorWith(), patientWorkflow(), Step, WorkflowExecutor
+
+### Community 238 - "003 — Preguntar por exportes y registrarse dejan de gastar la cuota de logs"
+Cohesion: 0.25
+Nodes (6): 003 — Preguntar por exportes y registrarse dejan de gastar la cuota de logs, Diagnóstico: qué se midió, Hallazgos, Lo que NO entra, Límites que se aceptan, Promesas
+
+### Community 239 - "SupabaseClinicalEncounterRepository.js"
+Cohesion: 0.36
+Nodes (3): SELECT_COLUMNS, SupabaseClinicalEncounterRepository, toDomain()
+
+### Community 240 - "004 — cada instalación de Ü para Windows tiene su credencial, y la clave del instalador solo sirve para presentarse"
+Cohesion: 0.29
+Nodes (6): 004 — cada instalación de Ü para Windows tiene su credencial, y la clave del instalador solo sirve para presentarse, Cómo se enciende, Diagnóstico: qué se midió, Las fases, Lo que NO entra, Promesas
+
+### Community 241 - "grounding.js"
+Cohesion: 0.38
+Nodes (6): CONFIDENCE_BY_GROUNDING, confidenceFromGrounding(), GROUNDING_LEVELS, groundingFromConfidence(), isGroundedForAutofill(), normalizeGrounding()
+
+### Community 242 - "Arquitectura y Plan del Refactor (Graph)"
+Cohesion: 0.40
+Nodes (6): Arquitectura y Plan del Refactor (Graph), Decisión: Deepgram como proveedor STT canónico, Motor Graph (aprendizaje y replay de workflows), Flujo clínico Miracle (voz → nota → autofill), Pipeline unificado en streaming SSE (propuesto), Decisión: eliminar Supabase por completo
+
+### Community 243 - "005 — Una sola Ü: el cerebro obedece, sabe con quién habla y sus herramientas dicen lo que hacen"
+Cohesion: 0.33
+Nodes (5): 005 — Una sola Ü: el cerebro obedece, sabe con quién habla y sus herramientas dicen lo que hacen, Cierre, Diagnóstico: qué se midió, Lo que NO entra, Promesas
+
 ## Ambiguous Edges - Review These
-- `Decisión: eliminar Supabase por completo` → `SupabaseRestClient.js — PostgREST service-role`  [AMBIGUOUS]
-  ARQUITECTURA_Y_PLAN.md · relation: conceptually_related_to
 - `requireAuth.js — realm local (sesión/API key)` → `Panel de cuenta (login usuario/clave)`  [AMBIGUOUS]
   chrome-extension-src/graph-trainer/popup.html · relation: references
-- `SurfaceDetector (lista cerrada saplogon/sapgui)` → `windowsEngines.js (catálogo de motores del backend)`  [AMBIGUOUS]
-  web/public/studio-docs/motor-escaneo-sapgui.md · relation: conceptually_related_to
 - `Miracle 'M' app icon (SVG)` → `App icon 192px — blue medical cross on dark navy rounded square (PWA logo)`  [AMBIGUOUS]
   web/public/icon-192.png · relation: semantically_similar_to
+- `Decisión: eliminar Supabase por completo` → `SupabaseRestClient.js — PostgREST service-role`  [AMBIGUOUS]
+  ARQUITECTURA_Y_PLAN.md · relation: conceptually_related_to
+- `SurfaceDetector (lista cerrada saplogon/sapgui)` → `windowsEngines.js (catálogo de motores del backend)`  [AMBIGUOUS]
+  web/public/studio-docs/motor-escaneo-sapgui.md · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **1003 isolated node(s):** `app`, `miracle-agent`, `EXECUTION_LOG_SCOPES`, `VOICE_LOG_SCOPES`, `LEARNING_LOG_SCOPES` (+998 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1334 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **38 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **1123 isolated node(s):** `path`, `http`, `express`, `SupabaseRestClient`, `LiveVoiceDeviceAuthorizer` (+1118 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1490 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **35 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **What is the exact relationship between `Decisión: eliminar Supabase por completo` and `SupabaseRestClient.js — PostgREST service-role`?**
-  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `requireAuth.js — realm local (sesión/API key)` and `Panel de cuenta (login usuario/clave)`?**
   _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
-- **What is the exact relationship between `SurfaceDetector (lista cerrada saplogon/sapgui)` and `windowsEngines.js (catálogo de motores del backend)`?**
-  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `Miracle 'M' app icon (SVG)` and `App icon 192px — blue medical cross on dark navy rounded square (PWA logo)`?**
   _Edge tagged AMBIGUOUS (relation: semantically_similar_to) - confidence is low._
-- **Why does `web/server.js — composition root` connect `web/server.js — composition root` to `NoteExportService.js`, `package.json`, `popup.js`, `registerWindowsAgentRoutes.js`, `registerClinicalRoutes.js`, `web/api/registerPublicApiRoutes.js — fachada pública`, `VercelProjectEnvService.js`?**
-  _High betweenness centrality (0.101) - this node is a cross-community bridge._
-- **Why does `api/miracle_runtime.py — entrada ASGI Python` connect `web/server.js — composition root` to `MiracleContext`, `app/web_app.py — composición ASGI/Starlette`?**
-  _High betweenness centrality (0.094) - this node is a cross-community bridge._
-- **Why does `integrations/product_llm — organizador de la nota` connect `app/web_app.py — composición ASGI/Starlette` to `POST /api/v1/pipeline`?**
-  _High betweenness centrality (0.065) - this node is a cross-community bridge._
+- **What is the exact relationship between `Decisión: eliminar Supabase por completo` and `SupabaseRestClient.js — PostgREST service-role`?**
+  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
+- **What is the exact relationship between `SurfaceDetector (lista cerrada saplogon/sapgui)` and `windowsEngines.js (catálogo de motores del backend)`?**
+  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
+- **Why does `api/miracle_runtime.py — entrada ASGI Python` connect `web/server.js — composition root` to `voice_orchestration/service.py`, `app/web_app.py — composición ASGI/Starlette`?**
+  _High betweenness centrality (0.103) - this node is a cross-community bridge._
+- **Why does `web/server.js — composition root` connect `web/server.js — composition root` to `Graph README`, `NoteExportService.js`, `package.json`, `registerClinicalRoutes.js`, `VercelProjectEnvService.js`, `vocabulary.js`?**
+  _High betweenness centrality (0.099) - this node is a cross-community bridge._
+- **Why does `integrations/product_llm — organizador de la nota` connect `app/web_app.py — composición ASGI/Starlette` to `POST /api/v1/pipeline`, `ClinicalNoteGeneratorService.js`?**
+  _High betweenness centrality (0.086) - this node is a cross-community bridge._
