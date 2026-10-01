@@ -5,7 +5,9 @@
 //   GET /api/windows/engines                   -> catálogo de motores (las tabs)
 //   GET /api/windows/users                     -> selector de usuarios
 //   GET /api/windows/users/:email/events       -> pulsos + logs (?since, ?limit)
-//   GET /api/windows/users/:email/events/stream -> lo mismo, EN VIVO (SSE)
+//   GET /api/windows/users/:email/events/stream -> lo mismo, EN VIVO (SSE); mientras
+//                                                 esté abierto, el log de ese equipo
+//                                                 se guarda entero, sin juntar
 //   GET /api/windows/users/:email/stats        -> marcador de pruebas por motor
 //   GET /api/windows/users/:email/graph        -> subconsciente (apps->wf->nodos)
 
@@ -103,6 +105,16 @@ function registerWindowsPanelRoutes(app, deps = {}) {
     // dos veces lo mismo por el endpoint no-streaming.
     send('open', { since: lastId, tickMs: STREAM_TICK_MS });
 
+    // Mientras alguien mira, la telemetría guarda cada línea de este usuario sin
+    // juntar las repetidas (spec 001). Si el navegador se va durante la espera, el
+    // sondeo de abajo no llega a arrancar.
+    req.on('close', () => { closed = true; });
+    try {
+      await windowsPanelService.marcarMirando(email);
+    } catch (error) {
+      send('warn', { message: `no se pudo pedir el log completo de este equipo: ${error.message || error}` });
+    }
+
     const startedAt = Date.now();
     let lastPingAt = startedAt;
     let polling = false;
@@ -150,6 +162,7 @@ function registerWindowsPanelRoutes(app, deps = {}) {
     }, STREAM_TICK_MS);
 
     req.on('close', () => { closed = true; clearInterval(timer); });
+    if (closed) clearInterval(timer);
   });
 
   // El marcador: % de éxito por motor y por versión de la app.

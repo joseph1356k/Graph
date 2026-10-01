@@ -1211,7 +1211,8 @@ registerUsageRoutes(app, { usageDashboardService, usageRecorder });
 registerMaintenanceRoutes(app, {
   healthAlertService: systemHealthAlertService,
   restClient: supabaseRestClient,
-  noteRescueService: noteGenerationRescueService
+  noteRescueService: noteGenerationRescueService,
+  windowsTelemetryService
 });
 registerAndroidPanelRoutes(app, { androidPanelService });
 registerRealtimeSessionRoutes(app, { realtimeSessionService });

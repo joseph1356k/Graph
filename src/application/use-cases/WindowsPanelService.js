@@ -19,6 +19,10 @@ const MAX_EVENTS_LIMIT = 1000;
 // tiempo — así el marcador significa "las últimas N cosas que pasaron", que es
 // lo que un desarrollador quiere saber cuando acaba de probar algo.
 const STATS_SCAN_LIMIT = 4000;
+// Cuánto dura «alguien lo está mirando en vivo» desde la última vez que se abrió
+// su stream. El stream se reabre solo cada ~50 s, así que mientras el panel esté
+// abierto esto se renueva con margen, y caduca cinco minutos después de cerrarlo.
+const MIRANDO_MS = 5 * 60 * 1000;
 
 // Etiquetas amables para apps conocidas; el resto se muestra tal cual (con la
 // primera letra en mayuscula). El pill del circulo usa esto.
@@ -72,12 +76,29 @@ function appCoordinate(sourceOrigin, appId) {
 
 class WindowsPanelService {
   // catalogService: WorkflowCatalog (Neo4j). supabaseRestClient: telemetria.
-  constructor({ catalogService, supabaseRestClient }) {
+  // now: el reloj (ms), para que el juez pueda moverlo.
+  constructor({ catalogService, supabaseRestClient, now }) {
     if (!catalogService || !supabaseRestClient) {
       throw new Error('WindowsPanelService requires catalogService and supabaseRestClient');
     }
     this.catalog = catalogService;
     this.supabase = supabaseRestClient;
+    this.ahora = typeof now === 'function' ? now : () => Date.now();
+  }
+
+  // Deja dicho que alguien está mirando en vivo a este usuario. Mientras dure,
+  // WindowsTelemetryService guarda cada línea de su log en vez de juntar las
+  // repetidas (spec 001): quien depura con el panel abierto ve el log entero.
+  // Lo llama la ruta del stream cada vez que se abre.
+  async marcarMirando(email) {
+    const normalized = requireEmail(email);
+    const hasta = new Date(this.ahora() + MIRANDO_MS).toISOString();
+    await this.supabase.update(
+      'graph_windows_users',
+      `email=eq.${encodeURIComponent(normalized)}`,
+      { detalle_hasta: hasta }
+    );
+    return { email: normalized, detalle_hasta: hasta };
   }
 
   // Usuarios + agregado de actividad (conteo de eventos + ultimo evento), unido
