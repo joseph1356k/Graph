@@ -103,6 +103,21 @@ class SupabaseRestClient {
     });
     return Array.isArray(body) ? body[0] : body;
   }
+
+  // Borra las filas que cumplen el filtro y devuelve las borradas (pide solo las
+  // columnas que hagan falta con `select=` en el filtro). Sin filtro no borra:
+  // PostgREST vaciaría la tabla entera.
+  async delete(table, query) {
+    const filters = `${query || ''}`.split('&').filter((part) => part && !part.startsWith('select='));
+    if (!filters.length) {
+      throw new Error(`SupabaseRestClient.delete(${table}) necesita un filtro.`);
+    }
+    const body = await this.request(`/${table}?${query}`, {
+      method: 'DELETE',
+      headers: { Prefer: 'return=representation' }
+    });
+    return Array.isArray(body) ? body : [];
+  }
 }
 
 module.exports = SupabaseRestClient;

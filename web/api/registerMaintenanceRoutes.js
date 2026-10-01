@@ -18,7 +18,7 @@ function isAuthorized(req) {
 }
 
 function registerMaintenanceRoutes(app, deps = {}) {
-  const { healthAlertService, restClient, noteRescueService } = deps;
+  const { healthAlertService, restClient, noteRescueService, windowsTelemetryService } = deps;
 
   if (!app || !healthAlertService) {
     throw new Error('registerMaintenanceRoutes requires app and healthAlertService');
@@ -34,7 +34,7 @@ function registerMaintenanceRoutes(app, deps = {}) {
       return res.status(401).json({ error: 'No autorizado.' });
     }
 
-    const result = { rescued: null, purged: null, purgedExportPayloads: null, alert: null, errors: [] };
+    const result = { rescued: null, purged: null, purgedExportPayloads: null, purgedWindowsLogs: null, alert: null, errors: [] };
 
     // El rescate va PRIMERO: convierte en notas las consultas que quedaron a
     // medias, para que el correo no reporte como problema algo que se acaba de
@@ -79,6 +79,20 @@ function registerMaintenanceRoutes(app, deps = {}) {
       }
     }
 
+    // El log que refleja cada equipo de Windows caduca: el 2026-10-01 eran 407.979
+    // filas y 246 MB en una base de 500 MB, y nada las borraba (spec 001). Solo
+    // los logs; las corridas y los pasos de workflow se quedan.
+    if (windowsTelemetryService) {
+      try {
+        result.purgedWindowsLogs = await windowsTelemetryService.purgarLogsViejos({
+          dias: process.env.WINDOWS_LOG_RETENTION_DAYS,
+        });
+      } catch (error) {
+        result.errors.push(`purga de logs de Windows: ${error.message}`);
+        console.error(`[Mantenimiento] Purga de logs de Windows falló: ${error.message}`);
+      }
+    }
+
     try {
       const force = `${req.query?.force || ''}`.trim() === '1';
       result.alert = await healthAlertService.send({ force });
@@ -89,7 +103,7 @@ function registerMaintenanceRoutes(app, deps = {}) {
 
     const hallazgos = result.alert?.findings?.length ?? 0;
     console.log(
-      `[Mantenimiento] Rescatadas ${result.rescued?.rescued ?? 0} · limpiadas ${result.purged ?? 0} · ${hallazgos} hallazgo(s) · correo ${result.alert?.sent ? 'enviado' : `no enviado (${result.alert?.reason || 'error'})`}`,
+      `[Mantenimiento] Rescatadas ${result.rescued?.rescued ?? 0} · limpiadas ${result.purged ?? 0} · ${result.purgedWindowsLogs ?? 0} log(s) de Windows caducados · ${hallazgos} hallazgo(s) · correo ${result.alert?.sent ? 'enviado' : `no enviado (${result.alert?.reason || 'error'})`}`,
     );
 
     // 207 cuando algo falló pero el resto siguió: el cron no debe reintentar en
