@@ -103,6 +103,15 @@ function createFakeSupabase() {
       if (Array.isArray(row)) return row.map((one) => insertOne(name, one, query))[0];
       return insertOne(name, row, query);
     },
+    // Como PostgREST con `Prefer: resolution=merge-duplicates`: si ya hay una fila con esa clave,
+    // le cambia solo las columnas que trae `row`; si no, la inserta.
+    async upsert(name, row, onConflict) {
+      const keys = `${onConflict || ''}`.split(',').map((key) => key.trim()).filter(Boolean);
+      if (!keys.length) throw new Error('Fake Supabase: upsert sin clave de conflicto');
+      const existing = table(name).find((item) => keys.every((key) => `${item[key]}` === `${row[key]}`));
+      if (existing) Object.assign(existing, row, { updated_at: new Date().toISOString() });
+      else insertOne(name, row, '');
+    },
     async update(name, query, patch) {
       const params = parseParams(`${query}`.split('&select=')[0]);
       const rows = applyFilters(table(name), params);

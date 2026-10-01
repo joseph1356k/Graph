@@ -150,4 +150,5 @@ solo recoge los manejadores: no hace falta Express ni red.
 - [x] Probado contra el servidor en marcha, con la llamada y la respuesta pegadas en el PR
 - [x] La migración `detalle_hasta` aplicada en `miracle-app` antes de mergear (2026-10-01)
 - [x] Estado de este documento: **implementado** (2026-10-01)
-- [ ] El mismo cambio en `joseph1356k/Graph`, que es de donde sale la producción hasta el corte
+- [x] El mismo cambio en `joseph1356k/Graph`, que es de donde sale la producción hasta el corte
+      (su PR 35, mergeado el 2026-10-01; en producción los logs llegan juntados desde las 06:21 UTC)

@@ -23,6 +23,11 @@ const DEMO_AUDIT_ACCION = 'Nota de demostración generada por IA';
 
 const DEFAULT_LEASE_SECONDS = 600;   // 10 min: llenar un formulario dura minutos.
 const DEFAULT_MAX_ATTEMPTS = 3;
+// Cuánto se da por buena una cola vacía antes de volver a preguntarle a la base (spec 003).
+// El ejecutor de cada Ü Windows pregunta cada 3 s toda la jornada, y cada pregunta que llega a
+// Supabase deja una línea de log: el 2026-10-01 eran 21.027 al día, el 54 % de la cuota de logs,
+// para una cola que en toda su historia había tenido 10 trabajos.
+const DEFAULT_COLA_VACIA_MS = 15000;
 const ROLES_THAT_EXPORT_ANY_CONSULTATION = new Set(['admin', 'supervisor']);
 const VALID_OUTCOMES = new Set(['ok', 'needs_doctor', 'error']);
 
@@ -102,6 +107,13 @@ class NoteExportService {
     this.leaseSeconds = Number(deps.leaseSeconds || process.env.GRAPH_NOTE_EXPORT_LEASE_SECONDS || DEFAULT_LEASE_SECONDS);
     this.maxAttempts = Number(deps.maxAttempts || process.env.GRAPH_NOTE_EXPORT_MAX_ATTEMPTS || DEFAULT_MAX_ATTEMPTS);
     this.logger = deps.logger || console;
+    this.ahora = typeof deps.now === 'function' ? deps.now : () => Date.now();
+    const colaVacia = Number(deps.colaVaciaMs ?? process.env.GRAPH_NOTE_EXPORT_COLA_VACIA_MS ?? DEFAULT_COLA_VACIA_MS);
+    this.colaVaciaMs = Number.isFinite(colaVacia) && colaVacia >= 0 ? colaVacia : DEFAULT_COLA_VACIA_MS;
+    // Hasta cuándo esta instancia da la cola por vacía sin preguntar. Se olvida en cuanto ESTA
+    // instancia encola o reintenta un trabajo; lo encolado en otra instancia tarda como mucho
+    // colaVaciaMs en verse.
+    this.colaVaciaHasta = 0;
   }
 
   // -------------------------------------------------------------------------
@@ -261,6 +273,7 @@ class NoteExportService {
       // Carrera perdida contra otra petición y la fila no se pudo leer.
       throw clinicalError('EXPORT_ALREADY_EXISTS', 'Ya existe una exportación para esta consulta.');
     }
+    this.colaVaciaHasta = 0; // hay trabajo: la siguiente pregunta del ejecutor va a la base
     return { duplicate: !inserted.created, export: toPublicExport(inserted.export) };
   }
 
@@ -306,6 +319,7 @@ class NoteExportService {
 
     const rpc = await this.repository.retryExport(row.id, requester?.id || null);
     this.assertRpcOk(rpc, 'EXPORT_NOT_RETRYABLE');
+    this.colaVaciaHasta = 0; // el trabajo vuelve a la cola: que la siguiente pregunta lo vea
     const fresh = await this.repository.getExportById(row.id);
     return { export: toPublicExport(fresh), idempotent: Boolean(rpc?.idempotent) };
   }
@@ -365,11 +379,18 @@ class NoteExportService {
       throw clinicalError('EXPORT_INVALID', 'El ejecutor debe identificarse (device).');
     }
 
+    // La cola se vio vacía hace menos de colaVaciaMs: se contesta sin ir a la base (spec 003).
+    if (this.ahora() < this.colaVaciaHasta) return { export: null };
+
+    // Un fallo de la base sale de aquí como excepción y NO se recuerda: un fallo no es una cola vacía.
     const row = await this.repository.claimNext(identity, {
       leaseSeconds: this.leaseSeconds,
       maxAttempts: this.maxAttempts
     });
-    if (!row) return { export: null };
+    if (!row) {
+      this.colaVaciaHasta = this.ahora() + this.colaVaciaMs;
+      return { export: null };
+    }
 
     const payload = row.payload && typeof row.payload === 'object' ? row.payload : {};
 

@@ -223,11 +223,15 @@ class WindowsTelemetryService {
     return Array.isArray(borradas) ? borradas.length : 0;
   }
 
-  // Upsert por email (select-then-update/insert, sin abrir RLS ni tocar el
-  // cliente compartido). Devuelve un resumen mínimo para el cliente.
+  // Upsert por email, en UNA petición (spec 003). El cliente lo llama cada 60 s
+  // como latido; antes eran dos (un select y luego update o insert), y cada
+  // petición a la API de Supabase es una línea en su cuota de logs. Solo viajan
+  // las columnas de `patch`: en un usuario que ya existe, `first_seen_at` y
+  // `created_at` no se tocan, y en uno nuevo los pone la tabla (default now()).
+  // Devuelve un resumen mínimo para el cliente.
   async register(payload = {}) {
     const email = normEmail(payload.email);
-    const now = new Date().toISOString();
+    const now = new Date(this.ahora()).toISOString();
 
     const patch = {
       email,
@@ -241,16 +245,7 @@ class WindowsTelemetryService {
       last_seen_at: now
     };
 
-    const existing = await this.supabase.select(
-      'graph_windows_users',
-      `select=email&email=eq.${encodeURIComponent(email)}&limit=1`
-    );
-
-    if (Array.isArray(existing) && existing.length) {
-      await this.supabase.update('graph_windows_users', `email=eq.${encodeURIComponent(email)}`, patch);
-    } else {
-      await this.supabase.insert('graph_windows_users', { ...patch, first_seen_at: now, created_at: now });
-    }
+    await this.supabase.upsert('graph_windows_users', patch, 'email');
 
     return { ok: true, email };
   }
