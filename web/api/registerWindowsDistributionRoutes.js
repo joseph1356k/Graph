@@ -30,7 +30,7 @@ function registerWindowsDistributionRoutes(app, deps = {}) {
 
   app.post('/api/providers/windows-app/build', requireProviderAdmin, async (req, res) => {
     try {
-      res.json(await windowsAppReleaseService.triggerBuild());
+      res.json(await windowsAppReleaseService.triggerBuild({ userMessage: req.body?.user_message }));
     } catch (error) {
       console.error(`[Windows App] triggerBuild error: ${error.message}`);
       res.status(error.statusCode || 500).json({ error: error.message || 'No fue posible disparar el build.' });

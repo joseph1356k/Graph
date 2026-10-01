@@ -75,6 +75,20 @@ function createFakeSupabase() {
     return tables[name];
   };
   const rpcHandlers = {};
+  const insertOne = (name, row, query) => {
+    const now = new Date().toISOString();
+    const rows = table(name);
+    if (`${query}`.includes('on_conflict') && row.id) {
+      const index = rows.findIndex((item) => item.id === row.id);
+      if (index >= 0) {
+        rows[index] = { ...rows[index], ...row, updated_at: now };
+        return { ...rows[index] };
+      }
+    }
+    const stored = { id: crypto.randomUUID(), created_at: now, updated_at: now, ...row };
+    rows.push(stored);
+    return { ...stored };
+  };
   return {
     tables,
     table,
@@ -83,19 +97,20 @@ function createFakeSupabase() {
     async select(name, query) {
       return applyFilters(table(name), parseParams(query)).map((row) => ({ ...row }));
     },
+    // PostgREST acepta un lote (un arreglo de filas) en el mismo POST, y el cliente real devuelve
+    // la primera: la telemetría de Windows inserta así.
     async insert(name, row, query = '') {
-      const now = new Date().toISOString();
-      const rows = table(name);
-      if (`${query}`.includes('on_conflict') && row.id) {
-        const index = rows.findIndex((item) => item.id === row.id);
-        if (index >= 0) {
-          rows[index] = { ...rows[index], ...row, updated_at: now };
-          return { ...rows[index] };
-        }
-      }
-      const stored = { id: crypto.randomUUID(), created_at: now, updated_at: now, ...row };
-      rows.push(stored);
-      return { ...stored };
+      if (Array.isArray(row)) return row.map((one) => insertOne(name, one, query))[0];
+      return insertOne(name, row, query);
+    },
+    // Como PostgREST con `Prefer: resolution=merge-duplicates`: si ya hay una fila con esa clave,
+    // le cambia solo las columnas que trae `row`; si no, la inserta.
+    async upsert(name, row, onConflict) {
+      const keys = `${onConflict || ''}`.split(',').map((key) => key.trim()).filter(Boolean);
+      if (!keys.length) throw new Error('Fake Supabase: upsert sin clave de conflicto');
+      const existing = table(name).find((item) => keys.every((key) => `${item[key]}` === `${row[key]}`));
+      if (existing) Object.assign(existing, row, { updated_at: new Date().toISOString() });
+      else insertOne(name, row, '');
     },
     async update(name, query, patch) {
       const params = parseParams(`${query}`.split('&select=')[0]);
@@ -104,6 +119,17 @@ function createFakeSupabase() {
       const target = table(name).find((row) => row.id === rows[0].id);
       Object.assign(target, patch, { updated_at: new Date().toISOString() });
       return { ...target };
+    },
+    // Borra las filas que cumplen el filtro y las devuelve, como PostgREST con
+    // `Prefer: return=representation`. Sin filtro no borra: el cliente real tampoco.
+    async delete(name, query) {
+      const params = parseParams(query).filter(([key]) => key !== 'select');
+      if (!params.length) throw new Error('Fake Supabase: delete sin filtro');
+      const doomed = new Set(applyFilters(table(name), params));
+      const kept = table(name).filter((row) => !doomed.has(row));
+      table(name).length = 0;
+      table(name).push(...kept);
+      return [...doomed].map((row) => ({ ...row }));
     },
     async rpc(fn, args = {}) {
       if (typeof rpcHandlers[fn] === 'function') return rpcHandlers[fn](args);
