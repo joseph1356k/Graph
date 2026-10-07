@@ -16,64 +16,65 @@
       "includeFiles": "bounded/miracle-ai/**"
     }
   },
-  "crons": [
+  "routes": [
     {
-      "path": "/api/internal/maintenance/daily",
-      "schedule": "0 12 * * *"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/miracle-runtime/:path*",
-      "destination": "/api/miracle_runtime?__miracle_target=:path*"
+      "src": "/service-worker.js",
+      "headers": {
+        "Cache-Control": "public, max-age=0, must-revalidate"
+      },
+      "continue": true
     },
     {
-      "source": "/api/android/live/session",
-      "destination": "/api/android-live-session"
+      "src": "/(.*)",
+      "headers": {
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "camera=(), geolocation=(), microphone=(self)"
+      },
+      "continue": true
     },
     {
-      "source": "/api/:path*",
-      "destination": "/api?path=:path*"
+      "src": "/api/android-live-session",
+      "dest": "/api/android-live-session"
     },
     {
-      "source": "/examples/medical-demo",
-      "destination": "/index.html"
+      "src": "/api/android/live/session",
+      "dest": "/api/android-live-session"
     },
     {
-      "source": "/miracle",
-      "destination": "/miracle/index.html"
-    },
-    {
-      "source": "/miracle/voice-lab",
-      "destination": "/miracle/voice.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/service-worker.js",
-      "headers": [
+      "src": "/api/(.*)",
+      "dest": "https://backend.itsmiracleai.com/api/$1",
+      "headers": {
+        "x-vercel-enable-rewrite-caching": "0"
+      },
+      "transforms": [
         {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
+          "type": "request.headers",
+          "op": "set",
+          "target": {
+            "key": "x-graph-reenvio"
+          },
+          "args": "$GRAPH_REENVIO_SECRET",
+          "env": [
+            "GRAPH_REENVIO_SECRET"
+          ]
         }
       ]
     },
     {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "camera=(), geolocation=(), microphone=(self)"
-        }
-      ]
+      "handle": "filesystem"
+    },
+    {
+      "src": "/examples/medical-demo",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/miracle",
+      "dest": "/miracle/index.html"
+    },
+    {
+      "src": "/miracle/voice-lab",
+      "dest": "/miracle/voice.html"
     }
   ]
 }
