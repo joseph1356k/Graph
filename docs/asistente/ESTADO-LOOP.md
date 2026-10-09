@@ -16,7 +16,7 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 | MRR | 0,952 | 0,973 | ≥ 0,93 | cumple |
 | Fuera de tema sin guías | 100 % | 100 % | 100 % | cumple |
 | p95 de búsqueda | 2,85 ms | 1,8 ms | ≤ 10 ms | cumple |
-| Construcción del índice | no medido | ≈ 120 ms | ≤ 300 ms | cumple |
+| Construcción del índice | no medido | ≈ 110–120 ms | ≤ 300 ms | cumple |
 | Evaluación de respuestas sin red (casos) | no existe | 192 (12 omitidos) | ≥ 150 con 6 métricas | cumple |
 | · referencias inventadas eliminadas | no medido | 100 % | 100 % | cumple |
 | · cifras plantadas detectadas | no medido | 100 % (77/77) | ≥ 95 % | cumple |
@@ -25,7 +25,7 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 | · salidas rotas que no rompen | no medido | 100 % | 100 % | cumple |
 | · propuestas seguras | no medido | 100 % | 100 % | cumple |
 | Evaluación de respuestas en vivo | no existe | bloqueada | ≥ 60 casos | bloqueada: requiere humano |
-| Medicamentos en el diccionario | 170 | 170 | ≥ 250 | pendiente |
+| Medicamentos en el diccionario | 170 | 320 | ≥ 250 | cumple |
 | Instantánea de fichas técnicas | 0 % | 0 % | ≥ 90 % del diccionario | bloqueada: requiere humano |
 | Cifras «de memoria» corregidas, verificadas o retiradas | 0 | 22 | todas las marcadas | en curso |
 | Graph `npm test` | verde | verde | verde | cumple |
@@ -38,10 +38,9 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 ## Backlog priorizado
 
 1. **Exactitud clínica:** seguir con las cifras «Pendiente» de `knowledge/guias-clinicas/PENDIENTES-REVISION.md` de la primera tanda (citología/ADN-VPH de la Res. 3280, ISPAD, anticoncepción, apendicitis, piel y tejidos blandos, alcohol, opioides, osteoporosis, síncope).
-2. **Fichas:** diccionario a ≥ 250 principios activos con pruebas de detección (hoy 170).
-3. **Funcionamiento:** E2E con Playwright del chat en la web (v1, abstención, fuentes guía + ficha, cifras sin fuente, aplicar propuesta).
-4. **Optimización:** script que mida los tokens de entrada del chat (mediana ≤ 6 000).
-5. **Corpus (prioridad baja, la meta de 80 se cumple):** parto pretérmino, menopausia, sangrado uterino anormal, dermatitis atópica, ojo rojo, otitis externa, artrosis, tos ferina, varicela y sarampión, quemaduras.
+2. **Funcionamiento:** E2E con Playwright del chat en la web (v1, abstención, fuentes guía + ficha, cifras sin fuente, aplicar propuesta).
+3. **Optimización:** script que mida los tokens de entrada del chat (mediana ≤ 6 000).
+4. **Corpus (prioridad baja, la meta de 80 se cumple):** parto pretérmino, menopausia, sangrado uterino anormal, dermatitis atópica, ojo rojo, otitis externa, artrosis, tos ferina, varicela y sarampión, quemaduras.
 
 ## Hecho
 
@@ -61,6 +60,8 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 
 - **Iteración 8 (2026-10-09):** corpus, 73 → 80 guías (meta cumplida): crecimiento y desarrollo, vacunación PAI y del adulto, lactancia materna, sangrado del primer trimestre, diabetes gestacional, parasitosis intestinal, escabiosis y pediculosis (145 cifras con fuente textual; 78 descartadas). Las guías de embarazo declaraban también «adultos» y ganaban preguntas de diabetes general: ahora declaran solo gestantes y una guía de población especial baja ×0.85 si la pregunta no nombra la población; «IMC de 36» se lee como obesidad; «bajo/alto» y «pecho» pasan a genéricos. La construcción del índice había subido a ~205–280 ms con 80 guías (cerca del límite de 300): las frases de sinónimos se indexan ahora por su primera palabra y bajó a ~120 ms. Antes → después: recall@1 93,6 → 94,8 %, recall@3 100 → 100 %, MRR 0,966 → 0,973, respuestas sin red 178 → 192 casos.
 
+- **Iteración 9 (2026-10-09):** fichas técnicas. El diccionario cerrado pasa de 170 a 320 principios activos (DCI en español, como en CIMA, con nombres colombianos): antiinfecciosos de las guías nuevas, urgencias y anestesia, cardiovasculares, insulinas y antidiabéticos, obstetricia y uso diario. La combinación gana a su componente y TAF no se confunde con TDF; no se usan siglas que chocan con el corpus (NAC) ni «calcio»/«potasio» solos. `verify-drug-labels` 13 → 14 (piso de 150 → 250 entradas). Revisadas las 593 preguntas de evaluación: ninguna detección nueva incorrecta. Retrieval y respuestas sin cambios (recall@1 94,8 %, MRR 0,973). CIMA sigue en 403.
+
 ## Decisiones
 
 - La verificación de cifras se hace con búsqueda web; los sitios oficiales no son alcanzables desde el sandbox. Una cifra se corrige con al menos dos fuentes secundarias concordantes; si no hay ninguna, se retira y queda en `PENDIENTES-REVISION.md`.
@@ -68,6 +69,7 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 - El conjunto «fuera del corpus» solo lleva temas que de verdad no están en ninguna guía (ni en `palabras_clave` ni como signo de alarma). Cuando una guía nueva cubre uno, la pregunta sale de ese conjunto y pasa a las preguntas con guía esperada.
 - Dos guías que traen la misma conducta (la sección de hipoglucemia de DM2 y la guía de crisis; el potasio en lesión renal aguda y en la guía de electrolitos) son ambas respuesta correcta en la evaluación.
 - Las guías nuevas las redactan agentes con búsqueda web en tandas de 6, y yo integro: preguntas, consulta canónica, sinónimos y pendientes. Ninguna cifra sin fuente textual.
+- El diccionario de medicamentos usa la DCI española (la que entiende CIMA) y guarda los nombres colombianos como alias; una sigla entra solo si no choca con el corpus.
 - Las guías de embarazo o de recién nacidos declaran solo esa población; si la pregunta no nombra población, ceden ante la guía general.
 - Las palabras de población no identifican el tema: la población la decide `inferPopulations` y pesa como boost, no como término.
 - Las cifras de la respuesta se verifican solo contra las fuentes que la respuesta cita y la consulta. Más estricto que «cualquier extracto recuperado», alineado con el prompt v4 (cada cifra sale de una fuente citada o de la consulta).
