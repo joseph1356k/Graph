@@ -39,19 +39,22 @@ No es un archivo de guía: `build-guideline-corpus` solo compila los `.md` con c
 - **Pendiente:** porcentajes de efectividad por método (CDC); categorías de la 6.ª edición de los criterios de elegibilidad de la OMS (2025).
 
 ## hemorragia-digestiva
-- **Pendiente:** reiniciar aspirina en 3–5 días (ESGE); dosis de vasoactivos (AASLD 2016).
+- **Verificado (secundario, 2026-10-09):** ESGE 2021: no suspender la aspirina de prevención secundaria y, si se suspendió, reanudarla lo antes posible, idealmente en 3–5 días (la frase «hacia el día 3» es de la ESGE 2015). Vasoactivos: terlipresina 2 mg IV cada 4 h por 48 h y luego 1 mg cada 4 h (dos revisiones concordantes); octreotide 50 µg en bolo y 50 µg/h, y somatostatina 250 µg en bolo y 250–500 µg/h (una tabla de revisión; otra revisión usa somatostatina 500 µg y 500 µg/h).
+- **Pendiente:** contrastar las dosis con la tabla de la guía AASLD 2016 (Hepatology 2017).
 
 ## anafilaxia
-- **Pendiente:** niveles de observación del Resuscitation Council UK 2021 (2, 6 y 12 h).
+- **Verificado (secundario, 2026-10-09):** observación escalonada del Resuscitation Council UK 2021 (2 h con una dosis y buena respuesta, dos autoinyectores y acompañamiento; mínimo 6 h con dos dosis o reacción bifásica previa; mínimo 12 h en reacción grave con más de dos dosis, asma grave, absorción continua, consulta nocturna o acceso difícil a urgencias), adoptada por NICE NG258.
+- **Corregido (2026-10-09):** NICE NG258 (27 de mayo de 2026) reemplazó a CG134; se retiró la frase «observar a los mayores de 16 años 6 a 12 horas» de CG134 y los menores de 16 se hospitalizan solo si no cumplen los criterios de alta.
 
 ## dolor-abdominal-agudo-apendicitis
 - **Pendiente:** 3–5 días de antibiótico posoperatorio en apendicitis complicada (WSES).
 
 ## malaria
-- **Pendiente:** esquema colombiano de cloroquina 10 / 7,5 / 7,5 mg/kg (guía 2010), mostrado junto al de la OMS.
+- **Verificado (secundario, 2026-10-09):** cloroquina 25 mg base/kg en 3 días repartida 10 / 7,5 / 7,5 mg/kg (estudio colombiano que cita la guía 2010; un ensayo de Antioquia usa 600 / 450 / 450 mg en adultos, proporción equivalente).
+- **Pendiente:** confirmar en la GPC 67-2022 si conserva el reparto 10 / 7,5 / 7,5.
 
 ## sifilis
-- **Pendiente:** «si se pierde una dosis semanal en la gestante, reiniciar el esquema completo» (atribuido a CDC).
+- **Corregido (2026-10-09):** la regla de la CDC 2021 no es «si se pierde una dosis»: el intervalo óptimo es de 7 días y, en la gestante, más de 9 días entre dosis obliga a repetir el esquema completo (página de sífilis latente de la CDC y resumen del departamento de salud de Maine). Algunas guías estatales recientes (California 2025) son más estrictas: reiniciar ante cualquier dosis tardía.
 
 ## infecciones-piel-tejidos-blandos
 - **Pendiente:** vancomicina 30 mg/kg/día y piperacilina/tazobactam 3,375 g cada 6–8 h (tablas IDSA).
@@ -63,7 +66,8 @@ No es un archivo de guía: `build-guideline-corpus` solo compila los `.md` con c
 - **Pendiente:** naloxona 0,4–2 mg (ficha técnica); reevaluar al menos cada 2 semanas en dolor agudo (CDC 2022).
 
 ## gota
-- **Pendiente:** esquema EULAR de colchicina (1 mg y 0,5 mg una hora después) y prednisolona 30–35 mg por 3–5 días.
+- **Verificado (secundario, 2026-10-09):** EULAR 2016: colchicina en las primeras 12 h con 1 mg y 0,5 mg el primer día; prednisolona equivalente 30–35 mg al día por 3–5 días (resumen de la guía en prensa médica; la dosis de prednisolona coincide con resúmenes británicos y con el ensayo de Janssens 2008 con 35 mg).
+- **Pendiente:** el intervalo de «una hora» entre la dosis de 1 mg y la de 0,5 mg está en otras fuentes (ensayo AGREE), no en el resumen EULAR consultado.
 
 ## osteoporosis
 - **Pendiente:** edades de tamizaje y dosis de calcio de BHOF; criterios de muy alto riesgo de AACE.
