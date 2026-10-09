@@ -7,20 +7,20 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 
 | Métrica | Línea base (2026-10-09) | Actual | Meta | Estado |
 |---|---|---|---|---|
-| Guías en el corpus | 61 | 73 | ≥ 80 | en curso |
-| Preguntas de evaluación de retrieval | 86 | 424 (≥ 4 por guía) | ≥ 300 (≥ 4 por guía) | cumple |
+| Guías en el corpus | 61 | 80 | ≥ 80 | cumple |
+| Preguntas de evaluación de retrieval | 86 | 483 (≥ 4 por guía) | ≥ 300 (≥ 4 por guía) | cumple |
 | Preguntas fuera de tema | 9 | 65 | ≥ 60 | cumple |
 | Conjunto «fuera del corpus» | no existe | 45, 100 % sin extracto de relevancia alta | ≥ 40, ≥ 90 % sin extracto de relevancia alta | cumple |
-| recall@3 | 100 % | 100 % (424 preguntas) | ≥ 97 % | cumple |
-| recall@1 | 90,7 % | 93,6 % | ≥ 90 % | cumple |
-| MRR | 0,952 | 0,966 | ≥ 0,93 | cumple |
+| recall@3 | 100 % | 100 % (483 preguntas) | ≥ 97 % | cumple |
+| recall@1 | 90,7 % | 94,8 % | ≥ 90 % | cumple |
+| MRR | 0,952 | 0,973 | ≥ 0,93 | cumple |
 | Fuera de tema sin guías | 100 % | 100 % | 100 % | cumple |
-| p95 de búsqueda | 2,85 ms | 1,9 ms | ≤ 10 ms | cumple |
-| Construcción del índice | no medido | ≈ 165–170 ms | ≤ 300 ms | cumple |
-| Evaluación de respuestas sin red (casos) | no existe | 178 (12 omitidos) | ≥ 150 con 6 métricas | cumple |
+| p95 de búsqueda | 2,85 ms | 1,8 ms | ≤ 10 ms | cumple |
+| Construcción del índice | no medido | ≈ 120 ms | ≤ 300 ms | cumple |
+| Evaluación de respuestas sin red (casos) | no existe | 192 (12 omitidos) | ≥ 150 con 6 métricas | cumple |
 | · referencias inventadas eliminadas | no medido | 100 % | 100 % | cumple |
-| · cifras plantadas detectadas | no medido | 100 % (70/70) | ≥ 95 % | cumple |
-| · falsos positivos del verificador | no medido | 0 % (0/148) | ≤ 5 % | cumple |
+| · cifras plantadas detectadas | no medido | 100 % (77/77) | ≥ 95 % | cumple |
+| · falsos positivos del verificador | no medido | 0 % (0/162) | ≤ 5 % | cumple |
 | · sin respaldo → abstención o marca | no medido | 100 % | 100 % | cumple |
 | · salidas rotas que no rompen | no medido | 100 % | 100 % | cumple |
 | · propuestas seguras | no medido | 100 % | 100 % | cumple |
@@ -32,16 +32,16 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 | Web lint / typecheck / tests / build | 0 errores / limpio / 908 / OK | 0 errores / limpio / 908 / OK | verde | cumple |
 | E2E Playwright del chat | no existe | no existe | 5 escenarios | pendiente |
 | Tokens de entrada del chat (mediana) | no medido | no medido | ≤ 6 000 | pendiente |
-| `guidelines.corpus.json` | 570 KB | 726 KB | ≤ 2 MB | cumple |
+| `guidelines.corpus.json` | 570 KB | 816 KB | ≤ 2 MB | cumple |
 | Llamadas al modelo por pregunta | 1 | 1 | 1 | cumple |
 
 ## Backlog priorizado
 
-1. **Exactitud clínica:** seguir con las cifras «Pendiente» de `knowledge/guias-clinicas/PENDIENTES-REVISION.md` (citología/ADN-VPH de la Res. 3280, ISPAD, anticoncepción, apendicitis, piel y tejidos blandos, alcohol, opioides, osteoporosis, síncope). Alternar con el resto para no frenar las metas.
-2. **Corpus:** 7+ guías nuevas de la lista prioritaria, en tandas de 6 (el cupo de búsquedas web por turno alcanza para unas 6): crecimiento y desarrollo, PAI y vacunación del adulto, lactancia, sangrado del primer trimestre, diabetes gestacional, parasitosis, escabiosis y pediculosis, dermatitis atópica, ojo rojo, tos ferina, quemaduras. Cada guía nueva entra con ≥ 4 preguntas en `rag-eval.json`; al agregarla, sacar del conjunto «fuera del corpus» las preguntas que pase a cubrir.
-3. **Fichas:** diccionario a ≥ 250 principios activos con pruebas de detección.
-4. **Funcionamiento:** E2E con Playwright del chat (v1, abstención, fuentes guía + ficha, cifras sin fuente, aplicar propuesta).
-5. **Optimización:** script que mida los tokens de entrada del chat (mediana ≤ 6 000).
+1. **Exactitud clínica:** seguir con las cifras «Pendiente» de `knowledge/guias-clinicas/PENDIENTES-REVISION.md` de la primera tanda (citología/ADN-VPH de la Res. 3280, ISPAD, anticoncepción, apendicitis, piel y tejidos blandos, alcohol, opioides, osteoporosis, síncope).
+2. **Fichas:** diccionario a ≥ 250 principios activos con pruebas de detección (hoy 170).
+3. **Funcionamiento:** E2E con Playwright del chat en la web (v1, abstención, fuentes guía + ficha, cifras sin fuente, aplicar propuesta).
+4. **Optimización:** script que mida los tokens de entrada del chat (mediana ≤ 6 000).
+5. **Corpus (prioridad baja, la meta de 80 se cumple):** parto pretérmino, menopausia, sangrado uterino anormal, dermatitis atópica, ojo rojo, otitis externa, artrosis, tos ferina, varicela y sarampión, quemaduras.
 
 ## Hecho
 
@@ -59,6 +59,8 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 
 - **Iteración 7 (2026-10-09):** corpus, 67 → 73 guías: accidente ofídico, mordeduras y profilaxis de rabia, leptospirosis, leishmaniasis, enfermedad de Chagas e intoxicación por organofosforados (103 cifras con fuente textual; 67 descartadas, sobre todo tablas de viales de antiveneno y umbrales que las fuentes daban distinto). Las guías tropicales le quitaban el primer lugar a malaria y a hiponatremia en preguntas viejas; se corrigió con dos mejoras del índice: valores de laboratorio en la pregunta («sodio de 127» → hiponatremia) y tema del seguimiento corto (×1.25 a la guía de los términos más raros de la pregunta anterior), más sinónimos del patrón de fiebre de la malaria. Antes → después: recall@1 92,4 → 93,6 %, recall@3 100 → 100 %, MRR 0,959 → 0,966; respuestas sin red 166 → 178 casos; `verify-guideline-index` 96 → 104.
 
+- **Iteración 8 (2026-10-09):** corpus, 73 → 80 guías (meta cumplida): crecimiento y desarrollo, vacunación PAI y del adulto, lactancia materna, sangrado del primer trimestre, diabetes gestacional, parasitosis intestinal, escabiosis y pediculosis (145 cifras con fuente textual; 78 descartadas). Las guías de embarazo declaraban también «adultos» y ganaban preguntas de diabetes general: ahora declaran solo gestantes y una guía de población especial baja ×0.85 si la pregunta no nombra la población; «IMC de 36» se lee como obesidad; «bajo/alto» y «pecho» pasan a genéricos. La construcción del índice había subido a ~205–280 ms con 80 guías (cerca del límite de 300): las frases de sinónimos se indexan ahora por su primera palabra y bajó a ~120 ms. Antes → después: recall@1 93,6 → 94,8 %, recall@3 100 → 100 %, MRR 0,966 → 0,973, respuestas sin red 178 → 192 casos.
+
 ## Decisiones
 
 - La verificación de cifras se hace con búsqueda web; los sitios oficiales no son alcanzables desde el sandbox. Una cifra se corrige con al menos dos fuentes secundarias concordantes; si no hay ninguna, se retira y queda en `PENDIENTES-REVISION.md`.
@@ -66,11 +68,12 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 - El conjunto «fuera del corpus» solo lleva temas que de verdad no están en ninguna guía (ni en `palabras_clave` ni como signo de alarma). Cuando una guía nueva cubre uno, la pregunta sale de ese conjunto y pasa a las preguntas con guía esperada.
 - Dos guías que traen la misma conducta (la sección de hipoglucemia de DM2 y la guía de crisis; el potasio en lesión renal aguda y en la guía de electrolitos) son ambas respuesta correcta en la evaluación.
 - Las guías nuevas las redactan agentes con búsqueda web en tandas de 6, y yo integro: preguntas, consulta canónica, sinónimos y pendientes. Ninguna cifra sin fuente textual.
+- Las guías de embarazo o de recién nacidos declaran solo esa población; si la pregunta no nombra población, ceden ante la guía general.
 - Las palabras de población no identifican el tema: la población la decide `inferPopulations` y pesa como boost, no como término.
 - Las cifras de la respuesta se verifican solo contra las fuentes que la respuesta cita y la consulta. Más estricto que «cualquier extracto recuperado», alineado con el prompt v4 (cada cifra sale de una fuente citada o de la consulta).
 
 ## Requiere humano
 
-- **Revisión médica** de las 73 guías, empezando por lo marcado «Pendiente» en `knowledge/guias-clinicas/PENDIENTES-REVISION.md`.
+- **Revisión médica** de las 80 guías, empezando por lo marcado «Pendiente» en `knowledge/guias-clinicas/PENDIENTES-REVISION.md`.
 - **Clave de modelo para la evaluación en vivo:** no hay `MIRACLE_ASSISTANT_LLM_API_KEY` en el sandbox. Bloqueada: requiere humano.
 - **CIMA:** el proxy del sandbox responde 403 a `cima.aemps.es` (`npm run check:cima` falla en ~90 ms). Correr `npm run check:cima` en el entorno de Graph y, si responde, `npm run build:drug-labels` desde una máquina con red. Bloqueada: requiere humano.
