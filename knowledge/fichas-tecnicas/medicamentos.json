@@ -1,1118 +1,2160 @@
 {
- "_comentario": "Diccionario CERRADO de principios activos para consultar fichas técnicas (CIMA-AEMPS). A la fuente externa solo sale `practiv` de una entrada de esta lista, nunca texto del médico. `vtm` es una regex sobre el nombre del principio activo (VTM) normalizado sin tildes, para escoger el producto correcto (monofármaco o combinación). `alias`: cómo se dice en Colombia o coloquialmente.",
- "version": 1,
- "medicamentos": [
-  {
-   "nombre": "Amoxicilina",
-   "practiv": "amoxicilina",
-   "vtm": "^amoxicilina$",
-   "alias": [
-    "amoxi"
-   ]
-  },
-  {
-   "nombre": "Amoxicilina/ácido clavulánico",
-   "practiv": "amoxicilina",
-   "vtm": "amoxicilina.*clavulan",
-   "alias": [
-    "amoxicilina clavulanato",
-    "amoxicilina clavulanico",
-    "amoxicilina acido clavulanico",
-    "augmentin"
-   ]
-  },
-  {
-   "nombre": "Ampicilina",
-   "practiv": "ampicilina",
-   "vtm": "^ampicilina$",
-   "alias": []
-  },
-  {
-   "nombre": "Ampicilina/sulbactam",
-   "practiv": "ampicilina",
-   "vtm": "ampicilina.*sulbactam",
-   "alias": [
-    "ampicilina sulbactam",
-    "unasyn"
-   ]
-  },
-  {
-   "nombre": "Bencilpenicilina benzatina",
-   "practiv": "bencilpenicilina benzatina",
-   "vtm": "benzatina",
-   "alias": [
-    "penicilina benzatinica",
-    "penicilina g benzatinica",
-    "benzetacil"
-   ]
-  },
-  {
-   "nombre": "Cloxacilina",
-   "practiv": "cloxacilina",
-   "vtm": "^cloxacilina$",
-   "alias": [
-    "dicloxacilina",
-    "oxacilina"
-   ]
-  },
-  {
-   "nombre": "Azitromicina",
-   "practiv": "azitromicina",
-   "vtm": "^azitromicina$",
-   "alias": []
-  },
-  {
-   "nombre": "Claritromicina",
-   "practiv": "claritromicina",
-   "vtm": "^claritromicina$",
-   "alias": []
-  },
-  {
-   "nombre": "Eritromicina",
-   "practiv": "eritromicina",
-   "vtm": "^eritromicina$",
-   "alias": []
-  },
-  {
-   "nombre": "Cefalexina",
-   "practiv": "cefalexina",
-   "vtm": "^cefalexina$",
-   "alias": []
-  },
-  {
-   "nombre": "Cefadroxilo",
-   "practiv": "cefadroxilo",
-   "vtm": "^cefadroxilo$",
-   "alias": [
-    "cefadroxil"
-   ]
-  },
-  {
-   "nombre": "Cefuroxima",
-   "practiv": "cefuroxima",
-   "vtm": "^cefuroxima$",
-   "alias": []
-  },
-  {
-   "nombre": "Cefixima",
-   "practiv": "cefixima",
-   "vtm": "^cefixima$",
-   "alias": []
-  },
-  {
-   "nombre": "Ceftriaxona",
-   "practiv": "ceftriaxona",
-   "vtm": "^ceftriaxona$",
-   "alias": []
-  },
-  {
-   "nombre": "Cefazolina",
-   "practiv": "cefazolina",
-   "vtm": "^cefazolina$",
-   "alias": []
-  },
-  {
-   "nombre": "Cefepima",
-   "practiv": "cefepima",
-   "vtm": "^cefepima$",
-   "alias": [
-    "cefepime"
-   ]
-  },
-  {
-   "nombre": "Ciprofloxacino",
-   "practiv": "ciprofloxacino",
-   "vtm": "^ciprofloxacino$",
-   "alias": [
-    "ciprofloxacina",
-    "cipro"
-   ]
-  },
-  {
-   "nombre": "Levofloxacino",
-   "practiv": "levofloxacino",
-   "vtm": "^levofloxacino$",
-   "alias": [
-    "levofloxacina"
-   ]
-  },
-  {
-   "nombre": "Moxifloxacino",
-   "practiv": "moxifloxacino",
-   "vtm": "^moxifloxacino$",
-   "alias": [
-    "moxifloxacina"
-   ]
-  },
-  {
-   "nombre": "Doxiciclina",
-   "practiv": "doxiciclina",
-   "vtm": "^doxiciclina$",
-   "alias": []
-  },
-  {
-   "nombre": "Clindamicina",
-   "practiv": "clindamicina",
-   "vtm": "^clindamicina$",
-   "alias": []
-  },
-  {
-   "nombre": "Vancomicina",
-   "practiv": "vancomicina",
-   "vtm": "^vancomicina$",
-   "alias": []
-  },
-  {
-   "nombre": "Gentamicina",
-   "practiv": "gentamicina",
-   "vtm": "^gentamicina$",
-   "alias": []
-  },
-  {
-   "nombre": "Amikacina",
-   "practiv": "amikacina",
-   "vtm": "^amikacina$",
-   "alias": []
-  },
-  {
-   "nombre": "Piperacilina/tazobactam",
-   "practiv": "piperacilina",
-   "vtm": "piperacilina.*tazobactam",
-   "alias": [
-    "piperacilina tazobactam",
-    "pipe tazo"
-   ]
-  },
-  {
-   "nombre": "Meropenem",
-   "practiv": "meropenem",
-   "vtm": "^meropenem$",
-   "alias": []
-  },
-  {
-   "nombre": "Trimetoprima/sulfametoxazol",
-   "practiv": "sulfametoxazol",
-   "vtm": "sulfametoxazol",
-   "alias": [
-    "trimetoprim sulfametoxazol",
-    "tmp smx",
-    "cotrimoxazol",
-    "bactrim"
-   ]
-  },
-  {
-   "nombre": "Nitrofurantoína",
-   "practiv": "nitrofurantoina",
-   "vtm": "^nitrofurantoina$",
-   "alias": []
-  },
-  {
-   "nombre": "Fosfomicina",
-   "practiv": "fosfomicina",
-   "vtm": "^fosfomicina",
-   "alias": []
-  },
-  {
-   "nombre": "Metronidazol",
-   "practiv": "metronidazol",
-   "vtm": "^metronidazol$",
-   "alias": []
-  },
-  {
-   "nombre": "Tinidazol",
-   "practiv": "tinidazol",
-   "vtm": "^tinidazol$",
-   "alias": []
-  },
-  {
-   "nombre": "Fluconazol",
-   "practiv": "fluconazol",
-   "vtm": "^fluconazol$",
-   "alias": []
-  },
-  {
-   "nombre": "Nistatina",
-   "practiv": "nistatina",
-   "vtm": "^nistatina$",
-   "alias": []
-  },
-  {
-   "nombre": "Aciclovir",
-   "practiv": "aciclovir",
-   "vtm": "^aciclovir$",
-   "alias": []
-  },
-  {
-   "nombre": "Valaciclovir",
-   "practiv": "valaciclovir",
-   "vtm": "^valaciclovir$",
-   "alias": []
-  },
-  {
-   "nombre": "Oseltamivir",
-   "practiv": "oseltamivir",
-   "vtm": "^oseltamivir$",
-   "alias": []
-  },
-  {
-   "nombre": "Mebendazol",
-   "practiv": "mebendazol",
-   "vtm": "^mebendazol$",
-   "alias": []
-  },
-  {
-   "nombre": "Albendazol",
-   "practiv": "albendazol",
-   "vtm": "^albendazol$",
-   "alias": []
-  },
-  {
-   "nombre": "Hidroxicloroquina",
-   "practiv": "hidroxicloroquina",
-   "vtm": "^hidroxicloroquina$",
-   "alias": []
-  },
-  {
-   "nombre": "Isoniazida",
-   "practiv": "isoniazida",
-   "vtm": "^isoniazida$",
-   "alias": []
-  },
-  {
-   "nombre": "Rifampicina",
-   "practiv": "rifampicina",
-   "vtm": "^rifampicina$",
-   "alias": []
-  },
-  {
-   "nombre": "Paracetamol (acetaminofén)",
-   "practiv": "paracetamol",
-   "vtm": "^paracetamol$",
-   "alias": [
-    "acetaminofen",
-    "acetaminofeno",
-    "dolex"
-   ]
-  },
-  {
-   "nombre": "Metamizol (dipirona)",
-   "practiv": "metamizol",
-   "vtm": "^metamizol",
-   "alias": [
-    "dipirona",
-    "novalgina"
-   ]
-  },
-  {
-   "nombre": "Ibuprofeno",
-   "practiv": "ibuprofeno",
-   "vtm": "^ibuprofeno$",
-   "alias": []
-  },
-  {
-   "nombre": "Naproxeno",
-   "practiv": "naproxeno",
-   "vtm": "^naproxeno$",
-   "alias": []
-  },
-  {
-   "nombre": "Diclofenaco",
-   "practiv": "diclofenaco",
-   "vtm": "^diclofenaco$",
-   "alias": []
-  },
-  {
-   "nombre": "Ketorolaco",
-   "practiv": "ketorolaco",
-   "vtm": "^ketorolaco$",
-   "alias": []
-  },
-  {
-   "nombre": "Ácido acetilsalicílico",
-   "practiv": "acido acetilsalicilico",
-   "vtm": "^acido acetilsalicilico$",
-   "alias": [
-    "aspirina",
-    "asa",
-    "acetilsalicilico"
-   ]
-  },
-  {
-   "nombre": "Tramadol",
-   "practiv": "tramadol",
-   "vtm": "^tramadol$",
-   "alias": []
-  },
-  {
-   "nombre": "Morfina",
-   "practiv": "morfina",
-   "vtm": "^morfina$",
-   "alias": []
-  },
-  {
-   "nombre": "Codeína",
-   "practiv": "codeina",
-   "vtm": "^codeina$",
-   "alias": []
-  },
-  {
-   "nombre": "Hidromorfona",
-   "practiv": "hidromorfona",
-   "vtm": "^hidromorfona$",
-   "alias": []
-  },
-  {
-   "nombre": "Oxicodona",
-   "practiv": "oxicodona",
-   "vtm": "^oxicodona$",
-   "alias": []
-  },
-  {
-   "nombre": "Naloxona",
-   "practiv": "naloxona",
-   "vtm": "^naloxona$",
-   "alias": []
-  },
-  {
-   "nombre": "Prednisona",
-   "practiv": "prednisona",
-   "vtm": "^prednisona$",
-   "alias": []
-  },
-  {
-   "nombre": "Prednisolona",
-   "practiv": "prednisolona",
-   "vtm": "^prednisolona$",
-   "alias": []
-  },
-  {
-   "nombre": "Dexametasona",
-   "practiv": "dexametasona",
-   "vtm": "^dexametasona$",
-   "alias": []
-  },
-  {
-   "nombre": "Hidrocortisona",
-   "practiv": "hidrocortisona",
-   "vtm": "^hidrocortisona$",
-   "alias": []
-  },
-  {
-   "nombre": "Metilprednisolona",
-   "practiv": "metilprednisolona",
-   "vtm": "^metilprednisolona$",
-   "alias": []
-  },
-  {
-   "nombre": "Budesonida",
-   "practiv": "budesonida",
-   "vtm": "^budesonida$",
-   "alias": []
-  },
-  {
-   "nombre": "Beclometasona",
-   "practiv": "beclometasona",
-   "vtm": "^beclometasona$",
-   "alias": []
-  },
-  {
-   "nombre": "Fluticasona",
-   "practiv": "fluticasona",
-   "vtm": "^fluticasona$",
-   "alias": []
-  },
-  {
-   "nombre": "Salbutamol",
-   "practiv": "salbutamol",
-   "vtm": "^salbutamol$",
-   "alias": [
-    "albuterol"
-   ]
-  },
-  {
-   "nombre": "Ipratropio",
-   "practiv": "ipratropio",
-   "vtm": "^ipratropio",
-   "alias": [
-    "bromuro de ipratropio"
-   ]
-  },
-  {
-   "nombre": "Tiotropio",
-   "practiv": "tiotropio",
-   "vtm": "^tiotropio",
-   "alias": []
-  },
-  {
-   "nombre": "Montelukast",
-   "practiv": "montelukast",
-   "vtm": "^montelukast$",
-   "alias": []
-  },
-  {
-   "nombre": "Loratadina",
-   "practiv": "loratadina",
-   "vtm": "^loratadina$",
-   "alias": []
-  },
-  {
-   "nombre": "Desloratadina",
-   "practiv": "desloratadina",
-   "vtm": "^desloratadina$",
-   "alias": []
-  },
-  {
-   "nombre": "Cetirizina",
-   "practiv": "cetirizina",
-   "vtm": "^cetirizina$",
-   "alias": []
-  },
-  {
-   "nombre": "Dexclorfeniramina",
-   "practiv": "dexclorfeniramina",
-   "vtm": "clorfenamina|clorfeniramina",
-   "alias": [
-    "clorfeniramina",
-    "clorfenamina"
-   ]
-  },
-  {
-   "nombre": "Hidroxizina",
-   "practiv": "hidroxizina",
-   "vtm": "^hidroxizina$",
-   "alias": [
-    "hidroxicina"
-   ]
-  },
-  {
-   "nombre": "Adrenalina (epinefrina)",
-   "practiv": "adrenalina",
-   "vtm": "^adrenalina$|^epinefrina$",
-   "alias": [
-    "epinefrina"
-   ]
-  },
-  {
-   "nombre": "Noradrenalina",
-   "practiv": "noradrenalina",
-   "vtm": "noradrenalina|norepinefrina",
-   "alias": [
-    "norepinefrina"
-   ]
-  },
-  {
-   "nombre": "Atropina",
-   "practiv": "atropina",
-   "vtm": "^atropina$",
-   "alias": []
-  },
-  {
-   "nombre": "Amiodarona",
-   "practiv": "amiodarona",
-   "vtm": "^amiodarona$",
-   "alias": []
-  },
-  {
-   "nombre": "Digoxina",
-   "practiv": "digoxina",
-   "vtm": "^digoxina$",
-   "alias": []
-  },
-  {
-   "nombre": "Adenosina",
-   "practiv": "adenosina",
-   "vtm": "^adenosina$",
-   "alias": []
-  },
-  {
-   "nombre": "Losartán",
-   "practiv": "losartan",
-   "vtm": "^losartan$",
-   "alias": []
-  },
-  {
-   "nombre": "Valsartán",
-   "practiv": "valsartan",
-   "vtm": "^valsartan$",
-   "alias": []
-  },
-  {
-   "nombre": "Enalapril",
-   "practiv": "enalapril",
-   "vtm": "^enalapril$",
-   "alias": []
-  },
-  {
-   "nombre": "Captopril",
-   "practiv": "captopril",
-   "vtm": "^captopril$",
-   "alias": []
-  },
-  {
-   "nombre": "Amlodipino",
-   "practiv": "amlodipino",
-   "vtm": "^amlodipino$",
-   "alias": [
-    "amlodipina"
-   ]
-  },
-  {
-   "nombre": "Nifedipino",
-   "practiv": "nifedipino",
-   "vtm": "^nifedipino$",
-   "alias": [
-    "nifedipina"
-   ]
-  },
-  {
-   "nombre": "Hidroclorotiazida",
-   "practiv": "hidroclorotiazida",
-   "vtm": "^hidroclorotiazida$",
-   "alias": []
-  },
-  {
-   "nombre": "Clortalidona",
-   "practiv": "clortalidona",
-   "vtm": "^clortalidona$",
-   "alias": []
-  },
-  {
-   "nombre": "Furosemida",
-   "practiv": "furosemida",
-   "vtm": "^furosemida$",
-   "alias": []
-  },
-  {
-   "nombre": "Espironolactona",
-   "practiv": "espironolactona",
-   "vtm": "^espironolactona$",
-   "alias": []
-  },
-  {
-   "nombre": "Metoprolol",
-   "practiv": "metoprolol",
-   "vtm": "^metoprolol$",
-   "alias": []
-  },
-  {
-   "nombre": "Carvedilol",
-   "practiv": "carvedilol",
-   "vtm": "^carvedilol$",
-   "alias": []
-  },
-  {
-   "nombre": "Bisoprolol",
-   "practiv": "bisoprolol",
-   "vtm": "^bisoprolol$",
-   "alias": []
-  },
-  {
-   "nombre": "Propranolol",
-   "practiv": "propranolol",
-   "vtm": "^propranolol$",
-   "alias": []
-  },
-  {
-   "nombre": "Labetalol",
-   "practiv": "labetalol",
-   "vtm": "^labetalol$",
-   "alias": []
-  },
-  {
-   "nombre": "Metildopa",
-   "practiv": "metildopa",
-   "vtm": "^metildopa$",
-   "alias": []
-  },
-  {
-   "nombre": "Hidralazina",
-   "practiv": "hidralazina",
-   "vtm": "^hidralazina$",
-   "alias": []
-  },
-  {
-   "nombre": "Atorvastatina",
-   "practiv": "atorvastatina",
-   "vtm": "^atorvastatina$",
-   "alias": []
-  },
-  {
-   "nombre": "Rosuvastatina",
-   "practiv": "rosuvastatina",
-   "vtm": "^rosuvastatina$",
-   "alias": []
-  },
-  {
-   "nombre": "Ezetimiba",
-   "practiv": "ezetimiba",
-   "vtm": "^ezetimiba$",
-   "alias": []
-  },
-  {
-   "nombre": "Clopidogrel",
-   "practiv": "clopidogrel",
-   "vtm": "^clopidogrel$",
-   "alias": []
-  },
-  {
-   "nombre": "Warfarina",
-   "practiv": "warfarina",
-   "vtm": "^warfarina$",
-   "alias": []
-  },
-  {
-   "nombre": "Acenocumarol",
-   "practiv": "acenocumarol",
-   "vtm": "^acenocumarol$",
-   "alias": []
-  },
-  {
-   "nombre": "Apixabán",
-   "practiv": "apixaban",
-   "vtm": "^apixaban$",
-   "alias": []
-  },
-  {
-   "nombre": "Rivaroxabán",
-   "practiv": "rivaroxaban",
-   "vtm": "^rivaroxaban$",
-   "alias": []
-  },
-  {
-   "nombre": "Dabigatrán",
-   "practiv": "dabigatran",
-   "vtm": "^dabigatran",
-   "alias": []
-  },
-  {
-   "nombre": "Enoxaparina",
-   "practiv": "enoxaparina",
-   "vtm": "^enoxaparina",
-   "alias": []
-  },
-  {
-   "nombre": "Metformina",
-   "practiv": "metformina",
-   "vtm": "^metformina$",
-   "alias": []
-  },
-  {
-   "nombre": "Glibenclamida",
-   "practiv": "glibenclamida",
-   "vtm": "^glibenclamida$",
-   "alias": []
-  },
-  {
-   "nombre": "Empagliflozina",
-   "practiv": "empagliflozina",
-   "vtm": "^empagliflozina$",
-   "alias": []
-  },
-  {
-   "nombre": "Dapagliflozina",
-   "practiv": "dapagliflozina",
-   "vtm": "^dapagliflozina$",
-   "alias": []
-  },
-  {
-   "nombre": "Sitagliptina",
-   "practiv": "sitagliptina",
-   "vtm": "^sitagliptina$",
-   "alias": []
-  },
-  {
-   "nombre": "Liraglutida",
-   "practiv": "liraglutida",
-   "vtm": "^liraglutida$",
-   "alias": []
-  },
-  {
-   "nombre": "Semaglutida",
-   "practiv": "semaglutida",
-   "vtm": "^semaglutida$",
-   "alias": []
-  },
-  {
-   "nombre": "Insulina glargina",
-   "practiv": "insulina glargina",
-   "vtm": "insulina glargina",
-   "alias": [
-    "glargina"
-   ]
-  },
-  {
-   "nombre": "Levotiroxina",
-   "practiv": "levotiroxina",
-   "vtm": "^levotiroxina",
-   "alias": []
-  },
-  {
-   "nombre": "Omeprazol",
-   "practiv": "omeprazol",
-   "vtm": "^omeprazol$",
-   "alias": []
-  },
-  {
-   "nombre": "Esomeprazol",
-   "practiv": "esomeprazol",
-   "vtm": "^esomeprazol$",
-   "alias": []
-  },
-  {
-   "nombre": "Pantoprazol",
-   "practiv": "pantoprazol",
-   "vtm": "^pantoprazol$",
-   "alias": []
-  },
-  {
-   "nombre": "Metoclopramida",
-   "practiv": "metoclopramida",
-   "vtm": "^metoclopramida$",
-   "alias": []
-  },
-  {
-   "nombre": "Ondansetrón",
-   "practiv": "ondansetron",
-   "vtm": "^ondansetron$",
-   "alias": []
-  },
-  {
-   "nombre": "Butilescopolamina (hioscina)",
-   "practiv": "butilescopolamina",
-   "vtm": "escopolamina",
-   "alias": [
-    "hioscina",
-    "n butilbromuro de hioscina",
-    "buscapina"
-   ]
-  },
-  {
-   "nombre": "Loperamida",
-   "practiv": "loperamida",
-   "vtm": "^loperamida$",
-   "alias": []
-  },
-  {
-   "nombre": "Sertralina",
-   "practiv": "sertralina",
-   "vtm": "^sertralina$",
-   "alias": []
-  },
-  {
-   "nombre": "Fluoxetina",
-   "practiv": "fluoxetina",
-   "vtm": "^fluoxetina$",
-   "alias": []
-  },
-  {
-   "nombre": "Escitalopram",
-   "practiv": "escitalopram",
-   "vtm": "^escitalopram$",
-   "alias": []
-  },
-  {
-   "nombre": "Citalopram",
-   "practiv": "citalopram",
-   "vtm": "^citalopram$",
-   "alias": []
-  },
-  {
-   "nombre": "Paroxetina",
-   "practiv": "paroxetina",
-   "vtm": "^paroxetina$",
-   "alias": []
-  },
-  {
-   "nombre": "Venlafaxina",
-   "practiv": "venlafaxina",
-   "vtm": "^venlafaxina$",
-   "alias": []
-  },
-  {
-   "nombre": "Duloxetina",
-   "practiv": "duloxetina",
-   "vtm": "^duloxetina$",
-   "alias": []
-  },
-  {
-   "nombre": "Mirtazapina",
-   "practiv": "mirtazapina",
-   "vtm": "^mirtazapina$",
-   "alias": []
-  },
-  {
-   "nombre": "Trazodona",
-   "practiv": "trazodona",
-   "vtm": "^trazodona$",
-   "alias": []
-  },
-  {
-   "nombre": "Amitriptilina",
-   "practiv": "amitriptilina",
-   "vtm": "^amitriptilina$",
-   "alias": []
-  },
-  {
-   "nombre": "Bupropión",
-   "practiv": "bupropion",
-   "vtm": "^bupropion$",
-   "alias": []
-  },
-  {
-   "nombre": "Quetiapina",
-   "practiv": "quetiapina",
-   "vtm": "^quetiapina$",
-   "alias": []
-  },
-  {
-   "nombre": "Risperidona",
-   "practiv": "risperidona",
-   "vtm": "^risperidona$",
-   "alias": []
-  },
-  {
-   "nombre": "Olanzapina",
-   "practiv": "olanzapina",
-   "vtm": "^olanzapina$",
-   "alias": []
-  },
-  {
-   "nombre": "Haloperidol",
-   "practiv": "haloperidol",
-   "vtm": "^haloperidol$",
-   "alias": []
-  },
-  {
-   "nombre": "Clonazepam",
-   "practiv": "clonazepam",
-   "vtm": "^clonazepam$",
-   "alias": []
-  },
-  {
-   "nombre": "Alprazolam",
-   "practiv": "alprazolam",
-   "vtm": "^alprazolam$",
-   "alias": []
-  },
-  {
-   "nombre": "Lorazepam",
-   "practiv": "lorazepam",
-   "vtm": "^lorazepam$",
-   "alias": []
-  },
-  {
-   "nombre": "Diazepam",
-   "practiv": "diazepam",
-   "vtm": "^diazepam$",
-   "alias": []
-  },
-  {
-   "nombre": "Midazolam",
-   "practiv": "midazolam",
-   "vtm": "^midazolam$",
-   "alias": []
-  },
-  {
-   "nombre": "Zolpidem",
-   "practiv": "zolpidem",
-   "vtm": "^zolpidem$",
-   "alias": []
-  },
-  {
-   "nombre": "Levetiracetam",
-   "practiv": "levetiracetam",
-   "vtm": "^levetiracetam$",
-   "alias": []
-  },
-  {
-   "nombre": "Ácido valproico",
-   "practiv": "valproico",
-   "vtm": "valproico|valproato",
-   "alias": [
-    "valproato",
-    "acido valproico"
-   ]
-  },
-  {
-   "nombre": "Carbamazepina",
-   "practiv": "carbamazepina",
-   "vtm": "^carbamazepina$",
-   "alias": []
-  },
-  {
-   "nombre": "Fenitoína",
-   "practiv": "fenitoina",
-   "vtm": "^fenitoina$",
-   "alias": []
-  },
-  {
-   "nombre": "Lamotrigina",
-   "practiv": "lamotrigina",
-   "vtm": "^lamotrigina$",
-   "alias": []
-  },
-  {
-   "nombre": "Gabapentina",
-   "practiv": "gabapentina",
-   "vtm": "^gabapentina$",
-   "alias": []
-  },
-  {
-   "nombre": "Pregabalina",
-   "practiv": "pregabalina",
-   "vtm": "^pregabalina$",
-   "alias": []
-  },
-  {
-   "nombre": "Topiramato",
-   "practiv": "topiramato",
-   "vtm": "^topiramato$",
-   "alias": []
-  },
-  {
-   "nombre": "Sumatriptán",
-   "practiv": "sumatriptan",
-   "vtm": "^sumatriptan$",
-   "alias": []
-  },
-  {
-   "nombre": "Alopurinol",
-   "practiv": "alopurinol",
-   "vtm": "^alopurinol$",
-   "alias": []
-  },
-  {
-   "nombre": "Colchicina",
-   "practiv": "colchicina",
-   "vtm": "^colchicina$",
-   "alias": []
-  },
-  {
-   "nombre": "Febuxostat",
-   "practiv": "febuxostat",
-   "vtm": "^febuxostat$",
-   "alias": []
-  },
-  {
-   "nombre": "Ácido alendrónico",
-   "practiv": "alendronico",
-   "vtm": "alendron",
-   "alias": [
-    "alendronato"
-   ]
-  },
-  {
-   "nombre": "Sulfato ferroso",
-   "practiv": "sulfato ferroso",
-   "vtm": "ferroso",
-   "alias": [
-    "hierro",
-    "sulfato de hierro"
-   ]
-  },
-  {
-   "nombre": "Ácido fólico",
-   "practiv": "acido folico",
-   "vtm": "^acido folico$",
-   "alias": [
-    "folato"
-   ]
-  },
-  {
-   "nombre": "Colecalciferol (vitamina D)",
-   "practiv": "colecalciferol",
-   "vtm": "colecalciferol",
-   "alias": [
-    "vitamina d",
-    "vitamina d3"
-   ]
-  },
-  {
-   "nombre": "Sulfato de magnesio",
-   "practiv": "magnesio sulfato",
-   "vtm": "magnesio",
-   "alias": [
-    "sulfato de magnesio"
-   ]
-  },
-  {
-   "nombre": "Oxitocina",
-   "practiv": "oxitocina",
-   "vtm": "^oxitocina$",
-   "alias": []
-  },
-  {
-   "nombre": "Misoprostol",
-   "practiv": "misoprostol",
-   "vtm": "^misoprostol$",
-   "alias": []
-  },
-  {
-   "nombre": "Ácido tranexámico",
-   "practiv": "acido tranexamico",
-   "vtm": "tranexamico",
-   "alias": [
-    "tranexamico"
-   ]
-  },
-  {
-   "nombre": "Levonorgestrel",
-   "practiv": "levonorgestrel",
-   "vtm": "^levonorgestrel$",
-   "alias": []
-  },
-  {
-   "nombre": "Medroxiprogesterona",
-   "practiv": "medroxiprogesterona",
-   "vtm": "medroxiprogesterona",
-   "alias": []
-  },
-  {
-   "nombre": "Tiamina",
-   "practiv": "tiamina",
-   "vtm": "^tiamina$",
-   "alias": [
-    "vitamina b1"
-   ]
-  },
-  {
-   "nombre": "Glucagón",
-   "practiv": "glucagon",
-   "vtm": "^glucagon$",
-   "alias": []
-  },
-  {
-   "nombre": "Vareniclina",
-   "practiv": "vareniclina",
-   "vtm": "^vareniclina$",
-   "alias": []
-  },
-  {
-   "nombre": "Nicotina",
-   "practiv": "nicotina",
-   "vtm": "^nicotina$",
-   "alias": [
-    "parche de nicotina",
-    "chicle de nicotina"
-   ]
-  },
-  {
-   "nombre": "Naltrexona",
-   "practiv": "naltrexona",
-   "vtm": "^naltrexona$",
-   "alias": []
-  },
-  {
-   "nombre": "Permetrina",
-   "practiv": "permetrina",
-   "vtm": "^permetrina$",
-   "alias": []
-  },
-  {
-   "nombre": "Ivermectina",
-   "practiv": "ivermectina",
-   "vtm": "^ivermectina$",
-   "alias": []
-  }
- ]
+  "_comentario": "Diccionario CERRADO de principios activos para consultar fichas técnicas (CIMA-AEMPS). A la fuente externa solo sale `practiv` de una entrada de esta lista, nunca texto del médico. `vtm` es una regex sobre el nombre del principio activo (VTM) normalizado sin tildes, para escoger el producto correcto (monofármaco o combinación). `alias`: cómo se dice en Colombia o coloquialmente.",
+  "version": 2,
+  "medicamentos": [
+    {
+      "nombre": "Acenocumarol",
+      "practiv": "acenocumarol",
+      "vtm": "^acenocumarol$",
+      "alias": []
+    },
+    {
+      "nombre": "Acetilcisteína",
+      "practiv": "acetilcisteina",
+      "vtm": "^acetilcisteina$",
+      "alias": [
+        "n acetilcisteina"
+      ]
+    },
+    {
+      "nombre": "Aciclovir",
+      "practiv": "aciclovir",
+      "vtm": "^aciclovir$",
+      "alias": []
+    },
+    {
+      "nombre": "Ácido acetilsalicílico",
+      "practiv": "acido acetilsalicilico",
+      "vtm": "^acido acetilsalicilico$",
+      "alias": [
+        "aspirina",
+        "asa",
+        "acetilsalicilico"
+      ]
+    },
+    {
+      "nombre": "Ácido alendrónico",
+      "practiv": "alendronico",
+      "vtm": "alendron",
+      "alias": [
+        "alendronato"
+      ]
+    },
+    {
+      "nombre": "Ácido fólico",
+      "practiv": "acido folico",
+      "vtm": "^acido folico$",
+      "alias": [
+        "folato"
+      ]
+    },
+    {
+      "nombre": "Ácido fusídico",
+      "practiv": "acido fusidico",
+      "vtm": "fusid",
+      "alias": [
+        "fusidico"
+      ]
+    },
+    {
+      "nombre": "Ácido tranexámico",
+      "practiv": "acido tranexamico",
+      "vtm": "tranexamico",
+      "alias": [
+        "tranexamico"
+      ]
+    },
+    {
+      "nombre": "Ácido ursodesoxicólico",
+      "practiv": "acido ursodesoxicolico",
+      "vtm": "ursodesoxicol",
+      "alias": [
+        "ursodesoxicolico",
+        "ursodiol"
+      ]
+    },
+    {
+      "nombre": "Ácido valproico",
+      "practiv": "valproico",
+      "vtm": "valproico|valproato",
+      "alias": [
+        "valproato",
+        "acido valproico"
+      ]
+    },
+    {
+      "nombre": "Ácido zoledrónico",
+      "practiv": "acido zoledronico",
+      "vtm": "zoledron",
+      "alias": [
+        "zoledronato"
+      ]
+    },
+    {
+      "nombre": "Adenosina",
+      "practiv": "adenosina",
+      "vtm": "^adenosina$",
+      "alias": []
+    },
+    {
+      "nombre": "Adrenalina (epinefrina)",
+      "practiv": "adrenalina",
+      "vtm": "^adrenalina$|^epinefrina$",
+      "alias": [
+        "epinefrina"
+      ]
+    },
+    {
+      "nombre": "Albendazol",
+      "practiv": "albendazol",
+      "vtm": "^albendazol$",
+      "alias": []
+    },
+    {
+      "nombre": "Alopurinol",
+      "practiv": "alopurinol",
+      "vtm": "^alopurinol$",
+      "alias": []
+    },
+    {
+      "nombre": "Alprazolam",
+      "practiv": "alprazolam",
+      "vtm": "^alprazolam$",
+      "alias": []
+    },
+    {
+      "nombre": "Alteplasa",
+      "practiv": "alteplasa",
+      "vtm": "^alteplasa$",
+      "alias": [
+        "rtpa",
+        "rt pa"
+      ]
+    },
+    {
+      "nombre": "Ambroxol",
+      "practiv": "ambroxol",
+      "vtm": "^ambroxol$",
+      "alias": []
+    },
+    {
+      "nombre": "Amikacina",
+      "practiv": "amikacina",
+      "vtm": "^amikacina$",
+      "alias": []
+    },
+    {
+      "nombre": "Amiodarona",
+      "practiv": "amiodarona",
+      "vtm": "^amiodarona$",
+      "alias": []
+    },
+    {
+      "nombre": "Amitriptilina",
+      "practiv": "amitriptilina",
+      "vtm": "^amitriptilina$",
+      "alias": []
+    },
+    {
+      "nombre": "Amlodipino",
+      "practiv": "amlodipino",
+      "vtm": "^amlodipino$",
+      "alias": [
+        "amlodipina"
+      ]
+    },
+    {
+      "nombre": "Amoxicilina",
+      "practiv": "amoxicilina",
+      "vtm": "^amoxicilina$",
+      "alias": [
+        "amoxi"
+      ]
+    },
+    {
+      "nombre": "Amoxicilina/ácido clavulánico",
+      "practiv": "amoxicilina",
+      "vtm": "amoxicilina.*clavulan",
+      "alias": [
+        "amoxicilina clavulanato",
+        "amoxicilina clavulanico",
+        "amoxicilina acido clavulanico",
+        "augmentin"
+      ]
+    },
+    {
+      "nombre": "Ampicilina",
+      "practiv": "ampicilina",
+      "vtm": "^ampicilina$",
+      "alias": []
+    },
+    {
+      "nombre": "Ampicilina/sulbactam",
+      "practiv": "ampicilina",
+      "vtm": "ampicilina.*sulbactam",
+      "alias": [
+        "ampicilina sulbactam",
+        "unasyn"
+      ]
+    },
+    {
+      "nombre": "Anfotericina B",
+      "practiv": "anfotericina b",
+      "vtm": "anfotericina",
+      "alias": [
+        "anfotericina"
+      ]
+    },
+    {
+      "nombre": "Antimoniato de meglumina",
+      "practiv": "meglumina antimoniato",
+      "vtm": "antimoniato",
+      "alias": [
+        "antimoniato de meglumina",
+        "glucantime"
+      ]
+    },
+    {
+      "nombre": "Apixabán",
+      "practiv": "apixaban",
+      "vtm": "^apixaban$",
+      "alias": []
+    },
+    {
+      "nombre": "Aripiprazol",
+      "practiv": "aripiprazol",
+      "vtm": "^aripiprazol$",
+      "alias": []
+    },
+    {
+      "nombre": "Artemeter/lumefantrina",
+      "practiv": "artemeter",
+      "vtm": "artemeter.*lumefantrina",
+      "alias": [
+        "artemeter lumefantrina",
+        "coartem"
+      ]
+    },
+    {
+      "nombre": "Atenolol",
+      "practiv": "atenolol",
+      "vtm": "^atenolol$",
+      "alias": []
+    },
+    {
+      "nombre": "Atorvastatina",
+      "practiv": "atorvastatina",
+      "vtm": "^atorvastatina$",
+      "alias": []
+    },
+    {
+      "nombre": "Atosibán",
+      "practiv": "atosiban",
+      "vtm": "^atosiban$",
+      "alias": []
+    },
+    {
+      "nombre": "Atropina",
+      "practiv": "atropina",
+      "vtm": "^atropina$",
+      "alias": []
+    },
+    {
+      "nombre": "Azitromicina",
+      "practiv": "azitromicina",
+      "vtm": "^azitromicina$",
+      "alias": []
+    },
+    {
+      "nombre": "Beclometasona",
+      "practiv": "beclometasona",
+      "vtm": "^beclometasona$",
+      "alias": []
+    },
+    {
+      "nombre": "Bencilpenicilina benzatina",
+      "practiv": "bencilpenicilina benzatina",
+      "vtm": "benzatina",
+      "alias": [
+        "penicilina benzatinica",
+        "penicilina g benzatinica",
+        "benzetacil"
+      ]
+    },
+    {
+      "nombre": "Bencilpenicilina sódica (penicilina cristalina)",
+      "practiv": "bencilpenicilina",
+      "vtm": "^bencilpenicilina( sodica| potasica)?$",
+      "alias": [
+        "penicilina cristalina",
+        "penicilina g sodica",
+        "penicilina g"
+      ]
+    },
+    {
+      "nombre": "Betametasona",
+      "practiv": "betametasona",
+      "vtm": "^betametasona$",
+      "alias": []
+    },
+    {
+      "nombre": "Bicarbonato de sodio",
+      "practiv": "sodio bicarbonato",
+      "vtm": "bicarbonato",
+      "alias": [
+        "bicarbonato de sodio"
+      ]
+    },
+    {
+      "nombre": "Biperideno",
+      "practiv": "biperideno",
+      "vtm": "^biperideno$",
+      "alias": []
+    },
+    {
+      "nombre": "Bisacodilo",
+      "practiv": "bisacodilo",
+      "vtm": "^bisacodilo$",
+      "alias": [
+        "bisacodil"
+      ]
+    },
+    {
+      "nombre": "Bisoprolol",
+      "practiv": "bisoprolol",
+      "vtm": "^bisoprolol$",
+      "alias": []
+    },
+    {
+      "nombre": "Budesonida",
+      "practiv": "budesonida",
+      "vtm": "^budesonida$",
+      "alias": []
+    },
+    {
+      "nombre": "Budesonida/formoterol",
+      "practiv": "budesonida",
+      "vtm": "budesonida.*formoterol|formoterol.*budesonida",
+      "alias": [
+        "budesonida formoterol",
+        "formoterol budesonida"
+      ]
+    },
+    {
+      "nombre": "Bupivacaína",
+      "practiv": "bupivacaina",
+      "vtm": "^bupivacaina$",
+      "alias": []
+    },
+    {
+      "nombre": "Buprenorfina",
+      "practiv": "buprenorfina",
+      "vtm": "^buprenorfina$",
+      "alias": []
+    },
+    {
+      "nombre": "Bupropión",
+      "practiv": "bupropion",
+      "vtm": "^bupropion$",
+      "alias": []
+    },
+    {
+      "nombre": "Butilescopolamina (hioscina)",
+      "practiv": "butilescopolamina",
+      "vtm": "escopolamina",
+      "alias": [
+        "hioscina",
+        "n butilbromuro de hioscina",
+        "buscapina"
+      ]
+    },
+    {
+      "nombre": "Cabergolina",
+      "practiv": "cabergolina",
+      "vtm": "^cabergolina$",
+      "alias": []
+    },
+    {
+      "nombre": "Calcitriol",
+      "practiv": "calcitriol",
+      "vtm": "^calcitriol$",
+      "alias": []
+    },
+    {
+      "nombre": "Candesartán",
+      "practiv": "candesartan",
+      "vtm": "^candesartan$",
+      "alias": []
+    },
+    {
+      "nombre": "Captopril",
+      "practiv": "captopril",
+      "vtm": "^captopril$",
+      "alias": []
+    },
+    {
+      "nombre": "Carbamazepina",
+      "practiv": "carbamazepina",
+      "vtm": "^carbamazepina$",
+      "alias": []
+    },
+    {
+      "nombre": "Carbetocina",
+      "practiv": "carbetocina",
+      "vtm": "^carbetocina$",
+      "alias": []
+    },
+    {
+      "nombre": "Carbón activado",
+      "practiv": "carbon activado",
+      "vtm": "carbon",
+      "alias": [
+        "carbon activado"
+      ]
+    },
+    {
+      "nombre": "Carbonato de calcio",
+      "practiv": "calcio carbonato",
+      "vtm": "^calcio carbonato$",
+      "alias": [
+        "carbonato de calcio"
+      ]
+    },
+    {
+      "nombre": "Carvedilol",
+      "practiv": "carvedilol",
+      "vtm": "^carvedilol$",
+      "alias": []
+    },
+    {
+      "nombre": "Cefadroxilo",
+      "practiv": "cefadroxilo",
+      "vtm": "^cefadroxilo$",
+      "alias": [
+        "cefadroxil"
+      ]
+    },
+    {
+      "nombre": "Cefalexina",
+      "practiv": "cefalexina",
+      "vtm": "^cefalexina$",
+      "alias": []
+    },
+    {
+      "nombre": "Cefazolina",
+      "practiv": "cefazolina",
+      "vtm": "^cefazolina$",
+      "alias": []
+    },
+    {
+      "nombre": "Cefepima",
+      "practiv": "cefepima",
+      "vtm": "^cefepima$",
+      "alias": [
+        "cefepime"
+      ]
+    },
+    {
+      "nombre": "Cefixima",
+      "practiv": "cefixima",
+      "vtm": "^cefixima$",
+      "alias": []
+    },
+    {
+      "nombre": "Cefotaxima",
+      "practiv": "cefotaxima",
+      "vtm": "^cefotaxima$",
+      "alias": []
+    },
+    {
+      "nombre": "Ceftazidima",
+      "practiv": "ceftazidima",
+      "vtm": "^ceftazidima$",
+      "alias": []
+    },
+    {
+      "nombre": "Ceftriaxona",
+      "practiv": "ceftriaxona",
+      "vtm": "^ceftriaxona$",
+      "alias": []
+    },
+    {
+      "nombre": "Cefuroxima",
+      "practiv": "cefuroxima",
+      "vtm": "^cefuroxima$",
+      "alias": []
+    },
+    {
+      "nombre": "Celecoxib",
+      "practiv": "celecoxib",
+      "vtm": "^celecoxib$",
+      "alias": []
+    },
+    {
+      "nombre": "Cetirizina",
+      "practiv": "cetirizina",
+      "vtm": "^cetirizina$",
+      "alias": []
+    },
+    {
+      "nombre": "Cianocobalamina (vitamina B12)",
+      "practiv": "cianocobalamina",
+      "vtm": "cobalamina",
+      "alias": [
+        "vitamina b12",
+        "b12",
+        "hidroxocobalamina"
+      ]
+    },
+    {
+      "nombre": "Ciclobenzaprina",
+      "practiv": "ciclobenzaprina",
+      "vtm": "^ciclobenzaprina$",
+      "alias": []
+    },
+    {
+      "nombre": "Ciprofloxacino",
+      "practiv": "ciprofloxacino",
+      "vtm": "^ciprofloxacino$",
+      "alias": [
+        "ciprofloxacina",
+        "cipro"
+      ]
+    },
+    {
+      "nombre": "Citalopram",
+      "practiv": "citalopram",
+      "vtm": "^citalopram$",
+      "alias": []
+    },
+    {
+      "nombre": "Claritromicina",
+      "practiv": "claritromicina",
+      "vtm": "^claritromicina$",
+      "alias": []
+    },
+    {
+      "nombre": "Clindamicina",
+      "practiv": "clindamicina",
+      "vtm": "^clindamicina$",
+      "alias": []
+    },
+    {
+      "nombre": "Clobetasol",
+      "practiv": "clobetasol",
+      "vtm": "^clobetasol",
+      "alias": []
+    },
+    {
+      "nombre": "Clonazepam",
+      "practiv": "clonazepam",
+      "vtm": "^clonazepam$",
+      "alias": []
+    },
+    {
+      "nombre": "Clopidogrel",
+      "practiv": "clopidogrel",
+      "vtm": "^clopidogrel$",
+      "alias": []
+    },
+    {
+      "nombre": "Cloroquina",
+      "practiv": "cloroquina",
+      "vtm": "^cloroquina",
+      "alias": []
+    },
+    {
+      "nombre": "Clortalidona",
+      "practiv": "clortalidona",
+      "vtm": "^clortalidona$",
+      "alias": []
+    },
+    {
+      "nombre": "Cloruro de potasio",
+      "practiv": "potasio cloruro",
+      "vtm": "potasio cloruro",
+      "alias": [
+        "cloruro de potasio",
+        "kcl"
+      ]
+    },
+    {
+      "nombre": "Clotrimazol",
+      "practiv": "clotrimazol",
+      "vtm": "^clotrimazol$",
+      "alias": []
+    },
+    {
+      "nombre": "Cloxacilina",
+      "practiv": "cloxacilina",
+      "vtm": "^cloxacilina$",
+      "alias": [
+        "dicloxacilina",
+        "oxacilina"
+      ]
+    },
+    {
+      "nombre": "Clozapina",
+      "practiv": "clozapina",
+      "vtm": "^clozapina$",
+      "alias": []
+    },
+    {
+      "nombre": "Codeína",
+      "practiv": "codeina",
+      "vtm": "^codeina$",
+      "alias": []
+    },
+    {
+      "nombre": "Colchicina",
+      "practiv": "colchicina",
+      "vtm": "^colchicina$",
+      "alias": []
+    },
+    {
+      "nombre": "Colecalciferol (vitamina D)",
+      "practiv": "colecalciferol",
+      "vtm": "colecalciferol",
+      "alias": [
+        "vitamina d",
+        "vitamina d3"
+      ]
+    },
+    {
+      "nombre": "Dabigatrán",
+      "practiv": "dabigatran",
+      "vtm": "^dabigatran",
+      "alias": []
+    },
+    {
+      "nombre": "Dapagliflozina",
+      "practiv": "dapagliflozina",
+      "vtm": "^dapagliflozina$",
+      "alias": []
+    },
+    {
+      "nombre": "Denosumab",
+      "practiv": "denosumab",
+      "vtm": "^denosumab$",
+      "alias": []
+    },
+    {
+      "nombre": "Desloratadina",
+      "practiv": "desloratadina",
+      "vtm": "^desloratadina$",
+      "alias": []
+    },
+    {
+      "nombre": "Dexametasona",
+      "practiv": "dexametasona",
+      "vtm": "^dexametasona$",
+      "alias": []
+    },
+    {
+      "nombre": "Dexclorfeniramina",
+      "practiv": "dexclorfeniramina",
+      "vtm": "clorfenamina|clorfeniramina",
+      "alias": [
+        "clorfeniramina",
+        "clorfenamina"
+      ]
+    },
+    {
+      "nombre": "Dexketoprofeno",
+      "practiv": "dexketoprofeno",
+      "vtm": "^dexketoprofeno$",
+      "alias": []
+    },
+    {
+      "nombre": "Dextrometorfano",
+      "practiv": "dextrometorfano",
+      "vtm": "^dextrometorfano$",
+      "alias": []
+    },
+    {
+      "nombre": "Diazepam",
+      "practiv": "diazepam",
+      "vtm": "^diazepam$",
+      "alias": []
+    },
+    {
+      "nombre": "Diclofenaco",
+      "practiv": "diclofenaco",
+      "vtm": "^diclofenaco$",
+      "alias": []
+    },
+    {
+      "nombre": "Digoxina",
+      "practiv": "digoxina",
+      "vtm": "^digoxina$",
+      "alias": []
+    },
+    {
+      "nombre": "Diltiazem",
+      "practiv": "diltiazem",
+      "vtm": "^diltiazem$",
+      "alias": []
+    },
+    {
+      "nombre": "Dimenhidrinato",
+      "practiv": "dimenhidrinato",
+      "vtm": "^dimenhidrinato$",
+      "alias": []
+    },
+    {
+      "nombre": "Dinitrato de isosorbida",
+      "practiv": "isosorbida dinitrato",
+      "vtm": "isosorbida dinitrato|dinitrato de isosorbida",
+      "alias": [
+        "dinitrato de isosorbida"
+      ]
+    },
+    {
+      "nombre": "Dinoprostona",
+      "practiv": "dinoprostona",
+      "vtm": "^dinoprostona$",
+      "alias": []
+    },
+    {
+      "nombre": "Dobutamina",
+      "practiv": "dobutamina",
+      "vtm": "^dobutamina$",
+      "alias": []
+    },
+    {
+      "nombre": "Dolutegravir",
+      "practiv": "dolutegravir",
+      "vtm": "^dolutegravir$",
+      "alias": []
+    },
+    {
+      "nombre": "Domperidona",
+      "practiv": "domperidona",
+      "vtm": "^domperidona$",
+      "alias": []
+    },
+    {
+      "nombre": "Donepezilo",
+      "practiv": "donepezilo",
+      "vtm": "^donepezilo$",
+      "alias": [
+        "donepezil"
+      ]
+    },
+    {
+      "nombre": "Dopamina",
+      "practiv": "dopamina",
+      "vtm": "^dopamina$",
+      "alias": []
+    },
+    {
+      "nombre": "Doxiciclina",
+      "practiv": "doxiciclina",
+      "vtm": "^doxiciclina$",
+      "alias": []
+    },
+    {
+      "nombre": "Dulaglutida",
+      "practiv": "dulaglutida",
+      "vtm": "^dulaglutida$",
+      "alias": []
+    },
+    {
+      "nombre": "Duloxetina",
+      "practiv": "duloxetina",
+      "vtm": "^duloxetina$",
+      "alias": []
+    },
+    {
+      "nombre": "Edoxabán",
+      "practiv": "edoxaban",
+      "vtm": "^edoxaban$",
+      "alias": []
+    },
+    {
+      "nombre": "Efavirenz",
+      "practiv": "efavirenz",
+      "vtm": "^efavirenz$",
+      "alias": []
+    },
+    {
+      "nombre": "Empagliflozina",
+      "practiv": "empagliflozina",
+      "vtm": "^empagliflozina$",
+      "alias": []
+    },
+    {
+      "nombre": "Emtricitabina/tenofovir disoproxilo",
+      "practiv": "emtricitabina",
+      "vtm": "emtricitabina.*tenofovir disoproxil",
+      "alias": [
+        "emtricitabina tenofovir",
+        "truvada"
+      ]
+    },
+    {
+      "nombre": "Enalapril",
+      "practiv": "enalapril",
+      "vtm": "^enalapril$",
+      "alias": []
+    },
+    {
+      "nombre": "Enoxaparina",
+      "practiv": "enoxaparina",
+      "vtm": "^enoxaparina",
+      "alias": []
+    },
+    {
+      "nombre": "Entecavir",
+      "practiv": "entecavir",
+      "vtm": "^entecavir$",
+      "alias": []
+    },
+    {
+      "nombre": "Eplerenona",
+      "practiv": "eplerenona",
+      "vtm": "^eplerenona$",
+      "alias": []
+    },
+    {
+      "nombre": "Eritromicina",
+      "practiv": "eritromicina",
+      "vtm": "^eritromicina$",
+      "alias": []
+    },
+    {
+      "nombre": "Ertapenem",
+      "practiv": "ertapenem",
+      "vtm": "^ertapenem$",
+      "alias": []
+    },
+    {
+      "nombre": "Escitalopram",
+      "practiv": "escitalopram",
+      "vtm": "^escitalopram$",
+      "alias": []
+    },
+    {
+      "nombre": "Esomeprazol",
+      "practiv": "esomeprazol",
+      "vtm": "^esomeprazol$",
+      "alias": []
+    },
+    {
+      "nombre": "Espironolactona",
+      "practiv": "espironolactona",
+      "vtm": "^espironolactona$",
+      "alias": []
+    },
+    {
+      "nombre": "Estradiol",
+      "practiv": "estradiol",
+      "vtm": "^estradiol$",
+      "alias": []
+    },
+    {
+      "nombre": "Etambutol",
+      "practiv": "etambutol",
+      "vtm": "^etambutol$",
+      "alias": []
+    },
+    {
+      "nombre": "Etomidato",
+      "practiv": "etomidato",
+      "vtm": "^etomidato$",
+      "alias": []
+    },
+    {
+      "nombre": "Etonogestrel",
+      "practiv": "etonogestrel",
+      "vtm": "^etonogestrel$",
+      "alias": [
+        "implante subdermico"
+      ]
+    },
+    {
+      "nombre": "Etoricoxib",
+      "practiv": "etoricoxib",
+      "vtm": "^etoricoxib$",
+      "alias": []
+    },
+    {
+      "nombre": "Ezetimiba",
+      "practiv": "ezetimiba",
+      "vtm": "^ezetimiba$",
+      "alias": []
+    },
+    {
+      "nombre": "Famotidina",
+      "practiv": "famotidina",
+      "vtm": "^famotidina$",
+      "alias": []
+    },
+    {
+      "nombre": "Febuxostat",
+      "practiv": "febuxostat",
+      "vtm": "^febuxostat$",
+      "alias": []
+    },
+    {
+      "nombre": "Fenitoína",
+      "practiv": "fenitoina",
+      "vtm": "^fenitoina$",
+      "alias": []
+    },
+    {
+      "nombre": "Fenobarbital",
+      "practiv": "fenobarbital",
+      "vtm": "^fenobarbital$",
+      "alias": []
+    },
+    {
+      "nombre": "Fenofibrato",
+      "practiv": "fenofibrato",
+      "vtm": "^fenofibrato$",
+      "alias": []
+    },
+    {
+      "nombre": "Fentanilo",
+      "practiv": "fentanilo",
+      "vtm": "^fentanilo$",
+      "alias": [
+        "fentanil"
+      ]
+    },
+    {
+      "nombre": "Finasterida",
+      "practiv": "finasterida",
+      "vtm": "^finasterida$",
+      "alias": []
+    },
+    {
+      "nombre": "Fitomenadiona (vitamina K)",
+      "practiv": "fitomenadiona",
+      "vtm": "fitomenadiona",
+      "alias": [
+        "vitamina k",
+        "vitamina k1"
+      ]
+    },
+    {
+      "nombre": "Fluconazol",
+      "practiv": "fluconazol",
+      "vtm": "^fluconazol$",
+      "alias": []
+    },
+    {
+      "nombre": "Flumazenil",
+      "practiv": "flumazenil",
+      "vtm": "^flumazenil$",
+      "alias": []
+    },
+    {
+      "nombre": "Flunarizina",
+      "practiv": "flunarizina",
+      "vtm": "^flunarizina$",
+      "alias": []
+    },
+    {
+      "nombre": "Fluoxetina",
+      "practiv": "fluoxetina",
+      "vtm": "^fluoxetina$",
+      "alias": []
+    },
+    {
+      "nombre": "Fluticasona",
+      "practiv": "fluticasona",
+      "vtm": "^fluticasona$",
+      "alias": []
+    },
+    {
+      "nombre": "Fondaparinux",
+      "practiv": "fondaparinux",
+      "vtm": "^fondaparinux",
+      "alias": []
+    },
+    {
+      "nombre": "Formoterol",
+      "practiv": "formoterol",
+      "vtm": "^formoterol$",
+      "alias": []
+    },
+    {
+      "nombre": "Fosfomicina",
+      "practiv": "fosfomicina",
+      "vtm": "^fosfomicina",
+      "alias": []
+    },
+    {
+      "nombre": "Furosemida",
+      "practiv": "furosemida",
+      "vtm": "^furosemida$",
+      "alias": []
+    },
+    {
+      "nombre": "Gabapentina",
+      "practiv": "gabapentina",
+      "vtm": "^gabapentina$",
+      "alias": []
+    },
+    {
+      "nombre": "Gemfibrozilo",
+      "practiv": "gemfibrozilo",
+      "vtm": "^gemfibrozilo$",
+      "alias": [
+        "gemfibrozil"
+      ]
+    },
+    {
+      "nombre": "Gentamicina",
+      "practiv": "gentamicina",
+      "vtm": "^gentamicina$",
+      "alias": []
+    },
+    {
+      "nombre": "Glecaprevir/pibrentasvir",
+      "practiv": "glecaprevir",
+      "vtm": "glecaprevir.*pibrentasvir",
+      "alias": [
+        "glecaprevir pibrentasvir",
+        "maviret"
+      ]
+    },
+    {
+      "nombre": "Glibenclamida",
+      "practiv": "glibenclamida",
+      "vtm": "^glibenclamida$",
+      "alias": []
+    },
+    {
+      "nombre": "Gliclazida",
+      "practiv": "gliclazida",
+      "vtm": "^gliclazida$",
+      "alias": []
+    },
+    {
+      "nombre": "Glimepirida",
+      "practiv": "glimepirida",
+      "vtm": "^glimepirida$",
+      "alias": []
+    },
+    {
+      "nombre": "Glucagón",
+      "practiv": "glucagon",
+      "vtm": "^glucagon$",
+      "alias": []
+    },
+    {
+      "nombre": "Gluconato de calcio",
+      "practiv": "calcio gluconato",
+      "vtm": "calcio gluconato",
+      "alias": [
+        "gluconato de calcio"
+      ]
+    },
+    {
+      "nombre": "Haloperidol",
+      "practiv": "haloperidol",
+      "vtm": "^haloperidol$",
+      "alias": []
+    },
+    {
+      "nombre": "Heparina sódica (no fraccionada)",
+      "practiv": "heparina",
+      "vtm": "^heparina sodica$",
+      "alias": [
+        "heparina",
+        "heparina no fraccionada"
+      ]
+    },
+    {
+      "nombre": "Hidralazina",
+      "practiv": "hidralazina",
+      "vtm": "^hidralazina$",
+      "alias": []
+    },
+    {
+      "nombre": "Hidroclorotiazida",
+      "practiv": "hidroclorotiazida",
+      "vtm": "^hidroclorotiazida$",
+      "alias": []
+    },
+    {
+      "nombre": "Hidrocortisona",
+      "practiv": "hidrocortisona",
+      "vtm": "^hidrocortisona$",
+      "alias": []
+    },
+    {
+      "nombre": "Hidromorfona",
+      "practiv": "hidromorfona",
+      "vtm": "^hidromorfona$",
+      "alias": []
+    },
+    {
+      "nombre": "Hidroxicloroquina",
+      "practiv": "hidroxicloroquina",
+      "vtm": "^hidroxicloroquina$",
+      "alias": []
+    },
+    {
+      "nombre": "Hidroxizina",
+      "practiv": "hidroxizina",
+      "vtm": "^hidroxizina$",
+      "alias": [
+        "hidroxicina"
+      ]
+    },
+    {
+      "nombre": "Hierro sacarosa (hierro intravenoso)",
+      "practiv": "hierro sacarosa",
+      "vtm": "hierro.*sacarosa|sacarosa.*hierro",
+      "alias": [
+        "hierro sacarato",
+        "hierro intravenoso"
+      ]
+    },
+    {
+      "nombre": "Ibuprofeno",
+      "practiv": "ibuprofeno",
+      "vtm": "^ibuprofeno$",
+      "alias": []
+    },
+    {
+      "nombre": "Imipenem/cilastatina",
+      "practiv": "imipenem",
+      "vtm": "imipenem.*cilastatina",
+      "alias": [
+        "imipenem cilastatina",
+        "imipenem"
+      ]
+    },
+    {
+      "nombre": "Indapamida",
+      "practiv": "indapamida",
+      "vtm": "^indapamida$",
+      "alias": []
+    },
+    {
+      "nombre": "Inmunoglobulina anti-D",
+      "practiv": "inmunoglobulina anti-d",
+      "vtm": "anti d",
+      "alias": [
+        "inmunoglobulina anti d",
+        "anti d"
+      ]
+    },
+    {
+      "nombre": "Insulina aspart",
+      "practiv": "insulina aspart",
+      "vtm": "insulina aspart",
+      "alias": [
+        "aspart"
+      ]
+    },
+    {
+      "nombre": "Insulina degludec",
+      "practiv": "insulina degludec",
+      "vtm": "^insulina degludec$",
+      "alias": [
+        "degludec"
+      ]
+    },
+    {
+      "nombre": "Insulina glargina",
+      "practiv": "insulina glargina",
+      "vtm": "insulina glargina",
+      "alias": [
+        "glargina"
+      ]
+    },
+    {
+      "nombre": "Insulina humana (regular y NPH)",
+      "practiv": "insulina humana",
+      "vtm": "^insulina humana",
+      "alias": [
+        "insulina regular",
+        "insulina cristalina",
+        "insulina nph",
+        "nph"
+      ]
+    },
+    {
+      "nombre": "Insulina lispro",
+      "practiv": "insulina lispro",
+      "vtm": "insulina lispro",
+      "alias": [
+        "lispro"
+      ]
+    },
+    {
+      "nombre": "Ipratropio",
+      "practiv": "ipratropio",
+      "vtm": "^ipratropio",
+      "alias": [
+        "bromuro de ipratropio"
+      ]
+    },
+    {
+      "nombre": "Irbesartán",
+      "practiv": "irbesartan",
+      "vtm": "^irbesartan$",
+      "alias": []
+    },
+    {
+      "nombre": "Isoniazida",
+      "practiv": "isoniazida",
+      "vtm": "^isoniazida$",
+      "alias": []
+    },
+    {
+      "nombre": "Itraconazol",
+      "practiv": "itraconazol",
+      "vtm": "^itraconazol$",
+      "alias": []
+    },
+    {
+      "nombre": "Ivabradina",
+      "practiv": "ivabradina",
+      "vtm": "^ivabradina$",
+      "alias": []
+    },
+    {
+      "nombre": "Ivermectina",
+      "practiv": "ivermectina",
+      "vtm": "^ivermectina$",
+      "alias": []
+    },
+    {
+      "nombre": "Ketamina",
+      "practiv": "ketamina",
+      "vtm": "^ketamina$",
+      "alias": []
+    },
+    {
+      "nombre": "Ketorolaco",
+      "practiv": "ketorolaco",
+      "vtm": "^ketorolaco$",
+      "alias": []
+    },
+    {
+      "nombre": "Labetalol",
+      "practiv": "labetalol",
+      "vtm": "^labetalol$",
+      "alias": []
+    },
+    {
+      "nombre": "Lacosamida",
+      "practiv": "lacosamida",
+      "vtm": "^lacosamida$",
+      "alias": []
+    },
+    {
+      "nombre": "Lactulosa",
+      "practiv": "lactulosa",
+      "vtm": "^lactulosa$",
+      "alias": []
+    },
+    {
+      "nombre": "Lamivudina",
+      "practiv": "lamivudina",
+      "vtm": "^lamivudina$",
+      "alias": []
+    },
+    {
+      "nombre": "Lamotrigina",
+      "practiv": "lamotrigina",
+      "vtm": "^lamotrigina$",
+      "alias": []
+    },
+    {
+      "nombre": "Levetiracetam",
+      "practiv": "levetiracetam",
+      "vtm": "^levetiracetam$",
+      "alias": []
+    },
+    {
+      "nombre": "Levodopa/carbidopa",
+      "practiv": "levodopa",
+      "vtm": "levodopa.*carbidopa|carbidopa.*levodopa",
+      "alias": [
+        "levodopa carbidopa",
+        "levodopa"
+      ]
+    },
+    {
+      "nombre": "Levofloxacino",
+      "practiv": "levofloxacino",
+      "vtm": "^levofloxacino$",
+      "alias": [
+        "levofloxacina"
+      ]
+    },
+    {
+      "nombre": "Levonorgestrel",
+      "practiv": "levonorgestrel",
+      "vtm": "^levonorgestrel$",
+      "alias": []
+    },
+    {
+      "nombre": "Levotiroxina",
+      "practiv": "levotiroxina",
+      "vtm": "^levotiroxina",
+      "alias": []
+    },
+    {
+      "nombre": "Lidocaína",
+      "practiv": "lidocaina",
+      "vtm": "^lidocaina$",
+      "alias": [
+        "xilocaina"
+      ]
+    },
+    {
+      "nombre": "Linagliptina",
+      "practiv": "linagliptina",
+      "vtm": "^linagliptina$",
+      "alias": []
+    },
+    {
+      "nombre": "Linezolid",
+      "practiv": "linezolid",
+      "vtm": "^linezolid$",
+      "alias": []
+    },
+    {
+      "nombre": "Liraglutida",
+      "practiv": "liraglutida",
+      "vtm": "^liraglutida$",
+      "alias": []
+    },
+    {
+      "nombre": "Lisinopril",
+      "practiv": "lisinopril",
+      "vtm": "^lisinopril$",
+      "alias": []
+    },
+    {
+      "nombre": "Litio (carbonato)",
+      "practiv": "litio carbonato",
+      "vtm": "litio",
+      "alias": [
+        "carbonato de litio",
+        "litio"
+      ]
+    },
+    {
+      "nombre": "Loperamida",
+      "practiv": "loperamida",
+      "vtm": "^loperamida$",
+      "alias": []
+    },
+    {
+      "nombre": "Loratadina",
+      "practiv": "loratadina",
+      "vtm": "^loratadina$",
+      "alias": []
+    },
+    {
+      "nombre": "Lorazepam",
+      "practiv": "lorazepam",
+      "vtm": "^lorazepam$",
+      "alias": []
+    },
+    {
+      "nombre": "Losartán",
+      "practiv": "losartan",
+      "vtm": "^losartan$",
+      "alias": []
+    },
+    {
+      "nombre": "Macrogol (polietilenglicol)",
+      "practiv": "macrogol",
+      "vtm": "macrogol",
+      "alias": [
+        "polietilenglicol"
+      ]
+    },
+    {
+      "nombre": "Manitol",
+      "practiv": "manitol",
+      "vtm": "^manitol$",
+      "alias": []
+    },
+    {
+      "nombre": "Mebendazol",
+      "practiv": "mebendazol",
+      "vtm": "^mebendazol$",
+      "alias": []
+    },
+    {
+      "nombre": "Medroxiprogesterona",
+      "practiv": "medroxiprogesterona",
+      "vtm": "medroxiprogesterona",
+      "alias": []
+    },
+    {
+      "nombre": "Meloxicam",
+      "practiv": "meloxicam",
+      "vtm": "^meloxicam$",
+      "alias": []
+    },
+    {
+      "nombre": "Memantina",
+      "practiv": "memantina",
+      "vtm": "^memantina$",
+      "alias": []
+    },
+    {
+      "nombre": "Meropenem",
+      "practiv": "meropenem",
+      "vtm": "^meropenem$",
+      "alias": []
+    },
+    {
+      "nombre": "Mesalazina",
+      "practiv": "mesalazina",
+      "vtm": "^mesalazina$",
+      "alias": [
+        "mesalamina"
+      ]
+    },
+    {
+      "nombre": "Metadona",
+      "practiv": "metadona",
+      "vtm": "^metadona$",
+      "alias": []
+    },
+    {
+      "nombre": "Metamizol (dipirona)",
+      "practiv": "metamizol",
+      "vtm": "^metamizol",
+      "alias": [
+        "dipirona",
+        "novalgina"
+      ]
+    },
+    {
+      "nombre": "Metformina",
+      "practiv": "metformina",
+      "vtm": "^metformina$",
+      "alias": []
+    },
+    {
+      "nombre": "Metildopa",
+      "practiv": "metildopa",
+      "vtm": "^metildopa$",
+      "alias": []
+    },
+    {
+      "nombre": "Metilergometrina",
+      "practiv": "metilergometrina",
+      "vtm": "metilergometrina",
+      "alias": [
+        "metilergonovina"
+      ]
+    },
+    {
+      "nombre": "Metilprednisolona",
+      "practiv": "metilprednisolona",
+      "vtm": "^metilprednisolona$",
+      "alias": []
+    },
+    {
+      "nombre": "Metocarbamol",
+      "practiv": "metocarbamol",
+      "vtm": "^metocarbamol$",
+      "alias": []
+    },
+    {
+      "nombre": "Metoclopramida",
+      "practiv": "metoclopramida",
+      "vtm": "^metoclopramida$",
+      "alias": []
+    },
+    {
+      "nombre": "Metoprolol",
+      "practiv": "metoprolol",
+      "vtm": "^metoprolol$",
+      "alias": []
+    },
+    {
+      "nombre": "Metotrexato",
+      "practiv": "metotrexato",
+      "vtm": "^metotrexato$",
+      "alias": [
+        "metrotexato"
+      ]
+    },
+    {
+      "nombre": "Metronidazol",
+      "practiv": "metronidazol",
+      "vtm": "^metronidazol$",
+      "alias": []
+    },
+    {
+      "nombre": "Midazolam",
+      "practiv": "midazolam",
+      "vtm": "^midazolam$",
+      "alias": []
+    },
+    {
+      "nombre": "Mifepristona",
+      "practiv": "mifepristona",
+      "vtm": "^mifepristona$",
+      "alias": []
+    },
+    {
+      "nombre": "Minociclina",
+      "practiv": "minociclina",
+      "vtm": "^minociclina$",
+      "alias": []
+    },
+    {
+      "nombre": "Mirtazapina",
+      "practiv": "mirtazapina",
+      "vtm": "^mirtazapina$",
+      "alias": []
+    },
+    {
+      "nombre": "Misoprostol",
+      "practiv": "misoprostol",
+      "vtm": "^misoprostol$",
+      "alias": []
+    },
+    {
+      "nombre": "Mononitrato de isosorbida",
+      "practiv": "isosorbida mononitrato",
+      "vtm": "isosorbida mononitrato|mononitrato de isosorbida",
+      "alias": [
+        "mononitrato de isosorbida"
+      ]
+    },
+    {
+      "nombre": "Montelukast",
+      "practiv": "montelukast",
+      "vtm": "^montelukast$",
+      "alias": []
+    },
+    {
+      "nombre": "Morfina",
+      "practiv": "morfina",
+      "vtm": "^morfina$",
+      "alias": []
+    },
+    {
+      "nombre": "Moxifloxacino",
+      "practiv": "moxifloxacino",
+      "vtm": "^moxifloxacino$",
+      "alias": [
+        "moxifloxacina"
+      ]
+    },
+    {
+      "nombre": "Mupirocina",
+      "practiv": "mupirocina",
+      "vtm": "^mupirocina$",
+      "alias": []
+    },
+    {
+      "nombre": "Naloxona",
+      "practiv": "naloxona",
+      "vtm": "^naloxona$",
+      "alias": []
+    },
+    {
+      "nombre": "Naltrexona",
+      "practiv": "naltrexona",
+      "vtm": "^naltrexona$",
+      "alias": []
+    },
+    {
+      "nombre": "Naproxeno",
+      "practiv": "naproxeno",
+      "vtm": "^naproxeno$",
+      "alias": []
+    },
+    {
+      "nombre": "Nicotina",
+      "practiv": "nicotina",
+      "vtm": "^nicotina$",
+      "alias": [
+        "parche de nicotina",
+        "chicle de nicotina"
+      ]
+    },
+    {
+      "nombre": "Nifedipino",
+      "practiv": "nifedipino",
+      "vtm": "^nifedipino$",
+      "alias": [
+        "nifedipina"
+      ]
+    },
+    {
+      "nombre": "Nimodipino",
+      "practiv": "nimodipino",
+      "vtm": "^nimodipino$",
+      "alias": [
+        "nimodipina"
+      ]
+    },
+    {
+      "nombre": "Nistatina",
+      "practiv": "nistatina",
+      "vtm": "^nistatina$",
+      "alias": []
+    },
+    {
+      "nombre": "Nitrofurantoína",
+      "practiv": "nitrofurantoina",
+      "vtm": "^nitrofurantoina$",
+      "alias": []
+    },
+    {
+      "nombre": "Nitroglicerina",
+      "practiv": "nitroglicerina",
+      "vtm": "^nitroglicerina$",
+      "alias": [
+        "trinitrato de glicerilo"
+      ]
+    },
+    {
+      "nombre": "Noradrenalina",
+      "practiv": "noradrenalina",
+      "vtm": "noradrenalina|norepinefrina",
+      "alias": [
+        "norepinefrina"
+      ]
+    },
+    {
+      "nombre": "Octreotida",
+      "practiv": "octreotida",
+      "vtm": "^octreotida$",
+      "alias": [
+        "octreotide"
+      ]
+    },
+    {
+      "nombre": "Olanzapina",
+      "practiv": "olanzapina",
+      "vtm": "^olanzapina$",
+      "alias": []
+    },
+    {
+      "nombre": "Omeprazol",
+      "practiv": "omeprazol",
+      "vtm": "^omeprazol$",
+      "alias": []
+    },
+    {
+      "nombre": "Ondansetrón",
+      "practiv": "ondansetron",
+      "vtm": "^ondansetron$",
+      "alias": []
+    },
+    {
+      "nombre": "Oseltamivir",
+      "practiv": "oseltamivir",
+      "vtm": "^oseltamivir$",
+      "alias": []
+    },
+    {
+      "nombre": "Oxcarbazepina",
+      "practiv": "oxcarbazepina",
+      "vtm": "^oxcarbazepina$",
+      "alias": []
+    },
+    {
+      "nombre": "Oxibutinina",
+      "practiv": "oxibutinina",
+      "vtm": "^oxibutinina$",
+      "alias": []
+    },
+    {
+      "nombre": "Oxicodona",
+      "practiv": "oxicodona",
+      "vtm": "^oxicodona$",
+      "alias": []
+    },
+    {
+      "nombre": "Oxitocina",
+      "practiv": "oxitocina",
+      "vtm": "^oxitocina$",
+      "alias": []
+    },
+    {
+      "nombre": "Pantoprazol",
+      "practiv": "pantoprazol",
+      "vtm": "^pantoprazol$",
+      "alias": []
+    },
+    {
+      "nombre": "Paracetamol (acetaminofén)",
+      "practiv": "paracetamol",
+      "vtm": "^paracetamol$",
+      "alias": [
+        "acetaminofen",
+        "acetaminofeno",
+        "dolex"
+      ]
+    },
+    {
+      "nombre": "Paroxetina",
+      "practiv": "paroxetina",
+      "vtm": "^paroxetina$",
+      "alias": []
+    },
+    {
+      "nombre": "Permetrina",
+      "practiv": "permetrina",
+      "vtm": "^permetrina$",
+      "alias": []
+    },
+    {
+      "nombre": "Pioglitazona",
+      "practiv": "pioglitazona",
+      "vtm": "^pioglitazona$",
+      "alias": []
+    },
+    {
+      "nombre": "Piperacilina/tazobactam",
+      "practiv": "piperacilina",
+      "vtm": "piperacilina.*tazobactam",
+      "alias": [
+        "piperacilina tazobactam",
+        "pipe tazo"
+      ]
+    },
+    {
+      "nombre": "Pirantel",
+      "practiv": "pirantel",
+      "vtm": "^pirantel",
+      "alias": [
+        "pamoato de pirantel"
+      ]
+    },
+    {
+      "nombre": "Pirazinamida",
+      "practiv": "pirazinamida",
+      "vtm": "^pirazinamida$",
+      "alias": []
+    },
+    {
+      "nombre": "Prasugrel",
+      "practiv": "prasugrel",
+      "vtm": "^prasugrel$",
+      "alias": []
+    },
+    {
+      "nombre": "Pravastatina",
+      "practiv": "pravastatina",
+      "vtm": "^pravastatina$",
+      "alias": []
+    },
+    {
+      "nombre": "Prednisolona",
+      "practiv": "prednisolona",
+      "vtm": "^prednisolona$",
+      "alias": []
+    },
+    {
+      "nombre": "Prednisona",
+      "practiv": "prednisona",
+      "vtm": "^prednisona$",
+      "alias": []
+    },
+    {
+      "nombre": "Pregabalina",
+      "practiv": "pregabalina",
+      "vtm": "^pregabalina$",
+      "alias": []
+    },
+    {
+      "nombre": "Progesterona",
+      "practiv": "progesterona",
+      "vtm": "^progesterona$",
+      "alias": [
+        "progesterona micronizada"
+      ]
+    },
+    {
+      "nombre": "Propiltiouracilo",
+      "practiv": "propiltiouracilo",
+      "vtm": "^propiltiouracilo$",
+      "alias": [
+        "ptu"
+      ]
+    },
+    {
+      "nombre": "Propofol",
+      "practiv": "propofol",
+      "vtm": "^propofol$",
+      "alias": []
+    },
+    {
+      "nombre": "Propranolol",
+      "practiv": "propranolol",
+      "vtm": "^propranolol$",
+      "alias": []
+    },
+    {
+      "nombre": "Quetiapina",
+      "practiv": "quetiapina",
+      "vtm": "^quetiapina$",
+      "alias": []
+    },
+    {
+      "nombre": "Ramipril",
+      "practiv": "ramipril",
+      "vtm": "^ramipril$",
+      "alias": []
+    },
+    {
+      "nombre": "Rifampicina",
+      "practiv": "rifampicina",
+      "vtm": "^rifampicina$",
+      "alias": []
+    },
+    {
+      "nombre": "Rifaximina",
+      "practiv": "rifaximina",
+      "vtm": "^rifaximina$",
+      "alias": []
+    },
+    {
+      "nombre": "Risperidona",
+      "practiv": "risperidona",
+      "vtm": "^risperidona$",
+      "alias": []
+    },
+    {
+      "nombre": "Rivaroxabán",
+      "practiv": "rivaroxaban",
+      "vtm": "^rivaroxaban$",
+      "alias": []
+    },
+    {
+      "nombre": "Rocuronio",
+      "practiv": "rocuronio",
+      "vtm": "rocuronio",
+      "alias": []
+    },
+    {
+      "nombre": "Rosuvastatina",
+      "practiv": "rosuvastatina",
+      "vtm": "^rosuvastatina$",
+      "alias": []
+    },
+    {
+      "nombre": "Sacubitrilo/valsartán",
+      "practiv": "sacubitrilo",
+      "vtm": "sacubitril.*valsartan",
+      "alias": [
+        "sacubitril valsartan",
+        "sacubitrilo valsartan",
+        "entresto"
+      ]
+    },
+    {
+      "nombre": "Salbutamol",
+      "practiv": "salbutamol",
+      "vtm": "^salbutamol$",
+      "alias": [
+        "albuterol"
+      ]
+    },
+    {
+      "nombre": "Salmeterol/fluticasona",
+      "practiv": "salmeterol",
+      "vtm": "salmeterol.*fluticasona|fluticasona.*salmeterol",
+      "alias": [
+        "salmeterol fluticasona",
+        "fluticasona salmeterol",
+        "salmeterol"
+      ]
+    },
+    {
+      "nombre": "Semaglutida",
+      "practiv": "semaglutida",
+      "vtm": "^semaglutida$",
+      "alias": []
+    },
+    {
+      "nombre": "Sertralina",
+      "practiv": "sertralina",
+      "vtm": "^sertralina$",
+      "alias": []
+    },
+    {
+      "nombre": "Sildenafilo",
+      "practiv": "sildenafilo",
+      "vtm": "^sildenafilo$",
+      "alias": [
+        "sildenafil"
+      ]
+    },
+    {
+      "nombre": "Simvastatina",
+      "practiv": "simvastatina",
+      "vtm": "^simvastatina$",
+      "alias": []
+    },
+    {
+      "nombre": "Sitagliptina",
+      "practiv": "sitagliptina",
+      "vtm": "^sitagliptina$",
+      "alias": []
+    },
+    {
+      "nombre": "Sofosbuvir/velpatasvir",
+      "practiv": "sofosbuvir",
+      "vtm": "sofosbuvir.*velpatasvir",
+      "alias": [
+        "sofosbuvir velpatasvir",
+        "epclusa"
+      ]
+    },
+    {
+      "nombre": "Somatostatina",
+      "practiv": "somatostatina",
+      "vtm": "^somatostatina$",
+      "alias": []
+    },
+    {
+      "nombre": "Sucralfato",
+      "practiv": "sucralfato",
+      "vtm": "^sucralfato$",
+      "alias": []
+    },
+    {
+      "nombre": "Sulfasalazina",
+      "practiv": "sulfasalazina",
+      "vtm": "^sulfasalazina$",
+      "alias": []
+    },
+    {
+      "nombre": "Sulfato de magnesio",
+      "practiv": "magnesio sulfato",
+      "vtm": "magnesio",
+      "alias": [
+        "sulfato de magnesio"
+      ]
+    },
+    {
+      "nombre": "Sulfato ferroso",
+      "practiv": "sulfato ferroso",
+      "vtm": "ferroso",
+      "alias": [
+        "hierro",
+        "sulfato de hierro"
+      ]
+    },
+    {
+      "nombre": "Sumatriptán",
+      "practiv": "sumatriptan",
+      "vtm": "^sumatriptan$",
+      "alias": []
+    },
+    {
+      "nombre": "Suxametonio (succinilcolina)",
+      "practiv": "suxametonio",
+      "vtm": "suxametonio",
+      "alias": [
+        "succinilcolina"
+      ]
+    },
+    {
+      "nombre": "Tamsulosina",
+      "practiv": "tamsulosina",
+      "vtm": "^tamsulosina$",
+      "alias": []
+    },
+    {
+      "nombre": "Telmisartán",
+      "practiv": "telmisartan",
+      "vtm": "^telmisartan$",
+      "alias": []
+    },
+    {
+      "nombre": "Tenecteplasa",
+      "practiv": "tenecteplasa",
+      "vtm": "^tenecteplasa$",
+      "alias": []
+    },
+    {
+      "nombre": "Tenofovir alafenamida",
+      "practiv": "tenofovir alafenamida",
+      "vtm": "^tenofovir alafenamida",
+      "alias": [
+        "taf"
+      ]
+    },
+    {
+      "nombre": "Tenofovir disoproxilo",
+      "practiv": "tenofovir",
+      "vtm": "^tenofovir disoproxil",
+      "alias": [
+        "tenofovir",
+        "tdf"
+      ]
+    },
+    {
+      "nombre": "Teofilina",
+      "practiv": "teofilina",
+      "vtm": "^teofilina$",
+      "alias": [
+        "aminofilina"
+      ]
+    },
+    {
+      "nombre": "Terbinafina",
+      "practiv": "terbinafina",
+      "vtm": "^terbinafina$",
+      "alias": []
+    },
+    {
+      "nombre": "Terbutalina",
+      "practiv": "terbutalina",
+      "vtm": "^terbutalina$",
+      "alias": []
+    },
+    {
+      "nombre": "Terlipresina",
+      "practiv": "terlipresina",
+      "vtm": "^terlipresina$",
+      "alias": []
+    },
+    {
+      "nombre": "Tiamazol (metimazol)",
+      "practiv": "tiamazol",
+      "vtm": "^tiamazol$",
+      "alias": [
+        "metimazol"
+      ]
+    },
+    {
+      "nombre": "Tiamina",
+      "practiv": "tiamina",
+      "vtm": "^tiamina$",
+      "alias": [
+        "vitamina b1"
+      ]
+    },
+    {
+      "nombre": "Ticagrelor",
+      "practiv": "ticagrelor",
+      "vtm": "^ticagrelor$",
+      "alias": []
+    },
+    {
+      "nombre": "Tinidazol",
+      "practiv": "tinidazol",
+      "vtm": "^tinidazol$",
+      "alias": []
+    },
+    {
+      "nombre": "Tiotropio",
+      "practiv": "tiotropio",
+      "vtm": "^tiotropio",
+      "alias": []
+    },
+    {
+      "nombre": "Tobramicina",
+      "practiv": "tobramicina",
+      "vtm": "^tobramicina$",
+      "alias": []
+    },
+    {
+      "nombre": "Topiramato",
+      "practiv": "topiramato",
+      "vtm": "^topiramato$",
+      "alias": []
+    },
+    {
+      "nombre": "Torasemida",
+      "practiv": "torasemida",
+      "vtm": "^torasemida$",
+      "alias": []
+    },
+    {
+      "nombre": "Tramadol",
+      "practiv": "tramadol",
+      "vtm": "^tramadol$",
+      "alias": []
+    },
+    {
+      "nombre": "Trazodona",
+      "practiv": "trazodona",
+      "vtm": "^trazodona$",
+      "alias": []
+    },
+    {
+      "nombre": "Trimetoprima/sulfametoxazol",
+      "practiv": "sulfametoxazol",
+      "vtm": "sulfametoxazol",
+      "alias": [
+        "trimetoprim sulfametoxazol",
+        "tmp smx",
+        "cotrimoxazol",
+        "bactrim"
+      ]
+    },
+    {
+      "nombre": "Valaciclovir",
+      "practiv": "valaciclovir",
+      "vtm": "^valaciclovir$",
+      "alias": []
+    },
+    {
+      "nombre": "Valsartán",
+      "practiv": "valsartan",
+      "vtm": "^valsartan$",
+      "alias": []
+    },
+    {
+      "nombre": "Vancomicina",
+      "practiv": "vancomicina",
+      "vtm": "^vancomicina$",
+      "alias": []
+    },
+    {
+      "nombre": "Vareniclina",
+      "practiv": "vareniclina",
+      "vtm": "^vareniclina$",
+      "alias": []
+    },
+    {
+      "nombre": "Venlafaxina",
+      "practiv": "venlafaxina",
+      "vtm": "^venlafaxina$",
+      "alias": []
+    },
+    {
+      "nombre": "Verapamilo",
+      "practiv": "verapamilo",
+      "vtm": "^verapamilo$",
+      "alias": [
+        "verapamil"
+      ]
+    },
+    {
+      "nombre": "Vildagliptina",
+      "practiv": "vildagliptina",
+      "vtm": "^vildagliptina$",
+      "alias": []
+    },
+    {
+      "nombre": "Warfarina",
+      "practiv": "warfarina",
+      "vtm": "^warfarina$",
+      "alias": []
+    },
+    {
+      "nombre": "Zolpidem",
+      "practiv": "zolpidem",
+      "vtm": "^zolpidem$",
+      "alias": []
+    }
+  ]
 }

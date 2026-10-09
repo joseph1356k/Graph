@@ -301,7 +301,9 @@ obstetricia (control prenatal Res. 3280, sangrado del primer trimestre, diabetes
 
 - Para preguntas de dosis, contraindicaciones (4.3), interacciones (4.5), embarazo y lactancia (4.6) o reacciones
   adversas (4.8) sobre un medicamento del diccionario cerrado `knowledge/fichas-tecnicas/medicamentos.json`
-  (≈170 principios activos con sus nombres colombianos: acetaminofén→paracetamol, dipirona→metamizol…), Graph añade
+  (320 principios activos con sus nombres colombianos: acetaminofén→paracetamol, dipirona→metamizol,
+  metimazol→tiamazol, succinilcolina→suxametonio…; la combinación gana a su componente y las siglas que chocan con el
+  corpus, como NAC, no se usan), Graph añade
   hasta 2 extractos de la ficha técnica española (CIMA, AEMPS), numerados `[F1]`, `[F2]`, dentro de
   `<fichas_tecnicas>`. El extracto (≤ 1 800 caracteres) prioriza los párrafos que tocan lo que se preguntó (niños,
   falla renal o hepática, ancianos).

@@ -92,7 +92,7 @@ async function main() {
 
   await check('detecta preguntas de medicamento y los medicamentos del diccionario (alias colombianos, combinación primero)', () => {
     const service = new DrugLabelService({ fetchImpl: null, logger: quietLogger });
-    assert.ok(service.stats().medicamentos >= 150);
+    assert.ok(service.stats().medicamentos >= 250);
     assert.ok(service.isDrugQuestion('¿Cuál es la dosis de amoxicilina en niños?'));
     assert.ok(service.isDrugQuestion('¿se puede dar ibuprofeno en el embarazo?'));
     assert.ok(!service.isDrugQuestion('¿qué es la amoxicilina?'));
@@ -102,6 +102,23 @@ async function main() {
     const two = service.detectDrugs('acetaminofén o dipirona, dosis máxima');
     assert.deepStrictEqual(two.map((entry) => entry.practiv), ['paracetamol', 'metamizol']);
     assert.deepStrictEqual(service.detectDrugs('qué hago con la fiebre'), []);
+  });
+
+  await check('diccionario: nombres colombianos, combinaciones y siglas sin choques', () => {
+    const service = new DrugLabelService({ fetchImpl: null, logger: quietLogger });
+    const nombres = (text) => service.detectDrugs(text).map((entry) => entry.nombre);
+    assert.deepStrictEqual(nombres('dosis de metimazol en hipertiroidismo'), ['Tiamazol (metimazol)']);
+    assert.deepStrictEqual(nombres('succinilcolina en secuencia rápida'), ['Suxametonio (succinilcolina)']);
+    assert.deepStrictEqual(nombres('tenofovir alafenamida en falla renal'), ['Tenofovir alafenamida'], 'TAF no se confunde con TDF');
+    assert.deepStrictEqual(nombres('ajuste del tenofovir por depuración'), ['Tenofovir disoproxilo']);
+    assert.deepStrictEqual(nombres('budesonida formoterol como rescate'), ['Budesonida/formoterol'], 'la combinación gana');
+    assert.deepStrictEqual(nombres('gluconato de calcio con K de 6,8'), ['Gluconato de calcio']);
+    assert.deepStrictEqual(nombres('hierro intravenoso en la gestante'), ['Hierro sacarosa (hierro intravenoso)'], 'no es el sulfato ferroso');
+    assert.deepStrictEqual(nombres('NAC con CURB-65 de 2'), [], 'NAC es neumonía, no acetilcisteína');
+    assert.deepStrictEqual(nombres('calcio sérico de 8 y potasio de 3'), [], 'un laboratorio no es un medicamento');
+    const entries = require('../knowledge/fichas-tecnicas/medicamentos.json').medicamentos;
+    assert.strictEqual(new Set(entries.map((entry) => entry.nombre)).size, entries.length, 'nombres únicos');
+    for (const entry of entries) assert.doesNotThrow(() => new RegExp(entry.vtm), `vtm válida: ${entry.nombre}`);
   });
 
   await check('la sección se elige por la intención de la pregunta', () => {
