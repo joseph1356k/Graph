@@ -19,7 +19,7 @@ const NUMBER = String.raw`\d{1,3}(?:[   ]\d{3})+(?:[.,]\d+)?|\d+(?:[.,]\d+)?`
 // Unidades: de la más larga a la más corta para que «mg/kg/día» no quede en «mg».
 const UNITS = [
   'mg/kg/d[ií]a', 'mg/kg/d', 'mg/kg/h', 'mg/kg/min', '(?:mcg|µg|ug)/kg/min', '(?:mcg|µg|ug)/kg/h', '(?:mcg|µg|ug)/kg',
-  'mg/kg', 'mg/m2', 'mg/m²', 'ml/kg/h', 'ml/kg/d[ií]a', 'ml/kg', 'ml/h', 'ml/min', 'l/min',
+  'g/kg/d[ií]a', 'g/kg', 'mg/kg', 'mg/m2', 'mg/m²', 'ml/kg/h', 'ml/kg/d[ií]a', 'ml/kg', 'ml/h', 'ml/min', 'l/min',
   'ui/kg', 'u/kg/h', 'u/kg', 'u/h', 'ui/l', 'mui/l', 'meq/l', 'meq/kg', 'meq', 'mmol/l', 'mmol', 'mosm/l',
   'mg/dl', 'g/dl', 'ng/ml', '(?:mcg|µg|ug)/l', 'mg/l', 'g/l', 'mmhg', 'cmh2o', 'kg/m2', 'kg/m²',
   'mg', 'mcg', 'µg', 'ug', 'g', 'kg', 'ml', 'cc', 'l', 'ui', 'u',
@@ -46,7 +46,8 @@ function unitFamily(rawUnit) {
     .replace(/º/g, '°');
   const table = {
     mg: ['masa', 1], g: ['masa', 1000], mcg: ['masa', 0.001],
-    'mg/kg': ['masa/kg', 1], 'mcg/kg': ['masa/kg', 0.001],
+    'mg/kg': ['masa/kg', 1], 'mcg/kg': ['masa/kg', 0.001], 'g/kg': ['masa/kg', 1000],
+    'g/kg/dia': ['masa/kg/dia', 1000],
     'mg/kg/dia': ['masa/kg/dia', 1], 'mg/kg/d': ['masa/kg/dia', 1],
     ml: ['volumen', 1], cc: ['volumen', 1], l: ['volumen', 1000],
     horas: ['horas', 1], hora: ['horas', 1], h: ['horas', 1],

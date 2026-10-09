@@ -306,7 +306,9 @@ obstetricia (control prenatal Res. 3280, preeclampsia, hemorragia posparto, anti
 Tras la respuesta del modelo, cada cifra con unidad («500 mg cada 8 h», «≥140/90 mmHg», «7 días», «0,15 mg/kg») se
 busca, con la misma familia de unidad y equivalencias (1 g = 1000 mg, 1 L = 1000 mL), en: extractos de guías y
 fichas, nota (borrador o persistida), transcripción, descripciones de códigos, edad, mensaje e historial del médico.
-Las que no aparecen salen en `unverified_figures` (máx. 8); `figures_checked` dice cuántas se revisaron. El prompt
+Solo cuentan los extractos que la respuesta **citó** (con su título de sección) y la consulta: un extracto recuperado
+pero no citado no respalda ninguna cifra. Las que no aparecen salen en `unverified_figures` (máx. 8);
+`figures_checked` dice cuántas se revisaron. El prompt
 v4 avisa al modelo de que esto ocurre y le pide copiar cada cifra con su unidad tal como está en la fuente o
 marcarla como conocimiento general.
 
@@ -321,6 +323,16 @@ Conjunto fijo `scripts/fixtures/rag-eval.json`: preguntas parafraseadas como se 
 digitación, de seguimiento, con distinta población y fuera de tema. Mide recall@1, recall@3, MRR, precisión fuera de
 tema y latencia p95; `npm test` falla si recall@3 < 90 %, MRR < 0.75, alguna pregunta fuera de tema trae guías o el
 p95 supera 25 ms. Al añadir una guía, añade sus preguntas aquí y en `verify-guideline-index.js`.
+
+### Evaluación de calidad de respuesta (`scripts/eval-assistant-answers.js`)
+
+Corre el servicio real con un modelo falso que devuelve salidas grabadas, buenas y malas a propósito
+(`scripts/fixtures/answer-eval.json` más dos casos generados por guía del corpus) y mide lo que Graph hace con ellas:
+referencias inventadas eliminadas (100 %), cifras plantadas detectadas (≥ 95 %), falsos positivos del verificador
+(≤ 5 %), casos sin respaldo que terminan en abstención o con cifras marcadas (100 %), salidas rotas que no rompen el
+chat (100 %) y propuestas de nota que no persisten y respetan `note_editable` (100 %), con al menos 150 casos. Está en
+`npm test`; `npm run eval:answers` muestra el detalle. El modo en vivo (modelo real) necesita
+`MIRACLE_ASSISTANT_LLM_API_KEY` y aún no existe.
 
 ### Qué modelo usar (decisión de producto, no de código)
 

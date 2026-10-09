@@ -187,7 +187,8 @@ class ClinicalAssistantService {
         clinicalContext,
         message: cleanMessage,
         guidelines,
-        drugLabels
+        drugLabels,
+        citedRefs: new Set(reply.sources.map((source) => source.ref))
       }));
       const noteProposal = reply.proposal && clinicalContext.note_editable
         ? this.buildNoteProposal({ proposal: reply.proposal, encounter, noteDraft: built.noteDraft, message: cleanMessage })
@@ -263,10 +264,20 @@ class ClinicalAssistantService {
     }
   }
 
-  /** Textos contra los que se verifican las cifras de la respuesta. */
-  evidenceTexts({ built = {}, clinicalContext = {}, message = '', guidelines = [], drugLabels = [] } = {}) {
+  /**
+   * Textos contra los que se verifican las cifras de la respuesta: los
+   * extractos que la respuesta CITÓ (título de sección incluido) y lo que
+   * viene de la consulta. Un extracto recuperado pero no citado no respalda
+   * nada: el prompt exige que cada cifra salga de una fuente citada o de la
+   * consulta, y si no se exige aquí, una dosis inventada pasaría por buena
+   * solo porque aparece en otra guía que el médico no ve citada.
+   */
+  evidenceTexts({ built = {}, clinicalContext = {}, message = '', guidelines = [], drugLabels = [], citedRefs = null } = {}) {
     const texts = [message];
-    for (const item of [...guidelines, ...drugLabels]) texts.push(item.text);
+    for (const item of [...guidelines, ...drugLabels]) {
+      if (citedRefs && !citedRefs.has(item.ref)) continue;
+      texts.push(`${item.section || ''}\n${item.text || ''}`);
+    }
     const draft = contextBuilder.noteDraftPlainText(built.noteDraft);
     if (draft) texts.push(draft);
     const persisted = built.persistedNote;

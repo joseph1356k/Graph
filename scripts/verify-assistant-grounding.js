@@ -31,6 +31,9 @@ function main() {
       'masa/kg/dia:80/90', 'dias:10', 'masa:1', 'horas:8', 'mmhg:140/90', 'ui:10000', 'masa/kg:0.15', '%:92'
     ]);
     assert.strictEqual(parseNumber('12,5'), 12.5);
+    const [igiv] = extractFigures('inmunoglobulina 2 g/kg en 2 a 5 días');
+    assert.strictEqual(`${igiv.family}:${igiv.numbers[0] * igiv.factor}`, 'masa/kg:2000', 'g/kg no se confunde con gramos');
+    assert.deepStrictEqual(verifyFigures('2 000 mg/kg', ['2 g/kg']).unverified, []);
     assert.strictEqual(parseNumber(undefined), null);
   });
 
