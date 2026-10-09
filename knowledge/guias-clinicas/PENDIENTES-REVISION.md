@@ -27,12 +27,13 @@ No es un archivo de guía: `build-guideline-corpus` solo compila los `.md` con c
 - **Pendiente:** citología 1-3-3 de 25 a 29 años, ADN-VPH cada 5 años de 30 a 65, VIA-VILI de 30 a 50 en zonas rurales dispersas; «ver y tratar» y repetir ADN-VPH a los 18 meses con citología de triaje negativa (GPC 2014).
 
 ## desnutricion-aguda-infantil
-- **Pendiente:** cambios de la Resolución 115 de 2026 (egreso con puntaje Z ≥ −1, categoría «riesgo de desnutrición aguda», F-100 obligatorio, fórmula de inicio en menores de 6 meses); las fuentes secundarias no coinciden en el límite de la nueva categoría.
-- **Pendiente:** código Sivigila «evento 113»; dosis del libro de bolsillo de la OMS (ampicilina más gentamicina, volúmenes de F-75, ReSoMal, líquidos en choque, transfusión).
+- **Verificado (secundario, 2026-10-09):** Resolución 115 del 27 de enero de 2026 (modifica parcialmente la 2350): atención al riesgo de desnutrición aguda con puntaje Z > −2 y < −1 DE; F-100 obligatorio en el tratamiento intrahospitalario y ambulatorio y disponibilidad de F-75, F-100 y FTLC por las EPS; el egreso con Z ≥ −2 se considera insuficiente (recuperación con Z ≥ −1 según fuente secundaria). Sivigila «evento 113» confirmado (protocolo actualizado en 2023; Circular 028 de 2025).
+- **Retirado (2026-10-09):** «la Res. 115 ordena garantizar fórmula de inicio a menores de 6 meses»: no se encontró en las fuentes consultadas.
+- **Pendiente:** confirmar el umbral exacto de egreso en el anexo técnico de la Res. 115; dosis del libro de bolsillo de la OMS 2013 (F-75 130 mL/kg/día, ampicilina 50 mg/kg cada 6 h más gentamicina 7,5 mg/kg/día, ReSoMal 5 mL/kg cada 30 min por 2 h, choque 15 mL/kg en 1 h, transfusión 10 mL/kg en 3 h): coinciden con el conocimiento del revisor del loop, falta contraste con la fuente primaria.
 
 ## hemorragia-posparto
-- **Pendiente:** fila «compensado» y pulso > 120 en la fila «severo» de la tabla de choque del código rojo.
-- **Pendiente:** umbral OMS/FIGO/ICM 2025 (≥ 300 mL con signo hemodinámico anormal o ≥ 500 mL).
+- **Verificado (secundario, 2026-10-09):** tabla de choque del Código Rojo (Rev Colomb Obstet Ginecol 2009): leve 16–25 %, pulso 91–100, sistólica 80–90; moderado 26–35 %, pulso 101–120, sistólica 70–79 (corregido: decía 70–80); severo > 35 %, pulso > 120, sistólica < 70. Umbral OMS/FIGO/ICM del 5 de octubre de 2025: actuar desde 300 mL con signos vitales anormales o desde 500 mL.
+- **Retirado (2026-10-09):** cifras de la fila «compensado» (500–1 000 mL, 10–15 %) y los cortes de signos vitales anormales de la guía 2025 (pulso > 100, índice de choque > 1, sistólica < 100, diastólica < 60): no confirmados en las fuentes consultadas.
 
 ## anticoncepcion
 - **Pendiente:** porcentajes de efectividad por método (CDC); categorías de la 6.ª edición de los criterios de elegibilidad de la OMS (2025).

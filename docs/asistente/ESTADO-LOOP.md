@@ -21,7 +21,7 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 | Evaluación de respuestas en vivo | no existe | bloqueada | ≥ 60 casos | bloqueada: requiere humano |
 | Medicamentos en el diccionario | 170 | 170 | ≥ 250 | pendiente |
 | Instantánea de fichas técnicas | 0 % | 0 % | ≥ 90 % del diccionario | bloqueada: requiere humano |
-| Cifras «de memoria» corregidas o retiradas | 0 | 6 | todas las marcadas | en curso |
+| Cifras «de memoria» corregidas, verificadas o retiradas | 0 | 14 | todas las marcadas | en curso |
 | Graph `npm test` | verde | verde | verde | cumple |
 | Web lint / typecheck / tests / build | 0 errores / limpio / 908 / OK | 0 errores / limpio / 908 / OK | verde | cumple |
 | E2E Playwright del chat | no existe | no existe | 5 escenarios | pendiente |
@@ -31,7 +31,7 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 
 ## Backlog priorizado
 
-1. **Exactitud clínica:** seguir verificando las cifras «Pendiente» de `knowledge/guias-clinicas/PENDIENTES-REVISION.md` (desnutrición y Res. 115/2026, código rojo, citología/ADN-VPH, ISPAD, anafilaxia, hemorragia digestiva).
+1. **Exactitud clínica:** seguir con las cifras «Pendiente» de `knowledge/guias-clinicas/PENDIENTES-REVISION.md` (citología/ADN-VPH de la Res. 3280, ISPAD, anafilaxia, hemorragia digestiva, malaria, sífilis, alcohol, opioides, gota, síncope). Alternar con calidad de respuesta para no frenar el resto de metas.
 2. **Calidad de respuesta:** `scripts/eval-assistant-answers.js` + fixture con ≥ 150 casos dorados y sus 6 métricas, en `npm test`.
 3. **Retrieval:** ampliar `rag-eval.json` a ≥ 300 preguntas y ≥ 60 fuera de tema; crear el conjunto «fuera del corpus».
 4. **Corpus:** 19+ guías nuevas de la lista prioritaria (crecimiento y desarrollo, PAI, lactancia, sangrado del primer trimestre, diabetes gestacional, hepatitis B y C, parasitosis, escabiosis, dermatitis atópica, ojo rojo, lesión renal aguda, electrolitos, pancreatitis y colecistitis, cirrosis, meningitis, tos ferina, leishmaniasis, Chagas, leptospirosis, accidente ofídico, rabia, organofosforados, quemaduras).
@@ -42,6 +42,8 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 ## Hecho
 
 - **Iteración 1 (2026-10-09):** archivo de estado y `PENDIENTES-REVISION.md`. Exactitud clínica: potasio en CAD corregido al consenso 2024 (10–20 mmol, no 20–30); atribuciones de PaCO2 y del plazo de 72 h en posparo corregidas; mamografía confirmada con la Res. 276 de 2019; edades y periodicidad colombianas de FIT y PSA retiradas por no verificables.
+
+- **Iteración 2 (2026-10-09):** exactitud clínica. Desnutrición: Res. 115 de 2026 verificada (riesgo Z > −2 y < −1, F-100 obligatorio en hospital y ambulatorio, egreso ampliado) y Sivigila evento 113 confirmado; retirada la «fórmula de inicio» atribuida a la Res. 115. Hemorragia posparto: tabla del Código Rojo verificada y corregida (moderado 70–79 mmHg); retiradas las cifras de la fila «compensado» y los cortes de signos vitales de la guía OMS 2025, no confirmados.
 
 ## Decisiones
 
