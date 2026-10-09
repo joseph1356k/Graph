@@ -1756,5 +1756,297 @@
   ],
   "choco": [
     "zona endemica"
+  ],
+  "control de nino sano": [
+    "valoracion integral primera infancia"
+  ],
+  "cyd": [
+    "crecimiento y desarrollo"
+  ],
+  "ead3": [
+    "EAD-3",
+    "escala abreviada de desarrollo"
+  ],
+  "p/t": [
+    "peso para la talla"
+  ],
+  "t/e": [
+    "talla para la edad"
+  ],
+  "pc/e": [
+    "perimetro cefalico"
+  ],
+  "imc/e": [
+    "IMC para la edad"
+  ],
+  "curvas oms": [
+    "curvas de crecimiento OMS"
+  ],
+  "desparasitar": [
+    "desparasitacion albendazol"
+  ],
+  "retraso psicomotor": [
+    "retraso del desarrollo"
+  ],
+  "desnutricion cronica": [
+    "talla baja",
+    "retraso en talla"
+  ],
+  "dmg": [
+    "diabetes gestacional"
+  ],
+  "diabetes del embarazo": [
+    "diabetes gestacional"
+  ],
+  "azucar alta en el embarazo": [
+    "diabetes gestacional"
+  ],
+  "ptog": [
+    "prueba de tolerancia oral a la glucosa"
+  ],
+  "curva de glucosa": [
+    "prueba de tolerancia oral a la glucosa"
+  ],
+  "curva de tolerancia": [
+    "prueba de tolerancia oral a la glucosa"
+  ],
+  "test de 50 g": [
+    "carga de 50 g"
+  ],
+  "sarna": [
+    "escabiosis"
+  ],
+  "rasquiña": [
+    "prurito",
+    "escabiosis"
+  ],
+  "sarna noruega": [
+    "sarna costrosa"
+  ],
+  "acaro de la sarna": [
+    "Sarcoptes scabiei"
+  ],
+  "piojos": [
+    "pediculosis capitis"
+  ],
+  "liendres": [
+    "pediculosis capitis"
+  ],
+  "pediculosis": [
+    "pediculosis capitis"
+  ],
+  "iacs": [
+    "criterios IACS 2020"
+  ],
+  "comezon despues del tratamiento": [
+    "prurito posescabiotico"
+  ],
+  "dar pecho": [
+    "lactancia materna"
+  ],
+  "dar seno": [
+    "lactancia materna"
+  ],
+  "amamantar": [
+    "lactancia materna"
+  ],
+  "lme": [
+    "lactancia materna exclusiva"
+  ],
+  "sacarse la leche": [
+    "extraccion de leche"
+  ],
+  "pechos llenos": [
+    "ingurgitacion mamaria"
+  ],
+  "seno duro": [
+    "ingurgitacion mamaria"
+  ],
+  "pezones rotos": [
+    "grietas del pezon"
+  ],
+  "infeccion del seno": [
+    "mastitis"
+  ],
+  "poca leche": [
+    "baja produccion de leche"
+  ],
+  "secar la leche": [
+    "inhibicion de la lactancia",
+    "cabergolina"
+  ],
+  "hora de lactancia": [
+    "descanso por lactancia"
+  ],
+  "lombrices": [
+    "geohelmintos",
+    "parasitosis intestinal"
+  ],
+  "parasitos": [
+    "parasitosis intestinal"
+  ],
+  "oxiuros": [
+    "enterobius"
+  ],
+  "tricocefalo": [
+    "trichuris"
+  ],
+  "anquilostoma": [
+    "uncinarias"
+  ],
+  "estrongiloides": [
+    "strongyloides"
+  ],
+  "ameba": [
+    "amebiasis",
+    "entamoeba histolytica"
+  ],
+  "giardia lamblia": [
+    "giardia"
+  ],
+  "coprologico": [
+    "coprologico seriado"
+  ],
+  "ameu": [
+    "aspiracion endouterina"
+  ],
+  "huevo huero": [
+    "huevo anembrionado",
+    "gestacion anembrionada"
+  ],
+  "aborto diferido": [
+    "aborto retenido",
+    "perdida gestacional temprana"
+  ],
+  "embarazo tubarico": [
+    "embarazo ectopico"
+  ],
+  "embarazo molar": [
+    "mola hidatiforme",
+    "enfermedad trofoblastica"
+  ],
+  "lcc": [
+    "longitud craneo-caudal"
+  ],
+  "crl": [
+    "longitud craneo-caudal"
+  ],
+  "legrado": [
+    "aspiracion endouterina"
+  ],
+  "gammaglobulina anti-d": [
+    "inmunoglobulina anti-D"
+  ],
+  "ive": [
+    "interrupcion voluntaria del embarazo"
+  ],
+  "cytotec": [
+    "misoprostol"
+  ],
+  "metrotexato": [
+    "metotrexato"
+  ],
+  "perdida del embarazo": [
+    "perdida gestacional temprana",
+    "aborto espontaneo"
+  ],
+  "pai": [
+    "Programa Ampliado de Inmunizaciones",
+    "esquema nacional de vacunacion"
+  ],
+  "carne de vacunas": [
+    "esquema de vacunacion"
+  ],
+  "srp": [
+    "triple viral"
+  ],
+  "sarampion rubeola paperas": [
+    "triple viral"
+  ],
+  "penta": [
+    "pentavalente"
+  ],
+  "hexa": [
+    "hexavalente"
+  ],
+  "tosferina": [
+    "Tdap",
+    "pentavalente",
+    "DPT"
+  ],
+  "tos ferina": [
+    "tosferina"
+  ],
+  "papiloma": [
+    "VPH"
+  ],
+  "hpv": [
+    "VPH"
+  ],
+  "vacuna de la gripa": [
+    "influenza"
+  ],
+  "neumonia vacuna": [
+    "neumococo"
+  ],
+  "toxoide tetanico": [
+    "Td"
+  ],
+  "vacunas atrasadas": [
+    "esquema atrasado"
+  ],
+  "esavi": [
+    "eventos supuestamente atribuibles a vacunacion o inmunizacion"
+  ],
+  "silbido en el pecho": [
+    "sibilancias"
+  ],
+  "silbido": [
+    "sibilancias"
+  ],
+  "serpiente": [
+    "accidente ofidico"
+  ],
+  "culebra": [
+    "accidente ofidico"
+  ],
+  "vibora": [
+    "accidente ofidico"
+  ],
+  "tac contrastado": [
+    "medio de contraste yodado"
+  ],
+  "tac con contraste": [
+    "medio de contraste yodado"
+  ],
+  "contrastado": [
+    "medio de contraste yodado"
+  ],
+  "hidratar con suero": [
+    "hidratacion liquidos intravenosos"
+  ],
+  "prednisona por mucho tiempo": [
+    "inmunosupresores corticoides"
+  ],
+  "antiparasitario": [
+    "desparasitacion parasitosis"
+  ],
+  "se rasca la cola": [
+    "prurito anal oxiuros"
+  ],
+  "le pica la cola": [
+    "prurito anal oxiuros"
+  ],
+  "rasquina en la cola": [
+    "prurito anal oxiuros"
+  ],
+  "glucometria en hi": [
+    "hiperglucemia crisis hiperglucemica"
+  ],
+  "glucometro en hi": [
+    "hiperglucemia crisis hiperglucemica"
+  ],
+  "respiracion profunda": [
+    "respiracion de kussmaul acidosis"
   ]
 }

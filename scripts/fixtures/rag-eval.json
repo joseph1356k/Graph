@@ -639,6 +639,85 @@
       {
         "message": "El gato del vecino aruñó a mi hijo en la pierna, el gato está sano en la casa, ¿hay que vacunar al niño?",
         "expected": "mordeduras-y-profilaxis-de-rabia"
+      },
+      {
+        "message": "el niño de 3 años está por debajo de la curva de estatura, ¿desde qué puntaje Z se considera que tiene talla baja?",
+        "expected": "crecimiento-y-desarrollo-infantil"
+      },
+      {
+        "message": "¿cada cuánto le toca el control del niño sano con el médico y cada cuánto con la enfermera?",
+        "expected": "crecimiento-y-desarrollo-infantil"
+      },
+      {
+        "message": "a una niña de 2 años le salió amarillo en audición y lenguaje en la escala de desarrollo, ¿qué hago?",
+        "expected": "crecimiento-y-desarrollo-infantil"
+      },
+      {
+        "message": "Paciente de 26 semanas con curva de glucosa: ayunas 94, a la hora 150 y a las dos horas 130, ¿eso ya es diabetes del embarazo?",
+        "expected": "diabetes-gestacional"
+      },
+      {
+        "message": "Embarazada que no baja el azúcar con dieta, ¿le inicio insulina o metformina?",
+        "expected": "diabetes-gestacional"
+      },
+      {
+        "message": "Al niño le pica muchísimo de noche entre los dedos y en las muñecas, y a la mamá también le dio rasquiña, ¿qué le formulo a la familia?",
+        "expected": "escabiosis-y-pediculosis"
+      },
+      {
+        "message": "A la niña le encontraron animalitos en el pelo en el colegio, ¿con qué la trato y tiene que dejar de ir a clases?",
+        "expected": "escabiosis-y-pediculosis"
+      },
+      {
+        "message": "cuanto tiempo aguanta la leche que me saco si la dejo en la nevera o la congelo",
+        "expected": "lactancia-materna"
+      },
+      {
+        "message": "tengo el seno rojo, duro y con fiebre desde ayer y estoy amamantando, sigo dando pecho o tomo antibiotico?",
+        "expected": "lactancia-materna"
+      },
+      {
+        "message": "hasta que edad se recomienda dar solo pecho sin agua ni otros alimentos",
+        "expected": "lactancia-materna"
+      },
+      {
+        "message": "mi niño de 4 años se rasca la cola todas las noches, qué le doy y hay que darle a toda la familia?",
+        "expected": "parasitosis-intestinal"
+      },
+      {
+        "message": "cuánto albendazol le doy a un bebé de 18 meses para desparasitarlo y cada cuánto se repite?",
+        "expected": [
+          "crecimiento-y-desarrollo-infantil",
+          "parasitosis-intestinal"
+        ]
+      },
+      {
+        "message": "el coprológico de un niño sin síntomas salió con quistes de histolytica/dispar, hay que tratarlo?",
+        "expected": "parasitosis-intestinal"
+      },
+      {
+        "message": "Paciente con 8 semanas de embarazo que está sangrando y en la eco no se ve latido, ¿con qué medidas confirmo que el embarazo se perdió?",
+        "expected": "sangrado-primer-trimestre"
+      },
+      {
+        "message": "¿Qué dosis de misoprostol le doy a una paciente con un aborto retenido?",
+        "expected": "sangrado-primer-trimestre"
+      },
+      {
+        "message": "Prueba de embarazo positiva, dolor pélvico y no se ve saco dentro del útero, ¿cuándo puedo usar metotrexato?",
+        "expected": "sangrado-primer-trimestre"
+      },
+      {
+        "message": "qué vacunas le tocan a un bebé de 2 meses aquí en Colombia y hasta cuándo se le puede poner la del rotavirus",
+        "expected": "vacunacion-pai-y-adulto"
+      },
+      {
+        "message": "una embarazada de 22 semanas me pregunta si ya se puede poner la de la tosferina",
+        "expected": "vacunacion-pai-y-adulto"
+      },
+      {
+        "message": "un niño de 3 años solo tiene las vacunas hasta los 6 meses, ¿toca empezar todo de nuevo?",
+        "expected": "vacunacion-pai-y-adulto"
       }
     ],
     "digitacion": [
@@ -1029,6 +1108,72 @@
       {
         "message": "esquema vacuna antirrabica pos exposicion colombia 4 dosis o 5",
         "expected": "mordeduras-y-profilaxis-de-rabia"
+      },
+      {
+        "message": "ead3 rojo en motricidad gruesa q conducta",
+        "expected": "crecimiento-y-desarrollo-infantil"
+      },
+      {
+        "message": "res 2465 punto d corte p/t riesgo desnutricion",
+        "expected": [
+          "crecimiento-y-desarrollo-infantil",
+          "desnutricion-aguda-infantil"
+        ]
+      },
+      {
+        "message": "ptog 75g gestante valores de corte dmg",
+        "expected": "diabetes-gestacional"
+      },
+      {
+        "message": "diabtes gestasional metas de glucometria",
+        "expected": "diabetes-gestacional"
+      },
+      {
+        "message": "ivermectiana pa sarna dosis x kg y cuando se repite",
+        "expected": "escabiosis-y-pediculosis"
+      },
+      {
+        "message": "permetrina 5% cuantas oras se deja y se repite?",
+        "expected": "escabiosis-y-pediculosis"
+      },
+      {
+        "message": "mama con vih puede dar lactansia en colombia o se da formula",
+        "expected": "lactancia-materna"
+      },
+      {
+        "message": "dosis de dicloxasilina para mastitis puerperal",
+        "expected": "lactancia-materna"
+      },
+      {
+        "message": "dosis ivermectina estrongiloides",
+        "expected": "parasitosis-intestinal"
+      },
+      {
+        "message": "albendasol niños cada cuanto se desparacita",
+        "expected": [
+          "crecimiento-y-desarrollo-infantil",
+          "parasitosis-intestinal"
+        ]
+      },
+      {
+        "message": "coprologico seriado cuantas muestras",
+        "expected": "parasitosis-intestinal"
+      },
+      {
+        "message": "dosis metrotexato ectopico beta hcg",
+        "expected": "sangrado-primer-trimestre"
+      },
+      {
+        "message": "amenasa de aborto progesterona dosis",
+        "expected": "sangrado-primer-trimestre"
+      },
+      {
+        "message": "esquema pai triple viral refuerzo a q edad y fiebre amarila",
+        "expected": "vacunacion-pai-y-adulto"
+      },
+      {
+        "message": "contraindicasiones verdaderas de vacunas en niño con gripa y antibiotico",
+        "expected": "vacunacion-pai-y-adulto"
       }
     ],
     "seguimiento": [
@@ -1302,7 +1447,10 @@
           }
         ],
         "message": "¿y la Tdap cuándo?",
-        "expected": "control-prenatal"
+        "expected": [
+          "control-prenatal",
+          "vacunacion-pai-y-adulto"
+        ]
       },
       {
         "history": [
@@ -2019,7 +2167,10 @@
           }
         ],
         "message": "¿Y puede dar pecho?",
-        "expected": "hepatitis-b-y-c"
+        "expected": [
+          "hepatitis-b-y-c",
+          "lactancia-materna"
+        ]
       },
       {
         "history": [
@@ -2236,6 +2387,132 @@
         ],
         "message": "¿y cuánto suero le pongo y dónde?",
         "expected": "mordeduras-y-profilaxis-de-rabia"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cuáles son los puntos de corte de peso para la talla en menores de 5 años según la Resolución 2465?"
+          },
+          {
+            "role": "assistant",
+            "content": "Para menores de 5 años: más de +3 DE es obesidad; de +2 a +3 DE, sobrepeso; de +1 a +2 DE, riesgo de sobrepeso; de −1 a +1 DE, peso adecuado; de −2 a −1 DE, riesgo de desnutrición aguda; de −2 a −3 DE, desnutrición aguda moderada; y menos de −3 DE, desnutrición aguda severa."
+          }
+        ],
+        "message": "¿y el perímetro cefálico?",
+        "expected": "crecimiento-y-desarrollo-infantil"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo se diagnostica la diabetes gestacional con la curva de 75 g?"
+          },
+          {
+            "role": "assistant",
+            "content": "Con la PTOG de 75 g entre las semanas 24 y 28, en ayunas: basta un valor alterado (ayunas ≥92, 1 h ≥180 o 2 h ≥153 mg/dL), según IADPSG y ADA."
+          }
+        ],
+        "message": "¿Y después del parto qué control le hago?",
+        "expected": "diabetes-gestacional"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo trato una escabiosis en un adulto?"
+          },
+          {
+            "role": "assistant",
+            "content": "Permetrina al 5 % desde el cuello hacia abajo durante 8 a 14 horas, repetida a la semana, o ivermectina oral 200 µg/kg en dos dosis separadas por 7 a 14 días…"
+          }
+        ],
+        "message": "¿y a la familia también hay que darle?",
+        "expected": "escabiosis-y-pediculosis"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Qué uso para piojos en un escolar?"
+          },
+          {
+            "role": "assistant",
+            "content": "Permetrina al 1 % en loción durante 10 minutos sobre el cabello húmedo, con una segunda aplicación a los 7 a 10 días…"
+          }
+        ],
+        "message": "¿y si no funcionó?",
+        "expected": "escabiosis-y-pediculosis"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "como se conserva la leche materna extraida?"
+          },
+          {
+            "role": "assistant",
+            "content": "Según CDC, recién extraída dura hasta 4 horas a temperatura ambiente, hasta 4 días en nevera y en congelador idealmente hasta 6 meses (aceptable hasta 12)."
+          }
+        ],
+        "message": "y ya descongelada cuanto dura?",
+        "expected": "lactancia-materna"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "cuales son las contraindicaciones reales de la lactancia materna?"
+          },
+          {
+            "role": "assistant",
+            "content": "Según CDC: galactosemia clásica, VIH sin tratamiento o sin supresión viral, HTLV-1/2, Ébola, drogas ilícitas; temporales: TB activa no tratada, brucelosis, herpes en el pecho."
+          }
+        ],
+        "message": "y con tuberculosis cuando puede volver a dar pecho?",
+        "expected": "lactancia-materna"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "cómo se trata la giardiasis en un adulto?"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "y en un niño de 2 años?",
+        "expected": "parasitosis-intestinal"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cuáles son los criterios para dar metotrexato en un embarazo ectópico?"
+          },
+          {
+            "role": "assistant",
+            "content": "Según NICE 2019: paciente estable sin dolor significativo, ectópico no roto con masa menor de 35 mm sin latido, beta-hCG menor de 1 500 UI/L, sin embarazo intrauterino y con posibilidad de seguimiento…"
+          }
+        ],
+        "message": "¿Y cómo se hace el seguimiento después de la dosis?",
+        "expected": "sangrado-primer-trimestre"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "qué vacunas se aplican a los 12 meses en el esquema PAI"
+          },
+          {
+            "role": "assistant",
+            "content": "A los 12 meses: triple viral, primera de varicela, refuerzo de neumococo y hepatitis A en dosis única; si coincide, influenza."
+          }
+        ],
+        "message": "¿y a los 18 meses?",
+        "expected": "vacunacion-pai-y-adulto"
       }
     ],
     "poblacion": [
@@ -2436,7 +2713,10 @@
         "patient": {
           "edad": 2
         },
-        "expected": "desnutricion-aguda-infantil"
+        "expected": [
+          "desnutricion-aguda-infantil",
+          "crecimiento-y-desarrollo-infantil"
+        ]
       },
       {
         "message": "glucemia elevada en ayunas",
@@ -2596,7 +2876,10 @@
         "patient": {
           "edad": 1
         },
-        "expected": "infeccion-urinaria-pediatrica"
+        "expected": [
+          "infeccion-urinaria-pediatrica",
+          "fiebre-sin-foco-lactante"
+        ]
       },
       {
         "message": "mordedura de perro en la mano",
@@ -2981,6 +3264,140 @@
           "sexo": "M"
         },
         "expected": "mordeduras-y-profilaxis-de-rabia"
+      },
+      {
+        "message": "¿qué dosis de albendazol le doy en la desparasitación de la ruta?",
+        "patient": {
+          "edad": 1,
+          "sexo": "F"
+        },
+        "expected": [
+          "crecimiento-y-desarrollo-infantil",
+          "parasitosis-intestinal"
+        ]
+      },
+      {
+        "message": "¿le toca vitamina A y cada cuánto?",
+        "patient": {
+          "edad": 3,
+          "sexo": "M"
+        },
+        "expected": "crecimiento-y-desarrollo-infantil"
+      },
+      {
+        "message": "Gestante de 32 semanas con diabetes gestacional en insulina, ¿desde cuándo hago monitoría fetal y cuándo programo el parto?",
+        "patient": {
+          "edad": 34,
+          "sexo": "F"
+        },
+        "expected": "diabetes-gestacional"
+      },
+      {
+        "message": "Gestante de 24 semanas con sarna, ¿le puedo dar ivermectina?",
+        "patient": {
+          "edad": 27,
+          "sexo": "F"
+        },
+        "expected": "escabiosis-y-pediculosis"
+      },
+      {
+        "message": "Paciente de hogar geriátrico con costras gruesas en manos y pies y varios casos de rasquiña en el hogar, ¿cómo lo manejo?",
+        "patient": {
+          "edad": 82,
+          "sexo": "M"
+        },
+        "expected": "escabiosis-y-pediculosis"
+      },
+      {
+        "message": "Bebé de 5 semanas con lesiones en palmas y plantas y la mamá con escabiosis, ¿se le puede poner permetrina?",
+        "patient": {
+          "edad": 0,
+          "sexo": "F"
+        },
+        "expected": "escabiosis-y-pediculosis"
+      },
+      {
+        "message": "recien nacido de 5 dias perdio peso con lactancia exclusiva, cuanto es normal?",
+        "patient": {
+          "edad": 0,
+          "sexo": "F"
+        },
+        "expected": "lactancia-materna"
+      },
+      {
+        "message": "puerpera que vuelve a trabajar, cuanto dura la licencia y cuanto tiempo de lactancia le dan en el trabajo?",
+        "patient": {
+          "edad": 29,
+          "sexo": "F"
+        },
+        "expected": "lactancia-materna"
+      },
+      {
+        "message": "madre lactante con dolor dental, puedo darle tramadol o codeina?",
+        "patient": {
+          "edad": 33,
+          "sexo": "F"
+        },
+        "expected": "lactancia-materna"
+      },
+      {
+        "message": "embarazada de 20 semanas con anemia y huevos de uncinaria en el coprológico, le puedo dar albendazol?",
+        "patient": {
+          "edad": 24,
+          "sexo": "F"
+        },
+        "expected": "parasitosis-intestinal"
+      },
+      {
+        "message": "va a empezar prednisona por mucho tiempo y vivió en zona rural del Chocó, hay que darle algo antiparasitario antes?",
+        "patient": {
+          "edad": 70,
+          "sexo": "M"
+        },
+        "expected": "parasitosis-intestinal"
+      },
+      {
+        "message": "Niña de 13 años con embarazo de 9 semanas que pide interrumpirlo, ¿qué debo hacer?",
+        "patient": {
+          "edad": 13,
+          "sexo": "F"
+        },
+        "expected": "sangrado-primer-trimestre"
+      },
+      {
+        "message": "Gestante Rh negativo de 8 semanas con aborto incompleto, ¿necesita inmunoglobulina anti-D?",
+        "patient": {
+          "edad": 29,
+          "sexo": "F"
+        },
+        "expected": "sangrado-primer-trimestre"
+      },
+      {
+        "message": "qué vacunas debe tener un paciente de 70 años con EPOC",
+        "patient": {
+          "edad": 70,
+          "sexo": "M"
+        },
+        "expected": [
+          "vacunacion-pai-y-adulto",
+          "epoc"
+        ]
+      },
+      {
+        "message": "vacunas pendientes en adolescente de 15 años que nunca recibió VPH",
+        "patient": {
+          "edad": 15,
+          "sexo": "M"
+        },
+        "expected": "vacunacion-pai-y-adulto"
+      },
+      {
+        "message": "vacunas recomendadas en el embarazo",
+        "patient": {
+          "edad": 27,
+          "sexo": "F"
+        },
+        "expected": "vacunacion-pai-y-adulto"
       }
     ]
   },

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source_hash": "6ccef47620f1c1756547b03c905b5cef704c6b3e25759fad44b05817a7dd8deb",
+  "source_hash": "488ecdb1fe29486d26b1c89b973148014fce630ab7dda31001a4900e309fd119",
   "guidelines": [
     {
       "id": "accidente-ofidico",
@@ -1119,6 +1119,88 @@
       ]
     },
     {
+      "id": "crecimiento-y-desarrollo-infantil",
+      "titulo": "Crecimiento y desarrollo infantil: patrones OMS, consultas de primera infancia, EAD-3 y suplementación (Colombia)",
+      "organismo": "MinSalud Colombia · OMS · OPS",
+      "anio": 2018,
+      "fuente": "MinSalud Colombia. Resolución 2465 de 2016, por la cual se adoptan los indicadores antropométricos, patrones de referencia y puntos de corte para la clasificación antropométrica del estado nutricional de niñas, niños y adolescentes menores de 18 años, adultos de 18 a 64 años y gestantes adultas; MinSalud Colombia. Resolución 3280 de 2018, lineamientos técnicos y operativos de la Ruta Integral de Atención para la Promoción y Mantenimiento de la Salud; MinSalud Colombia. Resolución 276 de 2019, que modifica la Resolución 3280 de 2018; MinSalud Colombia. Escala Abreviada de Desarrollo-3 (EAD-3), manual técnico; MinSalud Colombia · OPS. Cuadro de procedimientos AIEPI (Atención Integrada a las Enfermedades Prevalentes de la Infancia); OMS. Patrones de crecimiento infantil (2006-2007); OMS. Guideline: daily iron supplementation in infants and children (2016); OMS. Guideline: preventive chemotherapy to control soil-transmitted helminth infections in at-risk population groups (2017); OMS. Vitamin A supplementation in infants and children 6-59 months of age (eLENA)",
+      "especialidades": [
+        "pediatria",
+        "medicina_general",
+        "medicina_familiar",
+        "enfermeria",
+        "nutricion"
+      ],
+      "cie10": [
+        "Z00.1",
+        "R62.0",
+        "R62.8",
+        "E34.3",
+        "Q02",
+        "F80.9",
+        "F82",
+        "F88",
+        "F89",
+        "E44.1",
+        "E66.9",
+        "B82.0"
+      ],
+      "palabras_clave": [
+        "crecimiento y desarrollo",
+        "control de nino sano",
+        "consulta de primera infancia",
+        "valoracion integral",
+        "curvas de crecimiento OMS",
+        "Resolucion 2465",
+        "Resolucion 3280",
+        "puntaje Z",
+        "peso para la talla",
+        "talla baja",
+        "retraso en talla",
+        "perimetro cefalico",
+        "IMC para la edad",
+        "EAD-3",
+        "escala abreviada de desarrollo",
+        "signos de alarma del desarrollo",
+        "retraso del desarrollo",
+        "micronutrientes en polvo",
+        "vitamina A",
+        "desparasitacion albendazol"
+      ],
+      "poblacion": [
+        "pediatria"
+      ],
+      "fecha_revision": "2026-10-09",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; los puntos de corte completos están en el anexo técnico de la Resolución 2465 de 2016, el cuadro de primera infancia de la Resolución 3280 fue modificado por la Resolución 276 de 2019 y la EAD-3 se califica solo con su manual técnico oficial.",
+      "secciones": [
+        {
+          "titulo": "Patrones de crecimiento OMS e indicadores antropométricos (Resolución 2465 de 2016)",
+          "texto": "MinSalud 2016: la Resolución 2465 adopta los indicadores antropométricos, los patrones de referencia y los puntos de corte para clasificar el estado nutricional de niñas, niños y adolescentes menores de 18 años, adultos de 18 a 64 años y gestantes adultas. Reemplaza la Resolución 2121 de 2010, que había adoptado los patrones de crecimiento infantil de la OMS publicados en 2006-2007, y conserva esos patrones como referencia. En menores de 5 años se usan cinco indicadores: peso para la longitud o talla (P/T), longitud o talla para la edad (T/E), perímetro cefálico para la edad (PC/E), índice de masa corporal para la edad (IMC/E) y peso para la edad (P/E). De 5 a 17 años se usan la talla para la edad y el IMC para la edad, el indicador más adecuado del estado nutricional después de los 5 años. Cada medida se expresa en puntaje Z (desviaciones estándar, DE, frente a la mediana del patrón OMS para sexo y edad) y se grafica en la curva. La interpretación es longitudinal: una curva que se aplana o cruza hacia abajo las líneas de puntaje Z entre controles exige buscar la causa aunque el valor aislado siga adecuado. Medir con báscula calibrada, infantómetro en el lactante, tallímetro en el niño mayor y cinta inextensible, según el anexo técnico. Según el glosario de la norma, hay desnutrición cuando el niño queda por debajo de −2 DE en peso para la edad, peso para la longitud o talla, longitud o talla para la edad o IMC para la edad."
+        },
+        {
+          "titulo": "Puntos de corte y clasificación del estado nutricional",
+          "texto": "Resolución 2465 de 2016, menores de 5 años. Peso para la longitud o talla: mayor de +3 DE, obesidad; mayor de +2 hasta +3 DE, sobrepeso; mayor de +1 hasta +2 DE, riesgo de sobrepeso; de −1 a +1 DE, peso adecuado para la talla; desde −2 hasta menos de −1 DE, riesgo de desnutrición aguda; menor de −2 hasta −3 DE, desnutrición aguda moderada; menor de −3 DE, desnutrición aguda severa. Talla para la edad: −1 DE o más, talla adecuada para la edad; desde −2 hasta menos de −1 DE, riesgo de talla baja; menor de −2 DE, talla baja para la edad o retraso en talla, que expresa un déficit acumulado (desnutrición crónica). Perímetro cefálico para la edad: entre −2 y +2 DE, normal; menor de −2 DE o mayor de +2 DE, factor de riesgo para el neurodesarrollo. El peso para la edad identifica la desnutrición global (por debajo de −2 DE), pero no distingue déficit agudo de crónico y se interpreta junto con P/T y T/E. En el menor de 5 años la desnutrición aguda se clasifica con el peso para la talla y el IMC para la edad complementa la detección del exceso de peso. De 5 a 17 años, la talla para la edad conserva sus tres categorías y el IMC para la edad clasifica en delgadez, riesgo de delgadez, IMC adecuado, sobrepeso y obesidad, con los puntos de corte del anexo técnico. La desnutrición aguda moderada y severa en menores de 5 años se maneja según la guía de desnutrición aguda del corpus y es de notificación obligatoria al Sivigila."
+        },
+        {
+          "titulo": "Periodicidad de la valoración integral en primera infancia (Resolución 3280 de 2018)",
+          "texto": "MinSalud 2018: la Resolución 3280 adopta la Ruta Integral de Atención para la Promoción y Mantenimiento de la Salud, que define las intervenciones individuales por momento de curso de vida. En primera infancia la atención en salud alterna profesionales. Por medicina general, pediatría o medicina familiar: al mes, a los 4-5 meses, a los 12-18 meses, a los 24-29 meses, a los 3 años y a los 5 años. Por enfermería: a los 2-3 meses, 6-8 meses, 9-11 meses, 18-23 meses, 30-35 meses y a los 4 años. La Resolución 276 de 2019 modificó el cuadro de primera infancia de la ruta: contrastar el cronograma con la versión vigente. La promoción de la lactancia materna (enfermería, medicina o nutrición) se programa desde el primer mes y se repite según hallazgos. Cada consulta incluye antecedentes perinatales y familiares, alimentación, examen físico, antropometría graficada y clasificada según la Resolución 2465, desarrollo con la EAD-3, esquema del PAI, salud visual y demás tamizajes previstos, remisión a salud bucal, riesgos psicosociales y de violencia, y educación en crianza y prevención de accidentes; desde ella se ordenan suplementación, fortificación casera y desparasitación. Estudios colombianos muestran que no siempre se aplican todos los instrumentos: verificar que la antropometría y la EAD-3 queden registradas en cada control."
+        },
+        {
+          "titulo": "Desarrollo: Escala Abreviada de Desarrollo (EAD-3) y signos de alerta",
+          "texto": "MinSalud: la EAD-3 es la herramienta oficial para tamizar alteraciones del desarrollo infantil en Colombia y es de aplicación obligatoria en la consulta de valoración de la primera infancia. Evalúa cuatro dimensiones: motricidad gruesa, motricidad fino-adaptativa, audición y lenguaje, y personal-social. El puntaje típico de cada dimensión se cruza en la hoja de registro con el rango de edad para asignar un color: verde, desarrollo esperado para la edad; amarillo, riesgo de problemas en el desarrollo; rojo, sospecha o probable alteración. Un resultado amarillo o rojo en cualquier dimensión obliga a remitir a pediatría para una valoración a profundidad y, según el caso, a repetir la escala. Es tamizaje, no diagnóstico: en estudios colombianos frente al inventario Battelle tiene buena sensibilidad y especificidad limitada, así que un resultado anormal se confirma con evaluación especializada. AIEPI clasifica el desarrollo en cuatro categorías: desarrollo normal, desarrollo normal con factores de riesgo, riesgo de problema de desarrollo y probable retraso del desarrollo. Signos de alarma aun con escala normal: perímetro cefálico menor de −2 DE o mayor de +2 DE para la edad; presencia de 3 o más alteraciones fenotípicas (AIEPI); pérdida de habilidades previamente adquiridas de lenguaje, interacción social o motricidad a cualquier edad; ausencia de balbuceo al cumplir el primer año; no usar frases de dos palabras a los 24 meses; anomalías del lenguaje como el mutismo; y preocupación persistente de los cuidadores. La regresión y las alteraciones de la comunicación social activan el protocolo de MinSalud para el diagnóstico del trastorno del espectro autista."
+        },
+        {
+          "titulo": "Lactancia, hierro, micronutrientes, vitamina A y desparasitación",
+          "texto": "OMS, acogida por MinSalud: lactancia materna exclusiva durante 6 meses, luego alimentos complementarios apropiados y seguros, y lactancia hasta los 2 años o más. Hierro, Resolución 3280 de 2018: suplementar 1 mg/kg/día de hierro desde el nacimiento hasta que se inicie una alimentación complementaria adecuada en hijos de madres con bajo peso para la edad gestacional o delgadez durante la lactancia; no se recomienda en recién nacidos a término alimentados con fórmula desde el nacimiento. La ruta incluye además la fortificación casera con micronutrientes en polvo en lactantes y niños pequeños. OMS 2016: donde la prevalencia de anemia en niños de 6 a 23 meses es de 40 % o más, hierro elemental 10-12,5 mg al día durante 3 meses consecutivos al año, con control de la malaria en zonas endémicas, y micronutrientes en polvo de 6 a 23 meses donde la anemia es problema de salud pública. Vitamina A, OMS: 100 000 UI de 6 a 11 meses y 200 000 UI de 12 a 59 meses cada 4 a 6 meses, por vía oral, donde la deficiencia es problema de salud pública; protocolos colombianos derivados de la ruta indican 200 000 UI en dosis única dos veces al año en preescolares, junto con la desparasitación. Desparasitación, Resolución 3280: de 12 a 23 meses, albendazol 200 mg por vía oral en dosis única dos veces al año; desde los 24 meses, según protocolos derivados de la ruta, albendazol 400 mg en dosis única dos veces al año. OMS 2017: quimioterapia preventiva con albendazol 400 mg o mebendazol 500 mg en dosis única anual donde la prevalencia de geohelmintiasis en niños es de 20 % o más, y semestral si supera el 50 %, con media dosis de albendazol (200 mg) en menores de 24 meses."
+        },
+        {
+          "titulo": "Cuándo remitir o activar otras rutas",
+          "texto": "Peso para la talla menor de −2 DE, edema bilateral de origen nutricional o perímetro braquial bajo: activar la ruta de atención de la desnutrición aguda (Resolución 2350 de 2020 y sus modificaciones), con prueba de apetito, decisión de manejo en el hogar u hospitalario y notificación al Sivigila. Riesgo de desnutrición aguda o de talla baja: consejería alimentaria, búsqueda de causas (infecciones recurrentes, parasitosis, inseguridad alimentaria, problemas de lactancia) y control más cercano. Talla baja o desaceleración de la curva de talla: pediatría, para estudio de causas familiares, sistémicas y endocrinas. Perímetro cefálico fuera de −2 a +2 DE o con crecimiento acelerado o detenido: pediatría y, según hallazgos, neuropediatría e imágenes. EAD-3 en amarillo o rojo, probable retraso según AIEPI o pérdida de habilidades: pediatría y evaluación del desarrollo, con prioridad ante regresión o sospecha de autismo, sin aplazar la estimulación. Sobrepeso u obesidad: intervención familiar en alimentación y actividad física, y pediatría o nutrición si persiste o hay comorbilidad. Signos generales de peligro de AIEPI (no puede beber ni tomar el pecho, vomita todo, convulsiones, letargia): urgencias. Maltrato o negligencia: activar la ruta de atención a víctimas de violencia."
+        }
+      ]
+    },
+    {
       "id": "crisis-hiperglucemicas-e-hipoglucemia",
       "titulo": "Cetoacidosis diabética, estado hiperosmolar hiperglucémico e hipoglucemia",
       "organismo": "ADA · EASD · JBDS · AACE · DTS · ISPAD",
@@ -1484,6 +1566,83 @@
         {
           "titulo": "Rehabilitación con F-100 o FTLC, egreso, seguimiento y notificación al INS",
           "texto": "Transición y rehabilitación: cuando vuelve el apetito y el edema disminuye, pasar de F-75 a F-100 (100 kcal/100 mL) o a FTLC, aumentando la cantidad de forma progresiva según tolerancia. La Resolución 115 de 2026 hace obligatorio el uso de F-100 en el tratamiento intrahospitalario y ambulatorio, y exige a las EPS garantizar la disponibilidad de F-75, F-100 y FTLC en su red. En el hogar, la FTLC se dosifica por peso según la tabla del lineamiento, junto con la lactancia materna y la alimentación complementaria, y no debe compartirse con otros miembros de la familia. Seguimiento ambulatorio periódico: peso, perímetro braquial, edema, apetito, adherencia, enfermedades intercurrentes y entrega de FTLC, con búsqueda activa del niño que no asiste. Falla del tratamiento (no recupera el apetito, pierde o estanca el peso, aparece o persiste el edema, surgen complicaciones): remitir para manejo hospitalario. Egreso: la Resolución 2350 de 2020 lo definía con puntaje Z de peso para la talla de −2 DE o más; la Resolución 115 de 2026 lo consideró insuficiente y prolonga el tratamiento hasta un peso adecuado para la talla o longitud (puntaje Z de −1 DE o más, según el anexo técnico), con estabilidad clínica y resolución de las enfermedades asociadas. Completar vacunación, desparasitación y suplementación según el lineamiento, educar al cuidador y articular con los programas sociales del ICBF. La OMS (2023) indica que en la emaciación moderada se priorice la consejería y los alimentos nutritivos disponibles en el hogar, reservando los alimentos especialmente formulados para los niños de mayor riesgo. Notificación: la desnutrición aguda moderada y severa en menores de 5 años es un evento de notificación obligatoria al Sivigila (INS, evento 113); las muertes por desnutrición o asociadas a ella también se notifican y se analizan."
+        }
+      ]
+    },
+    {
+      "id": "diabetes-gestacional",
+      "titulo": "Diabetes gestacional: tamizaje, diagnóstico, tratamiento y seguimiento posparto",
+      "organismo": "ADA · ACOG · IADPSG · NICE · MinSalud Colombia",
+      "anio": 2025,
+      "fuente": "American Diabetes Association. 15. Management of Diabetes in Pregnancy: Standards of Care in Diabetes—2025 (Diabetes Care 2025;48 Suppl 1:S306); American College of Obstetricians and Gynecologists. Practice Bulletin 190: Gestational Diabetes Mellitus (Obstet Gynecol 2018;131:e49); ACOG. Clinical Practice Update: Screening for Gestational and Pregestational Diabetes in Pregnancy and Postpartum (Obstet Gynecol 2024;144); ACOG. Committee Opinion 828: Indications for Outpatient Antenatal Fetal Surveillance (2021); ACOG. Committee Opinion 831: Medically Indicated Late-Preterm and Early-Term Deliveries (2021); ACOG. Practice Bulletin 173: Fetal Macrosomia (2016); International Association of Diabetes and Pregnancy Study Groups. Recommendations on the diagnosis and classification of hyperglycemia in pregnancy (Diabetes Care 2010;33:676); NICE. Diabetes in pregnancy: management from preconception to the postnatal period, NG3 (2015, actualizada 2020); Society for Maternal-Fetal Medicine. Statement: Pharmacological treatment of gestational diabetes (2018); Resolución 3280 de 2018, Ruta Integral de Atención en Salud para la Población Materno Perinatal, MinSalud Colombia",
+      "especialidades": [
+        "ginecologia_y_obstetricia",
+        "medicina_general",
+        "medicina_familiar",
+        "medicina_interna",
+        "endocrinologia",
+        "nutricion",
+        "neonatologia"
+      ],
+      "cie10": [
+        "O24.4",
+        "O24.9",
+        "O24.1",
+        "P70.0",
+        "P70.1"
+      ],
+      "palabras_clave": [
+        "diabetes gestacional",
+        "DMG",
+        "diabetes en el embarazo",
+        "azucar alta en el embarazo",
+        "glucosa alta en gestante",
+        "prueba de tolerancia oral a la glucosa",
+        "PTOG",
+        "curva de glucosa",
+        "curva de tolerancia",
+        "carga de 75 g",
+        "tamizaje de diabetes en el embarazo",
+        "IADPSG",
+        "criterios de diabetes gestacional",
+        "metas glucemicas en el embarazo",
+        "insulina en el embarazo",
+        "metformina en el embarazo",
+        "glucometrias",
+        "macrosomia fetal",
+        "PTOG posparto",
+        "Resolucion 3280"
+      ],
+      "poblacion": [
+        "gestantes"
+      ],
+      "fecha_revision": "2026-10-09",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; los umbrales diagnósticos cambian según la estrategia (uno o dos pasos) y el organismo, y la dosis de insulina se individualiza y titula con el automonitoreo.",
+      "secciones": [
+        {
+          "titulo": "Definición y diagnóstico: PTOG de 75 g a las 24–28 semanas",
+          "texto": "Diabetes gestacional (DMG): hiperglucemia diagnosticada en el segundo o tercer trimestre que no era claramente una diabetes manifiesta antes del embarazo. ADA 2025 e IADPSG 2010 (estrategia de un paso): en toda gestante sin diagnóstico previo de diabetes, prueba de tolerancia oral a la glucosa (PTOG) con 75 g entre las semanas 24 y 28, en la mañana y tras un ayuno nocturno de al menos 8 horas, con glucosa plasmática en ayunas, a la hora y a las 2 horas. Basta un solo valor alterado: ayunas ≥92 mg/dL (5,1 mmol/L), 1 hora ≥180 mg/dL (10,0 mmol/L) o 2 horas ≥153 mg/dL (8,5 mmol/L). Estrategia de dos pasos (la que prefiere ACOG 2018; ADA la acepta): carga de 50 g sin ayuno y, si la glucemia a la hora es ≥130, 135 o 140 mg/dL (según la institución), PTOG de 100 g de 3 horas; se diagnostica DMG con dos o más valores alterados, con los umbrales más usados de ayunas 95, 1 hora 180, 2 horas 155 y 3 horas 140 mg/dL. En un ensayo aleatorizado la estrategia de un paso diagnosticó el doble de casos que la de dos pasos, sin diferencias claras en complicaciones maternas y perinatales. NICE NG3 usa otros umbrales con la PTOG de 75 g: ayunas ≥5,6 mmol/L o 2 horas ≥7,8 mmol/L. La hemoglobina glicosilada no reemplaza la PTOG para diagnosticar DMG. Clasificación práctica (ACOG): DMG A1, controlada solo con nutrición y ejercicio, y DMG A2, que requiere medicamento; esta distinción orienta la vigilancia fetal y el momento del parto."
+        },
+        {
+          "titulo": "Tamizaje temprano en alto riesgo y Resolución 3280 de 2018",
+          "texto": "ADA 2025: tamizar antes de la semana 15 a las gestantes con factores de riesgo y considerar tamizar a todas en la primera consulta prenatal si no se hizo antes de la concepción, con los criterios diagnósticos habituales de diabetes fuera del embarazo; si se cumplen, se trata de diabetes manifiesta (pregestacional), no de DMG, y se maneja como tal. ADA describe además el metabolismo anormal temprano de la glucosa (glucemia en ayunas de 110–125 mg/dL o HbA1c de 5,9–6,4 % antes de la semana 15), que señala a gestantes con mayor riesgo de desenlaces adversos y de DMG posterior, en quienes el tratamiento temprano puede tener algún beneficio. Quien no tenga diabetes ni ese hallazgo temprano se tamiza de nuevo a las 24–28 semanas. ACOG 2024 (actualización de práctica) recomienda buscar diabetes pregestacional antes de la semana 24, idealmente al ingreso al control prenatal, en las gestantes con factores de riesgo, pero desaconseja buscar DMG de rutina antes de la semana 24 por falta de beneficio consistente del diagnóstico y tratamiento tempranos. Factores de riesgo habituales: sobrepeso u obesidad con otro factor, DMG previa, prediabetes, familiar de primer grado con diabetes, síndrome de ovario poliquístico, hipertensión, enfermedad cardiovascular y sedentarismo. Colombia, Resolución 3280 de 2018 (Ruta Integral de Atención Materno Perinatal, de obligatorio cumplimiento): glicemia al ingreso al control prenatal y PTOG con 75 g entre las semanas 24 y 28 de gestación; para interpretarla se usan los criterios IADPSG/ADA descritos arriba (confirmar en el anexo técnico vigente los puntos de corte adoptados). La gestante con DMG pasa a control de alto riesgo, con obstetricia y apoyo de nutrición, medicina interna o endocrinología según el caso."
+        },
+        {
+          "titulo": "Metas glucémicas, nutrición y actividad física",
+          "texto": "Automonitoreo de glucemia capilar en ayunas y después de las comidas. Metas ADA 2025 (las mismas que usa ACOG): ayunas <95 mg/dL y, después de comer, <140 mg/dL a la hora o <120 mg/dL a las 2 horas; HbA1c <6 % si se logra sin hipoglucemia significativa, solo como dato complementario porque en el embarazo cambia con lentitud y no sustituye el automonitoreo. NICE NG3: ayunas 5,3 mmol/L, 1 hora 7,8 mmol/L o 2 horas 6,4 mmol/L. La terapia nutricional es la base del tratamiento y la mayoría de gestantes con DMG se controla solo con medidas de estilo de vida. ADA: toda gestante con diabetes debe tener valoración por nutrición y un plan individualizado que asegure al día un mínimo de 175 g de carbohidratos, 71 g de proteína y 28 g de fibra, con preferencia por grasas mono y poliinsaturadas, limitación de grasas saturadas y sin grasas trans. Repartir los carbohidratos en comidas y refrigerios, preferir los de absorción lenta y evitar bebidas azucaradas y jugos; la restricción calórica intensa no se recomienda porque favorece la cetosis. Actividad física: si no hay contraindicación obstétrica, ejercicio aeróbico moderado la mayoría de los días, por ejemplo caminar después de las comidas, más ejercicios de fuerza; ayuda a bajar la glucemia posprandial. Ajustar el plan según las glucometrías y la ganancia de peso."
+        },
+        {
+          "titulo": "Tratamiento farmacológico: insulina primero y lugar de la metformina",
+          "texto": "Si las metas no se alcanzan con nutrición y actividad física (NICE: tras 1–2 semanas), se inicia medicamento. ADA 2025 y ACOG 2018: la insulina es el tratamiento farmacológico preferido porque no atraviesa la placenta en cantidad medible; la metformina y la glibenclamida (gliburida), solas o combinadas, no deben usarse como primera línea porque ambas atraviesan la placenta y faltan datos de seguridad a largo plazo en la descendencia. El esquema sigue el patrón de las glucometrías: hiperglucemia en ayunas, insulina NPH (o de acción prolongada) en la noche; hiperglucemia posprandial, insulina de acción rápida antes de las comidas afectadas; ambas, esquema basal-bolo. Revisiones clínicas usan como referencia para un esquema completo una dosis total inicial de 0,7–1,0 U/kg/día del peso actual, con titulación frecuente; los requerimientos aumentan a medida que avanza la gestación. Metformina: ACOG la considera una alternativa razonable cuando la gestante rechaza la insulina o no puede aplicarla con seguridad, previa asesoría sobre su paso placentario y la falta de datos a largo plazo. SMFM 2018 la acepta como alternativa de primera línea, reconociendo que cerca de la mitad de las mujeres que la reciben terminan necesitando insulina. NICE NG3 difiere: ofrece metformina como primer medicamento y añade insulina si no se logran las metas, e indica insulina desde el diagnóstico (con o sin metformina) si la glucosa en ayunas es ≥7,0 mmol/L. Enseñar la técnica de aplicación, el manejo de la hipoglucemia y el ajuste de dosis."
+        },
+        {
+          "titulo": "Vigilancia fetal, momento del parto y criterios de remisión",
+          "texto": "ACOG 2021 (vigilancia fetal ambulatoria): en la DMG que requiere medicamento o con mal control, iniciar pruebas de bienestar fetal a partir de las 32 semanas, una o dos veces por semana según el control y las complicaciones; en la DMG A1 bien controlada y sin otros factores de riesgo no se requiere vigilancia fetal de rutina. Ecografía de crecimiento y líquido amniótico según criterio obstétrico para detectar macrosomía o polihidramnios. Momento del parto (ACOG 2021): DMG A1 bien controlada, no antes de las 39 semanas, con manejo expectante hasta las 40 semanas y 6 días si hay vigilancia; DMG A2 bien controlada, entre las 39 semanas y las 39 semanas y 6 días; DMG mal controlada, individualizar el momento según el control y el estado fetal. NICE NG3: aconsejar el parto a más tardar a las 40 semanas y 6 días en la DMG sin complicaciones, y antes si las hay. La DMG no es por sí sola indicación de cesárea; ACOG (boletín de macrosomía 2016): con peso fetal estimado mayor de 4 500 g, el segundo periodo prolongado o la detención del descenso son indicación de cesárea. En el trabajo de parto, vigilar la glucemia materna y ajustar o suspender la insulina; el recién nacido necesita control precoz de glucemia por riesgo de hipoglucemia, alimentación temprana y lactancia materna. Remitir de urgencia ante disminución de movimientos fetales, hipoglucemia grave o repetida, vómito persistente o cetosis, glucemias muy altas pese al tratamiento o síntomas de preeclampsia. Toda DMG que necesite medicamento o no logre metas debe seguirse en obstetricia de alto riesgo."
+        },
+        {
+          "titulo": "Posparto: PTOG a las 4–12 semanas y seguimiento a largo plazo",
+          "texto": "Tras el parto la hiperglucemia suele resolverse: suspender la insulina o la metformina y verificar las glucemias antes del egreso. ADA 2025 y ACOG: PTOG de 75 g (con glucemia en ayunas y a las 2 horas) a las 4–12 semanas posparto, interpretada con los criterios de la población no gestante, para detectar diabetes persistente o prediabetes; ACOG acepta también la glucemia en ayunas, aunque la PTOG con valor en ayunas es más sensible. NICE NG3: glucemia en ayunas entre las 6 y 13 semanas posparto, o HbA1c a partir de las 13 semanas si no se hizo antes, y luego HbA1c anual. ADA: el antecedente de DMG aumenta el riesgo de diabetes tipo 2 durante toda la vida, por lo que el tamizaje debe continuar de por vida, cada 1–3 años si la prueba posparto es normal. Si hay prediabetes, ofrecer intervención intensiva en estilo de vida y considerar metformina: en el Programa de Prevención de Diabetes, en mujeres con antecedente de DMG, la metformina y el estilo de vida redujeron la progresión a diabetes en 40 % y 35 % a 10 años, respectivamente. Promover lactancia materna, control del peso y actividad física; ofrecer anticoncepción y planificar el siguiente embarazo con glucemia previa y tamizaje temprano, porque la DMG tiende a repetirse. Vigilar presión arterial y lípidos por el mayor riesgo cardiometabólico."
         }
       ]
     },
@@ -2215,6 +2374,87 @@
         {
           "titulo": "Seguimiento tras exacerbación y signos de alarma",
           "texto": "Control en 1–4 semanas tras el alta: revisar técnica inhalatoria, adherencia, necesidad de oxígeno, comorbilidades y plan de acción; control adicional a las 12–16 semanas con espirometría y síntomas. Rehabilitación pulmonar dentro de las 4 semanas siguientes al alta reduce reingresos. Signos de alarma que exigen atención inmediata: disnea en reposo que no cede con el rescate, cianosis, confusión o somnolencia, SpO2 <88 % con el oxígeno habitual, dolor torácico o hemoptisis, edema de miembros inferiores de aparición rápida. Vigilar comorbilidades frecuentes: enfermedad cardiovascular, osteoporosis, ansiedad y depresión, cáncer de pulmón (tamizaje anual con TAC de baja dosis en fumadores de 50–80 años con 20 paquetes-año que fuman o dejaron hace menos de 15 años)."
+        }
+      ]
+    },
+    {
+      "id": "escabiosis-y-pediculosis",
+      "titulo": "Escabiosis (sarna) y pediculosis (piojos): criterios IACS, permetrina, ivermectina, contactos y colegio",
+      "organismo": "CDC · IACS · OMS · IUSTI · AAP · MinSalud Colombia",
+      "anio": 2021,
+      "fuente": "CDC. Sexually Transmitted Infections Treatment Guidelines, 2021: Ectoparasitic Infections (MMWR Recomm Rep 2021;70(4)); CDC. Clinical Care of Scabies, Public Health Strategies for Scabies Outbreaks in Institutional Settings y Clinical Care of Head Lice (páginas vigentes para profesionales); International Alliance for the Control of Scabies. The 2020 IACS Consensus Criteria for the Diagnosis of Scabies (Br J Dermatol 2020;183:808); IUSTI. 2017 European guideline for the management of scabies (J Eur Acad Dermatol Venereol 2017;31:1248); American Academy of Pediatrics. Head Lice, clinical report (Pediatrics 2022;150(4):e2022059282); OMS. Nota descriptiva Escabiosis y consulta informal sobre un marco para el control de la escabiosis (Oficina Regional del Pacífico Occidental, 2019); NHS. Head lice and nits: wet combing; Ministerio de Salud y Protección Social de Colombia. Lineamiento de escabiosis, programa de enfermedades infecciosas desatendidas",
+      "especialidades": [
+        "medicina_general",
+        "medicina_familiar",
+        "pediatria",
+        "dermatologia",
+        "infectologia",
+        "geriatria",
+        "medicina_interna",
+        "ginecologia_y_obstetricia"
+      ],
+      "cie10": [
+        "B86",
+        "B85.0",
+        "B85.2",
+        "L01.1"
+      ],
+      "palabras_clave": [
+        "escabiosis",
+        "sarna",
+        "rasquiña",
+        "acaro",
+        "Sarcoptes scabiei",
+        "surco acarino",
+        "prurito nocturno",
+        "sarna costrosa",
+        "sarna noruega",
+        "criterios IACS",
+        "permetrina",
+        "ivermectina",
+        "prurito posescabiotico",
+        "pediculosis",
+        "piojos",
+        "liendres",
+        "pediculosis capitis",
+        "peinado en humedo",
+        "dimeticona",
+        "malation"
+      ],
+      "poblacion": [
+        "adultos",
+        "adultos_mayores",
+        "gestantes",
+        "pediatria",
+        "neonatos"
+      ],
+      "fecha_revision": "2026-10-09",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; la seguridad de la ivermectina oral no está establecida en niños de menos de 15 kg ni en gestantes, la sarna costrosa exige tratamiento combinado y supervisado, y el fracaso suele deberse a aplicación incompleta o a contactos no tratados.",
+      "secciones": [
+        {
+          "titulo": "Escabiosis: transmisión, clínica y criterios diagnósticos IACS 2020",
+          "texto": "Infestación por Sarcoptes scabiei var. hominis, transmitida sobre todo por contacto piel con piel prolongado (convivientes, pareja sexual, instituciones); los fómites pesan poco salvo en la sarna costrosa. CDC: en la primera infestación los síntomas aparecen a las 2 a 6 semanas y en una reinfestación en 1 a 4 días; se contagia antes de tener síntomas. Clínica: prurito intenso de predominio nocturno con pápulas, vesículas y surcos en espacios interdigitales, muñecas, codos, axilas, cintura, ombligo, glúteos, areolas y genitales (nódulos en pene y escroto). En lactantes se comprometen palmas, plantas, cuero cabelludo y cara. IACS 2020 define tres niveles. Nivel A, confirmada: ácaros, huevos o heces vistos en una muestra de piel por microscopía, con un dispositivo de imagen de alta resolución o con dermatoscopia. Nivel B, clínica: surcos; o lesiones típicas en genitales masculinos; o lesiones típicas con distribución típica más dos rasgos de la historia. Nivel C, sospechada: lesiones típicas con distribución típica y un rasgo de la historia, o lesiones o distribución atípicas con dos rasgos de la historia. Los rasgos de la historia son el prurito y el antecedente de contacto con alguien con prurito o lesiones similares. El diagnóstico exige considerar antes los diferenciales: dermatitis atópica o de contacto, picaduras de insectos, foliculitis y sífilis secundaria."
+        },
+        {
+          "titulo": "Sarna costrosa, complicaciones y criterios de remisión",
+          "texto": "La sarna costrosa (antes llamada noruega) es una forma hiperqueratósica con enorme carga de ácaros: placas descamativas y costras gruesas en manos, pies, codos, cuero cabelludo y uñas, a veces con poco prurito. Afecta a inmunosuprimidos (VIH, HTLV-1, trasplante, corticoides), adultos mayores institucionalizados y personas con discapacidad neurológica; es muy contagiosa, también por ropa y ropa de cama, origina brotes en hogares geriátricos y hospitales y se maneja con precauciones de contacto. CDC 2021: permetrina al 5 % (o benzoato de bencilo) en todo el cuerpo a diario por 7 días y luego dos veces por semana hasta la curación, más ivermectina oral 200 µg/kg los días 1, 2, 8, 9 y 15, con dosis adicionales los días 22 y 29 en casos graves. La página clínica actual de los CDC aclara que no hay consenso sobre la frecuencia óptima y propone 3, 5 o 7 dosis según la gravedad; no hay ensayos controlados. Se agregan queratolíticos y corte de uñas. Complicaciones de la escabiosis común: impetiginización por Staphylococcus aureus y estreptococo del grupo A, celulitis y abscesos; la OMS advierte que la infección secundaria puede llevar a septicemia, cardiopatía y enfermedad renal crónica (glomerulonefritis posestreptocócica). Remitir a dermatología o infectología: sarna costrosa, inmunosupresión, sobreinfección extensa o signos sistémicos (valorar hospitalización), duda diagnóstica y lesiones nuevas tras dos tratamientos correctos con contactos tratados."
+        },
+        {
+          "titulo": "Tratamiento de la escabiosis común: permetrina al 5 % e ivermectina oral",
+          "texto": "CDC 2021: permetrina al 5 % en crema en todo el cuerpo desde el cuello hacia abajo, incluidos pliegues, espacios interdigitales, debajo de las uñas y genitales, retirada con baño a las 8 a 14 horas. CDC: una aplicación puede bastar, pero pueden necesitarse dos o más separadas por cerca de una semana; IUSTI 2017: puede repetirse una vez a los 7 a 14 días. En lactantes y adultos mayores varias guías extienden la aplicación a cuero cabelludo y cara, evitando ojos y boca. Ivermectina oral (CDC): 200 µg/kg por dosis con alimentos, dos dosis separadas por 7 a 14 días, porque no mata los huevos; las guías de ITS de los CDC 2021 fijan la segunda dosis a los 14 días e IUSTI 2017 a los 7 días. CDC: permetrina e ivermectina tienen eficacia similar; se elige según preferencia por tratamiento tópico u oral, interacciones y costo. IUSTI 2017 incluye también benzoato de bencilo en loción del 10 al 25 % los días 1 y 2, repetido a los 7 días. Poblaciones especiales (CDC): la permetrina está aprobada desde los 2 meses de edad; en menores de 2 meses se usa azufre precipitado en vaselina (preparación magistral); la seguridad de la ivermectina en niños de menos de 15 kg no está establecida, por lo que los niños pequeños se tratan con permetrina. Gestación y lactancia (CDC 2021): la ivermectina probablemente implica bajo riesgo, pero por los datos limitados la permetrina es el tratamiento preferido. El lindano no debe usarse en menores de 10 años."
+        },
+        {
+          "titulo": "Contactos, entorno, prurito posescabiótico y brotes institucionales en Colombia",
+          "texto": "CDC: examinar y tratar a los contactos sexuales, convivientes y contactos cercanos del mes previo, al mismo tiempo que al caso y aunque no tengan síntomas; no tratarlos es causa frecuente de reinfestación. Entorno (CDC): lavar en agua caliente y secar con calor, o lavar en seco, la ropa, la ropa de cama y las toallas usadas en los 3 días previos al tratamiento; lo que no se pueda lavar va en bolsa plástica cerrada de varios días a una semana, porque el ácaro en general no sobrevive más de 2 a 3 días fuera de la piel; no es necesario fumigar. Prurito posescabiótico (CDC): puede persistir varias semanas tras un tratamiento exitoso y no indica fracaso; si dura más de 2 a 4 semanas o aparecen surcos o lesiones nuevas, puede requerirse nuevo tratamiento. Manejo: emolientes, antihistamínicos y corticoide tópico. Brotes: en instituciones se trata de forma simultánea a todos los casos y expuestos. OMS: donde la prevalencia comunitaria es alta, la estrategia con mejor evidencia es la administración masiva de ivermectina en dos dosis separadas por 7 a 14 días, con permetrina para quien no pueda recibirla; la recomendación informal es iniciarla con prevalencia de 10 % o más y suspenderla cuando baje de 2 %. Colombia: el lineamiento de escabiosis del Ministerio de Salud señala mayor afectación en menores de 15 años, adultos mayores, personas privadas de la libertad, habitantes de calle e inmunosuprimidos, con subregistro. Ante un brote en cárceles, batallones, hogares geriátricos o infantiles, informar a la secretaría de salud territorial para la investigación y el control según los lineamientos vigentes del INS."
+        },
+        {
+          "titulo": "Pediculosis de la cabeza: diagnóstico y tratamiento con permetrina al 1 % y alternativas",
+          "texto": "AAP 2022: el piojo se transmite casi siempre por contacto cabeza con cabeza; el contagio por peines o cascos es poco probable y el piojo no salta. La infestación activa se confirma al ver un piojo vivo; las liendres solas pueden ser restos de una infestación pasada. Tratamiento inicial (AAP): permetrina al 1 % en loción sobre el cabello húmedo, lavado con champú sin acondicionador y secado con toalla; se deja 10 minutos y se enjuaga, con segunda aplicación a los 7 a 10 días para matar las ninfas de los huevos no destruidos; los CDC sugieren repetir idealmente el día 9. CDC: aprobada desde los 2 meses. Hay resistencia a la permetrina de prevalencia desconocida: si persisten piojos vivos tras el tratamiento completo con su repetición, cambiar de producto. Alternativas (CDC): ivermectina tópica al 0,5 % en loción, desde los 6 meses, en una sola aplicación de 10 minutos sobre cabello seco y sin retirar liendres; malatión al 0,5 % en loción, desde los 6 años, que mata piojos y parte de los huevos, se repite si hay piojos vivos a los 7 a 9 días y es inflamable; alcohol bencílico al 5 %, desde los 6 meses, que no mata huevos y se repite a los 7 días. Dimeticona al 4 % (formularios del NHS y MSF): mecanismo físico, sin resistencia descrita; se aplica sobre cabello seco, se deja mínimo 8 horas o toda la noche y se repite a los 7 días; es inflamable mientras está en el cabello."
+        },
+        {
+          "titulo": "Pediculosis: peinado en húmedo, entorno, gestantes y colegio",
+          "texto": "Peinado en húmedo (NHS): lavar con champú corriente, aplicar abundante acondicionador y pasar un peine de detección desde la raíz hasta las puntas por toda la cabeza, dos veces; repetir los días 1, 5, 9 y 13 para atrapar a los piojos recién nacidos y revisar de nuevo el día 17. Es la opción sin medicamento para lactantes pequeños y para quien prefiera evitar pediculicidas; en gestantes y mujeres que amamantan los formularios del NHS proponen como primera línea el peinado en húmedo o la dimeticona. Revisar a todos los convivientes y tratar a quienes tengan piojos vivos. Entorno (CDC): el piojo sobrevive menos de 1 a 2 días fuera de la cabeza, así que basta lavar en agua caliente, a 130 °F (unos 54 °C), y secar con calor la ropa y la ropa de cama usadas en los 2 días previos al tratamiento; lo que no se pueda lavar se lava en seco o se guarda en bolsa plástica cerrada 2 semanas; peines y cepillos se sumergen en agua caliente de 5 a 10 minutos. No usar fumigantes. Colegio (AAP 2022): ningún niño sano debe ser excluido ni perder clases por piojos, y las políticas de cero liendres para volver al colegio deben abandonarse; el tamizaje masivo de salones no ha mostrado efecto y estigmatiza, por lo que se prefiere educar a las familias. Ante persistencia de piojos vivos tras dos aplicaciones correctas, descartar reinfestación por contactos no tratados antes de cambiar de producto. Consultar si hay sobreinfección del cuero cabelludo o si el niño es menor de 2 meses."
         }
       ]
     },
@@ -3601,6 +3841,90 @@
       ]
     },
     {
+      "id": "lactancia-materna",
+      "titulo": "Lactancia materna: exclusividad, agarre, mastitis, conservación de la leche y contraindicaciones",
+      "organismo": "OMS · UNICEF · AAP · ABM · CDC · MinSalud Colombia",
+      "anio": 2022,
+      "fuente": "OMS/UNICEF. Recomendaciones sobre lactancia materna y alimentación del lactante y del niño pequeño; American Academy of Pediatrics. Policy Statement: Breastfeeding and the Use of Human Milk (Pediatrics 2022;150:e2022057988); American Academy of Pediatrics. Prevention of Rickets and Vitamin D Deficiency in Infants, Children, and Adolescents (Pediatrics 2008;122:1142); Academy of Breastfeeding Medicine. Clinical Protocol #36: The Mastitis Spectrum (Breastfeed Med 2022;17:360); Academy of Breastfeeding Medicine. Clinical Protocol #8: Human Milk Storage Information for Home Use for Full-Term Infants, revised 2017 (Breastfeed Med 2017;12:390); Academy of Breastfeeding Medicine. Clinical Protocol #9: Use of Galactogogues in Initiating or Augmenting Maternal Milk Production, second revision 2018 (Breastfeed Med 2018;13:307); CDC. Proper Storage and Preparation of Breast Milk; CDC. Contraindications to Breastfeeding; FDA. Drug Safety Communication: restricción de codeína y tramadol en niños y mujeres lactantes (2017); MinSalud Colombia. Plan Decenal de Lactancia Materna y Alimentación Complementaria 2021-2030; MinSalud Colombia. Resolución 3280 de 2018 (Ruta materno perinatal); MinSalud Colombia. Circular 016 de 2012 (transmisión materno infantil del VIH); MinSalud/ACIN. Guía de práctica clínica para la atención de menores de 13 años con exposición o diagnóstico de VIH; Congreso de Colombia. Ley 1822 de 2017 y Ley 2306 de 2023 (licencia de maternidad y descanso por lactancia)",
+      "especialidades": [
+        "medicina_general",
+        "medicina_familiar",
+        "pediatria",
+        "neonatologia",
+        "ginecologia_y_obstetricia",
+        "infectologia",
+        "nutricion",
+        "medicina_del_trabajo"
+      ],
+      "cie10": [
+        "Z39.1",
+        "O91.1",
+        "O91.2",
+        "O92.1",
+        "O92.4",
+        "O92.5",
+        "P92.5"
+      ],
+      "palabras_clave": [
+        "lactancia materna",
+        "lactancia exclusiva",
+        "amamantar",
+        "dar pecho",
+        "dar seno",
+        "leche materna",
+        "agarre",
+        "grietas del pezon",
+        "ingurgitacion mamaria",
+        "mastitis",
+        "absceso mamario",
+        "baja produccion de leche",
+        "extraccion de leche",
+        "conservacion de leche materna",
+        "banco de leche",
+        "hora de lactancia",
+        "licencia de maternidad",
+        "VIH y lactancia",
+        "cabergolina",
+        "LactMed",
+        "medicamentos en lactancia"
+      ],
+      "poblacion": [
+        "gestantes",
+        "neonatos",
+        "pediatria",
+        "adultos"
+      ],
+      "fecha_revision": "2026-10-09",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; la compatibilidad de cada medicamento con la lactancia debe consultarse caso a caso en LactMed o e-lactancia, y las normas laborales colombianas citadas pueden cambiar.",
+      "secciones": [
+        {
+          "titulo": "Recomendación: inicio, exclusividad y duración",
+          "texto": "OMS/UNICEF: iniciar la lactancia en la primera hora después del nacimiento, con contacto piel a piel; lactancia materna exclusiva durante los primeros 6 meses, es decir, solo leche materna, sin otros líquidos ni sólidos, ni siquiera agua, salvo sales de rehidratación oral y gotas o jarabes de vitaminas, minerales o medicamentos; a libre demanda, de día y de noche, y sin biberones, teteros ni chupos durante la exclusividad. Desde los 6 meses, alimentación complementaria segura y adecuada mientras se continúa la lactancia hasta los 2 años o más. AAP 2022 coincide: lactancia exclusiva durante aproximadamente 6 meses y continuarla, junto con la alimentación complementaria introducida hacia los 6 meses, mientras madre e hijo lo deseen, hasta los 2 años o más. AAP 2008: suplementar con 400 UI diarias de vitamina D a los lactantes alimentados total o parcialmente con leche materna, desde los primeros días de vida. En Colombia, el Plan Decenal de Lactancia Materna y Alimentación Complementaria 2021-2030 orienta la protección, promoción y apoyo de la lactancia en los primeros mil días, y la Resolución 3280 de 2018 (ruta materno perinatal) incorpora la promoción y el apoyo de la lactancia en las atenciones del embarazo, el parto y el puerperio. La consejería empieza en el embarazo e incluye a la pareja y la familia."
+        },
+        {
+          "titulo": "Técnica, agarre y valoración de la ingesta",
+          "texto": "Posición: el bebé de frente a la madre, con oreja, hombro y cadera alineados, pegado a su cuerpo y con la nariz a la altura del pezón; se acerca el bebé al pecho, no el pecho al bebé. Signos de buen agarre: boca muy abierta, labios evertidos, mentón tocando el pecho, más areola visible por encima que por debajo de la boca, succiones lentas y profundas con deglución audible y ausencia de dolor persistente durante la toma. El dolor que dura toda la toma o las grietas casi siempre indican un mal agarre, y obligan a revisar la posición y a buscar frenillo lingual corto. Protocolos hospitalarios (NHS y servicios de salud de Australia): ofrecer de 8 a 12 tomas en 24 horas en las primeras semanas; una pérdida de hasta el 10 % del peso al nacer en los primeros 3 a 4 días puede ser normal, y la mayoría de los bebés recupera el peso al nacer hacia las 2 semanas. Una pérdida mayor del 10 %, la ictericia acentuada, la orina escasa y oscura o la ausencia de deposiciones amarillas a finales de la primera semana, el bebé muy somnoliento que no pide, o no recuperar el peso al nacer, exigen observar una toma, pesar al bebé y decidir con pediatría si hace falta suplemento (preferiblemente leche de la propia madre extraída, luego leche humana donada o fórmula) sin abandonar la lactancia. ABM 2018: la percepción de leche insuficiente, real o no, es una de las causas más frecuentes de abandono; se aborda mejorando el agarre, la frecuencia de las tomas y el vaciamiento. La evidencia de calidad sobre galactogogos (domperidona, metoclopramida) es escasa: no son la primera medida."
+        },
+        {
+          "titulo": "Problemas frecuentes: grietas, ingurgitación y espectro de la mastitis",
+          "texto": "Grietas: corregir el agarre es el tratamiento principal; mantener la lactancia, empezar por el pecho menos doloroso, romper el vacío con un dedo antes de retirar al bebé y descartar sobreinfección o candidiasis si el dolor persiste pese a un buen agarre. Ingurgitación: tomas frecuentes y eficaces, frío local entre tomas, analgésico antiinflamatorio y extracción manual solo para ablandar la areola y facilitar el agarre. ABM 2022 (protocolo 36) reinterpreta la mastitis como un espectro inflamatorio que va de la ingurgitación y la hiperlactancia a la mastitis inflamatoria, la mastitis bacteriana, el flemón y el absceso. Recomienda amamantar a demanda sin aumentar la extracción para \"vaciar\" el pecho, evitar la hiperestimulación, el calor y el masaje profundo, aplicar frío y usar ibuprofeno o acetaminofén; propone además el drenaje linfático suave. El antibiótico se indica si se sospecha mastitis bacteriana: síntomas que no mejoran con las medidas de soporte o compromiso sistémico. Manual MSD: dicloxacilina 500 mg vía oral cada 6 horas durante 7 a 10 días (el protocolo ABM previo, de 2014, proponía 10 a 14 días); en alergia a la penicilina, cefalexina 500 mg cada 6 horas o clindamicina según la ficha técnica. Cultivo de leche si no hay respuesta, hay recurrencia o se sospecha estafilococo resistente. La lactancia continúa durante el tratamiento, también del lado afectado. Signos de alarma: masa fluctuante o dolorosa que persiste (pedir ecografía: el absceso se trata con aspiración o drenaje más antibiótico), fiebre que no cede, eritema que se extiende rápidamente o signos de sepsis, que obligan a remitir a urgencias o cirugía."
+        },
+        {
+          "titulo": "Extracción y conservación de la leche",
+          "texto": "La extracción puede ser manual o con extractor, previo lavado de manos y con recipientes limpios de vidrio o plástico apto para alimentos, con tapa y rotulados con la fecha. CDC, leche recién extraída: a temperatura ambiente de hasta 25 °C, hasta 4 horas; en la nevera a 4 °C o menos, hasta 4 días, guardada al fondo y no en la puerta; en el congelador a -18 °C o menos, idealmente dentro de 6 meses y aceptable hasta 12 meses. ABM 2017 también fija en 4 días el almacenamiento óptimo en nevera. Leche descongelada (CDC): de 1 a 2 horas a temperatura ambiente o hasta 24 horas en la nevera, contadas desde que quedó completamente descongelada; nunca volver a congelarla. Descongelar en la nevera la noche anterior o bajo el chorro de agua tibia; no calentar en microondas ni hervir. Sobrante de una toma: usarlo dentro de las 2 horas siguientes a que el bebé terminó y luego desecharlo. Ofrecer la leche extraída con taza, vaso o cuchara en los primeros meses ayuda a no interferir con el agarre. Para prematuros u hospitalizados aplican normas más estrictas de cada unidad neonatal o banco de leche humana."
+        },
+        {
+          "titulo": "Contraindicaciones verdaderas y VIH en Colombia",
+          "texto": "CDC: galactosemia clásica en el lactante; madre con VIH que no recibe tratamiento antirretroviral o no tiene supresión viral sostenida (criterio de Estados Unidos); infección materna por HTLV-1 o HTLV-2; enfermedad por virus del Ébola; uso de drogas ilícitas como opioides no prescritos, fenciclidina o cocaína (la madre estable en metadona o buprenorfina sí debe amamantar). Contraindicaciones temporales: brucelosis no tratada; tuberculosis activa no tratada, en la que se separa al bebé pero puede recibir leche extraída, y se reanuda el pecho tras al menos 2 semanas de tratamiento y cuando se documente que la madre ya no es contagiosa; lesiones de herpes simple en el pecho (amamantar del otro lado si las lesiones quedan cubiertas); radiofármacos y algunos medicamentos como la quimioterapia. No contraindican: hepatitis B (con vacuna e inmunoglobulina al recién nacido), hepatitis C (suspender del lado con pezón agrietado y sangrante hasta que sane), fiebre, resfriado, diarrea, mastitis ni la mayoría de las vacunas; MinSalud trata la vacuna de fiebre amarilla en la mujer lactante como una precaución que exige valorar el riesgo individual. VIH en Colombia: la conducta nacional es no dar leche materna y suministrar fórmula láctea de reemplazo al niño expuesto (Circular 016 de 2012); la guía de práctica clínica colombiana para menores de 13 años recomienda dar fórmula desde el nacimiento hasta los 12 meses y no dar leche materna aunque la madre reciba antirretrovirales o el niño reciba profilaxis. La OMS, en cambio, acepta la lactancia con la madre en tratamiento antirretroviral donde la alimentación de reemplazo no es segura. Para inhibir la lactancia, la ficha técnica de la cabergolina indica 1 mg en dosis única el primer día posparto; no usarla en hipertensión posparto o preeclampsia, psicosis posparto ni valvulopatía."
+        },
+        {
+          "titulo": "Medicamentos y regreso al trabajo",
+          "texto": "La gran mayoría de los medicamentos es compatible; antes de suspender la lactancia, consultar LactMed (NIH) o e-lactancia, que clasifican el riesgo de cada fármaco. Preferir fármacos de vida media corta, con experiencia de uso en lactantes y la menor dosis eficaz; el acetaminofén y el ibuprofeno son de elección para el dolor. FDA 2017: desaconseja la codeína y el tramadol en mujeres lactantes, porque las metabolizadoras ultrarrápidas por CYP2D6 producen niveles altos de morfina que pueden causar depresión respiratoria grave en el bebé; vigilar somnolencia excesiva, dificultad para respirar o para mamar. Alcohol: lo más seguro es no beber; si se bebe ocasionalmente, CDC propone amamantar 2 horas o más después de una bebida. Regreso al trabajo en Colombia: la Ley 1822 de 2017 fija la licencia de maternidad remunerada en 18 semanas; la Ley 2306 de 2023 mantiene 2 descansos remunerados de 30 minutos al día durante los primeros 6 meses y añade un descanso de 30 minutos al día desde los 6 meses hasta los 2 años, siempre que se mantenga la lactancia. El fuero de maternidad y lactancia prohíbe el despido sin autorización del Ministerio del Trabajo, y la Ley 1823 de 2017 creó las Salas Amigas de la Familia Lactante en el entorno laboral para extraer y conservar la leche. Planear con la madre antes del reintegro: practicar la extracción, crear una reserva congelada, que el cuidador ofrezca la leche en vaso y mantener las tomas directas en la noche y los días de descanso."
+        }
+      ]
+    },
+    {
       "id": "leishmaniasis",
       "titulo": "Leishmaniasis cutánea, mucosa y visceral: diagnóstico, antimoniato de meglumina y alternativas",
       "organismo": "MinSalud Colombia · INS · OPS",
@@ -4525,6 +4849,95 @@
       ]
     },
     {
+      "id": "parasitosis-intestinal",
+      "titulo": "Parasitosis intestinal: geohelmintos, protozoos, desparasitación y tratamiento por parásito",
+      "organismo": "OMS · CDC · MinSalud Colombia",
+      "anio": 2017,
+      "fuente": "World Health Organization. Guideline: preventive chemotherapy to control soil-transmitted helminth infections in at-risk population groups (Ginebra, 2017); CDC. Clinical Care of Soil-transmitted Helminths, Strongyloides, Pinworm y Blastocystosis; CDC DPDx. Amebiasis: treatment; Ministerio de Salud y Protección Social, Universidad de Antioquia. Encuesta Nacional de Parasitismo Intestinal en Población Escolar 2012-2014 (Medellín, 2015); Ministerio de Salud y Protección Social. Lineamiento de desparasitación antihelmíntica masiva en el marco de la estrategia Quimioterapia Preventiva Antihelmíntica (2013); Ministerio de Salud y Protección Social. Resolución 3280 de 2018, Rutas Integrales de Atención para la Promoción y Mantenimiento de la Salud (modificada por la Resolución 276 de 2019); BMJ Best Practice. Amoebiasis; Strongyloidiasis before immunosuppression (CMAJ 2022;194:E89); Cochrane. Drugs for treating giardiasis (CD007787)",
+      "especialidades": [
+        "medicina_general",
+        "medicina_familiar",
+        "pediatria",
+        "infectologia",
+        "gastroenterologia",
+        "ginecologia_y_obstetricia",
+        "medicina_interna"
+      ],
+      "cie10": [
+        "B77.9",
+        "B79",
+        "B76.9",
+        "B78.0",
+        "B78.7",
+        "B80",
+        "A07.1",
+        "A06.0",
+        "A06.1",
+        "A06.4",
+        "A06.9",
+        "A07.8",
+        "B81.4",
+        "B82.0",
+        "B82.9"
+      ],
+      "palabras_clave": [
+        "parasitosis intestinal",
+        "lombrices",
+        "desparasitacion",
+        "geohelmintos",
+        "ascaris",
+        "tricocefalo",
+        "uncinarias",
+        "strongyloides",
+        "oxiuros",
+        "giardia",
+        "amebiasis",
+        "blastocystis",
+        "coprologico seriado",
+        "cinta de Graham",
+        "albendazol",
+        "mebendazol",
+        "ivermectina",
+        "pirantel",
+        "metronidazol",
+        "tinidazol"
+      ],
+      "poblacion": [
+        "pediatria",
+        "adultos",
+        "gestantes"
+      ],
+      "fecha_revision": "2026-10-09",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; la desparasitación preventiva no trata Strongyloides ni protozoos, la ivermectina no se usa en gestantes ni tiene seguridad establecida en menores de 15 kg, y antes de corticoides o inmunosupresores hay que descartar o tratar Strongyloides.",
+      "secciones": [
+        {
+          "titulo": "Parásitos frecuentes en Colombia y cuadro clínico",
+          "texto": "La parasitosis intestinal incluye los helmintos transmitidos por el suelo o geohelmintos (Ascaris lumbricoides, Trichuris trichiura y las uncinarias Necator americanus y Ancylostoma duodenale), Strongyloides stercoralis, Enterobius vermicularis (oxiuros) y protozoos como Giardia intestinalis, Entamoeba histolytica y Blastocystis. Encuesta Nacional de Parasitismo Intestinal en Población Escolar 2012-2014 (MinSalud y Universidad de Antioquia), en niños de 7 a 10 años: prevalencia general de parasitismo intestinal del 81 %; Blastocystis fue el hallazgo más frecuente (60 %), seguido de Trichuris 18,4 %, complejo E. histolytica/E. dispar 17 %, Giardia 15,4 %, Ascaris 11,3 % y uncinarias 6,4 %. MinSalud considera de alto riesgo de geohelmintiasis las regiones Amazonía, Pacífica y Atlántica. La mayoría de las infecciones leves son asintomáticas; la carga parasitaria alta en niños se asocia con dolor abdominal, hiporexia, anemia, desnutrición y menor rendimiento escolar. Ascaris: tos y sibilancias con eosinofilia durante la migración pulmonar, expulsión de gusanos y, en infecciones masivas, obstrucción intestinal o migración a la vía biliar o pancreática. Trichuris: en infección intensa, colitis con disentería, tenesmo y prolapso rectal. Uncinarias: dermatitis en el sitio de penetración y anemia ferropénica por pérdida crónica de sangre. Strongyloides: dolor epigástrico, diarrea, urticaria y larva currens; persiste por años gracias a la autoinfección y puede diseminarse en el inmunosuprimido. Enterobius: prurito anal o vulvar nocturno, insomnio e irritabilidad. Giardia: diarrea acuosa o esteatorreica, distensión, flatulencia, malabsorción y pérdida de peso. E. histolytica: desde portador asintomático hasta colitis disentérica y absceso hepático. Blastocystis: su papel patógeno es controvertido."
+        },
+        {
+          "titulo": "Diagnóstico: coprológico seriado y pruebas dirigidas",
+          "texto": "El coprológico (examen directo en fresco, técnica de concentración y examen macroscópico) es la base del diagnóstico; la concentración es más sensible que el examen directo. Por la eliminación intermitente de huevos, quistes y larvas se recomienda el coprológico seriado: al menos 3 muestras recolectadas en días alternos, en frascos limpios y sin mezclar con orina; un único coprológico negativo no descarta la parasitosis. Enterobius rara vez aparece en heces: CDC recomienda la prueba de cinta adhesiva transparente (Graham) aplicada en la región perianal al despertar, antes del baño, durante 3 mañanas consecutivas. Strongyloides: las larvas se eliminan de forma intermitente y el coprológico convencional es poco sensible (pueden requerirse hasta 7 muestras), por lo que ante sospecha se solicitan técnicas específicas para larvas (cultivo en agar o Baermann) o serología, ambas menos sensibles en el inmunosuprimido. El microscopio no distingue E. histolytica (patógena) de E. dispar (comensal): el reporte «E. histolytica/dispar» en un paciente asintomático no equivale a amebiasis; la confirmación requiere antígeno en heces o PCR, y ante sospecha de absceso hepático se usan ecografía y serología. La eosinofilia orienta a helmintos con fase tisular (Strongyloides, uncinarias, Ascaris en migración); los protozoos intestinales no la producen. En diarrea con sangre, fiebre o compromiso del estado general, solicitar además coprocultivo y descartar causas bacterianas."
+        },
+        {
+          "titulo": "Desparasitación preventiva en niños, adolescentes y mujeres",
+          "texto": "OMS 2017: donde la prevalencia basal de cualquier geohelminto es del 20 % o más, administrar sin examen individual previo una dosis única de albendazol 400 mg o mebendazol 500 mg una vez al año, y dos veces al año si la prevalencia supera el 50 % (recomendación fuerte, certeza baja). Grupos objetivo: niños de 12 a 23 meses, preescolares y escolares; de 12 a 23 meses se usa media dosis de albendazol, 200 mg. La misma pauta se recomienda para adolescentes no gestantes de 10 a 19 años y mujeres no gestantes de 15 a 49 años. En gestantes, la OMS recomienda de forma condicional albendazol 400 mg o mebendazol 500 mg en dosis única después del primer trimestre, donde la prevalencia de uncinarias y Trichuris en gestantes sea del 20 % o más y la anemia sea un problema grave de salud pública (40 % o más de gestantes con anemia). Colombia: MinSalud adoptó la estrategia de quimioterapia preventiva antihelmíntica (lineamiento de desparasitación masiva de 2013), dirigida a niños, niñas y adolescentes de 1 a 14 años en municipios con riesgo moderado y alto de geohelmintiasis, con albendazol o mebendazol donados por la OPS y una meta mínima municipal de cobertura del 75 % de la población objeto. La Resolución 3280 de 2018 (Ruta de Promoción y Mantenimiento de la Salud, con el cuadro de primera infancia modificado por la Resolución 276 de 2019) contempla la desparasitación antihelmíntica en la atención de niños; verificar en el anexo técnico vigente las edades y la periodicidad. La desparasitación preventiva no reemplaza el agua segura, el saneamiento, el calzado ni el lavado de manos, que evitan la reinfección, y no basta para Strongyloides ni para los protozoos."
+        },
+        {
+          "titulo": "Tratamiento de helmintos: albendazol, mebendazol, pirantel e ivermectina",
+          "texto": "CDC, tratamiento individual en adultos y niños: Ascaris, albendazol 400 mg en dosis única o mebendazol 100 mg cada 12 horas por 3 días o 500 mg en dosis única. Uncinarias: albendazol 400 mg en dosis única, mebendazol con los mismos esquemas o pamoato de pirantel 11 mg/kg (máximo 1 g) al día por 3 días. Trichuris: albendazol 400 mg al día por 3 días, mebendazol 100 mg cada 12 horas por 3 días o ivermectina 200 µg/kg al día por 3 días. Strongyloides: ivermectina 200 µg/kg por vía oral durante 1 a 2 días es de primera línea; la alternativa es albendazol 400 mg cada 12 horas por 7 días; repetir el coprológico 2 a 4 semanas después para confirmar la curación. Hiperinfección o enfermedad diseminada: manejo hospitalario, suspender o reducir la inmunosupresión cuando sea posible e ivermectina 200 µg/kg al día hasta que las heces o el esputo sean negativos durante 2 semanas. Enterobius: mebendazol 100 mg, pamoato de pirantel 11 mg/kg (máximo 1 g) o albendazol 400 mg en dosis única, que se repite a las 2 semanas porque los fármacos no eliminan los huevos; si hay varios infectados en el hogar o infecciones sintomáticas repetidas, tratar a todos los convivientes al mismo tiempo, con uñas cortas, lavado de manos y lavado de ropa interior y de cama. Niños pequeños: de 12 a 23 meses, albendazol 200 mg (OMS 2017); en menores de 2 años, CDC pide sopesar riesgos y beneficios. La ficha técnica de la ivermectina no ha establecido su seguridad en menores de 15 kg."
+        },
+        {
+          "titulo": "Tratamiento de protozoos: giardiasis, amebiasis y Blastocystis",
+          "texto": "Giardiasis: metronidazol, tinidazol y nitazoxanida son los fármacos de elección; algunas infecciones se autolimitan y en general no se trata al portador asintomático. Tinidazol 2 g en dosis única (desde los 3 años; en niños 50 mg/kg, máximo 2 g) tiene la mejor evidencia y una sola toma. Metronidazol en adultos: habitualmente 250 mg cada 8 horas por 5 días (la revisión Cochrane describe esquemas de 5 a 10 días); en niños, dosis por kilogramo según formulario pediátrico. Nitazoxanida por 3 días: 100 mg cada 12 horas de 1 a 3 años, 200 mg cada 12 horas de 4 a 11 años y 500 mg cada 12 horas desde los 12 años. Amebiasis (CDC): la infección asintomática por E. histolytica confirmada se trata con un amebicida luminal (paromomicina o yodoquinol); la colitis amebiana y el absceso hepático se tratan con metronidazol o tinidazol seguidos de inmediato de un agente luminal para erradicar los quistes. Dosis en adultos (BMJ Best Practice): metronidazol 500 a 750 mg cada 8 horas por 7 a 10 días, o tinidazol 2 g una vez al día por 3 días (5 días si hay absceso hepático). La dosis del agente luminal y su disponibilidad en Colombia deben consultarse en la ficha técnica, porque las fuentes difieren. Blastocystis (CDC): su significado clínico es controvertido; considerar tratamiento solo con síntomas persistentes y tras descartar otras causas. Opciones: metronidazol (con falta de respuesta descrita en algunas zonas), trimetoprim-sulfametoxazol o nitazoxanida 500 mg cada 12 horas por 3 días en adultos. Con metronidazol y tinidazol, evitar el alcohol durante el tratamiento."
+        },
+        {
+          "titulo": "Gestantes, inmunosupresión, signos de alarma y remisión",
+          "texto": "Gestantes: CDC advierte que los datos de seguridad de albendazol, mebendazol e ivermectina en el embarazo son limitados; la OMS indica la desparasitación con albendazol o mebendazol después del primer trimestre, excluye a las gestantes de las campañas masivas con ivermectina y permite el pamoato de pirantel en el segundo y tercer trimestre en campañas masivas cuando el beneficio supera el riesgo. Enterobiasis en el embarazo (CDC): tratar solo si compromete la gestación y diferir el tratamiento hasta el tercer trimestre. Giardiasis sintomática en el segundo o tercer trimestre: el Departamento de Salud de Minnesota recomienda paromomicina. Inmunosupresión: Strongyloides puede producir hiperinfección y diseminación mortales con corticoides u otros inmunosupresores, infección por HTLV-1 o cánceres hematológicos. CMAJ 2022: estudiar Strongyloides en toda persona con riesgo epidemiológico antes de iniciar inmunosupresores y dar ivermectina empírica si la inmunosupresión no puede esperar el resultado. Signos de alarma que exigen hospitalización o remisión urgente: dolor abdominal con distensión, vómito o ausencia de deposiciones (obstrucción por Ascaris); ictericia o dolor en hipocondrio derecho (ascariasis biliar o absceso hepático amebiano); disentería con fiebre y compromiso del estado general; prolapso rectal; anemia grave; deshidratación o desnutrición aguda; y, en el inmunosuprimido, fiebre, dificultad respiratoria, sepsis por gramnegativos o meningitis (sospecha de hiperinfección). Remitir a especialista ante diarrea persistente sin causa clara, falla terapéutica repetida o sospecha de enfermedad invasiva."
+        }
+      ]
+    },
+    {
       "id": "paro-cardiorrespiratorio-rcp",
       "titulo": "Paro cardiorrespiratorio: RCP de alta calidad y soporte vital avanzado en adultos y niños (AHA 2025)",
       "organismo": "AHA · AAP · ERC",
@@ -4745,6 +5158,88 @@
         {
           "titulo": "Conjuntivitis alérgica: tratamiento y signos de alarma",
           "texto": "Cuadro: prurito ocular bilateral (síntoma cardinal), enrojecimiento, lagrimeo, secreción acuosa o mucosa, quemosis y edema palpebral, con frecuencia junto con rinitis (rinoconjuntivitis), estacional o perenne (en Colombia, sobre todo por ácaros). Manejo (AAO, ARIA): evitar frotarse los ojos, compresas frías y lágrimas artificiales sin conservantes para diluir y lavar alérgenos; primera línea, colirio antihistamínico con efecto estabilizador de mastocitos (olopatadina, ketotifeno, azelastina, epinastina), por ejemplo olopatadina al 0,1 % una gota cada 12 horas o al 0,2 % una gota al día. Los antihistamínicos orales y el corticoide intranasal también alivian los síntomas oculares, aunque los orales pueden resecar el ojo. Evitar el uso prolongado de vasoconstrictores tópicos (nafazolina, tetrahidrozolina) por efecto rebote. Los colirios de corticoide solo deben usarse en ciclos cortos y bajo control de oftalmología, por el riesgo de glaucoma, catarata e infección herpética. Signos de alarma para remitir a oftalmología: dolor ocular, fotofobia, disminución de la agudeza visual, ojo rojo unilateral, secreción purulenta, compromiso corneal, usuario de lentes de contacto o falta de respuesta. Sospechar queratoconjuntivitis vernal en niños, más en varones y en climas cálidos, con prurito intenso, fotofobia, papilas gigantes en el tarso superior o nódulos en el limbo; y queratoconjuntivitis atópica en adultos con dermatitis atópica: ambas pueden dañar la córnea y requieren manejo especializado."
+        }
+      ]
+    },
+    {
+      "id": "sangrado-primer-trimestre",
+      "titulo": "Sangrado en el primer trimestre: pérdida gestacional temprana, ectópico, mola e IVE",
+      "organismo": "ACOG · NICE · OMS · RCOG · MinSalud Colombia",
+      "anio": 2019,
+      "fuente": "ACOG. Practice Bulletin No. 200: Early Pregnancy Loss (Obstet Gynecol 2018;132:e197; actualización 2019); ACOG. Practice Bulletin No. 193: Tubal Ectopic Pregnancy (Obstet Gynecol 2018;131:e91); ACOG. Clinical Practice Update: Rh D Immune Globulin Administration After Abortion or Pregnancy Loss at Less Than 12 Weeks of Gestation (2024); NICE. NG126 Ectopic pregnancy and miscarriage: diagnosis and initial management (2019, actualizada 2021 y 2023); OMS. Abortion care guideline (2022); RCOG. Green-top Guideline No. 38: Management of Gestational Trophoblastic Disease (2020); MinSalud Colombia. Resolución 051 de 2023, atención integral en salud de la interrupción voluntaria del embarazo; Corte Constitucional de Colombia. Sentencias C-355 de 2006 y C-055 de 2022",
+      "especialidades": [
+        "ginecologia_y_obstetricia",
+        "urgencias",
+        "medicina_general",
+        "medicina_familiar"
+      ],
+      "cie10": [
+        "O20.0",
+        "O20.9",
+        "O03.4",
+        "O03.9",
+        "O03.0",
+        "O02.1",
+        "O02.0",
+        "O00.1",
+        "O00.9",
+        "O01.0",
+        "O01.1",
+        "O01.9",
+        "O04.9"
+      ],
+      "palabras_clave": [
+        "sangrado primer trimestre",
+        "sangrado en el embarazo",
+        "amenaza de aborto",
+        "aborto espontaneo",
+        "aborto incompleto",
+        "aborto retenido",
+        "perdida gestacional temprana",
+        "huevo anembrionado",
+        "embarazo ectopico",
+        "embarazo de localizacion desconocida",
+        "mola hidatiforme",
+        "enfermedad trofoblastica",
+        "beta hCG",
+        "ecografia transvaginal",
+        "misoprostol",
+        "mifepristona",
+        "metotrexato",
+        "AMEU",
+        "anti-D",
+        "IVE"
+      ],
+      "poblacion": [
+        "gestantes"
+      ],
+      "fecha_revision": "2026-10-09",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; descartar embarazo ectópico antes de cualquier tratamiento médico, confirmar la no viabilidad con criterios ecográficos estrictos y tratar a la gestante inestable como ectópico roto hasta demostrar lo contrario.",
+      "secciones": [
+        {
+          "titulo": "Evaluación inicial: diferencial, ecografía transvaginal, beta-hCG y Rh",
+          "texto": "Diferencial: amenaza de aborto, aborto en curso, incompleto o completo, pérdida gestacional temprana con restos retenidos (aborto retenido o gestación anembrionada), embarazo ectópico, enfermedad trofoblástica y causas cervicales o vaginales. ACOG 2018 define la pérdida gestacional temprana como un embarazo intrauterino no viable, con saco vacío o con embrión sin actividad cardiaca, dentro de las primeras 12 semanas y 6 días. Primero valorar estabilidad hemodinámica y dolor. En la paciente estable: especuloscopia, ecografía transvaginal, beta-hCG cuantitativa, hemoglobina y hemoclasificación con Rh. NICE 2019: con menos de 6 semanas, sangrado sin dolor y sin factores de riesgo de ectópico, conducta expectante y nueva prueba de embarazo en orina a los 7 a 10 días; con 6 semanas o más, o con dolor, valoración ecográfica temprana. Embarazo de localización desconocida (prueba positiva sin saco intrauterino ni masa anexial): NICE pide dos beta-hCG separadas lo más cerca posible de 48 horas; un aumento mayor del 63 % sugiere embarazo intrauterino en evolución, sin excluir ectópico, y se programa ecografía en 7 a 14 días (antes si la beta-hCG es de 1 500 UI/L o más); una caída mayor del 50 % sugiere que el embarazo no continuará y se repite la prueba en orina a los 14 días; los cambios intermedios exigen revaloración clínica en 24 horas. ACOG 2018 desaconseja diagnosticar ectópico solo con la beta-hCG; si se usa una zona discriminatoria, que sea conservadoramente alta (hasta 3 500 mUI/mL) para no interrumpir un embarazo intrauterino deseado."
+        },
+        {
+          "titulo": "Criterios ecográficos de pérdida gestacional y amenaza de aborto",
+          "texto": "Los criterios solo valen con ecografía transvaginal. ACOG 2018, que adopta los criterios de la Society of Radiologists in Ultrasound, considera diagnóstica de pérdida gestacional cualquiera de: longitud cráneo-caudal (LCC) de 7 mm o más sin latido; diámetro medio del saco de 25 mm o más sin embrión; ausencia de embrión con latido 2 semanas o más después de una ecografía con saco gestacional sin saco vitelino; o ausencia de embrión con latido 11 días o más después de una ecografía con saco y saco vitelino. Por debajo de estos umbrales los hallazgos solo son sospechosos y obligan a repetir la ecografía antes de tratar. NICE 2019 es más conservadora: con LCC menor de 7 mm sin latido, o saco menor de 25 mm sin polo fetal, repetir la ecografía al menos 7 días después; con LCC de 7 mm o más sin latido, o saco de 25 mm o más sin polo fetal, pedir segunda opinión, repetir la ecografía al menos 7 días después, o ambas; si la medición fue transabdominal, repetir al menos 14 días después. Amenaza de aborto: embarazo intrauterino con actividad cardiaca, sangrado y cuello cerrado. NICE (actualización 2021): a la mujer con sangrado, embarazo intrauterino confirmado y antecedente de un aborto, ofrecer progesterona micronizada vaginal 400 mg cada 12 horas, que se continúa hasta las 16 semanas cumplidas si se confirma el latido; es un uso por fuera de ficha técnica."
+        },
+        {
+          "titulo": "Pérdida gestacional temprana: manejo expectante, médico y aspiración",
+          "texto": "En la paciente estable y sin infección, las tres opciones son aceptables. Expectante: NICE 2019 lo propone como primera línea durante 7 a 14 días; si el sangrado y el dolor ceden, entregar una prueba de embarazo en orina para hacerse 3 semanas después y consultar si es positiva; si no inicia el sangrado o persiste o aumenta, repetir la ecografía. NICE sugiere otra opción si hay mayor riesgo de hemorragia (final del primer trimestre, coagulopatía), experiencia traumática previa o signos de infección. Médico, con restos retenidos (aborto retenido o anembrionado): ACOG 2018 recomienda misoprostol 800 µg vaginal, repetido si es necesario, y considerar mifepristona 200 mg oral 24 horas antes cuando esté disponible; NICE (actualización 2023), mifepristona 200 mg oral y 48 horas después misoprostol 800 µg vaginal, oral o sublingual; OMS 2022, en menos de 14 semanas, mifepristona 200 mg y al menos 24 horas después misoprostol 800 µg bucal, sublingual o vaginal, o misoprostol solo como alternativa. Aborto incompleto: NICE, misoprostol 600 µg en dosis única (se acepta 800 µg), sin mifepristona; OMS 2022, en menos de 14 semanas, misoprostol 600 µg oral o 400 µg sublingual. Quirúrgico: la OMS recomienda la aspiración endouterina, manual (AMEU) o eléctrica, en menos de 14 semanas y desaconseja el legrado cortante; es de urgencia ante hemorragia abundante, inestabilidad o aborto séptico (este con antibióticos intravenosos de amplio espectro y evacuación sin demora). ACOG 2018: dosis única preoperatoria de doxiciclina 200 mg oral."
+        },
+        {
+          "titulo": "Embarazo ectópico: manejo expectante, metotrexato o cirugía",
+          "texto": "Sospecharlo ante dolor pélvico y sangrado con beta-hCG positiva sin embarazo intrauterino, más aún con ectópico previo, cirugía o infección tubárica, DIU o reproducción asistida. Irritación peritoneal, dolor en el hombro, líquido libre abundante o inestabilidad indican rotura: reanimar y llevar a cirugía urgente. NICE 2019, paciente estable con ectópico tubárico no roto: manejo expectante si no hay dolor, la masa mide menos de 35 mm sin latido y la beta-hCG es de 1 000 UI/L o menos (considerarlo también entre 1 000 y menos de 1 500 UI/L), con beta-hCG los días 2, 4 y 7 y luego semanal si cae al menos un 15 %, hasta menos de 20 UI/L. Metotrexato de primera línea si no hay dolor significativo, masa menor de 35 mm sin latido, beta-hCG menor de 1 500 UI/L, ausencia de embarazo intrauterino y seguimiento posible; con beta-hCG de 1 500 a menos de 5 000 UI/L, ofrecer elegir entre metotrexato y cirugía; cirugía de primera línea con dolor significativo, masa de 35 mm o más, latido visible o beta-hCG de 5 000 UI/L o más. ACOG 2018 contraindica el metotrexato ante embarazo intrauterino, inestabilidad o rotura, lactancia, inmunodeficiencia, citopenias moderadas a graves, disfunción hepática o renal importante, enfermedad pulmonar o úlcera péptica activas, o imposibilidad de seguimiento; son contraindicaciones relativas la actividad cardiaca embrionaria, la beta-hCG inicial alta y la masa mayor de 4 cm. Protocolo de dosis única: metotrexato 50 mg/m² IM el día 1 y beta-hCG los días 4 y 7; si cae 15 % o más entre ambas, control semanal hasta niveles de no embarazo; si cae menos, segunda dosis. Antes: hemograma, función hepática y renal, y Rh. Cirugía, de preferencia laparoscópica: NICE ofrece salpingectomía, y salpingostomía cuando hay factores de riesgo de infertilidad como daño de la trompa contralateral, con seguimiento de beta-hCG."
+        },
+        {
+          "titulo": "Mola hidatiforme, inmunoglobulina anti-D y signos de alarma",
+          "texto": "Mola: sospechar ante útero mayor de lo esperado, hiperémesis, hipertiroidismo, preeclampsia temprana, beta-hCG desproporcionadamente alta o imagen ecográfica sugestiva; el diagnóstico es histológico. RCOG 2020: la evacuación por aspiración es el método de elección y se evita la evacuación médica en la mola completa. Seguimiento con beta-hCG seriada: en la mola completa, si se normaliza dentro de los 56 días, 6 meses desde la evacuación; si tarda más, 6 meses desde la normalización; en la parcial, hasta dos resultados normales separados al menos 4 semanas. La beta-hCG en meseta o en ascenso sugiere neoplasia trofoblástica y se remite a ginecología oncológica; evitar un nuevo embarazo hasta terminar el seguimiento. Anti-D: ACOG (actualización 2024) considera innecesario tipificar Rh y aplicar inmunoglobulina anti-D en el aborto espontáneo o inducido antes de las 12 semanas. NICE (actualización reciente): no ofrecerla en aborto ni ectópico hasta las 11 semanas y 6 días; desde las 12 semanas, al menos 250 UI (50 µg) a la mujer RhD negativa con manejo médico o quirúrgico. Consultar de inmediato ante sangrado abundante o con coágulos grandes, dolor abdominal intenso o en el hombro, mareo o desmayo, fiebre o flujo fétido. Hospitalizar o remitir a un nivel con ginecología y quirófano si hay inestabilidad hemodinámica, sospecha de ectópico roto, hemorragia persistente, aborto séptico o anemia sintomática. En Colombia, la morbilidad materna extrema y la mortalidad materna son de notificación obligatoria al Sivigila."
+        },
+        {
+          "titulo": "Colombia: interrupción voluntaria del embarazo (IVE)",
+          "texto": "La sentencia C-055 de 2022 de la Corte Constitucional despenalizó el aborto consentido hasta la semana 24 de gestación; después de esa semana sigue siendo legal cuando se configura alguna de las tres causales de la sentencia C-355 de 2006: riesgo para la vida o la salud física o mental de la gestante, malformación fetal incompatible con la vida extrauterina, o embarazo producto de violación, incesto o inseminación o transferencia de óvulo no consentidas. La Resolución 051 de 2023 de MinSalud adoptó una regulación única para la atención integral en salud de la IVE: el servicio se presta a partir de la manifestación de voluntad de la niña, adolescente, mujer o persona gestante y está exento de copagos y cuotas moderadoras. La objeción de conciencia es individual, se presenta por escrito e implica remitir a un profesional que preste el servicio. La niña menor de 14 años puede decidir de forma autónoma. Todo embarazo en menor de 14 años implica un delito sexual según el Código Penal (acceso carnal abusivo con menor de catorce años): además de ofrecer la IVE, activar la ruta de atención integral a víctimas de violencia sexual, notificar al Sivigila y dar aviso a las autoridades. Métodos (OMS 2022): antes de las 12 semanas, mifepristona 200 mg oral seguida 1 a 2 días después de misoprostol 800 µg bucal, sublingual o vaginal, con dosis adicionales si es necesario. Ofrecer anticoncepción en la misma atención. Verificar la vigencia de la norma."
         }
       ]
     },
@@ -5284,6 +5779,95 @@
         {
           "titulo": "TB y VIH, seguimiento, abandono y notificación",
           "texto": "Coinfección: a toda persona con tuberculosis ofrecer prueba de VIH y a toda persona con VIH buscar tuberculosis en cada visita. OMS: iniciar TAR dentro de las 2 semanas siguientes al comienzo del tratamiento antituberculoso, cualquiera sea el CD4; en meningitis tuberculosa, diferir el TAR al menos 4 semanas e iniciarlo dentro de las primeras 8. Con rifampicina, el dolutegravir se da 50 mg cada 12 h. Dar profilaxis con trimetoprim-sulfametoxazol a las personas con VIH y tuberculosis. Vigilar el síndrome inflamatorio de reconstitución inmune (empeoramiento paradójico tras iniciar TAR). Seguimiento: control clínico, adherencia, peso (ajustar dosis), efectos adversos y control bacteriológico según el programa; vincular a la familia y ofrecer apoyo social y nutricional. Resultados del tratamiento (OMS): curado, tratamiento terminado, fracaso, pérdida en el seguimiento (interrupción de 2 meses consecutivos o más) y fallecido. Ante interrupción, rastrear de inmediato al paciente y reevaluar con pruebas bacteriológicas y de sensibilidad antes de reiniciar. Remitir a segundo o tercer nivel: tuberculosis resistente, meníngea, miliar o grave, niños pequeños, coinfección con VIH complicada, hepatotoxicidad, falla del tratamiento y gestantes con complicaciones. Notificar todo caso al SIVIGILA, hacer la visita e investigación epidemiológica de campo con el estudio de contactos y registrar el caso en el programa de la entidad territorial."
+        }
+      ]
+    },
+    {
+      "id": "vacunacion-pai-y-adulto",
+      "titulo": "Vacunación: esquema PAI de Colombia, gestantes, adulto y esquemas atrasados",
+      "organismo": "MinSalud Colombia (PAI) · CDC/ACIP · OMS",
+      "anio": 2025,
+      "fuente": "Ministerio de Salud y Protección Social. Programa Ampliado de Inmunizaciones (PAI): esquema nacional de vacunación de Colombia (afiche 2026); MinSalud. Ajuste del esquema de vacunación ante casos de tosferina en niñas, niños y gestantes (infografía PAI 2025); MinSalud. Lineamientos técnicos para la aplicación de la vacuna hexavalente acelular (2025); MinSalud. Circular Externa 011 de 2025 (Tdap en gestantes); MinSalud. Circular Externa 027 de 2015 (esquema PAI de 12 meses, 18 meses y 5 años); MinSalud. Resolución 691 de 2025 y lineamientos de vacunación contra fiebre amarilla en emergencia sanitaria (2025); MinSalud. Lineamientos técnicos y operativos de vacunación contra influenza estacional (cepa sur 2025 y 2026); MinSalud. Alcance de los lineamientos operativos de vacunación contra el virus del papiloma humano (2024); CDC/ACIP. Adult Immunization Schedule, United States, 2025 (enmendado 2026); CDC. Use of Pneumococcal Conjugate Vaccines in Adults Aged 50 Years or Older: ACIP Recommendations (MMWR 2025;74(1)); CDC. Child and Adolescent Catch-up Immunization Schedule 2025; CDC/ACIP. General Best Practices for Immunization: Contraindications and Precautions; Immunization Action Coalition. Guide to Contraindications and Precautions to Commonly Used Vaccines",
+      "especialidades": [
+        "medicina_general",
+        "medicina_familiar",
+        "pediatria",
+        "ginecologia_y_obstetricia",
+        "medicina_interna",
+        "geriatria",
+        "infectologia",
+        "medicina_preventiva",
+        "enfermeria"
+      ],
+      "cie10": [
+        "Z23.2",
+        "Z24.3",
+        "Z24.6",
+        "Z25.1",
+        "Z27.3",
+        "Z27.4",
+        "Z27.8",
+        "Z28.0",
+        "Z28.8",
+        "T88.1"
+      ],
+      "palabras_clave": [
+        "vacunacion",
+        "vacunas",
+        "esquema de vacunacion",
+        "PAI",
+        "esquema PAI Colombia",
+        "carne de vacunas",
+        "pentavalente",
+        "hexavalente",
+        "triple viral",
+        "SRP",
+        "fiebre amarilla",
+        "VPH",
+        "Tdap",
+        "Td",
+        "influenza",
+        "neumococo",
+        "rotavirus",
+        "BCG",
+        "esquema atrasado",
+        "contraindicaciones de vacunas",
+        "vacunas adulto mayor"
+      ],
+      "poblacion": [
+        "neonatos",
+        "pediatria",
+        "gestantes",
+        "adultos",
+        "adultos_mayores"
+      ],
+      "fecha_revision": "2026-10-09",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; el esquema PAI cambia con frecuencia (ajuste por tosferina en 2025, emergencia por fiebre amarilla en 2025, ampliación de influenza en 2026): confirmar edades, intervalos y edades máximas en el lineamiento vigente del PAI antes de vacunar.",
+      "secciones": [
+        {
+          "titulo": "Esquema PAI del recién nacido y del primer año",
+          "texto": "MinSalud (esquema PAI, afiche 2026): al nacer se aplican BCG en dosis única y la primera dosis de hepatitis B, preferiblemente en las primeras 12 horas de vida y antes del egreso hospitalario. La BCG se aplica al recién nacido con peso mayor de 2 000 g y puede ponerse hasta los 11 meses y 29 días; en población indígena, rural dispersa o desplazada, hasta los 5 años. En el recién nacido con menos de 2 000 g la dosis de hepatitis B del nacimiento no se considera válida, sin conducta adicional, porque el esquema completa la protección con las dosis de pentavalente. Serie primaria habitual: pentavalente (difteria, tétanos, tosferina, Haemophilus influenzae tipo b y hepatitis B) y polio inactivada a los 2, 4 y 6 meses; rotavirus oral y neumococo conjugada a los 2 y 4 meses; influenza desde los 6 meses. Rotavirus (afiche MinSalud 2026): la primera dosis se aplica como máximo hasta los 3 meses y 21 días y la segunda hasta los 11 meses y 29 días; sin primera dosis no hay segunda. Hexavalente acelular (lineamiento MinSalud 2025): para niños nacidos desde el 1 de abril de 2025 con peso al nacer menor de 1 500 g, prematuros o a término, en tres dosis a los 2, 4 y 6 meses, con posibilidad de iniciar a las 6 semanas; reúne en una sola inyección los componentes de la pentavalente y la polio inactivada. Ajuste por tosferina (MinSalud, noviembre de 2025, ante el aumento de casos confirmados por el INS): la serie primaria de pentavalente, polio inactivada, rotavirus y neumococo inicia a las 6 semanas (1,5 meses) con intervalos de 6 semanas, es decir a los 3 y a los 4,5 meses, sin cambios en los refuerzos de 18 meses y 5 años; confirmar en el lineamiento vigente cuál calendario aplica."
+        },
+        {
+          "titulo": "Refuerzos de 12 meses a 5 años, escolares y adolescentes",
+          "texto": "A los 12 meses (Circular 027 de 2015, mantenido en esquemas posteriores): primera dosis de triple viral (sarampión, rubéola y paperas; SRP), primera dosis de varicela, refuerzo de neumococo conjugada y hepatitis A en dosis única; si coincide la influenza son cinco vacunas, y la circular permite aplicar primero triple viral, varicela y neumococo y completar influenza y hepatitis A lo antes posible. MinSalud: el refuerzo de triple viral se aplica a los 18 meses (antes era a los 5 años) y, ante la alerta de la OPS por sarampión importado, pide poner al día a todo niño de 2 a 5 años sin ese refuerzo. A los 18 meses: refuerzo de triple viral, primer refuerzo de DPT y de polio, y fiebre amarilla en dosis única, que confiere protección de por vida. A los 5 años: segundo refuerzo de DPT y de polio y refuerzo de varicela. Influenza: en abril de 2026 MinSalud amplió la vacunación gratuita a niños de 6 meses a 5 años (antes, de 6 a 23 meses); quien se vacuna por primera vez recibe dos dosis y luego una por temporada, con la cepa sur o la cepa norte según el lineamiento vigente. VPH: MinSalud usa dosis única para niñas y niños de 9 a 17 años; desde el 1 de octubre de 2024 se amplió a adolescentes de 15 a 17 años de ambos sexos, con meta de cobertura de 95 % o más. Los calendarios de aseguradoras o prensa pueden estar desactualizados: remitir al esquema vigente del PAI."
+        },
+        {
+          "titulo": "Gestantes y mujeres en edad fértil",
+          "texto": "Tdap (tosferina acelular): la Circular 011 de 2025 de MinSalud la indica a toda gestante desde la semana 26, o desde la semana 20 en zona rural dispersa; con el ajuste por tosferina de 2025, la infografía del PAI y los comunicados de MinSalud la adelantan a la semana 20 para todas las gestantes del país, para que los anticuerpos maternos pasen al recién nacido antes del parto. CDC/ACIP: una dosis en cada embarazo. Influenza (lineamiento MinSalud 2025): gestantes desde la semana 14, en cada temporada. Td: población objetivo, mujeres en edad fértil de 10 a 49 años (esquemas PAI 2023 y distrital 2025), con esquema de 5 dosis según el anexo del esquema PAI: Td1 al primer contacto, Td2 al mes, Td3 a los 6 meses de la segunda, Td4 al año de la tercera y Td5 al año de la cuarta, y luego refuerzo cada 10 años. En la gestante sin esquema documentado, iniciar o completar Td además de la Tdap según el lineamiento vigente. Las vacunas de virus vivos (triple viral, varicela) están contraindicadas durante el embarazo; la de fiebre amarilla solo se considera cuando el riesgo de exposición supera el de la vacuna, según el lineamiento de la emergencia sanitaria, que trae un apartado propio de embarazo y lactancia."
+        },
+        {
+          "titulo": "Vacunación del adulto y del adulto mayor",
+          "texto": "Colombia (lineamientos de influenza MinSalud 2025 y 2026): vacuna gratuita en cada temporada para adultos de 60 años o más, personas con enfermedades crónicas o de riesgo, gestantes y talento humano en salud. Fiebre amarilla: la Resolución 691 de 2025 declaró la emergencia sanitaria nacional; se vacuna desde los 9 meses a quien vive o viaja a zonas de riesgo, y los lineamientos para Bogotá y Cundinamarca priorizan de 9 meses a 59 años y, en personas de 60 años o más, solo a quienes viven o se desplazan a municipios de riesgo alto o muy alto, sin enfermedad debilitante ni inmunosupresión y previa valoración médica. Td: todo adulto debe tener esquema completo y refuerzo cada 10 años. Neumococo en el adulto: la oferta dentro del PAI es limitada y depende de lineamientos y asignaciones territoriales; confirmar con la secretaría de salud. CDC/ACIP como referencia internacional (esquema del adulto 2025, enmendado en 2026; las recomendaciones de EE. UU. han cambiado varias veces desde 2025, revisar la versión vigente): una dosis de Tdap y luego Td o Tdap cada 10 años; vacuna conjugada contra neumococo para todo adulto de 50 años o más (ACIP, octubre de 2024), con PCV20 o PCV21 en dosis única, o PCV15 seguida de polisacárida 23-valente, y en adultos más jóvenes con condiciones de riesgo; zóster recombinante en dos dosis, la segunda de 2 a 6 meses después de la primera, para todo inmunocompetente de 50 años o más; virus sincitial respiratorio en dosis única a los 75 años o más y entre los 50 y 74 años con riesgo aumentado; influenza anual."
+        },
+        {
+          "titulo": "Contraindicaciones verdaderas, precauciones y falsas contraindicaciones",
+          "texto": "CDC: contraindicación es la condición que aumenta el riesgo de una reacción adversa grave (no vacunar); precaución, la que podría aumentarlo o reducir la respuesta (sopesar el beneficio); la mayoría son temporales y se tamizan antes de cada dosis. Contraindicaciones verdaderas: anafilaxia a una dosis previa o a un componente de la vacuna (permanente para esa vacuna y las que contengan el componente); inmunodeficiencia grave, incluida la inmunodeficiencia combinada grave, y embarazo, para vacunas vivas atenuadas (BCG, rotavirus, triple viral, varicela, fiebre amarilla, polio oral); encefalopatía sin otra causa identificable (coma, disminución del estado de conciencia, convulsiones prolongadas) dentro de los 7 días siguientes a una dosis con componente de tosferina, que contraindica nuevas dosis de tosferina pero permite continuar con toxoides diftérico y tetánico; antecedente de invaginación intestinal, para rotavirus. Precaución para todas las vacunas: enfermedad aguda moderada o grave, con o sin fiebre; se aplaza hasta mejorar. Falsas contraindicaciones, que generan oportunidades perdidas: enfermedad leve (resfriado, tos, diarrea leve) con o sin fiebre baja; tratamiento antibiótico; convalecencia; prematurez (vacunar por edad cronológica, con las reglas de peso de BCG, hepatitis B y hexavalente); lactancia materna para la mayoría de las vacunas; desnutrición; antecedente familiar de convulsiones o de reacciones a vacunas; reacción local leve previa. Notificar al Sivigila del INS los eventos supuestamente atribuibles a vacunación o inmunización (ESAVI) graves, y valorar con pediatría, infectología o alergología al paciente con anafilaxia previa o inmunocompromiso antes de decidir."
+        },
+        {
+          "titulo": "Esquemas atrasados y oportunidades perdidas",
+          "texto": "CDC (esquema de puesta al día 2025): un esquema no se reinicia sin importar el tiempo transcurrido entre dosis; las dosis previas válidas cuentan y se continúa con la siguiente, respetando edades e intervalos mínimos. ACIP: las vacunas vivas parenterales (triple viral, varicela, fiebre amarilla) que no se aplican el mismo día se separan al menos 4 semanas; si se aplican el mismo día no hay que esperar. Rotavirus: no iniciar después de los 3 meses y 21 días ni aplicar la segunda dosis después de los 11 meses y 29 días; el niño que perdió esa ventana no recupera la vacuna. Para las edades máximas de pentavalente, neumococo, polio y DPT en niños mayores, usar la tabla de recuperación del lineamiento vigente del PAI y no extrapolar de otros países. Revisar el carné en toda consulta, urgencia u hospitalización y vacunar en ese momento si no hay contraindicación verdadera; las vacunas del PAI son gratuitas, también para extranjeros y personas sin afiliación. Prioridades de puesta al día: refuerzo de triple viral en niños de 2 a 5 años, tosferina en lactantes y gestantes, fiebre amarilla en zonas de riesgo y VPH hasta los 17 años. Consultar con el PAI territorial o con infectología los casos de inmunocompromiso, trasplante, asplenia o esquemas sin documentar."
         }
       ]
     },

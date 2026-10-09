@@ -254,7 +254,7 @@ fragmentos entraron), `drugLabelHits` (cuántos extractos de fichas técnicas) y
 Objetivo: que cada respuesta diga de dónde sale y que lo que no se pueda respaldar se vea. Todo en Graph, en memoria
 y sin proveedor nuevo; la única salida nueva es CIMA (solo el nombre del principio activo).
 
-### Corpus (73 guías, 361 fragmentos)
+### Corpus (80 guías, 403 fragmentos)
 
 Atención primaria y crónicos (HTA, DM2, dislipidemia, ERC, insuficiencia cardiaca, FA, EPOC, asma, hipotiroidismo,
 anemia ferropénica, dispepsia/ERGE/H. pylori, gota, osteoporosis, rinitis alérgica, obesidad y tabaquismo, lumbalgia,
@@ -265,8 +265,9 @@ hiponatremia e hiperpotasemia, pancreatitis y colecistitis, cirrosis y sus compl
 (meningitis bacteriana, hepatitis B y C, leptospirosis, leishmaniasis, enfermedad de Chagas, accidente ofídico,
 mordeduras y profilaxis de rabia, intoxicación por organofosforados, NAC, ITU, faringoamigdalitis, otitis/sinusitis, piel y tejidos blandos, ITS, sífilis, VIH, tuberculosis, malaria,
 dengue, tabla de antibióticos); pediatría y neonatos (IRA/AIEPI, bronquiolitis, EDA y deshidratación, fiebre sin foco,
-IVU pediátrica, ictericia neonatal, desnutrición aguda Res. 2350/2020 y Res. 115/2026, convulsión febril); gineco-
-obstetricia (control prenatal Res. 3280, preeclampsia, hemorragia posparto, anticoncepción); salud mental y geriatría
+IVU pediátrica, ictericia neonatal, crecimiento y desarrollo (Res. 2465/2016, EAD-3), vacunación PAI y del adulto,
+lactancia materna, parasitosis intestinal, escabiosis y pediculosis, desnutrición aguda Res. 2350/2020 y Res. 115/2026, convulsión febril); gineco-
+obstetricia (control prenatal Res. 3280, sangrado del primer trimestre, diabetes gestacional, preeclampsia, hemorragia posparto, anticoncepción); salud mental y geriatría
 (depresión, ansiedad y riesgo suicida, alcohol, delirium y demencia). Cada guía cita fuente y año y declara
 `revisado_por` vacío hasta la revisión médica: el asistente las presenta como resumen orientativo.
 
@@ -283,12 +284,16 @@ obstetricia (control prenatal Res. 3280, preeclampsia, hemorragia posparto, anti
 - **Ruido.** Saludos, muletillas, números sueltos, palabras de la app («carga», «pantalla», «soporte») y de población
   («niño», «hombre») pesan como genéricos; la población la decide `inferPopulations`, no el término.
 - **Laboratorio en la pregunta.** «Sodio de 127», «K 6,8» o «azúcar a 50» agregan el trastorno que definen
-  (hiponatremia < 135, hiperpotasemia ≥ 5,5, hipoglucemia < 70, con los cortes de las guías del corpus); un valor
-  normal, una edad o un peso no agregan nada (`labSignals`).
+  (hiponatremia < 135, hiperpotasemia ≥ 5,5, hipoglucemia < 70, «IMC de 36» → obesidad, con los cortes de las guías
+  del corpus); un valor normal, una edad o un peso no agregan nada (`labSignals`).
+- **Guías de población especial.** Una guía solo para gestantes o recién nacidos (diabetes gestacional, sangrado del
+  primer trimestre, ictericia neonatal) baja ×0.85 cuando la pregunta no dice nada de la población, para no ganarle a
+  la guía general en «glucemia elevada en ayunas».
 - **Tema del seguimiento.** En una pregunta de seguimiento corta, la guía cuyo título o palabras clave nombran los
   términos más raros de la pregunta anterior sube ×1.25 («¿y en niños?» después de leptospirosis sigue en leptospirosis).
 - **Frase clave.** Si la pregunta, ya con sinónimos, contiene completa una frase del título o de `palabras_clave`
-  («lesion renal aguda»), la guía sube ×1.1. Los sinónimos se compilan una vez por mapa (construcción ≈ 150 ms).
+  («lesion renal aguda»), la guía sube ×1.1. Los sinónimos se compilan una vez por mapa y las frases se indexan por su primera palabra
+  (construcción ≈ 120 ms con 80 guías).
 - **Relevancia.** Cada extracto lleva `relevance` (alta, media, baja) según cuánto de la pregunta cubre y su
   distancia al mejor; el prompt la muestra para que el modelo no tome un vecino cercano como respuesta.
 

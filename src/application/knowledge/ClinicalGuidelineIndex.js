@@ -39,6 +39,10 @@ const KEY_PHRASE_BOOST = 1.1;
 // puede ser sobre otra población aunque el paciente sea adulto).
 const POPULATION_MATCH_BOOST = 1.15;
 const POPULATION_MISMATCH_FACTOR = 0.8;
+// Una guía solo para gestantes o recién nacidos no debe ganarle a la general
+// cuando la pregunta no dice nada de la población («glucemia en ayunas»).
+const SPECIAL_POPULATIONS = new Set(['gestantes', 'neonatos']);
+const UNSTATED_SPECIAL_POPULATION_FACTOR = 0.85;
 // Dentro de una guía mixta, la sección cuyo título nombra la población
 // («…en niños de 6 a 11 años», «…y embarazo») recibe un empujón adicional.
 const SECTION_POPULATION_BOOST = 1.1;
@@ -68,6 +72,7 @@ const FOLLOW_TOPIC_IDF_RATIO = 0.75;
 const LAB_SIGNALS = [
   { pattern: /\b(?:sodio|na)\s*(?:de|en|a|:|=)?\s*(\d{2,3}(?:[.,]\d+)?)\b/g, terms: (v) => (v < 135 ? ['hiponatremia'] : v > 145 ? ['hipernatremia'] : []), range: [90, 200] },
   { pattern: /\b(?:potasio|k)\s*(?:de|en|a|:|=)?\s*(\d{1,2}(?:[.,]\d+)?)\b/g, terms: (v) => (v >= 5.5 ? ['hiperpotasemia'] : v < 3.5 ? ['hipopotasemia'] : []), range: [1, 12] },
+  { pattern: /\bimc\s*(?:de|en|:|=)?\s*(\d{2}(?:[.,]\d+)?)\b/g, terms: (v) => (v >= 30 ? ['obesidad'] : v >= 25 ? ['sobrepeso'] : []), range: [12, 80] },
   { pattern: /\b(?:glucosa|glucemia|glicemia|azucar|glucometria)\s*(?:de|en|a|:|=)?\s*(\d{2,4})\b/g, terms: (v) => (v < 70 ? ['hipoglucemia'] : v >= 250 ? ['hiperglucemia'] : []), range: [10, 2000] }
 ];
 
@@ -115,6 +120,9 @@ const GENERIC_TERMS = new Set([
   // Palabras de cualquier pregunta médica que no identifican el cuadro.
   'diagnostico', 'diagnosticar', 'enfermedad', 'sindrome', 'sintoma', 'signo', 'cuadro', 'tipo', 'causa', 'causas',
   'aparente', 'aparentemente',
+  // Calificativos y «pecho» (tórax o seno): el sentido lo dan los sinónimos de frase
+  // («azúcar baja», «presión alta», «dar pecho», «dolor en el pecho»).
+  'bajo', 'baja', 'alto', 'alta', 'pecho',
   // Palabras de la app y de la conversación.
   'carga', 'cargar', 'grabacion', 'grabar', 'pantalla', 'blanco', 'soporte', 'tecnico', 'hora', 'horario', 'momento',
   'descargo', 'descargar', 'historia', 'boton', 'guardar', 'enlace', 'correo', 'sesion', 'cuenta', 'plantilla',
@@ -158,18 +166,24 @@ function compileSynonyms(synonyms) {
   if (compiledSynonyms.has(synonyms)) return compiledSynonyms.get(synonyms);
   const single = new Map();
   const multi = [];
+  // Frases indexadas por su primera palabra: solo se prueban las que pueden
+  // estar en el texto (antes se probaban todas en cada fragmento).
+  const multiByFirst = new Map();
   for (const [rawKey, values] of Object.entries(synonyms)) {
     const key = normalizeText(rawKey);
     if (!key) continue;
     const expansions = (Array.isArray(values) ? values : [values]).map((value) => normalizeText(value)).filter(Boolean);
     if (!expansions.length) continue;
     if (key.includes(' ')) {
+      const first = key.slice(0, key.indexOf(' '));
+      if (!multiByFirst.has(first)) multiByFirst.set(first, []);
+      multiByFirst.get(first).push(multi.length);
       multi.push([` ${key} `, expansions]);
     } else {
       single.set(key, [...(single.get(key) || []), ...expansions]);
     }
   }
-  const compiled = { single, multi };
+  const compiled = { single, multi, multiByFirst };
   compiledSynonyms.set(synonyms, compiled);
   return compiled;
 }
@@ -177,15 +191,20 @@ function compileSynonyms(synonyms) {
 /** Expande sinónimos sobre el texto normalizado (las claves pueden tener varias palabras). */
 function expandSynonyms(normalized, synonyms) {
   if (!synonyms || typeof synonyms !== 'object' || !normalized) return normalized;
-  const { single, multi } = compileSynonyms(synonyms);
+  const { single, multi, multiByFirst } = compileSynonyms(synonyms);
   const extras = [];
+  const candidates = [];
   for (const word of new Set(normalized.split(' '))) {
     const expansions = single.get(word);
     if (expansions) extras.push(...expansions);
+    const phrases = multiByFirst.get(word);
+    if (phrases) candidates.push(...phrases);
   }
-  if (multi.length) {
+  if (candidates.length) {
     const padded = ` ${normalized} `;
-    for (const [key, expansions] of multi) {
+    // Mismo orden que el mapa de sinónimos, para que el resultado no dependa del texto.
+    for (const position of candidates.sort((a, b) => a - b)) {
+      const [key, expansions] = multi[position];
       if (padded.includes(key)) extras.push(...expansions);
     }
   }
@@ -391,6 +410,7 @@ class ClinicalGuidelineIndex {
           specialties,
           cie10,
           populations,
+          specialOnly: populations.size > 0 && [...populations].every((population) => SPECIAL_POPULATIONS.has(population)),
           sectionPopulations: populationsInText(section.titulo),
           headTerms: new Set(head),
           keyPhrases,
@@ -549,6 +569,7 @@ class ClinicalGuidelineIndex {
       if (headHit) score *= HEAD_MATCH_BOOST;
       if (followTopic && [...followTopic].some((term) => chunk.headTerms.has(term))) score *= FOLLOW_TOPIC_BOOST;
       if (chunk.keyPhrases.some((phrase) => expandedMessage.includes(phrase))) score *= KEY_PHRASE_BOOST;
+      if (!wantedPopulations.size && chunk.specialOnly) score *= UNSTATED_SPECIAL_POPULATION_FACTOR;
       if (wantedPopulations.size && chunk.populations.size) {
         const matches = [...chunk.populations].some((population) => wantedPopulations.has(population));
         score *= matches ? POPULATION_MATCH_BOOST : POPULATION_MISMATCH_FACTOR;
