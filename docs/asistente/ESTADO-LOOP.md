@@ -27,7 +27,7 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 | Evaluación de respuestas en vivo | no existe | bloqueada | ≥ 60 casos | bloqueada: requiere humano |
 | Medicamentos en el diccionario | 170 | 320 | ≥ 250 | cumple |
 | Instantánea de fichas técnicas | 0 % | 0 % | ≥ 90 % del diccionario | bloqueada: requiere humano |
-| Cifras «de memoria» corregidas, verificadas o retiradas | 0 | 22 | todas las marcadas | en curso |
+| Cifras «de memoria» corregidas, verificadas o retiradas | 0 | 41 | todas las marcadas | en curso |
 | Graph `npm test` | verde | verde | verde | cumple |
 | Web lint / typecheck / tests / build | 0 errores / limpio / 908 / OK | 0 errores / limpio / 908 / OK | verde | cumple |
 | E2E Playwright del chat | no existe | no existe | 5 escenarios | pendiente |
@@ -37,7 +37,7 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 
 ## Backlog priorizado
 
-1. **Exactitud clínica:** seguir con las cifras «Pendiente» de `knowledge/guias-clinicas/PENDIENTES-REVISION.md` de la primera tanda (citología/ADN-VPH de la Res. 3280, ISPAD, anticoncepción, apendicitis, piel y tejidos blandos, alcohol, opioides, osteoporosis, síncope).
+1. **Exactitud clínica:** quedan pocas «Pendiente» de la primera tanda: anticoncepción (efectividad por método, categorías OMS 2025), desnutrición (egreso de la Res. 115, dosis del libro de bolsillo OMS), AUDIT > 15 de NICE, reglas de conducción ESC, muy alto riesgo AACE. Lo marcado como «contrastar con la fuente primaria» queda para el médico.
 2. **Funcionamiento:** E2E con Playwright del chat en la web (v1, abstención, fuentes guía + ficha, cifras sin fuente, aplicar propuesta).
 3. **Optimización:** script que mida los tokens de entrada del chat (mediana ≤ 6 000).
 4. **Corpus (prioridad baja, la meta de 80 se cumple):** parto pretérmino, menopausia, sangrado uterino anormal, dermatitis atópica, ojo rojo, otitis externa, artrosis, tos ferina, varicela y sarampión, quemaduras.
@@ -61,6 +61,8 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 - **Iteración 8 (2026-10-09):** corpus, 73 → 80 guías (meta cumplida): crecimiento y desarrollo, vacunación PAI y del adulto, lactancia materna, sangrado del primer trimestre, diabetes gestacional, parasitosis intestinal, escabiosis y pediculosis (145 cifras con fuente textual; 78 descartadas). Las guías de embarazo declaraban también «adultos» y ganaban preguntas de diabetes general: ahora declaran solo gestantes y una guía de población especial baja ×0.85 si la pregunta no nombra la población; «IMC de 36» se lee como obesidad; «bajo/alto» y «pecho» pasan a genéricos. La construcción del índice había subido a ~205–280 ms con 80 guías (cerca del límite de 300): las frases de sinónimos se indexan ahora por su primera palabra y bajó a ~120 ms. Antes → después: recall@1 93,6 → 94,8 %, recall@3 100 → 100 %, MRR 0,966 → 0,973, respuestas sin red 178 → 192 casos.
 
 - **Iteración 9 (2026-10-09):** fichas técnicas. El diccionario cerrado pasa de 170 a 320 principios activos (DCI en español, como en CIMA, con nombres colombianos): antiinfecciosos de las guías nuevas, urgencias y anestesia, cardiovasculares, insulinas y antidiabéticos, obstetricia y uso diario. La combinación gana a su componente y TAF no se confunde con TDF; no se usan siglas que chocan con el corpus (NAC) ni «calcio»/«potasio» solos. `verify-drug-labels` 13 → 14 (piso de 150 → 250 entradas). Revisadas las 593 preguntas de evaluación: ninguna detección nueva incorrecta. Retrieval y respuestas sin cambios (recall@1 94,8 %, MRR 0,973). CIMA sigue en 403.
+
+- **Iteración 10 (2026-10-09):** exactitud clínica. 19 cifras de la primera tanda revisadas con búsqueda web (22 → 41): verificadas el tamizaje de cuello uterino de la Res. 3280/GPC 2014, potasio de 40 mmol/L en CAD pediátrica, WSES 3–5 días, piperacilina/tazobactam, dosis de abstinencia alcohólica y de prevención de recaídas, naloxona, reevaluación de opioides cada 2 semanas, calcio, vitamina D y edades de DXA; retiradas las edades e intervalo de VIA-VILI, la vancomicina «30 mg/kg/día en 2 dosis» y «2–3 L de agua y 10 g de sal». Métricas de retrieval y respuestas sin cambios. La construcción del índice midió una vez 273 ms dentro de `npm test` (fuera de él, 105–150 ms): se vigila.
 
 ## Decisiones
 
