@@ -1,3 +1,32 @@
+# SISTEMA LISTO (2026-10-09)
+
+Todas las metas alcanzables desde este entorno se cumplieron en dos iteraciones seguidas (13 y 14) y el
+backlog no tiene tareas de prioridad alta. Las que no se pueden cumplir desde el sandbox quedan
+«bloqueadas: requiere humano» con su razón. El loop se detuvo; los PR van en borrador y nadie los
+marca listos ni los fusiona salvo una persona.
+
+| Métrica | Línea base | Final | Meta | Estado |
+|---|---|---|---|---|
+| Guías en el corpus | 61 | 80 (403 fragmentos) | ≥ 80 | cumple |
+| Preguntas de evaluación de retrieval | 86 | 483 (≥ 4 por guía) | ≥ 300 | cumple |
+| Preguntas fuera de tema | 9 | 65 | ≥ 60 | cumple |
+| Fuera del corpus sin extracto de relevancia alta | no existía | 100 % (45 preguntas) | ≥ 90 % de ≥ 40 | cumple |
+| recall@3 / recall@1 / MRR | 100 % / 90,7 % / 0,952 | 100 % / 94,8 % / 0,973 | ≥ 97 % / ≥ 90 % / ≥ 0,93 | cumple |
+| Fuera de tema sin guías | 100 % | 100 % | 100 % | cumple |
+| p95 de búsqueda / construcción del índice | 2,85 ms / no medido | ≈ 2 ms / ≈ 115–130 ms | ≤ 10 ms / ≤ 300 ms | cumple |
+| Respuestas grabadas (sin red) | no existía | 192 casos; 6 métricas en meta (100 %, 100 %, 0 % de falsos positivos, 100 %, 100 %, 100 %) | ≥ 150 casos | cumple |
+| Evaluación en vivo con el modelo | no existía | no ejecutada | ≥ 60 casos | bloqueada: requiere humano (no hay `MIRACLE_ASSISTANT_LLM_API_KEY` en el sandbox) |
+| Cifras «de memoria» revisadas | 0 | 61 (todas las marcadas) | todas | cumple |
+| Medicamentos en el diccionario | 170 | 320 | ≥ 250 | cumple |
+| Instantánea de fichas técnicas (CIMA) | 0 % | 0 % | ≥ 90 % | bloqueada: requiere humano (el proxy del sandbox responde 403 a `cima.aemps.es`) |
+| Graph `npm test` | verde | `CONTRATO INTACTO: 113 promesas` (la 22 sin Postgres, como en `main`) | verde | cumple |
+| Web lint / typecheck / tests / build | 0 errores / limpio / 908 / OK | 0 errores (24 avisos) / limpio / 908 / OK | verde | cumple |
+| E2E Playwright del chat | no existía | 5 de 5 | 5 escenarios | cumple |
+| Privacidad: gateway e2e y gateway de salida | verde | 17 y 5 comprobaciones OK | verde | cumple |
+| Tokens de entrada del chat (mediana) | no medido | 5 896 (p95 7 399) | ≤ 6 000 | cumple |
+| Llamadas al modelo por pregunta | 1 | 1 | 1 | cumple |
+| `guidelines.corpus.json` | 570 KB | 816 KB | ≤ 2 MB | cumple |
+
 # Estado del loop del asistente clínico
 
 Archivo de continuidad del loop autónomo. Cada iteración lo lee, mide, hace UNA tarea, y lo actualiza.
@@ -28,10 +57,10 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 | Medicamentos en el diccionario | 170 | 320 | ≥ 250 | cumple |
 | Instantánea de fichas técnicas | 0 % | 0 % | ≥ 90 % del diccionario | bloqueada: requiere humano |
 | Cifras «de memoria» corregidas, verificadas o retiradas | 0 | 61 (todas las marcadas en la primera tanda) | todas las marcadas | cumple (el contraste con la fuente primaria queda para el médico) |
-| Graph `npm test` | verde | verde | verde | cumple |
-| Web lint / typecheck / tests / build | 0 errores / limpio / 908 / OK | 0 errores / limpio / 908 / OK (reverificado en la iteración 12) | verde | cumple |
+| Graph `npm test` | verde | `CONTRATO INTACTO` (113 promesas; spec 006 con las promesas 601–607) | verde | cumple |
+| Web lint / typecheck / tests / build | 0 errores / limpio / 908 / OK | 0 errores / limpio / 908 / OK (reverificado en la iteración 14) | verde | cumple |
 | E2E Playwright del chat | no existe | 5 escenarios en verde (`npm run test:e2e` en la web) | 5 escenarios | cumple |
-| Tokens de entrada del chat (mediana) | no medido | 5 900 (p95 7 404; 21 preguntas en 3 consultas típicas; antes de optimizar, 7 424) | ≤ 6 000 | cumple |
+| Tokens de entrada del chat (mediana) | no medido | 5 896 (p95 7 399; 21 preguntas en 3 consultas típicas; antes de optimizar, 7 424) | ≤ 6 000 | cumple |
 | `guidelines.corpus.json` | 570 KB | 816 KB | ≤ 2 MB | cumple |
 | Llamadas al modelo por pregunta | 1 | 1 | 1 | cumple |
 
@@ -69,6 +98,8 @@ Todas las metas alcanzables desde este entorno se cumplen desde la iteración 13
 
 - **Iteración 13 (2026-10-09):** exactitud clínica. Las 7 entradas pendientes de la primera tanda (20 cifras) revisadas con búsqueda web (41 → 61). Verificadas con fuentes secundarias: déficit de líquidos en 24–48 h (ISPAD 2022), dosis de la OMS en desnutrición grave (ampicilina, gentamicina, ReSoMal, choque, transfusión, F-75 130 mL/kg/día), colchicina 1 mg + 0,5 mg una hora después (EULAR), DXA a los 65/70 años (BHOF 2022) y muy alto riesgo de AACE 2020. Corregidas: NICE AUDIT > 15 aplica a adultos remitidos a servicios especializados; solo progestágeno en la lactancia antes de 6 semanas (OMS 5.ª ed.: píldora e implante 2, inyectable 3). Retiradas: efectividad exacta de píldora, inyectable y condón (cambia entre ediciones del CDC), «112 recomendaciones» de la OMS 2025, Z ≥ −1 como egreso de la Res. 115 y el detalle de las reglas de conducción de la ESC 2018. Al quitar «actualizó» del corpus, «actualiza la página» empezó a traer escabiosis (fuera de tema 100 → 98,5 %): «página», «actualiza» y «refresca» pasan a palabras de la app y vuelve a 100 % con rangos idénticos a HEAD en las 483 preguntas. Resto de métricas sin cambios; CIMA sigue en 403 (un intento).
 
+- **Iteración 14 (2026-10-09):** segunda iteración seguida con todas las metas cumplidas. Web: lint 0 errores (24 avisos), typecheck limpio, 908 pruebas, build OK y E2E 5/5. Para abrir el PR, Graph integró `main` (4 commits: la spec 005 «una sola Ü», el contrato `scripts/contrato.js` como `npm test` y el límite de rol `roleBoundary`). Conflictos en `ClinicalAssistantPromptBuilder.js` y `package.json`: el chat pasa a v6 (v5 sobre el límite de rol de `main`, que ahora trata también `<guias_clinicas>` y `<fichas_tecnicas>` como dato), diferenciales y ajuste quedan en la v3 de `main`. El texto nuevo subía la mediana de tokens a 5 915; dos frases compactadas la dejan en 5 896. Las pruebas del asistente entran al contrato como la spec 006 (promesas 601–607; `verify-asistente-metricas.js` corre las tres evaluaciones); la 601 y la 607 se vieron en rojo al romperlas a propósito. `CONTRATO INTACTO: 113 promesas`. CIMA sigue en 403 (un intento). Se escribe «SISTEMA LISTO» y se abren los PR en borrador.
+
 ## Decisiones
 
 - La verificación de cifras se hace con búsqueda web; los sitios oficiales no son alcanzables desde el sandbox. Una cifra se corrige con al menos dos fuentes secundarias concordantes; si no hay ninguna, se retira y queda en `PENDIENTES-REVISION.md`.
@@ -80,6 +111,7 @@ Todas las metas alcanzables desde este entorno se cumplen desde la iteración 13
 - Las guías de embarazo o de recién nacidos declaran solo esa población; si la pregunta no nombra población, ceden ante la guía general.
 - Las palabras de población no identifican el tema: la población la decide `inferPopulations` y pesa como boost, no como término.
 - La transcripción no se recorta para ahorrar tokens: es la fuente primaria. El ahorro sale de las guías (selección para el prompt), de reglas repetidas en el prompt de sistema y de metadatos duplicados. La medida de tokens es conservadora (ficha técnica simulada del tamaño máximo) y usa 3,5 caracteres por token.
+- Las pruebas del asistente viven en el contrato de Graph como la spec 006; las evaluaciones (que no son `verify-*.js`) las juzga `verify-asistente-metricas.js` por su código de salida, sin duplicar sus umbrales.
 - Las cifras de la respuesta se verifican solo contra las fuentes que la respuesta cita y la consulta. Más estricto que «cualquier extracto recuperado», alineado con el prompt v4 (cada cifra sale de una fuente citada o de la consulta).
 
 ## Requiere humano
