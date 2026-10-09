@@ -16,7 +16,7 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 | MRR | 0,952 | 0,973 | ≥ 0,93 | cumple |
 | Fuera de tema sin guías | 100 % | 100 % | 100 % | cumple |
 | p95 de búsqueda | 2,85 ms | 1,8 ms | ≤ 10 ms | cumple |
-| Construcción del índice | no medido | ≈ 110–120 ms | ≤ 300 ms | cumple |
+| Construcción del índice | no medido | ≈ 110–125 ms | ≤ 300 ms | cumple |
 | Evaluación de respuestas sin red (casos) | no existe | 192 (12 omitidos) | ≥ 150 con 6 métricas | cumple |
 | · referencias inventadas eliminadas | no medido | 100 % | 100 % | cumple |
 | · cifras plantadas detectadas | no medido | 100 % (77/77) | ≥ 95 % | cumple |
@@ -29,17 +29,16 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 | Instantánea de fichas técnicas | 0 % | 0 % | ≥ 90 % del diccionario | bloqueada: requiere humano |
 | Cifras «de memoria» corregidas, verificadas o retiradas | 0 | 41 | todas las marcadas | en curso |
 | Graph `npm test` | verde | verde | verde | cumple |
-| Web lint / typecheck / tests / build | 0 errores / limpio / 908 / OK | 0 errores / limpio / 908 / OK | verde | cumple |
+| Web lint / typecheck / tests / build | 0 errores / limpio / 908 / OK | 0 errores / limpio / 908 / OK (reverificado en la iteración 12) | verde | cumple |
 | E2E Playwright del chat | no existe | 5 escenarios en verde (`npm run test:e2e` en la web) | 5 escenarios | cumple |
-| Tokens de entrada del chat (mediana) | no medido | no medido | ≤ 6 000 | pendiente |
+| Tokens de entrada del chat (mediana) | no medido | 5 900 (p95 7 404; 21 preguntas en 3 consultas típicas; antes de optimizar, 7 424) | ≤ 6 000 | cumple |
 | `guidelines.corpus.json` | 570 KB | 816 KB | ≤ 2 MB | cumple |
 | Llamadas al modelo por pregunta | 1 | 1 | 1 | cumple |
 
 ## Backlog priorizado
 
-1. **Exactitud clínica:** quedan pocas «Pendiente» de la primera tanda: anticoncepción (efectividad por método, categorías OMS 2025), desnutrición (egreso de la Res. 115, dosis del libro de bolsillo OMS), AUDIT > 15 de NICE, reglas de conducción ESC, muy alto riesgo AACE. Lo marcado como «contrastar con la fuente primaria» queda para el médico.
-2. **Optimización:** script que mida los tokens de entrada del chat (mediana ≤ 6 000).
-3. **Corpus (prioridad baja, la meta de 80 se cumple):** parto pretérmino, menopausia, sangrado uterino anormal, dermatitis atópica, ojo rojo, otitis externa, artrosis, tos ferina, varicela y sarampión, quemaduras.
+1. **Exactitud clínica (única meta en curso):** quedan pocas «Pendiente» de la primera tanda: anticoncepción (efectividad por método, categorías OMS 2025), desnutrición (egreso de la Res. 115, dosis del libro de bolsillo OMS), AUDIT > 15 de NICE, reglas de conducción ESC, muy alto riesgo AACE, redacción de ISPAD 24–48 h y edades de BHOF 2022. Lo marcado como «contrastar con la fuente primaria» queda para el médico.
+2. **Corpus (prioridad baja, la meta de 80 se cumple):** parto pretérmino, menopausia, sangrado uterino anormal, dermatitis atópica, ojo rojo, otitis externa, artrosis, tos ferina, varicela y sarampión, quemaduras.
 
 ## Hecho
 
@@ -65,6 +64,8 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 
 - **Iteración 11 (2026-10-09):** funcionamiento (web). Prueba E2E con Playwright 1.56.1 (el que corresponde al Chromium del entorno): `npm run test:e2e` monta el `MedicalChat` real con Vite en `e2e/harness`, con sesión y navegación simuladas y la API en el mismo origen, e intercepta `/api/clinical/assistant/chat`. 5 escenarios en verde: v1 en texto plano, abstención, fuentes de guía y ficha con enlace (y el contexto sin identificadores), cifras sin fuente, aplicar una propuesta que cambia solo su sección. Web: lint 0 errores (24 avisos, como antes), typecheck limpio, 908 pruebas, build OK. Decisión D24 en la web. `graphify` no está instalado en el entorno: no se actualizó `graphify-out`.
 
+- **Iteración 12 (2026-10-09):** optimización. Nuevo `scripts/measure-chat-tokens.js` (en `npm test`; `npm run measure:tokens`): servicio real con modelo falso sobre tres consultas típicas (crónicos 8 000 caracteres de transcripción, pediatría 5 000, prenatal 12 000; nota, códigos, paciente, dos turnos de historial; ficha técnica simulada del tamaño máximo en preguntas de medicamento). Primera medida: mediana 7 424 tokens. Tres cambios: (1) `selectForPrompt`, ≈ 5 000 caracteres de guías en el prompt, los dos mejores extractos siempre y después solo relevancia alta o media (→ 6 534); (2) prompt del chat v5 con las mismas reglas en forma compacta, 8 293 → 6 474 caracteres (→ 6 014); (3) con nota en el prompt, `contexto_consulta` lleva solo las keys obligatorias de la plantilla (→ 5 900). Evaluación de respuestas sin red y de retrieval idénticas (192 casos, 6 métricas en 100 % y 0 % de falsos positivos; recall@1 94,8 %, MRR 0,973). `verify-guideline-index` 111 → 112, `verify-clinical-assistant` 44 → 45. CIMA sigue en 403 (un intento).
+
 ## Decisiones
 
 - La verificación de cifras se hace con búsqueda web; los sitios oficiales no son alcanzables desde el sandbox. Una cifra se corrige con al menos dos fuentes secundarias concordantes; si no hay ninguna, se retira y queda en `PENDIENTES-REVISION.md`.
@@ -75,6 +76,7 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 - El diccionario de medicamentos usa la DCI española (la que entiende CIMA) y guarda los nombres colombianos como alias; una sigla entra solo si no choca con el corpus.
 - Las guías de embarazo o de recién nacidos declaran solo esa población; si la pregunta no nombra población, ceden ante la guía general.
 - Las palabras de población no identifican el tema: la población la decide `inferPopulations` y pesa como boost, no como término.
+- La transcripción no se recorta para ahorrar tokens: es la fuente primaria. El ahorro sale de las guías (selección para el prompt), de reglas repetidas en el prompt de sistema y de metadatos duplicados. La medida de tokens es conservadora (ficha técnica simulada del tamaño máximo) y usa 3,5 caracteres por token.
 - Las cifras de la respuesta se verifican solo contra las fuentes que la respuesta cita y la consulta. Más estricto que «cualquier extracto recuperado», alineado con el prompt v4 (cada cifra sale de una fuente citada o de la consulta).
 
 ## Requiere humano
