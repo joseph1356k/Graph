@@ -7,6 +7,7 @@ fuente: 2019 ESC Guidelines for the diagnosis and management of acute pulmonary 
 especialidades: [urgencias, medicina_interna, medicina_general, medicina_familiar, neumologia, cardiologia, hematologia, cirugia_vascular, cuidado_intensivo]
 cie10: [I26.9, I26.0, I80.2, I80.1, I82.4, I82.9, I82.8, Z86.7]
 palabras_clave: [trombosis venosa profunda, TVP, embolia pulmonar, tromboembolia pulmonar, TEP, tromboembolismo venoso, TEV, escala de Wells, criterios PERC, dimero D, angiotomografia pulmonar, ecografia doppler venosa, anticoagulacion, heparina de bajo peso molecular, enoxaparina, rivaroxaban, apixaban, warfarina, INR, trombolisis en embolia pulmonar, PESI, disfuncion ventricular derecha, troponina, edema de pierna, dolor pleuritico, disnea subita, sincope, hemoptisis, trombosis asociada a cancer]
+poblacion: [adultos, adultos_mayores, gestantes]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

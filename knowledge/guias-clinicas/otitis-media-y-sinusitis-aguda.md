@@ -7,6 +7,7 @@ fuente: AAP Clinical Practice Guideline: The Diagnosis and Management of Acute O
 especialidades: [medicina_general, medicina_familiar, pediatria, otorrinolaringologia, urgencias]
 cie10: [H66.0, H66.9, H65.0, H65.9, J01.0, J01.9, J32.9, J00]
 palabras_clave: [otitis media aguda, OMA, otalgia, timpano abombado, otorrea, efusion, sinusitis, rinosinusitis, congestion nasal, amoxicilina, amoxicilina clavulanato, observacion, timpanostomia]
+poblacion: [pediatria, adultos]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

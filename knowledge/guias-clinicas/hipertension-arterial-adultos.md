@@ -7,6 +7,7 @@ fuente: ESC 2024 Guidelines for the management of elevated blood pressure and hy
 especialidades: [medicina_general, medicina_familiar, medicina_interna, cardiologia, geriatria, nefrologia]
 cie10: [I10, I11, I12, I13, I15]
 palabras_clave: [hipertension, presion arterial, tension arterial, HTA, crisis hipertensiva, antihipertensivo, IECA, ARA II, calcioantagonista, tiazida]
+poblacion: [adultos, adultos_mayores, gestantes]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

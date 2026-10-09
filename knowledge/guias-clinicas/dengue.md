@@ -7,6 +7,7 @@ fuente: OMS. Dengue: guidelines for diagnosis, treatment, prevention and control
 especialidades: [medicina_general, medicina_familiar, urgencias, pediatria, medicina_interna, infectologia]
 cie10: [A90, A91, A97.0, A97.1, A97.2, A97.9]
 palabras_clave: [dengue, dengue con signos de alarma, dengue grave, fiebre, trombocitopenia, hematocrito, extravasacion de plasma, choque, prueba del torniquete, NS1, IgM, hidratacion, acetaminofen, chikungunya, zika, arbovirosis]
+poblacion: [adultos, adultos_mayores, pediatria, gestantes]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

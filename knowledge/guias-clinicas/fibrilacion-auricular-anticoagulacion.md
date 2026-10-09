@@ -7,6 +7,7 @@ fuente: 2024 ESC Guidelines for the management of atrial fibrillation (AF-CARE);
 especialidades: [medicina_general, medicina_familiar, medicina_interna, cardiologia, urgencias, geriatria, neurologia]
 cie10: [I48, I48.0, I48.1, I48.2, I48.9, I63.9, Z79.01]
 palabras_clave: [fibrilacion auricular, FA, anticoagulacion, CHA2DS2-VA, CHA2DS2-VASc, HAS-BLED, apixaban, rivaroxaban, dabigatran, warfarina, INR, control de frecuencia, control de ritmo, cardioversion, ablacion, ictus cardioembolico]
+poblacion: [adultos, adultos_mayores]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

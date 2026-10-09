@@ -7,6 +7,7 @@ fuente: British Society of Gastroenterology guidelines for the management of iro
 especialidades: [medicina_general, medicina_familiar, medicina_interna, hematologia, pediatria, ginecologia_y_obstetricia, gastroenterologia]
 cie10: [D50.9, D50.0, D50.8, E61.1, O99.0, D64.9]
 palabras_clave: [anemia, anemia ferropenica, deficiencia de hierro, ferritina baja, hemoglobina baja, microcitosis, sulfato ferroso, hierro oral, hierro intravenoso, sacarosa de hierro, carboximaltosa ferrica, sangrado digestivo oculto, menorragia, anemia en el embarazo, anemia en lactantes, palidez, fatiga]
+poblacion: [adultos, pediatria, gestantes]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

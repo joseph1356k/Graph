@@ -7,6 +7,7 @@ fuente: AAP Clinical Practice Guideline: The Diagnosis, Management, and Preventi
 especialidades: [pediatria, medicina_general, medicina_familiar, urgencias, neonatologia, neumologia]
 cie10: [J21, J21.0, J21.9, J12.1, B97.4]
 palabras_clave: [bronquiolitis, lactante, virus sincitial respiratorio, VSR, sibilancias, tiraje, apnea, oxigeno, solucion salina hipertonica, salbutamol, nirsevimab, palivizumab]
+poblacion: [pediatria, neonatos]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

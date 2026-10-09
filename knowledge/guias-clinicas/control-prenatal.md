@@ -7,6 +7,7 @@ fuente: Resolución 3280 de 2018, Ruta Integral de Atención en Salud Materno Pe
 especialidades: [ginecologia_y_obstetricia, medicina_general, medicina_familiar, enfermeria, nutricion]
 cie10: [Z34.0, Z34.9, Z35.9, Z36, O09.9, O99.0, O24.4, O23.4]
 palabras_clave: [control prenatal, embarazo, gestante, primer control, paraclinicos prenatales, ecografia obstetrica, acido folico, hierro en embarazo, calcio en embarazo, vacunas en embarazo, Tdap, influenza, diabetes gestacional, prueba de tolerancia oral a la glucosa, VIH, sifilis, toxoplasma, urocultivo, bacteriuria asintomatica, edad gestacional, movimientos fetales, signos de alarma embarazo, Resolucion 3280]
+poblacion: [gestantes]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

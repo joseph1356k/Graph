@@ -7,6 +7,7 @@ fuente: OMS. Clasificación Estadística Internacional de Enfermedades y Problem
 especialidades: [medicina_general, medicina_familiar, medicina_interna, pediatria, urgencias, ginecologia_y_obstetricia, administracion_en_salud]
 cie10: [J00, J06.9, A09, N39.0, I10, E11.9, M54.5, R51, K30, J45.9, Z00.0, Z34.9]
 palabras_clave: [CIE-10, codigo diagnostico, codificacion, que codigo uso, diagnostico principal, diagnostico relacionado, RIPS, codigos frecuentes, codigo Z, codigo R, sintomas y signos, resfriado comun, infeccion respiratoria aguda, diarrea, infeccion urinaria, hipertension esencial, diabetes tipo 2, lumbalgia, cefalea, dispepsia, asma, control de salud, control prenatal, impresion diagnostica, codigo no especificado]
+poblacion: [adultos, adultos_mayores, pediatria, gestantes, neonatos]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

@@ -7,6 +7,7 @@ fuente: Diagnosis and Treatment of Adults with Community-acquired Pneumonia. ATS
 especialidades: [medicina_general, medicina_familiar, medicina_interna, urgencias, neumologia, infectologia, geriatria]
 cie10: [J18.9, J18.0, J18.1, J15.9, J13, J14]
 palabras_clave: [neumonia, NAC, CURB-65, PSI, infiltrado, consolidacion, amoxicilina, azitromicina, hospitalizar, UCI]
+poblacion: [adultos, adultos_mayores]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

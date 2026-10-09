@@ -7,6 +7,7 @@ fuente: AHA/ACC/TOS Guideline for the Management of Overweight and Obesity in Ad
 especialidades: [medicina_general, medicina_familiar, medicina_interna, endocrinologia, nutricion, neumologia, cardiologia, psiquiatria, medicina_preventiva]
 cie10: [E66.0, E66.9, E66.8, Z72.0, F17.2, F17.1, E78.5, R63.5]
 palabras_clave: [obesidad, sobrepeso, indice de masa corporal, IMC, circunferencia de cintura, obesidad abdominal, sindrome metabolico, perdida de peso, dieta, actividad fisica, semaglutida, liraglutida, tirzepatida, orlistat, cirugia bariatrica, tabaquismo, dejar de fumar, cesacion tabaquica, consejeria breve 5A, terapia de reemplazo de nicotina, parche de nicotina, vareniclina, bupropion, test de Fagerstrom, cigarrillo electronico, vapeo, riesgo cardiometabolico]
+poblacion: [adultos, adultos_mayores, pediatria]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

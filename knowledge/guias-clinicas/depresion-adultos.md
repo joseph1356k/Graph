@@ -7,6 +7,7 @@ fuente: Guía de práctica clínica para la detección temprana y diagnóstico d
 especialidades: [medicina_general, medicina_familiar, psiquiatria, medicina_interna, psicologia]
 cie10: [F32.0, F32.1, F32.2, F32.3, F32.9, F33.0, F33.1, F33.2, F33.9, F34.1]
 palabras_clave: [depresion, episodio depresivo, trastorno depresivo mayor, animo deprimido, anhedonia, PHQ-9, PHQ-2, ideacion suicida, ISRS, sertralina, fluoxetina, escitalopram, antidepresivo, psicoterapia, terapia cognitivo conductual, depresion posparto, sindrome de discontinuacion, remision, recaida]
+poblacion: [adultos, adultos_mayores, gestantes]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

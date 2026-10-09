@@ -16,6 +16,7 @@
 //   especialidades: [medicina_general, medicina_interna, cardiologia]
 //   cie10: [I10, I11]
 //   palabras_clave: [hipertension, presion arterial, HTA]
+//   poblacion: [adultos, adultos_mayores, gestantes]
 //   fecha_revision: 2026-10-01
 //   revisado_por:
 //   ---
@@ -35,7 +36,10 @@ const SYNONYMS_FILE = path.join(CORPUS_DIR, 'sinonimos.json');
 const CORPUS_VERSION = 1;
 
 const REQUIRED_FIELDS = Object.freeze(['id', 'titulo', 'organismo', 'anio', 'fuente', 'especialidades', 'palabras_clave']);
-const LIST_FIELDS = Object.freeze(['especialidades', 'cie10', 'palabras_clave']);
+const LIST_FIELDS = Object.freeze(['especialidades', 'cie10', 'palabras_clave', 'poblacion']);
+// A quién aplica la guía. El índice sube la guía cuya población coincide con la
+// del paciente de la consulta (edad, embarazo) y baja la que no.
+const POPULATIONS = Object.freeze(['adultos', 'adultos_mayores', 'gestantes', 'pediatria', 'neonatos']);
 const MAX_CHUNK_CHARS = 2500;
 const MIN_SECTIONS = 2;
 const ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -138,6 +142,11 @@ function parseGuideline(markdown, filename = '') {
       throw new Error(`${filename}: código CIE-10 "${code}" con formato inválido (ej. I10, E11.9)`);
     }
   }
+  for (const population of meta.poblacion || []) {
+    if (!POPULATIONS.includes(population)) {
+      throw new Error(`${filename}: población "${population}" inválida (usa: ${POPULATIONS.join(', ')})`);
+    }
+  }
   const { nota, secciones } = splitSections(body);
   if (secciones.length < MIN_SECTIONS) {
     throw new Error(`${filename}: una guía necesita al menos ${MIN_SECTIONS} secciones "##" con texto`);
@@ -162,6 +171,7 @@ function parseGuideline(markdown, filename = '') {
     especialidades: meta.especialidades,
     cie10: meta.cie10 || [],
     palabras_clave: meta.palabras_clave,
+    poblacion: meta.poblacion || [],
     fecha_revision: meta.fecha_revision || '',
     revisado_por: meta.revisado_por || '',
     nota,
@@ -224,6 +234,7 @@ module.exports = {
   MAX_CHUNK_CHARS,
   MIN_SECTIONS,
   REQUIRED_FIELDS,
+  POPULATIONS,
   parseFrontMatter,
   parseGuideline,
   splitSections,

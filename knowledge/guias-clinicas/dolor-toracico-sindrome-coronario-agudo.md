@@ -7,6 +7,7 @@ fuente: 2021 AHA/ACC/ASE/CHEST/SAEM/SCCT/SCMR Guideline for the Evaluation and D
 especialidades: [medicina_general, medicina_familiar, urgencias, medicina_interna, cardiologia]
 cie10: [R07.9, R07.4, I20.0, I21, I21.4, I21.9, I24.9, I26.9, I71.0]
 palabras_clave: [dolor toracico, angina, sindrome coronario agudo, SCA, infarto, IAM, troponina, electrocardiograma, supradesnivel ST, IAMCEST, IAMSEST, HEART, aspirina, reperfusion, diseccion aortica, embolia pulmonar]
+poblacion: [adultos, adultos_mayores]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

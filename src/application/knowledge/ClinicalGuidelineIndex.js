@@ -31,6 +31,29 @@ const GENERIC_TERM_WEIGHT = 0.3;
 const SPECIALTY_BOOST = 1.15;
 const CIE10_BOOST = 1.3;
 const HEAD_MATCH_BOOST = 1.1;
+// Población: la guía de la población del paciente (o la que nombra la
+// pregunta) sube; la de otra población baja sin desaparecer (la pregunta
+// puede ser sobre otra población aunque el paciente sea adulto).
+const POPULATION_MATCH_BOOST = 1.15;
+const POPULATION_MISMATCH_FACTOR = 0.8;
+// Dentro de una guía mixta, la sección cuyo título nombra la población
+// («…en niños de 6 a 11 años», «…y embarazo») recibe un empujón adicional.
+const SECTION_POPULATION_BOOST = 1.1;
+const SECTION_POPULATION_MISMATCH_FACTOR = 0.9;
+// Tolerancia a errores de digitación («amoxisilina»): un término de la
+// pregunta que no existe en el corpus se corrige al más parecido por
+// trigramas, con peso menor que un acierto exacto.
+const FUZZY_MIN_LENGTH = 6;
+const FUZZY_MIN_SIMILARITY = 0.7;
+const FUZZY_TERM_WEIGHT = 0.8;
+// Contexto conversacional: la pregunta anterior del médico sostiene las de
+// seguimiento («¿y en niños?», «¿y la dosis?»).
+const PREVIOUS_QUESTION_MAX_CHARS = 300;
+// Una pregunta corta («¿por cuánto tiempo anticoagulo?») hereda casi todo su
+// tema de la anterior; una larga trae el suyo y la anterior apenas orienta.
+const FOLLOW_UP_SHORT_MAX_TERMS = 3;
+const FOLLOW_UP_WEIGHT_SHORT = 0.8;
+const FOLLOW_UP_WEIGHT_LONG = 0.4;
 
 const STOPWORDS = new Set([
   'a', 'al', 'algo', 'alguna', 'algunas', 'alguno', 'algunos', 'ante', 'antes', 'aqui', 'asi', 'aun', 'cada',
@@ -42,7 +65,9 @@ const STOPWORDS = new Set([
   'puede', 'pueden', 'puedo', 'que', 'quien', 'se', 'sea', 'ser', 'si', 'sin', 'sobre', 'solo', 'son', 'soy', 'su',
   'sus', 'tal', 'tambien', 'tan', 'te', 'tener', 'tengo', 'tiene', 'tienen', 'todo', 'todos', 'tu', 'tus', 'un',
   'una', 'unas', 'uno', 'unos', 'usted', 'ustedes', 'va', 'van', 'vez', 'y', 'ya', 'yo', 'les', 'hola', 'gracias',
-  'dime', 'dame', 'quiero', 'podrias', 'puedes', 'favor', 'cuales', 'cuantos', 'cuanta'
+  'dime', 'dame', 'quiero', 'podrias', 'puedes', 'favor', 'cuales', 'cuantos', 'cuanta', 'bueno', 'buena',
+  'buenos', 'buenas', 'tarde', 'tardes', 'noche', 'noches', 'doctor', 'doctora', 'dr', 'dra', 'ok', 'listo', 'vale',
+  'perfecto', 'entonces', 'oye', 'mira'
 ]);
 
 // Palabras de cualquier pregunta clínica: no identifican una guía. Pesan
@@ -54,8 +79,15 @@ const GENERIC_TERMS = new Set([
   'adultos', 'mujer', 'hombre', 'anos', 'edad', 'inicial', 'primera', 'linea', 'opcion', 'opciones', 'mejor',
   'usar', 'uso', 'usa', 'dar', 'doy', 'mando', 'formular', 'formulo', 'revisar', 'revisa', 'resumen', 'resume',
   'propon', 'propones', 'sugiere', 'sugerir', 'ajuste', 'ajustes', 'redaccion', 'secciones', 'seccion',
-  'documentar', 'documentados', 'dejar', 'registrado', 'registrar', 'preguntar', 'falta', 'faltan'
+  'documentar', 'documentados', 'dejar', 'registrado', 'registrar', 'preguntar', 'falta', 'faltan', 'dia', 'dias',
+  'senor', 'senora', 'caballero', 'hago', 'hacemos', 'haria', 'mando', 'mandar', 'tengo', 'vida', 'peor', 'bien', 'mal'
 ]);
+
+// Un número suelto en la pregunta («165/100», «38.2») casi nunca identifica la
+// guía: pesa como término genérico y no cuenta como término propio.
+function isGenericTerm(term) {
+  return GENERIC_TERMS.has(term) || /^\d+$/.test(term);
+}
 
 function normalizeText(value) {
   return `${value || ''}`
@@ -132,6 +164,7 @@ function cie10Family(code) {
  * Texto de contexto para la búsqueda: lo que la nota dice del diagnóstico y
  * los códigos. Pesa menos que la pregunta, pero rescata preguntas genéricas
  * («¿qué dice la guía para este caso?») cuando la nota sí nombra el cuadro.
+ * La pregunta anterior del médico va aparte (`followUp` en search).
  */
 function buildRetrievalContext({ noteJson = null, codes = [] } = {}) {
   const parts = [];
@@ -151,6 +184,95 @@ function buildRetrievalContext({ noteJson = null, codes = [] } = {}) {
     if (description) parts.push(description.slice(0, 160));
   }
   return parts.join('\n');
+}
+
+/** Última pregunta del médico en el historial (sin la actual, que no viaja en él). */
+function lastUserQuestion(history) {
+  if (!Array.isArray(history)) return '';
+  for (let i = history.length - 1; i >= 0; i -= 1) {
+    const item = history[i];
+    if (item && item.role === 'user' && typeof item.content === 'string' && item.content.trim()) {
+      return item.content.trim().slice(0, PREVIOUS_QUESTION_MAX_CHARS);
+    }
+  }
+  return '';
+}
+
+const POPULATION_PATTERNS = [
+  ['neonatos', /\b(recien nacid\w*|neonat\w*)\b/],
+  ['pediatria', /\b(nin[oa]s?|pediatric\w*|lactantes?|bebes?|infantil\w*|escolar\w*|preescolar\w*|adolescentes?)\b/],
+  ['gestantes', /\b(embaraz\w*|gestantes?|gestacion\w*|prenatal\w*|obstetric\w*|puerper\w*|posparto|postparto)\b/],
+  ['adultos_mayores', /\b(adultos? mayor\w*|ancian[oa]s?|geriatric\w*)\b/],
+  ['adultos', /\b(adult[oa]s?\b(?! mayor)|senor|senora|caballero)\b/]
+];
+const PREGNANCY_CODE = /\b(O[0-9]{2}|Z3[3-6])/;
+
+/** Poblaciones que la pregunta nombra explícitamente («en niños», «en el embarazo»). */
+function populationsInText(text) {
+  const normalized = normalizeText(text);
+  const found = new Set();
+  for (const [population, pattern] of POPULATION_PATTERNS) {
+    if (pattern.test(normalized)) found.add(population);
+  }
+  return found;
+}
+
+/**
+ * Población a favorecer en el ranking. Si la pregunta nombra una, manda la
+ * pregunta (el médico puede preguntar por niños con un adulto en consulta);
+ * si no, se deduce del paciente (edad, sexo) y de señales de embarazo en la
+ * nota o en los códigos.
+ */
+function inferPopulations({ message = '', patient = null, context = '', codes = [] } = {}) {
+  const explicit = populationsInText(message);
+  if (explicit.size) return [...explicit];
+  const found = new Set();
+  const age = Number(patient?.edad);
+  if (Number.isFinite(age) && age >= 0) {
+    if (age < 18) {
+      found.add('pediatria');
+      if (age < 1) found.add('neonatos');
+    } else {
+      found.add('adultos');
+      if (age >= 65) found.add('adultos_mayores');
+    }
+  }
+  const sex = `${patient?.sexo || ''}`.toUpperCase();
+  const codeList = (Array.isArray(codes) ? codes : []).map((code) => `${code?.codigo || code || ''}`.toUpperCase());
+  const pregnantByCode = codeList.some((code) => PREGNANCY_CODE.test(code));
+  const pregnantByText = populationsInText(context).has('gestantes');
+  if (sex !== 'M' && (!Number.isFinite(age) || (age >= 10 && age <= 55)) && (pregnantByCode || pregnantByText)) {
+    found.add('gestantes');
+  }
+  return [...found];
+}
+
+/** Trigramas con relleno para comparar palabras con errores de digitación. */
+function trigrams(word) {
+  const padded = `  ${word} `;
+  const grams = new Set();
+  for (let i = 0; i < padded.length - 2; i += 1) grams.add(padded.slice(i, i + 3));
+  return grams;
+}
+
+function diceSimilarity(a, b) {
+  if (!a.size || !b.size) return 0;
+  let shared = 0;
+  for (const gram of a) if (b.has(gram)) shared += 1;
+  return (2 * shared) / (a.size + b.size);
+}
+
+/**
+ * Qué tan directamente responde el fragmento: «alta» si cubre la mayoría de
+ * los términos propios de la pregunta y la guía trata del tema (título o
+ * palabras clave); «baja» si apenas pasó el umbral. El prompt lo muestra para
+ * que el modelo no se apoye en un vecino cercano como si fuera la respuesta.
+ */
+function relevanceLabel({ score, top, coverage, headHit }) {
+  const relative = top > 0 ? score / top : 0;
+  if (coverage >= 0.6 && headHit && relative >= 0.6) return 'alta';
+  if (coverage >= 0.34 && relative >= 0.45) return 'media';
+  return 'baja';
 }
 
 class ClinicalGuidelineIndex {
@@ -175,6 +297,7 @@ class ClinicalGuidelineIndex {
       const headTokens = tokenize(headText, this.synonyms);
       const specialties = new Set((guideline.especialidades || []).map((value) => normalizeText(value).replace(/ /g, '_')));
       const cie10 = new Set((guideline.cie10 || []).map(normalizeCie10));
+      const populations = new Set(guideline.poblacion || []);
       for (const section of guideline.secciones || []) {
         const sectionTokens = tokenize(section.titulo, this.synonyms);
         const bodyTokens = tokenize(section.texto, this.synonyms);
@@ -196,6 +319,8 @@ class ClinicalGuidelineIndex {
           text: section.texto,
           specialties,
           cie10,
+          populations,
+          sectionPopulations: populationsInText(section.titulo),
           headTerms: new Set(head),
           tf,
           length: tokens.length
@@ -203,6 +328,41 @@ class ClinicalGuidelineIndex {
       }
     }
     this.avgLength = this.chunks.length ? totalLength / this.chunks.length : 1;
+    this.buildFuzzyVocabulary();
+  }
+
+  /** Índice de trigramas del vocabulario (solo palabras, no números) para corregir digitación. */
+  buildFuzzyVocabulary() {
+    this.gramIndex = new Map();
+    this.termGrams = new Map();
+    for (const term of this.df.keys()) {
+      if (term.length < FUZZY_MIN_LENGTH - 1 || /\d/.test(term)) continue;
+      const grams = trigrams(term);
+      this.termGrams.set(term, grams);
+      for (const gram of grams) {
+        if (!this.gramIndex.has(gram)) this.gramIndex.set(gram, []);
+        this.gramIndex.get(gram).push(term);
+      }
+    }
+  }
+
+  /** Término del corpus más parecido a uno que no existe en él, o null. */
+  closestTerm(token) {
+    if (token.length < FUZZY_MIN_LENGTH || /\d/.test(token) || this.df.has(token)) return null;
+    const grams = trigrams(token);
+    const candidates = new Set();
+    for (const gram of grams) for (const term of this.gramIndex.get(gram) || []) candidates.add(term);
+    let best = null;
+    let bestScore = FUZZY_MIN_SIMILARITY;
+    for (const term of candidates) {
+      if (Math.abs(term.length - token.length) > 3) continue;
+      const similarity = diceSimilarity(grams, this.termGrams.get(term));
+      if (similarity > bestScore || (similarity === bestScore && best && (this.df.get(term) || 0) > (this.df.get(best) || 0))) {
+        best = term;
+        bestScore = similarity;
+      }
+    }
+    return best;
   }
 
   idf(term) {
@@ -221,18 +381,43 @@ class ClinicalGuidelineIndex {
    * @param {string} [query.context] diagnóstico de la nota + códigos (pesa la mitad)
    * @param {string} [query.specialty]
    * @param {string[]} [query.cie10]
+   * @param {string[]} [query.populations] adultos, adultos_mayores, gestantes, pediatria, neonatos
    * @param {number} [query.k]
-   * @returns {Array<{ref, guideline_id, title, organism, year, source, section, text, score}>}
+   * @returns {Array<{ref, guideline_id, title, organism, year, source, section, text, score, relevance}>}
    */
-  search({ message = '', context = '', specialty = '', cie10 = [], k = this.topK } = {}) {
+  search({ message = '', context = '', followUp = '', specialty = '', cie10 = [], populations = [], k = this.topK } = {}) {
     if (!this.chunks.length) return [];
-    const messageTokens = new Set(tokenize(message, this.synonyms));
-    const contextTokens = new Set(tokenize(context, this.synonyms));
-    const specificMessage = new Set([...messageTokens].filter((term) => !GENERIC_TERMS.has(term)));
+    const rawMessageTokens = new Set(tokenize(message, this.synonyms));
+    const messageTokens = new Set();
+    const fuzzyTerms = new Set();
     const weights = new Map();
-    for (const term of contextTokens) weights.set(term, CONTEXT_TERM_WEIGHT);
-    for (const term of messageTokens) weights.set(term, GENERIC_TERMS.has(term) ? GENERIC_TERM_WEIGHT : 1);
+    for (const term of tokenize(context, this.synonyms)) weights.set(term, CONTEXT_TERM_WEIGHT);
+    const contextTokens = new Set(weights.keys());
+    for (const term of rawMessageTokens) {
+      // Un término mal digitado se reemplaza por el del corpus más parecido.
+      const corrected = this.closestTerm(term);
+      const effective = corrected || term;
+      messageTokens.add(effective);
+      if (corrected && !rawMessageTokens.has(corrected)) fuzzyTerms.add(corrected);
+      const weight = isGenericTerm(effective) ? GENERIC_TERM_WEIGHT : (corrected ? FUZZY_TERM_WEIGHT : 1);
+      weights.set(effective, Math.max(weight, weights.get(effective) || 0));
+    }
+    let specificMessage = new Set([...messageTokens].filter((term) => !isGenericTerm(term)));
+    // Seguimiento: la pregunta anterior aporta el tema. Si la actual es corta,
+    // sus términos cuentan casi como propios (también para la regla de
+    // «al menos un término propio»).
+    const followTokens = new Set(tokenize(followUp, this.synonyms));
+    if (followTokens.size && messageTokens.size) {
+      const short = specificMessage.size <= FOLLOW_UP_SHORT_MAX_TERMS;
+      const followWeight = short ? FOLLOW_UP_WEIGHT_SHORT : FOLLOW_UP_WEIGHT_LONG;
+      for (const term of followTokens) {
+        if (isGenericTerm(term)) continue;
+        if ((weights.get(term) || 0) < followWeight) weights.set(term, followWeight);
+      }
+      if (short) specificMessage = new Set([...specificMessage, ...[...followTokens].filter((term) => !isGenericTerm(term))]);
+    }
     if (!weights.size) return [];
+    const wantedPopulations = new Set(Array.isArray(populations) ? populations : []);
 
     const wantedCodes = new Set([
       ...(Array.isArray(cie10) ? cie10 : []).map(normalizeCie10),
@@ -252,7 +437,11 @@ class ClinicalGuidelineIndex {
         if (!tf) continue;
         matchedTotal += 1;
         if (specificMessage.has(term)) matchedSpecific += 1;
-        if (chunk.headTerms.has(term) && (specificMessage.has(term) || contextTokens.has(term))) headHit = true;
+        // Un término corregido por digitación no basta para decir que la guía
+        // trata del tema («factura» no puede convertirse en «fractura» y traer
+        // una guía por sí solo).
+        if (chunk.headTerms.has(term) && !fuzzyTerms.has(term)
+          && (specificMessage.has(term) || contextTokens.has(term) || followTokens.has(term))) headHit = true;
         const norm = tf * (BM25_K1 + 1) / (tf + BM25_K1 * (1 - BM25_B + BM25_B * (chunk.length / this.avgLength)));
         score += this.idf(term) * norm * weight;
       }
@@ -263,7 +452,9 @@ class ClinicalGuidelineIndex {
       // pero entonces exige al menos un acierto en título/palabras clave.
       if (specificMessage.size > 0) {
         if (matchedSpecific === 0) continue;
-        if (matchedTotal < 2 && !(specificMessage.size === 1 && headHit)) continue;
+        // Un solo término en común basta si la guía TRATA de eso (título,
+        // palabras clave o sección); si no, hacen falta dos.
+        if (matchedTotal < 2 && !headHit) continue;
       } else {
         if (matchedTotal < 2 || !headHit) continue;
       }
@@ -273,7 +464,16 @@ class ClinicalGuidelineIndex {
         score *= CIE10_BOOST;
       }
       if (headHit) score *= HEAD_MATCH_BOOST;
-      scored.push({ chunk, score });
+      if (wantedPopulations.size && chunk.populations.size) {
+        const matches = [...chunk.populations].some((population) => wantedPopulations.has(population));
+        score *= matches ? POPULATION_MATCH_BOOST : POPULATION_MISMATCH_FACTOR;
+      }
+      if (wantedPopulations.size && chunk.sectionPopulations.size) {
+        const matches = [...chunk.sectionPopulations].some((population) => wantedPopulations.has(population));
+        score *= matches ? SECTION_POPULATION_BOOST : SECTION_POPULATION_MISMATCH_FACTOR;
+      }
+      const coverage = specificMessage.size ? matchedSpecific / specificMessage.size : (headHit ? 0.5 : 0);
+      scored.push({ chunk, score, coverage, headHit });
     }
     if (!scored.length) return [];
 
@@ -282,7 +482,8 @@ class ClinicalGuidelineIndex {
     const perGuide = new Map();
     const results = [];
     let budget = this.charBudget;
-    for (const { chunk, score } of scored) {
+    const top = scored[0].score;
+    for (const { chunk, score, coverage, headHit } of scored) {
       if (score < threshold || results.length >= k) break;
       const used = perGuide.get(chunk.guideline_id) || 0;
       if (used >= this.perGuideCap) continue;
@@ -299,7 +500,8 @@ class ClinicalGuidelineIndex {
         reviewed_by: chunk.reviewed_by,
         section: chunk.section,
         text: chunk.text,
-        score: Number(score.toFixed(3))
+        score: Number(score.toFixed(3)),
+        relevance: relevanceLabel({ score, top, coverage, headHit })
       });
     }
     return results;
@@ -338,8 +540,15 @@ module.exports = {
   expandSynonyms,
   extractCie10Codes,
   buildRetrievalContext,
+  lastUserQuestion,
+  inferPopulations,
+  populationsInText,
+  trigrams,
+  diceSimilarity,
+  relevanceLabel,
   STOPWORDS,
   GENERIC_TERMS,
+  isGenericTerm,
   DEFAULT_TOP_K,
   DEFAULT_PER_GUIDE_CAP,
   DEFAULT_CHAR_BUDGET,

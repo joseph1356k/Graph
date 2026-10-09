@@ -15,11 +15,12 @@ const NoteModeResolver = require('./NoteModeResolver');
 
 // v3 (2026-10-01): respuesta JSON con respaldo, fuentes de guías (RAG),
 // abstención explícita, diferenciales estructurados y propuesta de nota.
-const CHAT_PROMPT_VERSION = clauses.promptVersion('clinical-assistant-chat', '3');
+const CHAT_PROMPT_VERSION = clauses.promptVersion('clinical-assistant-chat', '4');
 // Etiqueta de los extractos de guías. No está en PromptClauses.TAGS a
 // propósito: ese archivo tiene espejo en Python con la misma versión.
 const GUIDELINES_TAG = 'guias_clinicas';
 const NO_GUIDELINES_NOTICE = 'No se recuperaron guías clínicas para esta pregunta: no cites ninguna guía ni inventes referencias [G#].';
+const DRUG_LABELS_TAG = 'fichas_tecnicas';
 const DIAGNOSTIC_PROMPT_VERSION = clauses.promptVersion('clinical-assistant-diagnostic', '2');
 const ADJUST_PROMPT_VERSION = clauses.promptVersion('clinical-assistant-adjust', '2');
 
@@ -63,16 +64,18 @@ const CHAT_STYLE = [
 // la respuesta descarta cualquier referencia que no exista.
 const CHAT_SUPPORT_RULES = [
   '═══ RESPALDO Y FUENTES ═══',
-  `Jerarquía: 1) los datos de esta consulta (nota en pantalla, nota persistida, transcripción); 2) los extractos de guías clínicas que llegan dentro de <${GUIDELINES_TAG}>, numerados [G1], [G2]…; 3) conocimiento médico general firmemente establecido, que marcas como tal.`,
-  '- Cita una guía solo si aplica directamente a la pregunta o al caso; si un extracto no aplica, ignóralo. Cuando la uses, escribe su referencia entre corchetes en el texto (por ejemplo [G1]) y decláralo en "fuentes". Nunca cites una referencia que no esté en los extractos recibidos.',
-  '- Los extractos son un resumen orientativo de cada guía, no órdenes: si tu conocimiento y un extracto chocan, dilo en vez de elegir en silencio.'
+  `Jerarquía: 1) los datos de esta consulta (nota en pantalla, nota persistida, transcripción); 2) los extractos de guías clínicas que llegan dentro de <${GUIDELINES_TAG}>, numerados [G1], [G2]…, y los de fichas técnicas oficiales de medicamentos dentro de <${DRUG_LABELS_TAG}>, numerados [F1], [F2]…; 3) conocimiento médico general firmemente establecido, que marcas como tal.`,
+  '- Cita un extracto solo si aplica directamente a la pregunta o al caso; si no aplica, ignóralo. Cada extracto trae su relevancia (alta, media, baja): uno de relevancia baja casi nunca responde la pregunta por sí solo. Cuando lo uses, escribe su referencia entre corchetes en el texto (por ejemplo [G1], [F1]) y decláralo en "fuentes". Nunca cites una referencia que no esté en los extractos recibidos.',
+  '- Los extractos de guías son un resumen orientativo; la ficha técnica es la información oficial del medicamento. Si chocan entre sí o con tu conocimiento, dilo en vez de elegir en silencio.',
+  '- CIFRAS: cada dosis, intervalo, duración, umbral o meta que escribas debe salir de un extracto citado o de los datos de la consulta, copiada con su unidad tal como aparece. Si una cifra viene de tu conocimiento general, dilo junto a ella («conocimiento general; verificar»). El sistema compara cada cifra de tu respuesta con las fuentes y marca para el médico las que no encuentre.'
 ].join('\n');
 
 // La regla que convierte «no sé» en una respuesta válida. Sin ella el modelo
 // aproxima dosis y umbrales con la misma seguridad con la que cita una guía.
 const CHAT_ABSTENTION = [
   '═══ ABSTENCIÓN — es preferible no responder a responder mal ═══',
-  '- Si la pregunta pide una cifra, dosis, umbral, criterio o conducta concreta y no está en las guías recuperadas ni la conoces con certeza alta, no la inventes ni la aproximes: responde con respaldo "insuficiente", di qué falta y dónde verificarlo (la guía o la fuente que correspondería).',
+  '- Si la pregunta pide una cifra, dosis, umbral, criterio o conducta concreta y no está en los extractos recuperados (guías o fichas técnicas) ni la conoces con certeza alta, no la inventes ni la aproximes: responde con respaldo "insuficiente", di qué falta y dónde verificarlo (la guía o la fuente que correspondería).',
+  '- Dosis en niños, embarazo, lactancia, falla renal o hepática: solo con fuente recuperada o certeza alta; si falta el peso, la edad o la función renal y cambia la dosis, pídelo en "faltantes" en lugar de suponerlo.',
   '- Si solo una parte de la pregunta tiene respaldo, responde esa parte y marca con claridad lo que queda sin respaldo.',
   '- Un dato de la consulta que no está (peso, función renal, alergias, embarazo, antecedentes) y que cambia la respuesta va en "faltantes".'
 ].join('\n');
@@ -99,9 +102,9 @@ const CHAT_NOTE_PROPOSAL = [
 const CHAT_OUTPUT_CONTRACT = [
   '═══ FORMATO DE SALIDA ═══',
   clauses.JSON_ONLY,
-  '{"respuesta":"string","respaldo":"consulta|guia|general|insuficiente","fuentes":[{"ref":"G1"}],"faltantes":["string"],"alertas":["string"],"propuesta_nota":{"motivo":"string","resumen":"string|null","secciones":[{"key":"string","content":"string"}]}|null,"seguimientos":["string"]}',
+  '{"respuesta":"string","respaldo":"consulta|guia|general|insuficiente","fuentes":[{"ref":"G1"},{"ref":"F1"}],"faltantes":["string"],"alertas":["string"],"propuesta_nota":{"motivo":"string","resumen":"string|null","secciones":[{"key":"string","content":"string"}]}|null,"seguimientos":["string"]}',
   '- "respuesta": texto plano en español con saltos de línea; viñetas con "- " cuando ayuden; sin markdown (sin #, sin **, sin tablas). Es lo que el médico lee.',
-  '- "respaldo": "consulta" si la respuesta sale sobre todo de los datos de esta consulta; "guia" si se apoya en extractos citados; "general" si es conocimiento médico general sin guía recuperada; "insuficiente" si no hay respaldo suficiente para lo que se pregunta.',
+  '- "respaldo": "consulta" si la respuesta sale sobre todo de los datos de esta consulta; "guia" si se apoya en extractos citados (guías o fichas técnicas); "general" si es conocimiento médico general sin guía recuperada; "insuficiente" si no hay respaldo suficiente para lo que se pregunta.',
   '- "fuentes": solo las referencias que usaste de verdad, por su "ref". Lista vacía si no citaste ninguna.',
   '- "faltantes": datos o fuentes que harían falta (máximo 6). "alertas": signos de alarma pertinentes al caso (máximo 6). "seguimientos": hasta 3 preguntas cortas que el médico podría hacer a continuación, escritas en su voz (por ejemplo "¿Qué dosis ajusto si hay falla renal?").'
 ].join('\n');
@@ -111,7 +114,17 @@ function formatGuidelines(guidelines) {
   const list = Array.isArray(guidelines) ? guidelines : [];
   if (!list.length) return '';
   return list.map((item) => [
-    `[${item.ref}] ${item.title} · ${item.organism} ${item.year} · Sección: ${item.section}`,
+    `[${item.ref}] ${item.title} · ${item.organism} ${item.year} · Sección: ${item.section}${item.relevance ? ` · Relevancia: ${item.relevance}` : ''}`,
+    `${item.text}`
+  ].join('\n')).join('\n\n');
+}
+
+/** Extractos de fichas técnicas (posología, contraindicaciones), numerados [F#]. */
+function formatDrugLabels(labels) {
+  const list = Array.isArray(labels) ? labels : [];
+  if (!list.length) return '';
+  return list.map((item) => [
+    `[${item.ref}] ${item.title} · ${item.organism}${item.year ? ` ${item.year}` : ''} · Sección: ${item.section}`,
     `${item.text}`
   ].join('\n')).join('\n\n');
 }
@@ -325,6 +338,7 @@ class ClinicalAssistantPromptBuilder {
       }
       : null;
     const guidelinesText = formatGuidelines(clinicalContext.guidelines);
+    const drugLabelsText = formatDrugLabels(clinicalContext.drug_labels);
     const user = JSON.stringify({
       pregunta: `${message || ''}`,
       especialidad: clinicalContext.specialty || '',
@@ -343,6 +357,7 @@ class ClinicalAssistantPromptBuilder {
       guias_clinicas: guidelinesText
         ? clauses.wrapTag(GUIDELINES_TAG, guidelinesText)
         : NO_GUIDELINES_NOTICE,
+      fichas_tecnicas: drugLabelsText ? clauses.wrapTag(DRUG_LABELS_TAG, drugLabelsText) : undefined,
       screen_context: screen,
       nota_sobre_screen_context: screen
         ? 'screen_context describe lo visible en pantalla; puede estar desactualizado, la nota recibida y la transcripción mandan.'
@@ -419,5 +434,7 @@ ClinicalAssistantPromptBuilder.specialtyRule = specialtyRule;
 ClinicalAssistantPromptBuilder.GUIDELINES_TAG = GUIDELINES_TAG;
 ClinicalAssistantPromptBuilder.NO_GUIDELINES_NOTICE = NO_GUIDELINES_NOTICE;
 ClinicalAssistantPromptBuilder.formatGuidelines = formatGuidelines;
+ClinicalAssistantPromptBuilder.formatDrugLabels = formatDrugLabels;
+ClinicalAssistantPromptBuilder.DRUG_LABELS_TAG = DRUG_LABELS_TAG;
 
 module.exports = ClinicalAssistantPromptBuilder;

@@ -338,5 +338,674 @@
   ],
   "vapeo": [
     "tabaquismo"
+  ],
+  "dolor de cabeza": [
+    "cefalea"
+  ],
+  "dolor de espalda": [
+    "lumbalgia"
+  ],
+  "dolor de pecho": [
+    "dolor toracico"
+  ],
+  "dolor de garganta": [
+    "faringoamigdalitis odinofagia"
+  ],
+  "dolor de oido": [
+    "otalgia otitis"
+  ],
+  "falta de aire": [
+    "disnea"
+  ],
+  "ahogo": [
+    "disnea"
+  ],
+  "azucar alta": [
+    "hiperglucemia diabetes"
+  ],
+  "azucar baja": [
+    "hipoglucemia"
+  ],
+  "tension baja": [
+    "hipotension"
+  ],
+  "presion baja": [
+    "hipotension"
+  ],
+  "derrame cerebral": [
+    "acv ictus"
+  ],
+  "trombosis cerebral": [
+    "acv ictus"
+  ],
+  "mareo": [
+    "vertigo mareo"
+  ],
+  "desmayo": [
+    "sincope"
+  ],
+  "gripa": [
+    "resfriado infeccion respiratoria"
+  ],
+  "gripe": [
+    "influenza"
+  ],
+  "diarrea": [
+    "diarrea gastroenteritis"
+  ],
+  "vomito": [
+    "vomito emesis"
+  ],
+  "ardor al orinar": [
+    "disuria infeccion urinaria"
+  ],
+  "flujo vaginal": [
+    "flujo vaginal vaginitis"
+  ],
+  "convulsion": [
+    "convulsiones crisis epileptica"
+  ],
+  "ataque de panico": [
+    "panico"
+  ],
+  "sangrado": [
+    "hemorragia"
+  ],
+  "bajo peso": [
+    "desnutricion"
+  ],
+  "tos": [
+    "tos"
+  ],
+  "picazon": [
+    "prurito"
+  ],
+  "rasquina": [
+    "prurito"
+  ],
+  "ronchas": [
+    "urticaria"
+  ],
+  "matar": [
+    "suicidio"
+  ],
+  "matarse": [
+    "suicidio"
+  ],
+  "suicidarse": [
+    "suicidio"
+  ],
+  "quitarse la vida": [
+    "suicidio"
+  ],
+  "hacerse dano": [
+    "autolesion suicidio"
+  ],
+  "morirse": [
+    "ideacion suicidio"
+  ],
+  "no quiere vivir": [
+    "suicidio"
+  ],
+  "vppb": [
+    "vertigo posicional paroxistico benigno"
+  ],
+  "vertigo posicional": [
+    "vppb"
+  ],
+  "dix hallpike": [
+    "vppb vertigo posicional"
+  ],
+  "epley": [
+    "maniobra de reposicionamiento vppb"
+  ],
+  "hints": [
+    "sindrome vestibular agudo"
+  ],
+  "laberintitis": [
+    "neuritis vestibular"
+  ],
+  "meniere": [
+    "vertigo hipoacusia"
+  ],
+  "mareado": [
+    "mareo vertigo"
+  ],
+  "mareada": [
+    "mareo vertigo"
+  ],
+  "desmayos": [
+    "sincope"
+  ],
+  "lipotimia": [
+    "sincope presincope"
+  ],
+  "vasovagal": [
+    "sincope reflejo"
+  ],
+  "pots": [
+    "taquicardia postural ortostatica"
+  ],
+  "ortostatismo": [
+    "hipotension ortostatica"
+  ],
+  "hiperuricemia": [
+    "acido urico gota"
+  ],
+  "uricemia": [
+    "acido urico"
+  ],
+  "podagra": [
+    "gota"
+  ],
+  "tofos": [
+    "gota"
+  ],
+  "gotoso": [
+    "gota"
+  ],
+  "dxa": [
+    "densitometria"
+  ],
+  "densitometria": [
+    "dxa osteoporosis"
+  ],
+  "osteopenia": [
+    "osteoporosis"
+  ],
+  "frax": [
+    "osteoporosis riesgo de fractura"
+  ],
+  "zoledronico": [
+    "acido zoledronico"
+  ],
+  "alergia nasal": [
+    "rinitis alergica"
+  ],
+  "rinoconjuntivitis": [
+    "rinitis alergica conjuntivitis alergica"
+  ],
+  "alergia ocular": [
+    "conjuntivitis alergica"
+  ],
+  "corticoide nasal": [
+    "corticoide intranasal"
+  ],
+  "vacunas de alergia": [
+    "inmunoterapia"
+  ],
+  "trago": [
+    "alcohol"
+  ],
+  "tomador": [
+    "alcohol consumo"
+  ],
+  "borracho": [
+    "alcohol"
+  ],
+  "alcoholico": [
+    "alcohol consumo"
+  ],
+  "alcoholica": [
+    "alcohol consumo"
+  ],
+  "dt": [
+    "delirium tremens"
+  ],
+  "ciwa": [
+    "abstinencia alcoholica ciwa ar"
+  ],
+  "desintoxicacion": [
+    "abstinencia alcoholica"
+  ],
+  "wernicke": [
+    "tiamina encefalopatia"
+  ],
+  "no duerme": [
+    "insomnio"
+  ],
+  "desvelo": [
+    "insomnio"
+  ],
+  "somnifero": [
+    "hipnoticos insomnio"
+  ],
+  "pastillas para dormir": [
+    "hipnoticos insomnio"
+  ],
+  "sindrome confusional": [
+    "delirium"
+  ],
+  "confusion aguda": [
+    "delirium"
+  ],
+  "delirio": [
+    "delirium"
+  ],
+  "demente": [
+    "demencia"
+  ],
+  "olvidos": [
+    "deterioro cognitivo demencia"
+  ],
+  "minimental": [
+    "mmse demencia tamizaje cognitivo"
+  ],
+  "mmse": [
+    "minimental demencia"
+  ],
+  "moca": [
+    "deterioro cognitivo demencia"
+  ],
+  "mme": [
+    "equivalentes de morfina opioides"
+  ],
+  "opiaceos": [
+    "opioides"
+  ],
+  "opiaceo": [
+    "opioides"
+  ],
+  "neuropatia": [
+    "dolor neuropatico"
+  ],
+  "neuralgia": [
+    "dolor neuropatico"
+  ],
+  "tamizacion": [
+    "tamizaje"
+  ],
+  "cribado": [
+    "tamizaje"
+  ],
+  "screening": [
+    "tamizaje"
+  ],
+  "citologia vaginal": [
+    "citologia cervicouterina tamizaje cuello uterino"
+  ],
+  "vph": [
+    "virus del papiloma humano adn vph"
+  ],
+  "somf": [
+    "sangre oculta en materia fecal"
+  ],
+  "psa": [
+    "antigeno prostatico especifico"
+  ],
+  "anafilactico": [
+    "anafilaxia"
+  ],
+  "autoinyector": [
+    "adrenalina anafilaxia"
+  ],
+  "rcp": [
+    "reanimacion cardiopulmonar"
+  ],
+  "acls": [
+    "soporte vital avanzado reanimacion cardiopulmonar"
+  ],
+  "pals": [
+    "soporte vital avanzado pediatrico reanimacion cardiopulmonar"
+  ],
+  "dea": [
+    "desfibrilador externo automatico desfibrilacion"
+  ],
+  "fv": [
+    "fibrilacion ventricular"
+  ],
+  "tvsp": [
+    "taquicardia ventricular sin pulso"
+  ],
+  "aesp": [
+    "actividad electrica sin pulso"
+  ],
+  "rce": [
+    "retorno de la circulacion espontanea"
+  ],
+  "rosc": [
+    "retorno de la circulacion espontanea"
+  ],
+  "atragantamiento": [
+    "obstruccion de la via aerea por cuerpo extrano"
+  ],
+  "cad": [
+    "cetoacidosis diabetica"
+  ],
+  "dka": [
+    "cetoacidosis diabetica"
+  ],
+  "cetoacidosis": [
+    "cetoacidosis diabetica"
+  ],
+  "ehh": [
+    "estado hiperosmolar hiperglucemico"
+  ],
+  "hiperosmolar": [
+    "estado hiperosmolar hiperglucemico"
+  ],
+  "hipoglicemia": [
+    "hipoglucemia"
+  ],
+  "glicemia": [
+    "glucemia"
+  ],
+  "hvda": [
+    "hemorragia digestiva alta"
+  ],
+  "hda": [
+    "hemorragia digestiva alta"
+  ],
+  "hdb": [
+    "hemorragia digestiva baja"
+  ],
+  "sangrado digestivo": [
+    "hemorragia digestiva"
+  ],
+  "melena": [
+    "melenas hemorragia digestiva alta"
+  ],
+  "blatchford": [
+    "glasgow blatchford"
+  ],
+  "ibp": [
+    "inhibidor de bomba de protones"
+  ],
+  "varices": [
+    "varices esofagicas"
+  ],
+  "apendice": [
+    "apendicitis"
+  ],
+  "fid": [
+    "fosa iliaca derecha"
+  ],
+  "abdomen agudo": [
+    "dolor abdominal agudo"
+  ],
+  "colico renal": [
+    "urolitiasis litiasis urinaria"
+  ],
+  "piedra en el rinon": [
+    "calculo renal urolitiasis"
+  ],
+  "nefrolitiasis": [
+    "urolitiasis"
+  ],
+  "tce": [
+    "trauma craneoencefalico"
+  ],
+  "tec": [
+    "trauma craneoencefalico"
+  ],
+  "golpe en la cabeza": [
+    "trauma craneoencefalico"
+  ],
+  "paro cardiaco": [
+    "paro cardiorrespiratorio"
+  ],
+  "its": [
+    "infecciones de transmision sexual"
+  ],
+  "ets": [
+    "infecciones de transmision sexual"
+  ],
+  "blenorragia": [
+    "gonorrea"
+  ],
+  "gonococo": [
+    "gonorrea"
+  ],
+  "chlamydia": [
+    "clamidia"
+  ],
+  "epi": [
+    "enfermedad pelvica inflamatoria"
+  ],
+  "vb": [
+    "vaginosis bacteriana"
+  ],
+  "lues": [
+    "sifilis"
+  ],
+  "vdrl": [
+    "sifilis"
+  ],
+  "rpr": [
+    "sifilis"
+  ],
+  "sida": [
+    "vih"
+  ],
+  "tar": [
+    "antirretrovirales"
+  ],
+  "tarv": [
+    "antirretrovirales"
+  ],
+  "prep": [
+    "profilaxis preexposicion"
+  ],
+  "pep": [
+    "profilaxis posexposicion"
+  ],
+  "accidente biologico": [
+    "profilaxis posexposicion"
+  ],
+  "pinchazo": [
+    "profilaxis posexposicion"
+  ],
+  "tbc": [
+    "tuberculosis"
+  ],
+  "tb": [
+    "tuberculosis"
+  ],
+  "ppd": [
+    "tuberculina"
+  ],
+  "iltb": [
+    "tuberculosis latente"
+  ],
+  "genexpert": [
+    "prueba molecular"
+  ],
+  "xpert": [
+    "prueba molecular"
+  ],
+  "paludismo": [
+    "malaria"
+  ],
+  "vivax": [
+    "plasmodium vivax malaria"
+  ],
+  "falciparum": [
+    "plasmodium falciparum malaria"
+  ],
+  "sarm": [
+    "staphylococcus aureus resistente a meticilina"
+  ],
+  "mrsa": [
+    "sarm"
+  ],
+  "forunculo": [
+    "absceso"
+  ],
+  "mordida": [
+    "mordedura"
+  ],
+  "azucar": [
+    "glucemia"
+  ],
+  "bajo el azucar": [
+    "hipoglucemia"
+  ],
+  "se le bajo el azucar": [
+    "hipoglucemia"
+  ],
+  "azucar en": [
+    "glucemia"
+  ],
+  "vomitando sangre": [
+    "hematemesis hemorragia digestiva"
+  ],
+  "vomito con sangre": [
+    "hematemesis hemorragia digestiva"
+  ],
+  "vomita sangre": [
+    "hematemesis hemorragia digestiva"
+  ],
+  "sangre en el vomito": [
+    "hematemesis hemorragia digestiva"
+  ],
+  "popo negra": [
+    "melenas hemorragia digestiva"
+  ],
+  "heces negras": [
+    "melenas hemorragia digestiva"
+  ],
+  "cirrotico": [
+    "cirrosis"
+  ],
+  "pierna roja": [
+    "celulitis"
+  ],
+  "roja caliente": [
+    "celulitis eritema"
+  ],
+  "sin pus": [
+    "no purulenta"
+  ],
+  "pus": [
+    "purulenta absceso"
+  ],
+  "dedo gordo del pie": [
+    "podagra primera metatarsofalangica gota"
+  ],
+  "juanete inflamado": [
+    "podagra gota"
+  ],
+  "se marea": [
+    "mareo vertigo"
+  ],
+  "voltearse en la cama": [
+    "vertigo posicional vppb"
+  ],
+  "al voltearse": [
+    "vertigo posicional vppb"
+  ],
+  "peor cefalea": [
+    "cefalea en trueno hemorragia subaracnoidea"
+  ],
+  "peor dolor de cabeza": [
+    "cefalea en trueno hemorragia subaracnoidea"
+  ],
+  "cefalea subita": [
+    "cefalea en trueno"
+  ],
+  "dolor de cabeza subito": [
+    "cefalea en trueno"
+  ],
+  "orina con mal olor": [
+    "infeccion urinaria"
+  ],
+  "orina fetida": [
+    "infeccion urinaria"
+  ],
+  "bebe amarillo": [
+    "ictericia neonatal"
+  ],
+  "flaco": [
+    "desnutricion bajo peso"
+  ],
+  "muy flaco": [
+    "desnutricion"
+  ],
+  "se ahoga": [
+    "disnea"
+  ],
+  "chupa mucho": [
+    "alcohol consumo"
+  ],
+  "planificacion": [
+    "anticoncepcion"
+  ],
+  "planificar": [
+    "anticoncepcion"
+  ],
+  "pastilla del dia despues": [
+    "anticoncepcion de emergencia levonorgestrel"
+  ],
+  "hpp": [
+    "hemorragia posparto"
+  ],
+  "hemorragia postparto": [
+    "hemorragia posparto"
+  ],
+  "codigo rojo": [
+    "hemorragia posparto"
+  ],
+  "atonia": [
+    "hemorragia posparto atonia uterina"
+  ],
+  "aco": [
+    "anticonceptivos orales combinados anticoncepcion"
+  ],
+  "diu": [
+    "dispositivo intrauterino anticoncepcion"
+  ],
+  "larc": [
+    "anticoncepcion de larga duracion implante dispositivo intrauterino"
+  ],
+  "pae": [
+    "anticoncepcion de emergencia"
+  ],
+  "pildora del dia despues": [
+    "anticoncepcion de emergencia"
+  ],
+  "mela": [
+    "metodo de lactancia y amenorrea"
+  ],
+  "ictericia": [
+    "hiperbilirrubinemia"
+  ],
+  "kernicterus": [
+    "encefalopatia bilirrubinica"
+  ],
+  "bst": [
+    "bilirrubina serica total"
+  ],
+  "btc": [
+    "bilirrubina transcutanea"
+  ],
+  "dnt": [
+    "desnutricion"
+  ],
+  "emaciacion": [
+    "desnutricion aguda"
+  ],
+  "ftlc": [
+    "formula terapeutica lista para consumir"
+  ],
+  "rutf": [
+    "formula terapeutica lista para consumir ftlc"
+  ],
+  "muac": [
+    "perimetro braquial"
+  ],
+  "estatus": [
+    "estado epileptico"
+  ],
+  "status": [
+    "estado epileptico"
+  ],
+  "crisis febril": [
+    "convulsion febril"
+  ],
+  "cumg": [
+    "cistouretrografia miccional"
+  ],
+  "uretrocistografia": [
+    "cistouretrografia miccional"
   ]
 }

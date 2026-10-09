@@ -7,6 +7,7 @@ fuente: AAP Clinical Practice Guideline: Evaluation and Management of Well-Appea
 especialidades: [pediatria, medicina_general, medicina_familiar, urgencias, neonatologia, infectologia]
 cie10: [R50.9, R50.8, P39.9, A41.9, N10, G00.9]
 palabras_clave: [fiebre sin foco, lactante febril, recien nacido con fiebre, infeccion bacteriana invasiva, procalcitonina, proteina C reactiva, uroanalisis, puncion lumbar, semaforo NICE, sepsis neonatal, fiebre en menor de 3 meses]
+poblacion: [neonatos, pediatria]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

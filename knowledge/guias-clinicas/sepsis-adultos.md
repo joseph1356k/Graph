@@ -7,6 +7,7 @@ fuente: Surviving Sepsis Campaign: International Guidelines for Management of Se
 especialidades: [urgencias, medicina_interna, cuidado_intensivo, medicina_general, medicina_familiar, infectologia, cirugia_general]
 cie10: [A41.9, A41.5, A41.0, A40.9, R65.2, R65.1, R57.2, A41.8]
 palabras_clave: [sepsis, choque septico, shock septico, qSOFA, SOFA, lactato, hipotension, cristaloides, 30 mL/kg, norepinefrina, vasopresor, antibiotico empirico, hemocultivos, foco infeccioso, control del foco, presion arterial media 65, hidrocortisona, vasopresina, bacteriemia, SIRS, disfuncion organica]
+poblacion: [adultos, adultos_mayores]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

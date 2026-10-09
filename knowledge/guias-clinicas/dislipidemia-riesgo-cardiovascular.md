@@ -7,6 +7,7 @@ fuente: 2018 AHA/ACC Guideline on the Management of Blood Cholesterol; 2019 ESC/
 especialidades: [medicina_general, medicina_familiar, medicina_interna, cardiologia, endocrinologia, geriatria]
 cie10: [E78.0, E78.1, E78.2, E78.5, I25.1, Z13.6]
 palabras_clave: [dislipidemia, colesterol, LDL, trigliceridos, estatina, atorvastatina, rosuvastatina, ezetimiba, riesgo cardiovascular, prevencion primaria, prevencion secundaria, hipercolesterolemia familiar]
+poblacion: [adultos, adultos_mayores]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

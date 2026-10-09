@@ -7,6 +7,7 @@ fuente: KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management
 especialidades: [medicina_general, medicina_familiar, medicina_interna, nefrologia, geriatria, endocrinologia, cardiologia]
 cie10: [N18, N18.1, N18.2, N18.3, N18.4, N18.5, N18.9, R94.4, E11.22, I12.9]
 palabras_clave: [enfermedad renal cronica, ERC, filtracion glomerular, TFG, creatinina, albuminuria, relacion albumina creatinina, KDIGO, estadios, SGLT2, IECA, ARA II, nefroproteccion, remision a nefrologia]
+poblacion: [adultos, adultos_mayores]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

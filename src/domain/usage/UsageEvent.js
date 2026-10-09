@@ -79,6 +79,7 @@ const METADATA_ALLOWLIST = Object.freeze(new Set([
   // de dónde salió la nota del contexto ('draft' en pantalla, 'persisted',
   // 'none'). Conteos y etiquetas, nunca el texto.
   'guidelineHits',
+  'drugLabelHits',
   'noteSource',
   // ESCUDO DE PRIVACIDAD (PrivacyShieldService): conteos y estados de la
   // protección con la que salió cada llamada. Nunca el valor tapado: solo

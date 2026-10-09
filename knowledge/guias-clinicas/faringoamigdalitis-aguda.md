@@ -7,6 +7,7 @@ fuente: IDSA Clinical Practice Guideline for the Diagnosis and Management of Gro
 especialidades: [medicina_general, medicina_familiar, pediatria, urgencias, otorrinolaringologia, infectologia]
 cie10: [J02.0, J02.9, J03.0, J03.9, J06.9, B27.0]
 palabras_clave: [faringitis, amigdalitis, odinofagia, estreptococo, Centor, McIsaac, prueba rapida, penicilina, amoxicilina, mononucleosis, absceso periamigdalino, fiebre reumatica]
+poblacion: [adultos, pediatria]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

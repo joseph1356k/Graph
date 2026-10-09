@@ -7,6 +7,7 @@ fuente: ATA Guidelines for the Treatment of Hypothyroidism (Thyroid 2014); ETA G
 especialidades: [medicina_general, medicina_familiar, endocrinologia, medicina_interna, ginecologia_y_obstetricia]
 cie10: [E03.9, E03.8, E02, E06.3, E04.1, E04.2, E04.9, E89.0]
 palabras_clave: [hipotiroidismo, hipotiroidismo subclinico, tiroiditis de Hashimoto, TSH elevada, T4 libre, levotiroxina, dosis de levotiroxina, anticuerpos antiperoxidasa, anti TPO, bocio, nodulo tiroideo, ecografia tiroidea, TI-RADS, embarazo e hipotiroidismo, coma mixedematoso]
+poblacion: [adultos, adultos_mayores, gestantes]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

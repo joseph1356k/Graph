@@ -1,0 +1,7 @@
+{
+ "_comentario": "Fichas técnicas precargadas (npm run build:drug-labels, requiere red hacia cima.aemps.es). Vacío = el servicio consulta CIMA en vivo con timeout y cortacircuitos.",
+ "version": 1,
+ "generated_at": null,
+ "fuente": "CIMA, Agencia Española de Medicamentos y Productos Sanitarios (AEMPS)",
+ "labels": []
+}

@@ -7,6 +7,7 @@ fuente: ACG Clinical Guideline for the Diagnosis and Management of Gastroesophag
 especialidades: [medicina_general, medicina_familiar, gastroenterologia, medicina_interna]
 cie10: [K29.7, K29.5, K30, K21.0, K21.9, K25.9, K26.9, B98.0, K22.1]
 palabras_clave: [dispepsia, gastritis, epigastralgia, reflujo gastroesofagico, ERGE, acidez, pirosis, regurgitacion, ulcera peptica, helicobacter pylori, prueba de aliento, antigeno fecal, inhibidor de bomba de protones, omeprazol, esomeprazol, terapia cuadruple con bismuto, endoscopia, esofago de Barrett]
+poblacion: [adultos, adultos_mayores]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

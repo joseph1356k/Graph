@@ -7,6 +7,7 @@ fuente: 2021 ESC Guidelines for the diagnosis and treatment of acute and chronic
 especialidades: [medicina_general, medicina_familiar, medicina_interna, cardiologia, urgencias, geriatria]
 cie10: [I50, I50.0, I50.1, I50.9, I11.0, I13.0, I42.0, I42.9]
 palabras_clave: [insuficiencia cardiaca, falla cardiaca, fraccion de eyeccion, FEVI, BNP, NT-proBNP, disnea, edema, congestion, diuretico, furosemida, sacubitrilo valsartan, betabloqueador, espironolactona, SGLT2, cuatro pilares, edema pulmonar]
+poblacion: [adultos, adultos_mayores]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

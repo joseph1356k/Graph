@@ -7,6 +7,7 @@ fuente: Global Initiative for Chronic Obstructive Lung Disease. Global Strategy 
 especialidades: [medicina_general, medicina_familiar, medicina_interna, neumologia, geriatria, urgencias]
 cie10: [J44, J44.0, J44.1, J44.9, J43, J42]
 palabras_clave: [EPOC, enfisema, bronquitis cronica, GOLD, espirometria, FEV1, exacerbacion, LAMA, LABA, tiotropio, disnea mMRC, CAT, oxigeno domiciliario, tabaquismo]
+poblacion: [adultos, adultos_mayores]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

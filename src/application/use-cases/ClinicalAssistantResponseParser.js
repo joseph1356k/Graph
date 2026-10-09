@@ -1,4 +1,4 @@
-// Lee la respuesta JSON del chat del asistente (prompt v3) y la deja en una
+// Lee la respuesta JSON del chat del asistente (prompt v3/v4) y la deja en una
 // forma que el servicio puede devolver sin sorpresas. Puro: sin IO.
 //
 // LO QUE PROMETE EL PROMPT AQUÍ SE COMPRUEBA:
@@ -26,11 +26,12 @@ const MAX_PROPOSAL_CONTENT_LENGTH = 8000;
 const MAX_PROPOSAL_REASON_LENGTH = 300;
 const MAX_PROPOSAL_SUMMARY_LENGTH = 2000;
 const INSUFFICIENT_FALLBACK = 'No hay respaldo suficiente en la consulta ni en las guías disponibles para responder con seguridad; verifique en la fuente correspondiente.';
-const REF_PATTERN = /\[\s*G\s*(\d{1,2})\s*\]/gi;
+// [G#] guías clínicas recuperadas; [F#] fichas técnicas de medicamentos.
+const REF_PATTERN = /\[\s*([GF])\s*(\d{1,2})\s*\]/gi;
 
 function normalizeRef(value) {
-  const match = `${value || ''}`.trim().toUpperCase().match(/^\[?\s*G\s*(\d{1,2})\s*\]?$/);
-  return match ? `G${Number(match[1])}` : '';
+  const match = `${value || ''}`.trim().toUpperCase().match(/^\[?\s*([GF])\s*(\d{1,2})\s*\]?$/);
+  return match ? `${match[1]}${Number(match[2])}` : '';
 }
 
 function normalizeSupport(value) {
@@ -58,15 +59,17 @@ function stripCodeFences(text) {
 }
 
 /** Metadatos de una fuente, sin el texto del fragmento (la web no lo necesita). */
-function sourceOf(guideline) {
+function sourceOf(item) {
   return {
-    ref: guideline.ref,
-    guideline_id: guideline.guideline_id,
-    title: guideline.title,
-    organism: guideline.organism,
-    year: guideline.year,
-    section: guideline.section,
-    source: guideline.source
+    ref: item.ref,
+    kind: item.kind === 'ficha_tecnica' ? 'ficha_tecnica' : 'guia',
+    guideline_id: item.guideline_id,
+    title: item.title,
+    organism: item.organism,
+    year: item.year,
+    section: item.section,
+    source: item.source,
+    ...(item.url ? { url: item.url } : {})
   };
 }
 
@@ -97,11 +100,15 @@ function sanitizeProposal(raw) {
 /**
  * @param {string} rawContent  contenido devuelto por el modelo (ya rehidratado)
  * @param {object} options
- * @param {Array} options.guidelines  fragmentos recuperados (con `ref`)
+ * @param {Array} options.guidelines  fragmentos de guías recuperados (con `ref` G#)
+ * @param {Array} [options.drugLabels]  extractos de fichas técnicas (con `ref` F#)
  * @param {(text: string) => unknown} options.parseJsonObject
  */
-function parseAssistantReply(rawContent, { guidelines = [], parseJsonObject } = {}) {
-  const byRef = new Map((Array.isArray(guidelines) ? guidelines : []).map((item) => [item.ref, item]));
+function parseAssistantReply(rawContent, { guidelines = [], drugLabels = [], parseJsonObject } = {}) {
+  const byRef = new Map([
+    ...(Array.isArray(guidelines) ? guidelines : []),
+    ...(Array.isArray(drugLabels) ? drugLabels : [])
+  ].map((item) => [item.ref, item]));
   const raw = `${rawContent || ''}`;
 
   let parsed = null;
@@ -136,8 +143,8 @@ function parseAssistantReply(rawContent, { guidelines = [], parseJsonObject } = 
     if (ref && byRef.has(ref)) cited.add(ref);
   }
   let answer = `${parsed.respuesta}`.trim();
-  answer = answer.replace(REF_PATTERN, (match, number) => {
-    const ref = `G${Number(number)}`;
+  answer = answer.replace(REF_PATTERN, (match, kind, number) => {
+    const ref = `${kind.toUpperCase()}${Number(number)}`;
     if (byRef.has(ref)) {
       cited.add(ref);
       return `[${ref}]`;

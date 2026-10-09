@@ -7,6 +7,7 @@ fuente: AHA/ASA Guidelines for the Early Management of Patients With Acute Ische
 especialidades: [urgencias, neurologia, medicina_interna, medicina_general, medicina_familiar, cuidado_intensivo]
 cie10: [I63.9, I63.4, I63.3, I63.5, G45.9, G45.0, I64, I65.2, I69.3]
 palabras_clave: [ACV, accidente cerebrovascular, ataque cerebrovascular, ictus, stroke, infarto cerebral, isquemia cerebral, ataque isquemico transitorio, AIT, trombolisis, alteplasa, tenecteplasa, trombectomia mecanica, ventana terapeutica, 4.5 horas, NIHSS, escala de Cincinnati, BE-FAST, hemiparesia, afasia, codigo ACV, antiagregacion doble, ABCD2, estenosis carotidea, fibrilacion auricular]
+poblacion: [adultos, adultos_mayores]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

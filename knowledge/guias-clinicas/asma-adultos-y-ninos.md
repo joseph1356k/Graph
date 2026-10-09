@@ -7,6 +7,7 @@ fuente: Global Initiative for Asthma. Global Strategy for Asthma Management and 
 especialidades: [medicina_general, medicina_familiar, pediatria, neumologia, urgencias, alergologia, medicina_interna]
 cie10: [J45, J45.0, J45.1, J45.8, J45.9, J46]
 palabras_clave: [asma, crisis asmatica, broncoespasmo, sibilancias, salbutamol, corticoide inhalado, budesonida formoterol, ICS, LABA, espirometria, flujo pico]
+poblacion: [adultos, pediatria]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

@@ -245,8 +245,109 @@ base, con `previous_content` para que la web detecte si el médico editó entre 
 
 ### Telemetría
 
-Cada llamada del chat registra en el ledger `promptVersion` (`clinical-assistant-chat@3…`), `guidelineHits` (cuántos
-fragmentos entraron) y `noteSource` (`draft` | `persisted` | `none`). Conteos y etiquetas, nunca texto.
+Cada llamada del chat registra en el ledger `promptVersion` (`clinical-assistant-chat@4…`), `guidelineHits` (cuántos
+fragmentos entraron), `drugLabelHits` (cuántos extractos de fichas técnicas) y `noteSource` (`draft` | `persisted` |
+`none`). Conteos y etiquetas, nunca texto.
+
+## Chat v4 (2026-10-09): respuestas verificables
+
+Objetivo: que cada respuesta diga de dónde sale y que lo que no se pueda respaldar se vea. Todo en Graph, en memoria
+y sin proveedor nuevo; la única salida nueva es CIMA (solo el nombre del principio activo).
+
+### Corpus (61 guías, 296 fragmentos)
+
+Atención primaria y crónicos (HTA, DM2, dislipidemia, ERC, insuficiencia cardiaca, FA, EPOC, asma, hipotiroidismo,
+anemia ferropénica, dispepsia/ERGE/H. pylori, gota, osteoporosis, rinitis alérgica, obesidad y tabaquismo, lumbalgia,
+cefalea, vértigo, síncope, insomnio, dolor crónico y opioides, tamizaje de cáncer, CIE-10 frecuente); urgencias
+(dolor torácico/SCA, sepsis, ACV, TEP/TVP, anafilaxia, RCP AHA 2025, CAD/EHH e hipoglucemia, hemorragia digestiva,
+abdomen agudo y cólico renal, reglas de decisión en trauma menor, estatus epiléptico); infecciosas y del trópico
+(NAC, ITU, faringoamigdalitis, otitis/sinusitis, piel y tejidos blandos, ITS, sífilis, VIH, tuberculosis, malaria,
+dengue, tabla de antibióticos); pediatría y neonatos (IRA/AIEPI, bronquiolitis, EDA y deshidratación, fiebre sin foco,
+IVU pediátrica, ictericia neonatal, desnutrición aguda Res. 2350/2020 y Res. 115/2026, convulsión febril); gineco-
+obstetricia (control prenatal Res. 3280, preeclampsia, hemorragia posparto, anticoncepción); salud mental y geriatría
+(depresión, ansiedad y riesgo suicida, alcohol, delirium y demencia). Cada guía cita fuente y año y declara
+`revisado_por` vacío hasta la revisión médica: el asistente las presenta como resumen orientativo.
+
+### Retrieval v2 (`src/application/knowledge/ClinicalGuidelineIndex.js`)
+
+- **Población.** Cada guía declara `poblacion` (adultos, adultos_mayores, gestantes, pediatria, neonatos). Si la
+  pregunta nombra una («en niños», «en el embarazo») manda la pregunta; si no, se deduce de `patient_context` (edad,
+  sexo) y de señales de embarazo en la nota o en los códigos (O00–O99, Z33–Z36). La guía de la población sube ×1.15,
+  la de otra baja ×0.8 (no desaparece); la sección cuyo título nombra la población recibe ×1.1.
+- **Seguimiento.** La pregunta anterior del médico entra como `followUp`: si la actual es corta («¿y en niños?»,
+  «¿por cuánto tiempo anticoagulo?») sus términos pesan 0.8 y cuentan como propios; si es larga, 0.4.
+- **Digitación.** Un término que no existe en el corpus se corrige al más parecido por trigramas (Dice ≥ 0.7),
+  con peso 0.8; un término corregido nunca basta por sí solo para traer una guía («factura» no trae «fractura»).
+- **Ruido.** Saludos, muletillas y números sueltos pesan como genéricos.
+- **Relevancia.** Cada extracto lleva `relevance` (alta, media, baja) según cuánto de la pregunta cubre y su
+  distancia al mejor; el prompt la muestra para que el modelo no tome un vecino cercano como respuesta.
+
+### Fichas técnicas oficiales (`src/application/knowledge/DrugLabelService.js`)
+
+- Para preguntas de dosis, contraindicaciones (4.3), interacciones (4.5), embarazo y lactancia (4.6) o reacciones
+  adversas (4.8) sobre un medicamento del diccionario cerrado `knowledge/fichas-tecnicas/medicamentos.json`
+  (≈170 principios activos con sus nombres colombianos: acetaminofén→paracetamol, dipirona→metamizol…), Graph añade
+  hasta 2 extractos de la ficha técnica española (CIMA, AEMPS), numerados `[F1]`, `[F2]`, dentro de
+  `<fichas_tecnicas>`. El extracto (≤ 1 800 caracteres) prioriza los párrafos que tocan lo que se preguntó (niños,
+  falla renal o hepática, ancianos).
+- **Privacidad:** a CIMA solo sale el principio activo de una entrada del diccionario; nunca texto del médico ni del
+  paciente (`verify-drug-labels.js` lo comprueba con un mensaje que trae nombre y documento).
+- **Resiliencia:** primero la instantánea `knowledge/fichas-tecnicas/fichas.snapshot.json`; si no está, CIMA en vivo
+  con plazo de 2,5 s, caché de 12 h (fallos 10 min) y cortacircuitos (3 fallos seguidos → 10 min sin consultar).
+  Nunca lanza: sin ficha, el chat sigue con las guías.
+- **Operación:** `npm run check:cima` prueba la conexión desde el entorno donde corre Graph. Si CIMA es lento o no
+  alcanzable desde el despliegue, `npm run build:drug-labels` (desde una máquina con red) precarga las secciones
+  4.2, 4.3, 4.5 y 4.6 de todo el diccionario y se commitea el JSON; con `MIRACLE_ASSISTANT_DRUG_LABELS=snapshot` no
+  se sale a la red. `=off` lo apaga.
+- Es una ficha **española**: la pantalla pide verificar la presentación registrada en el INVIMA.
+
+### Verificación de cifras (`src/application/use-cases/ClinicalAnswerVerifier.js`)
+
+Tras la respuesta del modelo, cada cifra con unidad («500 mg cada 8 h», «≥140/90 mmHg», «7 días», «0,15 mg/kg») se
+busca, con la misma familia de unidad y equivalencias (1 g = 1000 mg, 1 L = 1000 mL), en: extractos de guías y
+fichas, nota (borrador o persistida), transcripción, descripciones de códigos, edad, mensaje e historial del médico.
+Las que no aparecen salen en `unverified_figures` (máx. 8); `figures_checked` dice cuántas se revisaron. El prompt
+v4 avisa al modelo de que esto ocurre y le pide copiar cada cifra con su unidad tal como está en la fuente o
+marcarla como conocimiento general.
+
+### Respuesta (campos nuevos, opcionales)
+
+`sources[].kind` (`guia` | `ficha_tecnica`), `sources[].url` (solo fichas), `figures_checked`, `unverified_figures`,
+`used_context.drug_labels`. `support: "guia"` cubre guías y fichas.
+
+### Evaluación del retrieval (`scripts/eval-guideline-retrieval.js`)
+
+Conjunto fijo `scripts/fixtures/rag-eval.json`: preguntas parafraseadas como se dicen en consulta, con errores de
+digitación, de seguimiento, con distinta población y fuera de tema. Mide recall@1, recall@3, MRR, precisión fuera de
+tema y latencia p95; `npm test` falla si recall@3 < 90 %, MRR < 0.75, alguna pregunta fuera de tema trae guías o el
+p95 supera 25 ms. Al añadir una guía, añade sus preguntas aquí y en `verify-guideline-index.js`.
+
+### Qué modelo usar (decisión de producto, no de código)
+
+La calidad clínica del texto depende del modelo configurado en Provider Studio (tarjeta «Asistente»). La evidencia
+2024–2026 (evaluaciones independientes y el benchmark HealthBench) no muestra ventaja de los modelos afinados en
+medicina frente a los generalistas de frontera, y los productos con contenido licenciado (UpToDate, DynaMed,
+OpenEvidence, ClinicalKey) no ofrecen API abierta utilizable desde Colombia. Recomendación:
+
+- El modelo generalista de frontera más fuerte disponible, por la API nativa del proveedor (no a través de un
+  intermediario) y con retención cero o acuerdo de tratamiento de datos; contrato de transmisión de datos según la
+  Ley 1581 de 2012.
+- Antes de fijarlo, comparar dos o tres candidatos con 150–300 preguntas clínicas colombianas en español,
+  calificadas por médicos con una rúbrica (exactitud, seguridad, abstención correcta, uso de fuentes).
+- Opcional a futuro: un segundo modelo de otro proveedor como verificador solo para respuestas de alto riesgo
+  (dosis pediátricas, embarazo, interacciones), si la evaluación muestra que aporta.
+
+### Fuentes externas evaluadas
+
+| Fuente | Estado | Motivo |
+|---|---|---|
+| CIMA (AEMPS) fichas técnicas | integrada | oficial, en español, API sin clave; solo sale el principio activo |
+| INVIMA CUM (datos.gov.co) | después | registro sanitario colombiano, sin posología; útil para «¿está registrado en Colombia?» |
+| GPC MinSalud / IETS | vía corpus | sin API; se resumen con cita en `knowledge/guias-clinicas` |
+| PubMed / Europe PMC | después | evidencia en inglés, 0,3–1,5 s por consulta; candidato a un modo «buscar evidencia» explícito |
+| API CIE de la OMS | no ahora | la CIE-10 de la API está en inglés; la CIE-11 sí está en español (transición en Colombia hasta 2027) |
+| NICE API | no | licencia y tarifa para uso fuera del Reino Unido |
+| Embeddings locales (Model2Vec, e5-small) | después | solo si el corpus crece a cientos de guías; hoy la búsqueda léxica mide 100 % recall@3 en la evaluación |
 
 ## Seguridad y límites (resumen)
 
@@ -254,7 +355,7 @@ El system prompt de chat (`ClinicalAssistantPromptBuilder.buildChatSystemPrompt`
 
 ## Limitaciones actuales
 
-- La no-invención en el texto de `answer` se exige por prompt y no es verificable automáticamente (por eso `support`, el safety notice y la revisión médica). Lo que sí se verifica: las citas a guías y la propuesta de nota.
+- La no-invención en el texto de `answer` se exige por prompt. Lo que se verifica en código: las citas (`[G#]`, `[F#]`), la propuesta de nota y, desde v4, que cada cifra con unidad aparezca en las fuentes o en la consulta (`unverified_figures`). Que una cifra exista en la fuente no prueba que se usó bien: por eso es advertencia y el médico ve las fuentes.
 - El corpus de guías es un resumen curado (fuente y año en cada una, `revisado_por` vacío hasta que un médico la revise). El asistente lo presenta como orientativo.
 - En ajustes y propuestas de nota, la estructura está garantizada (keys/orden/merge); el contenido textual final requiere revisión (`requires_physician_review`).
 - `confidence` es autoreportada por el modelo (clampeada), no calibrada.
@@ -265,7 +366,9 @@ El system prompt de chat (`ClinicalAssistantPromptBuilder.buildChatSystemPrompt`
 ## Tests
 
 ```bash
-npm run test:guidelines               # corpus al día + retrieval (consultas canónicas, negativos, boosts)
+npm run test:guidelines               # corpus al día + retrieval + verificador de cifras + evaluación + fichas técnicas
+npm run eval:rag                      # métricas del retrieval con el detalle de cada fallo
+npm run check:cima                    # prueba EN VIVO de CIMA desde este entorno (requiere red)
 npm run test:clinical-assistant-api   # ~42 checks (fake LLM + fake Supabase + rutas reales), incluye chat v3
 npm run test:privacy                  # el borrador en pantalla siembra el escudo; las guías salen íntegras
 npm test                              # todo lo anterior y el resto de suites

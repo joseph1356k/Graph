@@ -7,6 +7,7 @@ fuente: ACOG Practice Bulletin No. 222: Gestational Hypertension and Preeclampsi
 especialidades: [ginecologia_y_obstetricia, medicina_general, medicina_familiar, urgencias, medicina_interna, cuidado_intensivo]
 cie10: [O14.0, O14.1, O14.2, O14.9, O13, O10.0, O11, O15.0, O15.9]
 palabras_clave: [preeclampsia, eclampsia, hipertension gestacional, hipertension cronica en el embarazo, sindrome HELLP, proteinuria en el embarazo, presion arterial en embarazo, sulfato de magnesio, labetalol, nifedipino, hidralazina, crisis hipertensiva en embarazo, aspirina en embarazo, calcio en embarazo, relacion proteinuria creatininuria, cefalea en gestante, epigastralgia en gestante, convulsion en embarazo]
+poblacion: [gestantes]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

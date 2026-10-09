@@ -7,6 +7,7 @@ fuente: Atención Integrada a las Enfermedades Prevalentes de la Infancia (AIEPI
 especialidades: [pediatria, medicina_general, medicina_familiar, urgencias, neonatologia, neumologia]
 cie10: [J06.9, J00, J18.9, J15.9, J13, J22, J05.0, R06.0]
 palabras_clave: [infeccion respiratoria aguda, IRA, neumonia pediatrica, tos, respiracion rapida, tiraje subcostal, AIEPI, signos de peligro, amoxicilina, crup, laringotraqueitis, estridor, dexametasona, oxigeno]
+poblacion: [pediatria, neonatos]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

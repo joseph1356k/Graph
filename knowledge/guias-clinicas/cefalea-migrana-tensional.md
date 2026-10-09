@@ -7,6 +7,7 @@ fuente: International Classification of Headache Disorders, 3rd edition (ICHD-3,
 especialidades: [medicina_general, medicina_familiar, neurologia, urgencias, medicina_interna]
 cie10: [G43.0, G43.1, G43.9, G44.2, G44.4, R51, G44.0]
 palabras_clave: [cefalea, dolor de cabeza, migrana, migraña con aura, cefalea tensional, cefalea en racimos, banderas rojas, SNOOP, cefalea en trueno, triptan, sumatriptan, profilaxis migraña, cefalea por abuso de analgesicos, topiramato, propranolol, amitriptilina]
+poblacion: [adultos, adultos_mayores]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

@@ -7,6 +7,7 @@ fuente: OMS. The treatment of diarrhoea: a manual for physicians (2005); AIEPI l
 especialidades: [pediatria, medicina_general, medicina_familiar, urgencias, neonatologia]
 cie10: [A09, A08.0, A08.4, A04.9, E86.0, K52.9]
 palabras_clave: [diarrea, enfermedad diarreica aguda, EDA, gastroenteritis, deshidratacion, sales de rehidratacion oral, SRO, plan A, plan B, plan C, zinc, ondansetron, lactato de Ringer, disenteria, rotavirus]
+poblacion: [pediatria]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

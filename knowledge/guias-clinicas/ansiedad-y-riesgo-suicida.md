@@ -7,6 +7,7 @@ fuente: NICE CG113 Generalised anxiety disorder and panic disorder in adults (20
 especialidades: [medicina_general, medicina_familiar, psiquiatria, urgencias, medicina_interna, psicologia]
 cie10: [F41.1, F41.0, F41.9, F40.1, F43.1, F43.2, R45.8, X84, Z91.5]
 palabras_clave: [ansiedad, trastorno de ansiedad generalizada, crisis de panico, ataque de panico, trastorno de panico, GAD-7, fobia social, estres postraumatico, riesgo suicida, ideacion suicida, intento de suicidio, autolesion, C-SSRS, plan de seguridad, benzodiacepinas, ISRS, sertralina, buspirona, pregabalina]
+poblacion: [adultos, adultos_mayores]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

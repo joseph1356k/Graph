@@ -7,6 +7,7 @@ fuente: American College of Physicians Clinical Practice Guideline: Noninvasive 
 especialidades: [medicina_general, medicina_familiar, ortopedia, medicina_interna, urgencias, fisiatria, medicina_del_trabajo]
 cie10: [M54.5, M54.4, M54.3, M51.1, M54.1, M54.9, M48.0]
 palabras_clave: [lumbalgia, dolor lumbar, dolor de espalda baja, lumbago, ciatica, radiculopatia, hernia discal, banderas rojas, sindrome de cola de caballo, fractura vertebral, STarT Back, AINE, incapacidad laboral, reposo]
+poblacion: [adultos, adultos_mayores]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

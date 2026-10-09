@@ -128,6 +128,15 @@ function promptTextOf(call) {
   return call.messages.map((m) => `${m.role}:${m.content}`).join('\n');
 }
 
+// Fichas técnicas falsas: el servicio real (DrugLabelService) se prueba con su
+// propio verificador; aquí importa cómo entran al prompt y a las fuentes.
+const drugLabelState = { labels: () => [] };
+const fakeDrugLabelService = {
+  async lookup({ message }) {
+    return drugLabelState.labels(message);
+  }
+};
+
 async function startServer({ restClient, llm }) {
   const templateRepository = new SupabaseClinicalTemplateRepository(restClient);
   const encounterRepository = new SupabaseClinicalEncounterRepository(restClient);
@@ -142,7 +151,8 @@ async function startServer({ restClient, llm }) {
     noteValidationService,
     // El índice real sobre el corpus commiteado: así se prueba también que
     // el retrieval y el prompt encajan.
-    guidelineIndex: loadDefaultIndex()
+    guidelineIndex: loadDefaultIndex(),
+    drugLabelService: fakeDrugLabelService
   });
 
   const app = express();
@@ -973,6 +983,102 @@ async function main() {
       assert.strictEqual(sinCambios.status, 200);
       assert.strictEqual(sinCambios.body.note_proposal, null);
     });
+    // ── v4: cifras verificadas, seguimiento conversacional y fichas técnicas ──
+    llm.state.chatHandler = () => ({
+      respuesta: 'La meta sistólica es 120–129 mmHg si se tolera [G1]. Inicie losartán 35 mg/kg al día.',
+      respaldo: 'guia',
+      fuentes: [{ ref: 'G1' }],
+      faltantes: [],
+      alertas: [],
+      propuesta_nota: null,
+      seguimientos: []
+    });
+    const cifras = await call('POST', '/api/clinical/assistant/chat', {
+      message: '¿Cuál es la meta de presión arterial en un paciente hipertenso?'
+    });
+    await check('v4: las cifras sin respaldo en las fuentes se marcan; las de la guía no', () => {
+      assert.strictEqual(cifras.status, 200, JSON.stringify(cifras.body));
+      assert.ok(cifras.body.figures_checked >= 2, `figures_checked=${cifras.body.figures_checked}`);
+      assert.deepStrictEqual(cifras.body.unverified_figures, ['35 mg/kg']);
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(prompt.includes('clinical-assistant-chat@4') || ClinicalAssistantPromptBuilder.CHAT_PROMPT_VERSION.startsWith('clinical-assistant-chat@4'));
+      assert.ok(prompt.includes('CIFRAS:'), 'la regla de cifras está en el system prompt');
+      assert.ok(/Relevancia: (alta|media|baja)/.test(prompt), 'cada extracto declara su relevancia');
+    });
+
+    llm.state.chatHandler = () => ({
+      respuesta: 'En niños se usa la dosis por peso [G1].',
+      respaldo: 'guia',
+      fuentes: [{ ref: 'G1' }],
+      faltantes: ['Peso del niño'],
+      alertas: [],
+      propuesta_nota: null,
+      seguimientos: []
+    });
+    const seguimiento = await call('POST', '/api/clinical/assistant/chat', {
+      message: '¿y en niños?',
+      history: [
+        { role: 'user', content: 'dosis de amoxicilina en otitis media aguda' },
+        { role: 'assistant', content: 'En adultos, amoxicilina…' }
+      ]
+    });
+    await check('v4: una pregunta de seguimiento recupera guías con la pregunta anterior', () => {
+      assert.strictEqual(seguimiento.status, 200, JSON.stringify(seguimiento.body));
+      assert.ok(seguimiento.body.used_context.guidelines >= 1, 'recupera guías');
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(/Otitis media aguda|Antibióticos/i.test(prompt), 'las guías vienen del tema de la pregunta anterior');
+      assert.strictEqual(seguimiento.body.support, 'guia');
+    });
+
+    drugLabelState.labels = (message) => (/amoxicilina/i.test(message) ? [{
+      ref: 'F1',
+      kind: 'ficha_tecnica',
+      guideline_id: 'cima-00000',
+      title: 'Ficha técnica: Amoxicilina 500 mg cápsulas duras',
+      organism: 'AEMPS (España) · CIMA',
+      year: '',
+      section: '4.2 Posología y forma de administración',
+      source: 'CIMA, Agencia Española de Medicamentos y Productos Sanitarios',
+      url: 'https://cima.aemps.es/cima/publico/home.html',
+      text: 'Adultos y niños de 40 kg o más: 250 mg a 500 mg tres veces al día, o 750 mg a 1 g cada 12 horas. Niños de menos de 40 kg: 20 a 90 mg/kg/día en dosis divididas.'
+    }] : []);
+    llm.state.chatHandler = () => ({
+      respuesta: 'Según la ficha técnica, en adultos 500 mg tres veces al día o 1 g cada 12 horas [F1].',
+      respaldo: 'guia',
+      fuentes: [{ ref: 'F1' }],
+      faltantes: [],
+      alertas: [],
+      propuesta_nota: null,
+      seguimientos: []
+    });
+    const ficha = await call('POST', '/api/clinical/assistant/chat', {
+      message: '¿Cuál es la dosis de amoxicilina en adultos?'
+    });
+    await check('v4 fichas técnicas: entran al prompt como [F#], se citan como fuente y sus cifras quedan verificadas', () => {
+      assert.strictEqual(ficha.status, 200, JSON.stringify(ficha.body));
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      const userMessage = JSON.parse(llm.state.calls.at(-1).messages.at(-1).content);
+      assert.ok(`${userMessage.fichas_tecnicas}`.startsWith('<fichas_tecnicas>'), 'las fichas viajan delimitadas');
+      assert.ok(prompt.includes('[F1] Ficha técnica: Amoxicilina'));
+      assert.strictEqual(ficha.body.used_context.drug_labels, 1);
+      const source = ficha.body.sources.find((item) => item.ref === 'F1');
+      assert.ok(source, 'la ficha citada aparece en sources');
+      assert.strictEqual(source.kind, 'ficha_tecnica');
+      assert.ok(source.url && !('text' in source));
+      assert.ok(ficha.body.answer.includes('[F1]'));
+      assert.deepStrictEqual(ficha.body.unverified_figures, []);
+    });
+
+    drugLabelState.labels = () => { throw new Error('fuente caída'); };
+    llm.state.chatHandler = () => ({ respuesta: 'Respuesta sin ficha.', respaldo: 'general', fuentes: [], faltantes: [], alertas: [], propuesta_nota: null, seguimientos: [] });
+    const fichaCaida = await call('POST', '/api/clinical/assistant/chat', { message: 'dosis de amoxicilina en adultos' });
+    await check('v4 fichas técnicas: si la fuente falla, el chat responde igual y sin [F#]', () => {
+      assert.strictEqual(fichaCaida.status, 200, JSON.stringify(fichaCaida.body));
+      assert.strictEqual(fichaCaida.body.used_context.drug_labels, 0);
+      assert.ok(!promptTextOf(llm.state.calls.at(-1)).includes('[F1] Ficha'), 'sin extractos de fichas');
+      assert.ok(!JSON.parse(llm.state.calls.at(-1).messages.at(-1).content).fichas_tecnicas, 'el mensaje no trae el bloque de fichas');
+    });
+    drugLabelState.labels = () => [];
     llm.state.chatHandler = null;
 
     console.log(`\n[verify-clinical-assistant] ${passed} verificaciones OK`);

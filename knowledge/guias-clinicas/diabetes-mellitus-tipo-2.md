@@ -7,6 +7,7 @@ fuente: ADA Standards of Care in Diabetes 2025 (Diabetes Care 2025;48 Suppl 1); 
 especialidades: [medicina_general, medicina_familiar, medicina_interna, endocrinologia, geriatria, nefrologia, cardiologia]
 cie10: [E11, E11.9, E11.65, E11.22, E11.40, R73.0, R73.03]
 palabras_clave: [diabetes, DM2, hemoglobina glicosilada, HbA1c, glicemia, metformina, insulina, SGLT2, GLP-1, prediabetes, hipoglicemia, pie diabetico]
+poblacion: [adultos, adultos_mayores]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

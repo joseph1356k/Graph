@@ -7,6 +7,7 @@ fuente: IDSA Clinical Practice Guideline for Group A Streptococcal Pharyngitis (
 especialidades: [medicina_general, medicina_familiar, pediatria, urgencias, infectologia, medicina_interna]
 cie10: [J02.0, J03.9, H66.9, N30.0, N10, J18.9, L01.0, L03.9]
 palabras_clave: [dosis, antibiotico, amoxicilina, amoxicilina clavulanato, azitromicina, cefalexina, nitrofurantoina, trimetoprim sulfametoxazol, ciprofloxacina, dicloxacilina, clindamicina, doxiciclina, metronidazol, penicilina benzatinica, mg/kg]
+poblacion: [adultos, adultos_mayores, pediatria]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

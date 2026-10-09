@@ -7,6 +7,7 @@ fuente: IDSA/ESCMID Guideline for Uncomplicated Cystitis and Pyelonephritis in W
 especialidades: [medicina_general, medicina_familiar, medicina_interna, urgencias, urologia, nefrologia, ginecologia_y_obstetricia, geriatria]
 cie10: [N30.0, N30.9, N39.0, N10, N12, O23.4, R82.7]
 palabras_clave: [infeccion urinaria, ITU, cistitis, pielonefritis, disuria, bacteriuria, urocultivo, uroanalisis, nitrofurantoina, fosfomicina, trimetoprim sulfametoxazol, ciprofloxacina, embarazo]
+poblacion: [adultos, adultos_mayores, gestantes]
 fecha_revision: 2026-10-01
 revisado_por:
 ---

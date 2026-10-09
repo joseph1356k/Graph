@@ -38,6 +38,7 @@ const NoteExportService = require('../src/application/use-cases/NoteExportServic
 const ClinicalNotePromptBuilder = require('../src/application/use-cases/ClinicalNotePromptBuilder');
 const ClinicalNoteValidationService = require('../src/application/use-cases/ClinicalNoteValidationService');
 const { loadDefaultIndex: loadGuidelineIndex } = require('../src/application/knowledge/ClinicalGuidelineIndex');
+const { DrugLabelService, isDrugLabelsDisabled } = require('../src/application/knowledge/DrugLabelService');
 const ClinicalNoteGeneratorService = require('../src/application/use-cases/ClinicalNoteGeneratorService');
 const ClinicalAssistantPromptBuilder = require('../src/application/use-cases/ClinicalAssistantPromptBuilder');
 const ClinicalAssistantValidationService = require('../src/application/use-cases/ClinicalAssistantValidationService');
@@ -259,13 +260,29 @@ const clinicalGuidelineIndex = loadGuidelineIndex();
   const stats = clinicalGuidelineIndex.stats();
   console.log(`[GuidelineIndex] ${stats.guidelines} guías, ${stats.chunks} fragmentos`);
 }
+// Fichas técnicas oficiales (CIMA-AEMPS) para preguntas de dosis: primero la
+// instantánea commiteada, luego CIMA en vivo con plazo corto y cortacircuitos.
+// A CIMA solo sale el principio activo de un diccionario cerrado, nunca texto
+// de la consulta. MIRACLE_ASSISTANT_DRUG_LABELS=off lo apaga; =snapshot usa
+// solo la instantánea (sin red).
+const clinicalDrugLabelService = isDrugLabelsDisabled()
+  ? null
+  : new DrugLabelService({
+    live: `${process.env.MIRACLE_ASSISTANT_DRUG_LABELS || ''}`.trim().toLowerCase() !== 'snapshot',
+    timeoutMs: Number(process.env.MIRACLE_ASSISTANT_DRUG_LABELS_TIMEOUT_MS) || undefined
+  });
+if (clinicalDrugLabelService) {
+  const stats = clinicalDrugLabelService.stats();
+  console.log(`[DrugLabels] ${stats.medicamentos} medicamentos, ${stats.precargadas} fichas precargadas, CIMA en vivo: ${stats.live ? 'sí' : 'no'}`);
+}
 const clinicalAssistantService = new ClinicalAssistantService({
   encounterService: clinicalEncounterService,
   llmProvider: withProviderFallback(assistantLlmProvider, llmProvider),
   promptBuilder: new ClinicalAssistantPromptBuilder(),
   validationService: new ClinicalAssistantValidationService(),
   noteValidationService: clinicalNoteValidationService,
-  guidelineIndex: clinicalGuidelineIndex
+  guidelineIndex: clinicalGuidelineIndex,
+  drugLabelService: clinicalDrugLabelService
 });
 const graphProviderConfigService = new GraphProviderConfigService(llmProvider);
 const miracleProductLlmProviderConfigService = new MiracleProductLlmProviderConfigService();

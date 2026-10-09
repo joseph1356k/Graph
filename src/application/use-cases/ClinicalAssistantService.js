@@ -4,7 +4,8 @@ const ClinicalAssistantValidationService = require('./ClinicalAssistantValidatio
 const ClinicalAssistantPromptBuilder = require('./ClinicalAssistantPromptBuilder');
 const { parseAssistantReply } = require('./ClinicalAssistantResponseParser');
 const NoteModeResolver = require('./NoteModeResolver');
-const { buildRetrievalContext, isRagDisabled } = require('../knowledge/ClinicalGuidelineIndex');
+const { buildRetrievalContext, inferPopulations, lastUserQuestion, isRagDisabled } = require('../knowledge/ClinicalGuidelineIndex');
+const { verifyFigures } = require('./ClinicalAnswerVerifier');
 
 const { withFeature } = require('../../infrastructure/usage/UsageContext');
 const { FEATURES } = require('../../domain/usage/vocabulary');
@@ -26,7 +27,15 @@ const MAX_CHAT_OUTPUT_TOKENS = 1800;
 const TEMPERATURE = Object.freeze({ chat: 0.3, diagnostic: 0.2, adjust: 0.2 });
 
 class ClinicalAssistantService {
-  constructor({ encounterService, llmProvider, promptBuilder, validationService, noteValidationService = null, guidelineIndex = null } = {}) {
+  constructor({
+    encounterService,
+    llmProvider,
+    promptBuilder,
+    validationService,
+    noteValidationService = null,
+    guidelineIndex = null,
+    drugLabelService = null
+  } = {}) {
     if (!encounterService || !promptBuilder || !validationService) {
       throw new Error('ClinicalAssistantService requires encounterService, promptBuilder and validationService');
     }
@@ -39,6 +48,9 @@ class ClinicalAssistantService {
     // Opcional: índice de guías clínicas (ClinicalGuidelineIndex). Sin él el
     // chat funciona igual, sin citas.
     this.guidelineIndex = guidelineIndex;
+    // Opcional: fichas técnicas oficiales (DrugLabelService) para preguntas de
+    // dosis. Sin él, o si la fuente no responde a tiempo, el chat sigue igual.
+    this.drugLabelService = drugLabelService;
   }
 
   hasLlm() {
@@ -116,6 +128,9 @@ class ClinicalAssistantService {
     const guidelines = this.retrieveGuidelines({ message: cleanMessage, clinicalContext });
     clinicalContext.guidelines = guidelines;
     usedContext.guidelines = guidelines.length;
+    const drugLabels = await this.retrieveDrugLabels({ message: cleanMessage, clinicalContext });
+    clinicalContext.drug_labels = drugLabels;
+    usedContext.drug_labels = drugLabels.length;
 
     try {
       const messages = this.promptBuilder.buildChatMessages({
@@ -151,6 +166,7 @@ class ClinicalAssistantService {
               temperature: TEMPERATURE.chat,
               maxTokens: MAX_CHAT_OUTPUT_TOKENS,
               guidelineHits: guidelines.length,
+              drugLabelHits: drugLabels.length,
               noteSource: clinicalContext.note_source || 'none'
             }
           }
@@ -160,8 +176,19 @@ class ClinicalAssistantService {
 
       const reply = parseAssistantReply(rawContent, {
         guidelines,
+        drugLabels,
         parseJsonObject: (content) => this.llmProvider.parseJsonObject(content)
       });
+      // Cada cifra con unidad de la respuesta se busca en las fuentes y en la
+      // consulta; las que no aparecen se devuelven para que el médico las
+      // verifique (ClinicalAnswerVerifier).
+      const verification = verifyFigures(reply.answer, this.evidenceTexts({
+        built,
+        clinicalContext,
+        message: cleanMessage,
+        guidelines,
+        drugLabels
+      }));
       const noteProposal = reply.proposal && clinicalContext.note_editable
         ? this.buildNoteProposal({ proposal: reply.proposal, encounter, noteDraft: built.noteDraft, message: cleanMessage })
         : null;
@@ -180,6 +207,8 @@ class ClinicalAssistantService {
         missing_information: reply.missing_information,
         alarm_signs: reply.alarm_signs,
         follow_up_questions: reply.follow_up_questions,
+        figures_checked: verification.checked,
+        unverified_figures: verification.unverified,
         note_proposal: noteProposal
       };
     } catch (error) {
@@ -202,16 +231,58 @@ class ClinicalAssistantService {
     }
     try {
       const codes = Array.isArray(clinicalContext.codes) ? clinicalContext.codes : [];
+      const context = buildRetrievalContext({ noteJson: clinicalContext.note_json, codes });
       return this.guidelineIndex.search({
         message,
-        context: buildRetrievalContext({ noteJson: clinicalContext.note_json, codes }),
+        context,
+        followUp: lastUserQuestion(clinicalContext.history),
         specialty: clinicalContext.specialty,
-        cie10: codes.filter((code) => code.sistema === 'CIE-10').map((code) => code.codigo)
+        cie10: codes.filter((code) => code.sistema === 'CIE-10').map((code) => code.codigo),
+        populations: inferPopulations({ message, patient: clinicalContext.patient, context, codes })
       });
     } catch (error) {
       console.warn(`[Clinical Assistant] retrieval de guías falló: ${error.message}`);
       return [];
     }
+  }
+
+  /**
+   * Fichas técnicas para preguntas de dosis. Nunca lanza ni demora el chat más
+   * allá del timeout del servicio: ante cualquier fallo, lista vacía. A la
+   * fuente externa solo sale el nombre genérico del medicamento.
+   */
+  async retrieveDrugLabels({ message = '', clinicalContext = {} } = {}) {
+    if (!this.drugLabelService || typeof this.drugLabelService.lookup !== 'function') {
+      return [];
+    }
+    try {
+      return await this.drugLabelService.lookup({ message, previousQuestion: lastUserQuestion(clinicalContext.history) });
+    } catch (error) {
+      console.warn(`[Clinical Assistant] fichas técnicas no disponibles: ${error.message}`);
+      return [];
+    }
+  }
+
+  /** Textos contra los que se verifican las cifras de la respuesta. */
+  evidenceTexts({ built = {}, clinicalContext = {}, message = '', guidelines = [], drugLabels = [] } = {}) {
+    const texts = [message];
+    for (const item of [...guidelines, ...drugLabels]) texts.push(item.text);
+    const draft = contextBuilder.noteDraftPlainText(built.noteDraft);
+    if (draft) texts.push(draft);
+    const persisted = built.persistedNote;
+    if (persisted && Array.isArray(persisted.sections)) {
+      texts.push(persisted.sections.map((section) => `${section.content || ''}`).join('\n'));
+    }
+    if (built.fullTranscript) texts.push(built.fullTranscript);
+    for (const item of Array.isArray(clinicalContext.history) ? clinicalContext.history : []) {
+      if (item.role === 'user') texts.push(item.content);
+    }
+    for (const code of Array.isArray(clinicalContext.codes) ? clinicalContext.codes : []) {
+      texts.push(`${code.descripcion || ''}`);
+    }
+    const age = Number(clinicalContext.patient?.edad);
+    if (Number.isFinite(age)) texts.push(`${age} años`);
+    return texts;
   }
 
   /**
