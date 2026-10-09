@@ -3,6 +3,7 @@
 // /docSegmentado/contenido/1). Sin red.
 //   node scripts/verify-drug-labels.js
 const assert = require('assert');
+const { promesa, cerrar } = require('./lib/promesas');
 const {
   DrugLabelService,
   isDrugLabelsDisabled,
@@ -252,8 +253,6 @@ async function main() {
   console.log(`\n[verify-drug-labels] ${passed} verificaciones OK`);
 }
 
-main().catch((error) => {
-  console.error(`\n[verify-drug-labels] FALLÓ: ${error.message}`);
-  console.error(error.stack);
-  process.exit(1);
-});
+// Juez de la promesa 604 de docs/specs/006-el-asistente-clinico-responde-con-respaldo.md.
+promesa(604, 'Una pregunta de dosis trae la ficha técnica del medicamento del diccionario cerrado, y a CIMA solo sale el principio activo', () => main())
+  .then(() => cerrar('verify-drug-labels'));

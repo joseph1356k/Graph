@@ -6,6 +6,7 @@
 //     preguntas de seguimiento y etiqueta de relevancia.
 //   node scripts/verify-assistant-grounding.js
 const assert = require('assert');
+const { promesa, cerrar } = require('./lib/promesas');
 const { extractFigures, verifyFigures, parseNumber } = require('../src/application/use-cases/ClinicalAnswerVerifier');
 const {
   loadDefaultIndex,
@@ -123,10 +124,6 @@ function main() {
   console.log(`\n[verify-assistant-grounding] ${passed} verificaciones OK`);
 }
 
-try {
-  main();
-} catch (error) {
-  console.error(`\n[verify-assistant-grounding] FALLÓ: ${error.message}`);
-  console.error(error.stack);
-  process.exit(1);
-}
+// Juez de la promesa 603 de docs/specs/006-el-asistente-clinico-responde-con-respaldo.md.
+promesa(603, 'Una cifra de la respuesta que no está en las fuentes citadas ni en la consulta se marca para el médico, y cada extracto declara su relevancia', () => main())
+  .then(() => cerrar('verify-assistant-grounding'));

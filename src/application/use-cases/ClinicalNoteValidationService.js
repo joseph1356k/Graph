@@ -13,11 +13,12 @@ const grounding = require('../../domain/clinical/grounding');
 //   - `evidence_spans` da los offsets reales en la transcripción persistida.
 //
 // El snapshot manda: mismas keys, mismos labels, mismo orden.
-const MISSING_CONTENT_PHRASE = 'No mencionado en la consulta.';
+const { MISSING_PHRASE: MISSING_CONTENT_PHRASE } = require('../prompts/PromptClauses');
 const PRUDENT_EMPTY_PHRASES = [
   'no referido',
   'no referidos',
   'no mencionado en la consulta',
+  'no referido en la consulta',
   'no documentado en la transcripcion',
   'no documentado en la transcripción'
 ];
@@ -49,12 +50,27 @@ function capitalizeFirst(content = '') {
   );
 }
 
-function isPrudentEmptyContent(content = '') {
-  const normalized = normalizeComparable(content);
+function isPrudentPhrase(value = '') {
+  const normalized = normalizeComparable(value);
   if (!normalized) {
     return true;
   }
   return PRUDENT_EMPTY_PHRASES.some((phrase) => normalized === normalizeComparable(phrase));
+}
+
+// Vacía también cuando la sección es un campo de varias líneas «Etiqueta: …»
+// y TODAS dicen la frase prudente (la casilla de identificación sin datos:
+// «Nombre: No mencionado…\nDocumento: No mencionado…»). Sin esto cada
+// consulta sin identificar salía con «sin evidencia literal; revisar».
+function isPrudentEmptyContent(content = '') {
+  if (isPrudentPhrase(content)) {
+    return true;
+  }
+  const lines = `${content || ''}`.split('\n').map((line) => line.trim()).filter(Boolean);
+  return lines.length > 1 && lines.every((line) => {
+    const match = line.match(/^[^:]{1,40}:\s*(.*)$/);
+    return Boolean(match) && isPrudentPhrase(match[1]);
+  });
 }
 
 function snapshotSections(templateSnapshot) {

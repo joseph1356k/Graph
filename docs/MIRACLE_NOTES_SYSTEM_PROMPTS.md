@@ -10,6 +10,33 @@ recogidos de los dos repositorios del producto, más un análisis de errores y r
   `system_instruction`, `instructions` o equivalente, más los prompts generados
   dinámicamente por otra IA.
 
+> **Cambios del 2026-10-01** (este inventario es la foto del 2026-08-30 y no se reescribe):
+> - Lo que Ü es y cómo obedece vive en `src/application/prompts/ConstitucionDeU.js`, copia
+>   palabra por palabra de la de Windows (`tools/monorepo/constitucion.sh` lo comprueba).
+>   `IRREVERSIBLE_ACTIONS` («SIEMPRE ask_user ANTES, sin excepción») se borró de
+>   `PromptClauses.js`: lo reemplaza `OBEDECE` (lo que piden se hace; solo se para antes de lo
+>   irreversible que nadie pidió).
+> - Borrados sin cliente: el organizador (#9 diseñador, #10 lector de capturas, #11 contrato;
+>   `/api/v1/organizer/*`), `POST /api/medical/notes/organized` y
+>   `POST /api/clinical/encounters/:id/diagnostic-suggestions` (el motor #3 sigue, por
+>   `/api/clinical/diagnosis-suggestions`).
+> - `PromptClauses.EN` queda solo con `JSON_ONLY`; el orquestador de voz Python lleva su
+>   propio texto EN y comparte solo `CLAUSES_VERSION` (`2026-10-01.1`).
+> - Una sola frase prudente (`MISSING_PHRASE`, «No mencionado en la consulta.»), que manda sobre
+>   la instrucción de cualquier sección; la fidelidad nombra sus dos excepciones (medidas
+>   dictadas; documento o teléfono que el STT partió en grupos, que se escribe corrido).
+> - #21 (cerebro consciente) se reescribió entero sobre la constitución: `QUIEN` · «QUIÉN TE
+>   HABLA» (médico con especialidad o persona, si el cliente manda `profile`) · plataforma ·
+>   objetivo · `OBEDECE` · pantalla cercada en `<pantalla>` · cómo actúa · workflows · cuándo
+>   pregunta y habla · memoria · persistencia con freno · su propia interfaz. Fuera la
+>   «PERSONALIDAD viva y divertida», los emojis, el campo `intent`, la lista de herramientas, las
+>   herramientas aprendidas y `stateBlock`. Plataforma nueva `mac` con catálogo AX propio.
+> - #22 (addendum de Gemini) habla de «herramientas del sistema» y ya no repite la última regla.
+> - #29 (enseñanza por video) depende de quién enseña (médico, persona o neutro), con un solo
+>   contrato de salida; la interpretación de pasos ya no dice «déjalo fuera»; #17 (clasificador
+>   de valueMode, hoy dentro de `describeWorkflow`) desempata a «dynamic». La interpretación sin
+>   video (TEACH-STEPS) reporta su `promptVersion`.
+
 ---
 
 ## Índice
@@ -1498,7 +1525,7 @@ Cliente de voz en `web/public/miracle/` → runtime Python vía Graph.
 
 | # | Prompt | Llega a | Estado |
 |---|---|---|---|
-| 25 | Orquestador de voz (product LLM) | `POST /api/voice/orchestrator/events`, `/api/medical/notes/organized` | **Choque con #01** — segundo organizador de notas, estructura fija de 8 secciones, ignora la plantilla |
+| 25 | Orquestador de voz (product LLM) | `POST /api/voice/orchestrator/events`, `/api/medical/notes/organized` (borrada el 2026-10-01) | **Choque con #01** — segundo organizador de notas, estructura fija de 8 secciones, ignora la plantilla |
 
 ## C. Endpoints sin cliente en estos repos — 5 prompts
 
@@ -2032,7 +2059,7 @@ verdad ahora es el código, y cada builder reporta su `promptVersion` a telemetr
 | 22 | Addendum Gemini | **KEEP** | `geminiBrain.systemPrompt` |
 | 23 | Traductor a Cypher | **REMOVE** (cero callers, sesión sin modo lectura) | — |
 | 24 | Analista de QA en vivo | **KEEP** (fuera de esta pasada) | — |
-| 25 | Orquestador de voz | **DEPRECATE como nota** — recibe las cláusulas EN, su estructura de 8 secciones se declara provisional («VOICE SESSION BLOCK»); `/api/v1/pipeline` usa el motor canónico cuando llega plantilla y lo etiqueta `engine: canonical-note`; `/api/medical/notes/organized` con `Deprecation` + `Link` | `note_orchestrator_adapter.py`, `registerPublicApiRoutes.js` |
+| 25 | Orquestador de voz | **DEPRECATE como nota** — recibe las cláusulas EN, su estructura de 8 secciones se declara provisional («VOICE SESSION BLOCK»); `/api/v1/pipeline` usa el motor canónico cuando llega plantilla y lo etiqueta `engine: canonical-note`; `/api/medical/notes/organized` con `Deprecation` + `Link` (y borrada el 2026-10-01, sin cliente) | `note_orchestrator_adapter.py`, `registerPublicApiRoutes.js` |
 | 26 | Extractor de agenda | **KEEP** — vía helper común (T = 0, timeout, consumo) + límite de rol | `Pagina-web/lib/ai/anthropic.ts` |
 | 27 | Organizador de atajos | **KEEP** — helper común + límite de rol | idem |
 | 28 | Extractor de estructura de plantilla | **KEEP** — helper común + límite de rol + `dropPhiLikeLabels` detrás del prompt | idem, `template-import.ts` |

@@ -12,24 +12,38 @@
 // Así que hay tres peldaños, y cada uno solo se pisa si falló el anterior:
 //
 //   1. el video, que ve la pantalla       (process-video, Gemini)
-//   2. el texto, que lee los pasos        (esta ruta, el proveedor del cerebro)
+//   2. el texto, que lee los pasos        (esta ruta, el proveedor de texto de Graph, GRAPH_LLM_*)
 //   3. la regla del narrado, en el cliente, que es determinista y ya está en disco
 //
 // EL PROMPT NO VIVE AQUÍ (src/domain/teach/interpretarPasos.js): es EL MISMO que usa el camino con
 // video. Dos copias se habrían separado en la primera corrección, y entonces la misma demo daría
 // respuestas distintas según hubiera saldo — un fallo que desde el cliente es indistinguible de un
 // modelo caprichoso.
+//
+// TRANSVERSAL: el `profile` que manda el cliente (médico o persona) no cambia esta pregunta.
+// Decidir si un valor es dato de la corrida o parte fija de la tarea no depende del dominio.
+//
+// CONSUMO. Se anota como `teach_steps` con su promptVersion (la de las reglas de interpretación),
+// y no como lo que diga la cabecera del cliente: Windows la llama con la X-Miracle-Feature del
+// cerebro y, sin esto, el consumo de estas reglas se mezclaba con el del turno del agente.
 
+const clauses = require('../prompts/PromptClauses');
+const { withFeature } = require('../../infrastructure/usage/UsageContext');
+const { FEATURES } = require('../../domain/usage/vocabulary');
 const {
   promptSinVideo,
   saneaPasos,
-  respuesta
+  respuesta,
+  INTERPRETACION_VERSION
 } = require('../../domain/teach/interpretarPasos');
+
+const PROMPT_VERSION = clauses.promptVersion('teach-steps', INTERPRETACION_VERSION);
+const TEMPERATURE = 0.2;
 
 class TeachStepsInterpreter {
   /**
    * @param {object} deps
-   * @param {object} deps.llmProvider proveedor de texto (LLMProvider). El mismo del cerebro.
+   * @param {object} deps.llmProvider proveedor de texto (LLMProvider): el de Graph (GRAPH_LLM_*).
    */
   constructor(deps = {}) {
     if (!deps.llmProvider) {
@@ -47,9 +61,11 @@ class TeachStepsInterpreter {
     const prompt = promptSinVideo(steps, body.startsAt);
 
     try {
-      const content = await this.llmProvider.chatExpectingJson([
-        { role: 'user', content: prompt }
-      ]);
+      const content = await withFeature(FEATURES.TEACH_STEPS, () => this.llmProvider.chatExpectingJson(
+        [{ role: 'user', content: prompt }],
+        { type: 'json_object' },
+        { temperature: TEMPERATURE }
+      ), { metadata: { promptVersion: PROMPT_VERSION, temperature: TEMPERATURE } });
       return {
         status: 200,
         json: { interpretation: respuesta(this.llmProvider.parseJsonObject(content)) }
@@ -63,5 +79,7 @@ class TeachStepsInterpreter {
     }
   }
 }
+
+TeachStepsInterpreter.PROMPT_VERSION = PROMPT_VERSION;
 
 module.exports = TeachStepsInterpreter;

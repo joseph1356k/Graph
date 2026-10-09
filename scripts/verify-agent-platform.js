@@ -1,31 +1,49 @@
 #!/usr/bin/env node
-// Plataforma del turno del agente (Windows / Android), sin red ni keys.
+// Plataforma del turno del agente (Windows / Android / Mac), sin red ni keys.
 //   node scripts/verify-agent-platform.js
 //
-// La app Android consume el mismo POST /api/v1/agent/turn que el cliente
-// Windows y se distingue por X-Miracle-App: android_app. Lo que se verifica:
-//  (a) Windows —sin cabecera o con windows_app— queda IDÉNTICO byte a byte a
-//      tests/fixtures/agent-platform/windows-snapshot.json, que se sacó con
-//      scripts/lib/agentTurnCapture.js contra el código ANTERIOR a Android;
+// La app Android y el cliente Mac consumen el mismo POST /api/v1/agent/turn que el
+// cliente Windows y se distinguen por X-Miracle-App (android_app, mac_app). Lo que
+// se verifica:
+//  (a) Windows —sin cabecera o con windows_app—:
+//      · lo que U.exe VE (acciones, pregunta, texto, narración, errores) es IDÉNTICO
+//        a tests/fixtures/agent-platform/windows-contract-e9d0d44.json, congelado
+//        desde e9d0d44. Ese archivo NO se regenera: si se pone rojo, cambió el
+//        contrato con el cliente;
+//      · lo que se le MANDA al proveedor (catálogo, prompt, requests) es idéntico a
+//        windows-snapshot.json, que se regenera A PROPÓSITO con
+//        scripts/lib/write-windows-snapshot.js cuando el cambio del prompt es el que
+//        se quería (2026-10-01: los prompts de Ü, con su constitución);
 //  (b) android_app recibe el prompt de teléfono y el catálogo de Android;
 //  (c) la plataforma queda congelada en la sesión firmada del primer turno;
 //  (d) MIRACLE_CONSCIOUS_LLM_{MODEL,PROVIDER}_ANDROID_APP solo los lee Android;
 //  (e) una app desconocida cae en Windows;
 //  (f) la key del cerebro sigue al proveedor congelado en la sesión;
-//  (g) con el proveedor deducido, la key general no viaja a ningún proveedor.
-// Si (a) se pone rojo, lo que cambió es el contrato con U.exe: el snapshot NO se
-// regenera para ponerlo verde.
+//  (g) con el proveedor deducido, la key general no viaja a ningún proveedor;
+//  (h) mac_app recibe el prompt de macOS y el catálogo AX del Mac, sin workflows.
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const { captureConversation, continueConversation, captureErrors, readSession, promptInputs, windowsPrompts, PROVIDER_ENVS } = require('./lib/agentTurnCapture');
-const { baseCatalog } = require('../src/domain/agent/mcpCatalog');
+const { baseCatalog, MAC_TOOLS } = require('../src/domain/agent/mcpCatalog');
 const { goalPrompt } = require('../src/infrastructure/conscious-brain/prompt');
+const { parseTurn } = require('../src/infrastructure/conscious-brain/openaiBrain');
 const UsageAttributionResolver = require('../src/application/use-cases/UsageAttributionResolver');
 
-const SNAPSHOT = JSON.parse(fs.readFileSync(
-  path.join(__dirname, '..', 'tests', 'fixtures', 'agent-platform', 'windows-snapshot.json'), 'utf8'
-));
+const FIXTURES = path.join(__dirname, '..', 'tests', 'fixtures', 'agent-platform');
+const SNAPSHOT = JSON.parse(fs.readFileSync(path.join(FIXTURES, 'windows-snapshot.json'), 'utf8'));
+const CONTRACT = JSON.parse(fs.readFileSync(path.join(FIXTURES, 'windows-contract-e9d0d44.json'), 'utf8'));
+
+// Lo que U.exe ve de una conversación: la respuesta sin la sesión, que es opaca.
+function visibleToClient(conversation) {
+  return conversation.map(({ response }) => {
+    const { session, ...json } = response.json;
+    return { status: response.status, json };
+  });
+}
+
+// Palabras que no pueden llegar al Mac (son de Windows o de Android).
+const NOT_MAC = ['Windows', 'UIA', 'PowerShell', 'U.exe', 'menú Inicio', 'Intent', 'AccessibilityService', 'ATRÁS', 'teléfono'];
 
 // Lo que Android sabe ejecutar: Mcp.gestureTools + Mcp.systemTools de
 // Android/core/src/commonMain/kotlin/graph/core/domain/Model.kt, en su orden.
@@ -102,20 +120,60 @@ function assertAndroidRequest(request) {
   assert.ok(!names.includes('switch_window'), 'switch_window llegó a Android');
   assert.ok(!names.some((name) => name.startsWith('map_')), 'una herramienta map_* llegó a Android');
   for (const name of ANDROID_TOOLS) assert.ok(names.includes(name), `falta ${name}`);
-  assert.ok(names.includes('workflow_wf_demo'), 'los workflows tienen que seguir llegando');
-  assert.ok(names.includes('chat_whatsapp'), 'las herramientas aprendidas tienen que seguir llegando');
+  assert.ok(names.includes('workflow_wf_tel'), 'los workflows del teléfono tienen que seguir llegando');
+  assert.ok(!names.includes('workflow_wf_demo'), 'un workflow grabado en el PC (his.exe) llegó al teléfono');
   const settings = declarationsOf(request).find((tool) => tool.name === 'open_settings');
   assert.deepStrictEqual(settings.parameters.properties.section.enum, ANDROID_SETTINGS);
 }
 
+function assertMacRequest(request) {
+  const prompt = promptOf(request);
+  for (const needed of ['macOS', 'AX', 'map_click', 'cmd', 'ask_user']) {
+    assert.ok(prompt.includes(needed), `el prompt del Mac no dice «${needed}»`);
+  }
+  for (const word of NOT_MAC) assert.ok(!prompt.includes(word), `el prompt del Mac menciona «${word}»`);
+  const declarations = declarationsOf(request);
+  const names = declarations.map((tool) => tool.name);
+  const own = ['ask_user', 'speak', 'list_apps'];
+  const builtin = request.kind === 'gemini' ? ['look', 'computer_tap', 'computer_type', 'computer_scroll', 'computer_swipe', 'computer_key', 'computer_wait'] : [];
+  assert.deepStrictEqual(names.filter((name) => !own.includes(name) && !builtin.includes(name)), [...MAC_TOOLS], 'el catálogo del Mac no es MAC_TOOLS');
+  assert.ok(!names.some((name) => name.startsWith('workflow_')), 'un workflow llegó al Mac');
+  for (const tool of declarations) {
+    for (const word of NOT_MAC) assert.ok(!`${tool.description}`.includes(word), `${tool.name} menciona «${word}»`);
+  }
+}
+
 async function main() {
-  // --- (a) Windows idéntico al snapshot previo -----------------------------
+  // --- (a) Windows: el contrato con U.exe, congelado ---------------------------
+  for (const provider of ['openai', 'gemini']) {
+    await check(`(a) ${provider}: lo que U.exe ve de los dos turnos (sin la sesión opaca) es idéntico al contrato e9d0d44, sin cabecera y con windows_app`, async () => {
+      for (const app of [null, 'windows_app']) {
+        const conversation = await captureConversation({ env: PROVIDER_ENVS[provider], firstApp: app, secondApp: app });
+        sameBytes(visibleToClient(conversation), CONTRACT.conversations[provider], `${provider} ${app || 'sin cabecera'} contra el contrato`);
+      }
+    });
+  }
+
+  await check('(a) la matriz de errores es idéntica al contrato e9d0d44 (sin cabecera y con windows_app)', async () => {
+    sameBytes(await captureErrors(), CONTRACT.errors, 'errores sin cabecera contra el contrato');
+    sameBytes(await captureErrors('windows_app'), CONTRACT.errors, 'errores windows_app contra el contrato');
+  });
+
+  await check('(a) el snapshot regenerado dice que se regeneró a propósito y responde lo mismo que el contrato', () => {
+    assert.ok(/A PROPÓSITO/.test(SNAPSHOT.takenFrom) && SNAPSHOT.takenFrom.includes('windows-contract-e9d0d44.json'), SNAPSHOT.takenFrom);
+    for (const provider of ['openai', 'gemini']) {
+      sameBytes(visibleToClient(SNAPSHOT.conversations[provider]), CONTRACT.conversations[provider], `snapshot ${provider}`);
+    }
+    sameBytes(SNAPSHOT.errors, CONTRACT.errors, 'snapshot errores');
+  });
+
+  // --- (a) Windows: lo que se le manda al proveedor, idéntico al snapshot -------
   await check('(a) catálogo base de Windows idéntico al snapshot (sin plataforma y con "windows")', () => {
     sameBytes(baseCatalog(), SNAPSHOT.catalog, 'baseCatalog()');
     sameBytes(baseCatalog('windows'), SNAPSHOT.catalog, "baseCatalog('windows')");
   });
 
-  await check('(a) prompt de Windows idéntico al snapshot (con memoria/aprendidas/workflows y sin nada)', () => {
+  await check('(a) prompt de Windows idéntico al snapshot (con memoria y workflows, sin nada y con cada perfil)', () => {
     sameBytes(windowsPrompts(), SNAPSHOT.prompts, 'goalPrompt sin plataforma');
     const inputs = promptInputs(baseCatalog());
     sameBytes(goalPrompt({ ...inputs.full, platform: 'windows' }), SNAPSHOT.prompts.full, "goalPrompt platform 'windows'");
@@ -335,6 +393,91 @@ async function main() {
     assert.strictEqual(resolver.resolveApp(req, 'api_key'), 'android_app');
     const conversation = await captureConversation({ env: PROVIDER_ENVS.openai, firstApp: header, secondApp: null });
     assertAndroidRequest(conversation[0].requests[0]);
+  });
+
+  // --- (h) Mac ------------------------------------------------------------------------
+  const macByProvider = {};
+  for (const provider of ['openai', 'gemini']) {
+    macByProvider[provider] = await captureConversation({ env: PROVIDER_ENVS[provider], firstApp: 'mac_app', secondApp: null });
+    await check(`(h) ${provider}, mac_app: prompt de macOS (AX, map_click, cmd) sin palabras de Windows ni de Android, catálogo MAC_TOOLS y sin workflows, en los dos turnos`, () => {
+      for (const turn of macByProvider[provider]) {
+        assert.strictEqual(turn.response.status, 200, JSON.stringify(turn.response.json));
+        assert.strictEqual(turn.requests.length, 1);
+        assertMacRequest(turn.requests[0]);
+      }
+    });
+    await check(`(h) ${provider}, mac_app: el estado llega como controles AX de macOS y la sesión guarda platform=mac`, async () => {
+      const text = stateTextOf(macByProvider[provider][0].requests[0]);
+      assert.ok(text.includes('controles de accesibilidad (AX) de macOS'), text.slice(0, 160));
+      assert.ok(!text.includes('Windows'), text.slice(0, 160));
+      assert.strictEqual((await readSession(macByProvider[provider][1].response.json.session)).platform, 'mac');
+    });
+  }
+
+  await check("(h) baseCatalog('mac') es MAC_TOOLS y no declara nada que el Mac no ejecute", () => {
+    const names = baseCatalog('mac').map((tool) => tool.name);
+    assert.deepStrictEqual(names, [...MAC_TOOLS]);
+    for (const absent of ['set_alarm', 'set_timer', 'create_event', 'open_notifications', 'set_volume', 'adjust_volume', 'share_text', 'dial', 'open_camera', 'map_places', 'map_routes_from', 'map_take', 'map_go_to', 'map_where_am_i']) {
+      assert.ok(!names.includes(absent), `${absent} llegó al Mac`);
+    }
+    const openSettings = baseCatalog('mac').find((tool) => tool.name === 'open_settings');
+    assert.deepStrictEqual(openSettings.params, [], 'el Mac ignora section: no se declara');
+  });
+
+  await check('(h) mac_app ya no cae en Windows, y la atribución de consumo lo anota como mac_app', () => {
+    const resolver = new UsageAttributionResolver();
+    const req = { get: (name) => (`${name}`.toLowerCase() === 'x-miracle-app' ? 'mac_app' : undefined) };
+    assert.strictEqual(resolver.resolveApp(req, 'api_key'), 'mac_app');
+  });
+
+  await check('el texto de un turno que no terminó no le llega al cliente: «Mandé el correo» junto a la llamada que abre el borrador no es la respuesta final', () => {
+    const body = {
+      id: 'r1',
+      output: [
+        { type: 'message', content: [{ type: 'output_text', text: 'Mandé el correo a Ana.' }] },
+        { type: 'function_call', call_id: 'f1', name: 'send_email', arguments: JSON.stringify({ to: 'ana@x.co', body: 'Llego tarde' }) }
+      ]
+    };
+    const conLlamada = parseTurn(JSON.parse(JSON.stringify(body)), { pending: [] }, {}, new Set(['send_email']), [], null, 'windows').turn;
+    assert.strictEqual(conLlamada.done, false);
+    assert.strictEqual(conLlamada.text, '', 'un turno con llamadas no lleva texto final');
+    const final = parseTurn({ id: 'r2', output: [body.output[0]] }, { pending: [] }, {}, new Set(['send_email']), [], null, 'windows').turn;
+    assert.strictEqual(final.done, true);
+    assert.strictEqual(final.text, 'Mandé el correo a Ana.', 'el turno que termina sí lleva su texto');
+  });
+
+  await check('(h) OpenAI en Mac: type sin punto sale sin x ni y, ["CMD","L"] sale cmd+l, el doble clic y el clic derecho se conservan; en Windows y Android, lo de siempre', () => {
+    const body = {
+      id: 'resp_mac',
+      output: [{
+        type: 'computer_call',
+        call_id: 'c1',
+        actions: [
+          { type: 'type', text: 'hola' },
+          { type: 'keypress', keys: ['CMD', 'L'] },
+          { type: 'double_click', x: 5, y: 6 },
+          { type: 'click', button: 'right', x: 7, y: 8 },
+          { type: 'keypress', keys: ['ARROWDOWN'] }
+        ]
+      }]
+    };
+    const run = (platform) => parseTurn(JSON.parse(JSON.stringify(body)), { pending: [] }, {}, new Set(), [], null, platform).turn.actions;
+    assert.deepStrictEqual(run('mac'), [
+      { kind: 'type', text: 'hola' },
+      { kind: 'key', key: 'cmd+l' },
+      { kind: 'double_click', x: 5, y: 6 },
+      { kind: 'right_click', x: 7, y: 8 },
+      { kind: 'key', key: 'down' }
+    ]);
+    for (const platform of ['windows', 'android']) {
+      assert.deepStrictEqual(run(platform), [
+        { kind: 'type', x: -1, y: -1, text: 'hola' },
+        { kind: 'key', key: 'cmd' },
+        { kind: 'tap', x: 5, y: 6 },
+        { kind: 'tap', x: 7, y: 8 },
+        { kind: 'key', key: 'down' }
+      ], platform);
+    }
   });
 
   console.log(`\nverify-agent-platform: ${passed} checks ok, ${failed.length} fallidos`);

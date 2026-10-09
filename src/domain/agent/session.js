@@ -14,15 +14,18 @@
 
 const crypto = require('crypto');
 const { PLATFORMS } = require('./platform');
+const { profileForSession } = require('./profile');
 
 /**
  * Crea el estado inicial de una sesión del cerebro.
  * provider: 'openai' | 'gemini' — fija el formato del resto de campos.
- * platform: 'windows' | 'android' — sobre qué dispositivo opera el hilo; queda
- * congelada como el modelo. Solo Android deja el campo: la sesión de Windows
- * sale byte a byte igual que antes, y una sesión sin campo es de Windows.
+ * platform: 'windows' | 'android' | 'mac' — sobre qué dispositivo opera el hilo;
+ * queda congelada como el modelo. Solo Android y Mac dejan el campo: la sesión de
+ * Windows sale byte a byte igual que antes, y una sesión sin campo es de Windows.
+ * profile: con quién habla Ü (domain/agent/profile.js), congelado igual que la
+ * plataforma. Sin perfil no hay campo.
  */
-function freshSession(provider, goal, model, effort, platform) {
+function freshSession(provider, goal, model, effort, platform, profile = null) {
   const session = {
     provider,
     goal,
@@ -35,7 +38,9 @@ function freshSession(provider, goal, model, effort, platform) {
     pending: [],
     gemini: provider === 'gemini' ? { history: [], pending: [] } : undefined
   };
-  if (platform === PLATFORMS.ANDROID) session.platform = PLATFORMS.ANDROID;
+  if (platform === PLATFORMS.ANDROID || platform === PLATFORMS.MAC) session.platform = platform;
+  const frozenProfile = profileForSession(profile);
+  if (frozenProfile) session.profile = frozenProfile;
   return session;
 }
 

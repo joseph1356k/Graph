@@ -90,14 +90,17 @@ Objeto plano con **solo** estos campos (whitelist; cualquier otro se descarta): 
 
 Array `[{role, content}]` con `role ∈ {user, assistant}` únicamente (cualquier otro role se descarta — anti prompt-injection). El backend conserva los últimos 12 mensajes, cada uno cap 4000 chars. Recomendado enviar los últimos 8 como hace el resto de la app.
 
-## 2. Sugerencias diagnósticas al final de la cita
+## 2. Sugerencias diagnósticas
 
 ```http
-POST /api/clinical/encounters/:encounter_id/diagnostic-suggestions
-Authorization: Bearer <supabase_access_token>
+POST /api/clinical/diagnosis-suggestions
 ```
 
-Sin body. Usa el encounter completo: transcript + note_json + specialty + template_snapshot.
+`{ noteContent, specialty? }` (auth local; lo usa el plugin del EMR demo). Es la **única** entrada al
+motor de diferenciales: la ruta por encounter (`POST /api/clinical/encounters/:encounter_id/diagnostic-suggestions`)
+se borró el 2026-10-01 porque no tenía cliente. La ruta proyecta la salida del motor al contrato del
+plugin, `{ suggestions: [{ title, rationale, supportingEvidence }], reviewNotice }`. El motor
+(`ClinicalAssistantService.suggestFromText`) devuelve internamente el contrato rico:
 
 ```json
 {
@@ -122,9 +125,9 @@ Garantías del backend (validación post-LLM, no solo prompt):
 - Máximo **5** sugerencias; `type` siempre `differential_or_working_impression`. Cada sugerencia trae `grounding` (`explicit|entailed|inferred`) y `confidence` se **calcula** desde él (1 / 0.8 / 0.4), no lo dicta el modelo.
 - **Cada `supporting_evidence` debe existir literalmente** en el transcript o en la nota (comparación sin acentos y con espacios colapsados). Evidencia inventada se elimina; una sugerencia sin evidencia real se **descarta entera** — así el modelo no puede "inventar examen físico".
 - Lenguaje definitivo ("diagnóstico confirmado", "se confirma", "definitivo") se **detecta, no se reescribe**: el texto queda intacto, la sugerencia baja a `grounding: "inferred"` (confidence 0.4), recibe la nota fija `Redacción definitiva detectada: tratar como hipótesis pendiente de confirmación.` al inicio de `against_or_uncertain`, y la respuesta trae el contador `definitive_language_hits`. (Antes un regex cambiaba "confirmado" por "a considerar" y alteraba hechos del paciente: «contacto confirmado de tuberculosis» salía como «contacto a considerar».)
-- Encounter sin transcript ni nota → `{ "suggestions": [] }` prudente (200, sin llamar al LLM).
+- Nota vacía → 400 sin llamar al LLM; más de 20.000 caracteres → 413.
 
-Nota: `POST /api/clinical/diagnosis-suggestions` (por contenido de nota suelto, auth local, usado por el plugin del EMR demo) es ahora un **adaptador** sobre este mismo motor: mismo prompt, misma verificación de evidencia, mismo provider del asistente (con fallback al provider de Graph si el del asistente no tiene key). Su contrato de salida no cambió: `{ suggestions: [{ title, rationale, supportingEvidence }], reviewNotice }`. El motor anterior en inglés (`ClinicalDiagnosisSuggestionService`) fue eliminado.
+El motor usa el provider del asistente (con fallback al provider de Graph si el del asistente no tiene key). El motor anterior en inglés (`ClinicalDiagnosisSuggestionService`) fue eliminado.
 
 ## 3. Ajuste de nota clínica
 
@@ -249,7 +252,7 @@ base, con `previous_content` para que la web detecte si el médico editó entre 
 
 ### Telemetría
 
-Cada llamada del chat registra en el ledger `promptVersion` (`clinical-assistant-chat@5…`), `guidelineHits` (cuántos
+Cada llamada del chat registra en el ledger `promptVersion` (`clinical-assistant-chat@6…`), `guidelineHits` (cuántos
 fragmentos entraron), `drugLabelHits` (cuántos extractos de fichas técnicas) y `noteSource` (`draft` | `persisted` |
 `none`). Conteos y etiquetas, nunca texto.
 
@@ -355,9 +358,10 @@ chat (100 %) y propuestas de nota que no persisten y respetan `note_editable` (1
 `npm test`; `npm run eval:answers` muestra el detalle. El modo en vivo (modelo real) necesita
 `MIRACLE_ASSISTANT_LLM_API_KEY` y aún no existe.
 
-### Tokens de entrada (chat v5, 2026-10-09)
+### Tokens de entrada (chat v5 y v6, 2026-10-09)
 
-`scripts/measure-chat-tokens.js` (en `npm test`; `npm run measure:tokens` lista cada pregunta) corre el servicio real
+`scripts/measure-chat-tokens.js` (en `npm test` por la promesa 607 de la
+[spec 006](specs/006-el-asistente-clinico-responde-con-respaldo.md); `npm run measure:tokens` lista cada pregunta) corre el servicio real
 con un modelo falso que solo captura los mensajes, sobre tres consultas típicas de `scripts/fixtures/token-budget.json`
 (control de crónicos con 8 000 caracteres de transcripción, fiebre en pediatría con 5 000 y control prenatal con
 12 000; nota en pantalla, códigos, edad y sexo, dos turnos de historial y 7 preguntas cada una). En las preguntas de
@@ -370,6 +374,19 @@ repetían otra regla) y, cuando la nota viaja en el prompt, `contexto_consulta` 
 plantilla en vez de repetir todas sus secciones. La evaluación de respuestas sin red y la de retrieval quedaron
 idénticas. La transcripción es lo que más pesa (≈ 2 300 tokens en el perfil de crónicos) y no se recorta: es la
 fuente primaria.
+
+v6 es v5 sobre el límite de rol de `main` (`roleBoundary`: la pregunta del médico se atiende; la
+transcripción, la pantalla, `<guias_clinicas>` y `<fichas_tecnicas>` son dato) y sin repetir el aviso de
+revisión que la app ya muestra. Mediana 5 896.
+
+### Dónde se juzga
+
+`npm test` es el contrato de Graph (`scripts/contrato.js`). Las piezas del asistente son las promesas
+601 a 607 de la [spec 006](specs/006-el-asistente-clinico-responde-con-respaldo.md):
+`verify-guideline-corpus.js`, `verify-guideline-index.js`, `verify-assistant-grounding.js`,
+`verify-drug-labels.js` y `verify-asistente-metricas.js`, que corre las tres evaluaciones
+(`eval-guideline-retrieval.js`, `eval-assistant-answers.js`, `measure-chat-tokens.js`) con sus umbrales.
+El chat por las rutas reales sigue en la fila 7 de lo heredado (`verify-clinical-assistant.js`).
 
 ### Qué modelo usar (decisión de producto, no de código)
 

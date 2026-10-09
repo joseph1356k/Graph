@@ -221,7 +221,7 @@ class ExecutionIntelligenceService {
       const content = await withFeature(FEATURES.EXECUTION_INTELLIGENCE, () => this.llmProvider.chatExpectingJson(
         this.buildMessages(workflow, payload),
         { type: 'json_object' }
-      ));
+      ), { metadata: { promptVersion: runtimeExecutionPolicy.PROMPT_VERSION } });
       return this.parseDecision(content);
     } catch (error) {
       return {

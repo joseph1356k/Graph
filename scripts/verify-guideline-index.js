@@ -4,6 +4,7 @@
 // y numeración de referencias.
 //   node scripts/verify-guideline-index.js
 const assert = require('assert');
+const { promesa, cerrar } = require('./lib/promesas');
 const {
   ClinicalGuidelineIndex,
   loadDefaultIndex,
@@ -306,10 +307,6 @@ function main() {
   console.log(`\n[verify-guideline-index] ${passed} verificaciones OK (${stats.guidelines} guías, ${stats.chunks} fragmentos)`);
 }
 
-try {
-  main();
-} catch (error) {
-  console.error(`\n[verify-guideline-index] FALLÓ: ${error.message}`);
-  console.error(error.stack);
-  process.exit(1);
-}
+// Juez de la promesa 602 de docs/specs/006-el-asistente-clinico-responde-con-respaldo.md.
+promesa(602, 'Las preguntas canónicas recuperan su guía entre las tres primeras, las que no son clínicas no recuperan ninguna, y al prompt llegan como mucho unos 5 000 caracteres de extractos numerados G1 a Gn', () => main())
+  .then(() => cerrar('verify-guideline-index'));

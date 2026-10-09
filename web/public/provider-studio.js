@@ -1297,10 +1297,18 @@
     async function triggerWindowsDistribute() {
         if (!dom.windowsDistributeTrigger || dom.windowsDistributeTrigger.disabled) return;
         closeWindowsDownloadMenu();
+        // El workflow exige el mensaje que Ü le contará a la persona al actualizarse; sin él
+        // GitHub rechaza el build (422) y este botón no publicaba nada.
+        const userMessage = (window.prompt('¿Qué trae esta versión? Ü se lo contará a cada persona al actualizarse.') || '').trim();
+        if (!userMessage) return;
         dom.windowsDistributeTrigger.disabled = true;
         setWindowsBuildProgress(true, 'Iniciando…', '');
         try {
-            const { requestId, version } = await fetchJson('/api/providers/windows-app/build', { method: 'POST' });
+            const { requestId, version } = await fetchJson('/api/providers/windows-app/build', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_message: userMessage })
+            });
             setWindowsBuildProgress(true, 'Construyendo…', `Versión ${version}`);
             pollWindowsBuild(requestId, version);
         } catch (error) {

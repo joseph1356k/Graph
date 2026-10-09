@@ -7,6 +7,7 @@
 //   - el mapa de sinónimos tiene forma válida.
 //   node scripts/verify-guideline-corpus.js
 const assert = require('assert');
+const { promesa, cerrar } = require('./lib/promesas');
 const fs = require('fs');
 const corpusLib = require('./lib/guideline-corpus');
 const ProtectionMap = require('../src/domain/privacy/ProtectionMap');
@@ -97,9 +98,6 @@ function main() {
   console.log(`\n[verify-guideline-corpus] ${passed} verificaciones OK (${built.guidelines.length} guías, ${chunks} fragmentos)`);
 }
 
-try {
-  main();
-} catch (error) {
-  console.error(`\n[verify-guideline-corpus] FALLÓ: ${error.message}`);
-  process.exit(1);
-}
+// Juez de la promesa 601 de docs/specs/006-el-asistente-clinico-responde-con-respaldo.md.
+promesa(601, 'Cada guía del corpus compilado coincide con su Markdown, declara fuente, año y población, y ningún fragmento activa el escudo de privacidad', () => main())
+  .then(() => cerrar('verify-guideline-corpus'));

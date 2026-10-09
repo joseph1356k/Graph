@@ -265,6 +265,21 @@ async function main() {
     assert.deepStrictEqual(sanitized, { privacyMode: 'enforce', privacyTokens: 'PACIENTE_NOMBRE:1', privacyPosthoc: false });
   });
 
+  await check('un salto con techo de shadow mide pero no tapa, ni con enforce (E14)', async () => {
+    const svc = new PrivacyShieldService({ env: { PRIVACY_SHIELD_MODE: 'enforce' } });
+    const texts = { transcript: 'La paciente Ana María Ruiz, cédula 1036457892, refiere cefalea.' };
+    const conTecho = await svc.protectTexts(texts, { feature: 'clinical_structuring', maxMode: 'shadow' });
+    assert.strictEqual(conTecho.mode, 'shadow');
+    assert.strictEqual(conTecho.texts.transcript, texts.transcript, 'el texto sale como estaba');
+    assert.strictEqual(svc.restoreText('[PACIENTE_NOMBRE_1]', conTecho), '[PACIENTE_NOMBRE_1]', 'y no se rehidrata nada');
+    const sinTecho = await svc.protectTexts(texts, { feature: 'clinical_structuring' });
+    assert.strictEqual(sinTecho.mode, 'enforce');
+    assert.ok(!sinTecho.texts.transcript.includes('Ana María'), 'sin techo, enforce sigue tapando');
+    const offConTecho = await new PrivacyShieldService({ env: { PRIVACY_SHIELD_MODE: 'off' } })
+      .protectTexts(texts, { feature: 'clinical_structuring', maxMode: 'shadow' });
+    assert.strictEqual(offConTecho.mode, 'off', 'el techo baja el modo, nunca lo sube');
+  });
+
   console.log(`\n✅ Escudo de privacidad: ${passed} comprobaciones OK.`);
 }
 

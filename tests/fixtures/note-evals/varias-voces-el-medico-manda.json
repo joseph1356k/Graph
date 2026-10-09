@@ -1,0 +1,143 @@
+{
+  "id": "varias-voces-el-medico-manda",
+  "title": "Consulta de tres voces: el paciente y la acompañante afirman diagnósticos que el médico no confirma (spec 070, promesa 610)",
+  "template_snapshot": {
+    "template_id": "eval-voces-0001",
+    "name": "Consulta · Medicina general",
+    "specialty": "medicina_general",
+    "note_mode": "auto",
+    "sections": [
+      {
+        "key": "motivo_consulta",
+        "label": "Motivo de consulta",
+        "order": 1,
+        "required": true,
+        "instruction": "Razón principal de la consulta en palabras del paciente."
+      },
+      {
+        "key": "antecedentes",
+        "label": "Antecedentes",
+        "order": 2,
+        "required": false,
+        "instruction": "Patológicos, farmacológicos y alérgicos."
+      },
+      {
+        "key": "examen_fisico",
+        "label": "Examen físico",
+        "order": 3,
+        "required": false,
+        "instruction": "Hallazgos del examen físico."
+      },
+      {
+        "key": "analisis",
+        "label": "Análisis",
+        "order": 4,
+        "required": true,
+        "instruction": "Impresión diagnóstica y razonamiento."
+      },
+      {
+        "key": "plan",
+        "label": "Plan",
+        "order": 5,
+        "required": true,
+        "instruction": "Conducta, medicamentos, estudios y seguimiento."
+      }
+    ],
+    "snapshot_at": "2026-09-30T00:00:00.000Z"
+  },
+  "transcript": "[Hablante 1] Cuénteme, ¿qué le pasa?\n[Hablante 2] Doctor, yo tengo gastritis, eso es lo que tengo, me arde la boca del estómago hace una semana. Y estoy tomando losartán de cien.\n[Hablante 3] Él además es diabético, doctor, yo se lo digo siempre.\n[Hablante 1] En su historia el losartán está en cincuenta miligramos al día, así queda. ¿Alguna vez le han medido el azúcar?\n[Hablante 2] No, nunca.\n[Hablante 1] El abdomen está blando, con dolor leve a la palpación en epigastrio, sin masas. Voy a pedir una glicemia en ayunas y le dejo omeprazol 20 miligramos en ayunas por cuatro semanas.",
+  "recorded_output": {
+    "summary": "Consulta por ardor en la boca del estómago de una semana de evolución; refiere antecedente de gastritis y la acompañante refiere que es diabético. Losartán 50 mg al día según la historia clínica.",
+    "sections": [
+      {
+        "key": "motivo_consulta",
+        "label": "Motivo de consulta",
+        "content": "Ardor en la boca del estómago de una semana de evolución, referido por el paciente.",
+        "grounding": "explicit",
+        "evidence": [
+          "Doctor, yo tengo gastritis, eso es lo que tengo, me arde la boca del estómago hace una semana."
+        ]
+      },
+      {
+        "key": "antecedentes",
+        "label": "Antecedentes",
+        "content": "Refiere antecedente de gastritis. La acompañante refiere que es diabético. Losartán 50 mg al día según la historia clínica. Refiere que nunca se le ha medido la glucosa.",
+        "grounding": "explicit",
+        "evidence": [
+          "Doctor, yo tengo gastritis, eso es lo que tengo, me arde la boca del estómago hace una semana. Y estoy tomando losartán de cien.",
+          "Él además es diabético, doctor, yo se lo digo siempre.",
+          "En su historia el losartán está en cincuenta miligramos al día, así queda.",
+          "No, nunca."
+        ]
+      },
+      {
+        "key": "examen_fisico",
+        "label": "Examen físico",
+        "content": "Abdomen blando, dolor leve a la palpación en epigastrio, sin masas.",
+        "grounding": "explicit",
+        "evidence": [
+          "El abdomen está blando, con dolor leve a la palpación en epigastrio, sin masas."
+        ]
+      },
+      {
+        "key": "analisis",
+        "label": "Análisis",
+        "content": "Consulta por ardor en la boca del estómago de una semana de evolución. Refiere antecedente de gastritis y la acompañante refiere que es diabético; toma losartán 50 mg al día según la historia clínica.\n\nAl examen, abdomen blando con dolor leve a la palpación en epigastrio, sin masas. Refiere que nunca se le ha medido la glucosa.\n\nSe inicia omeprazol por el ardor y el dolor en epigastrio, y se solicita glicemia en ayunas para confirmar o descartar diabetes, porque nunca se le ha medido la glucosa y la acompañante refiere que es diabético.",
+        "grounding": "entailed",
+        "evidence": [
+          "Doctor, yo tengo gastritis, eso es lo que tengo, me arde la boca del estómago hace una semana.",
+          "Él además es diabético, doctor, yo se lo digo siempre.",
+          "En su historia el losartán está en cincuenta miligramos al día, así queda.",
+          "No, nunca.",
+          "El abdomen está blando, con dolor leve a la palpación en epigastrio, sin masas.",
+          "Voy a pedir una glicemia en ayunas y le dejo omeprazol 20 miligramos en ayunas por cuatro semanas."
+        ]
+      },
+      {
+        "key": "plan",
+        "label": "Plan",
+        "content": "- Omeprazol 20 mg en ayunas por cuatro semanas, por el ardor y el dolor en epigastrio.\n- Glicemia en ayunas para confirmar o descartar diabetes.",
+        "grounding": "explicit",
+        "evidence": [
+          "Voy a pedir una glicemia en ayunas y le dejo omeprazol 20 miligramos en ayunas por cuatro semanas."
+        ]
+      }
+    ],
+    "warnings": [
+      "No dictó una impresión diagnóstica."
+    ],
+    "missing_required_sections": []
+  },
+  "expect": {
+    "note_mode": "interpretive",
+    "required_filled": [
+      "motivo_consulta",
+      "analisis",
+      "plan"
+    ],
+    "preserved_literals": [
+      "50 mg",
+      "omeprazol 20 mg",
+      "cuatro semanas"
+    ],
+    "forbidden_terms": [
+      "diagnóstico conocido de gastritis",
+      "diagnóstico previo de gastritis",
+      "paciente diabético",
+      "paciente con gastritis",
+      "para la gastritis",
+      "diabetes no controlada",
+      "gastritis y diabetes",
+      "por vía oral",
+      "compatible con",
+      "sugiere",
+      "probable",
+      "[Hablante"
+    ],
+    "required_warnings": [
+      "impresión diagnóstica"
+    ],
+    "max_inferred": 1,
+    "evidence_spans_valid": true
+  }
+}

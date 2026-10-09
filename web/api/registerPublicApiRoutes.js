@@ -56,16 +56,10 @@ function buildInlineSnapshot(template = {}) {
   });
 }
 
-// Que clave de tercero se sirve bajo que nombre. El nombre de la variable es el mismo que usa el
-// cliente de escritorio en su entorno, para que poner una a mano y recibirla del backend sean lo mismo.
-const AGENT_KEYS = [
-  ['openai', 'OPENAI_API_KEY'],
-  ['typesafe', 'TYPESAFE_API_KEY'],
-];
+// Las claves de terceros (GET /api/v1/agent/claves) viven en su propio archivo, con quien puede pedirlas.
+const registerAgentKeysRoute = require('./registerAgentKeysRoute');
 
-function agentKeyNames() {
-  return AGENT_KEYS.filter(([, variable]) => `${process.env[variable] || ''}`.trim()).map(([campo]) => campo);
-}
+const { agentKeyNames } = registerAgentKeysRoute;
 
 function registerPublicApiRoutes(app, deps = {}) {
   const callMiracleRuntime = deps.callMiracleRuntime;
@@ -80,10 +74,6 @@ function registerPublicApiRoutes(app, deps = {}) {
   // produce note_json cuando el cliente manda plantilla, en vez del Markdown de
   // estructura propia del orquestador de voz.
   const noteGeneratorService = deps.noteGeneratorService || null;
-  // Solo para el manifiesto: las rutas del organizador las registra
-  // registerOrganizerRoutes. Aquí se declara para que un cliente que descubra
-  // el API por GET /api/v1 sepa que existe.
-  const organizerService = deps.organizerService || null;
   // Escudo de privacidad para el salto Node → runtime Python (etapa `note`
   // del pipeline). Opcional: sin él la etapa sale como antes y el ledger lo dice.
   const privacyShield = deps.privacyShield || null;
@@ -161,16 +151,6 @@ function registerPublicApiRoutes(app, deps = {}) {
         endpoint: 'POST /api/v1/assistant/chat',
         description: 'Chat con el asistente clinico de Miracle (preguntas medicas generales, sin contexto de un paciente especifico).',
       },
-      organizer: {
-        available: Boolean(organizerService),
-        endpoints: [
-          'POST /api/v1/organizer/profiles',
-          'GET /api/v1/organizer/profiles/:deviceId',
-          'POST /api/v1/organizer/profiles/:deviceId/samples',
-          'POST /api/v1/organizer/organize'
-        ],
-        description: 'Hoja en blanco para quien no es medico: genera un system prompt a medida desde lo que la persona cuenta por voz (y capturas de sus reportes actuales) y con el organiza cada transcripcion.',
-      },
       biopsy: {
         available: Boolean(biopsyService),
         endpoint: 'POST /api/v1/biopsy/extract',
@@ -184,44 +164,8 @@ function registerPublicApiRoutes(app, deps = {}) {
     });
   });
 
-  // CLAVES DE TERCEROS PARA EL ASISTENTE DE ESCRITORIO (Windows). Ver spec 041 de windows-app.
-  //
-  // POR QUE EXISTE. El Setup.exe que se distribuye lleva embebidas la credencial de Graph y el token
-  // de actualizaciones, y nada mas. La voz (OpenAI) y el decisor (TypeSafe) salian de variables de
-  // entorno del equipo de quien desarrolla, asi que una copia instalada en otra maquina llegaba SIN
-  // VOZ Y SIN JEV. Embeberlas en el binario era la salida rapida y se descarto: un .exe que lleva
-  // claves de pago se las entrega a quien lo reciba, y rotarlas obligaria a sacar instalador nuevo.
-  // Aqui ya viven como variables de entorno, y rotarlas es cambiarlas y volver a desplegar.
-  //
-  // QUIEN PUEDE PEDIRLAS. Todo lo que cuelga de /api/v1 pasa por requireApiKey (web/server.js), que
-  // valida contra el registro de keys y deja la etiqueta del cliente en req.apiClient. Eso significa
-  // que CUALQUIER key valida —tambien la de la extension o la web— puede pedirlas; si eso deja de
-  // ser aceptable, AGENT_KEYS_ALLOWED_LABELS acota a una lista de etiquetas sin tocar codigo.
-  //
-  // QUE NO SE REGISTRA: ni un valor. Solo QUE etiqueta pidio y QUE nombres se sirvieron. Un secreto
-  // en un log es un secreto repartido.
-  app.get('/api/v1/agent/claves', (req, res) => {
-    const permitidas = `${process.env.AGENT_KEYS_ALLOWED_LABELS || ''}`
-      .split(',')
-      .map((x) => x.trim())
-      .filter(Boolean);
-    const etiqueta = (req.apiClient && req.apiClient.label) || 'desconocida';
-    if (permitidas.length && !permitidas.includes(etiqueta)) {
-      console.warn(`[agent/claves] ${etiqueta} no esta en AGENT_KEYS_ALLOWED_LABELS: no se le sirven claves`);
-      return res.status(403).json({ error: 'Esta API key no puede pedir claves de terceros.' });
-    }
-
-    const claves = {};
-    for (const [campo, variable] of AGENT_KEYS) {
-      const valor = `${process.env[variable] || ''}`.trim();
-      if (valor) claves[campo] = valor;
-    }
-
-    // Que no se quede en ninguna cache intermedia, ni de proxy ni de navegador.
-    res.set('Cache-Control', 'no-store, private');
-    console.log(`[agent/claves] ${etiqueta} pidio claves; se sirven: ${Object.keys(claves).join(', ') || 'ninguna'}`);
-    return res.json(claves);
-  });
+  // Las claves de terceros para el asistente de escritorio, y quién puede pedirlas.
+  registerAgentKeysRoute(app);
 
   // Raw transcription streaming enablement (Deepgram credentials).
   app.post('/api/v1/transcription/session', async (req, res) => {

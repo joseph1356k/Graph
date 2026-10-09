@@ -19,7 +19,9 @@ class ProductLLMSettings:
     base_url: str | None = None
     api_key: str | None = None
     timeout_seconds: float = 20.0
-    max_output_tokens: int | None = 500
+    # 500 cortaba el bloque consolidado de una consulta media y el JSON estricto
+    # llegaba truncado (ProductLLMAdapterError, sin degradar).
+    max_output_tokens: int | None = 2000
     scratchpad_heading: str = "Notas dictadas"
     execution_enabled: bool = False
 
@@ -46,7 +48,7 @@ class ProductLLMSettings:
         else:
             default_model = None
 
-        raw_max_tokens = _env_str("MIRACLE_PRODUCT_LLM_MAX_OUTPUT_TOKENS", "500")
+        raw_max_tokens = _env_str("MIRACLE_PRODUCT_LLM_MAX_OUTPUT_TOKENS", "2000")
         max_output_tokens = int(raw_max_tokens) if raw_max_tokens is not None else None
         execution_enabled = (_env_str("MIRACLE_VOICE_AGENT_EXECUTION_ENABLED", "false") or "false").lower() in {
             "1",

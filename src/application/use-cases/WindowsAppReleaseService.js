@@ -108,8 +108,22 @@ class WindowsAppReleaseService {
     };
   }
 
-  async triggerBuild() {
+  // EL MENSAJE ES OBLIGATORIO, Y SE COMPRUEBA AQUÍ ANTES DE LLAMAR A GITHUB.
+  //
+  // El workflow exige `user_message` desde el commit 30259989 (lo que Ü le
+  // cuenta a la persona sobre la versión). Este servicio siguió mandando solo
+  // `version` y `request_id`, así que GitHub contestaba 422 «Required input
+  // 'user_message' not provided» y el botón «Distribuir App» no podía publicar
+  // nada: la última release salió a mano el 2026-09-24 (medido el 2026-09-30
+  // con un dispatch de prueba en dry-run).
+  async triggerBuild({ userMessage } = {}) {
     this.assertConfigured();
+    const message = `${userMessage || ''}`.trim();
+    if (!message) {
+      const error = new Error('Escribe qué trae esta versión: es lo que Ü le contará a cada persona al actualizarse.');
+      error.statusCode = 400;
+      throw error;
+    }
     const { version: currentVersion } = await this.readLatestReleaseInfo();
     const version = this.computeNextVersion(currentVersion);
     const requestId = crypto.randomUUID();
@@ -121,7 +135,7 @@ class WindowsAppReleaseService {
         headers: { ...this.githubHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ref: this.branch,
-          inputs: { version, request_id: requestId }
+          inputs: { version, request_id: requestId, user_message: message }
         })
       }
     );

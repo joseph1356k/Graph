@@ -8,8 +8,15 @@
 // origin y pathname, y los campos VACÍOS del workflow no restringen (un workflow
 // sin source grabado aplica en cualquier parte).
 //
-// Sin superficie => []. Así un cliente viejo que aún no manda superficie se
-// comporta igual que con el stub (ningún workflow), nunca peor.
+// La superficie solo ORDENA: los workflows del lugar donde está parado van
+// primero y los demás detrás, anotados con su app. Lo que de verdad acota es el
+// acceso de la API key que llama: sin dueño no se declara ningún workflow.
+//
+// La plataforma del turno también acota: cada cliente reproduce solo lo que grabó su
+// dispositivo (domain/agent/learning.js, workflowRunsOn), y se filtra ANTES del tope
+// para que 30 workflows del PC no dejen al teléfono sin los suyos.
+const { workflowRunsOn } = require('../../domain/agent/learning');
+
 const MAX_WORKFLOW_TOOLS = 30;
 
 class AgentWorkflowStore {
@@ -21,15 +28,9 @@ class AgentWorkflowStore {
     this.catalogService = deps.catalogService;
   }
 
-  // Las herramientas aprendidas (árbol de UI) siguen sin captación: ver TODO en
-  // domain/agent/learning.js. Este store solo enchufa los workflows.
-  async learnedTools() {
-    return [];
-  }
-
   /**
    * Workflows que el cerebro declara este turno, en el shape que espera workflowToMcp
-   * ({name, description, steps[{action, app, subconscious}]}) más el id real para que
+   * ({name, description, steps[{action, app}]}) más el id real para que
    * AgentTurnService pueda inyectarlo en la llamada MCP.
    *
    * Se declaran TODOS los workflows (los de la superficie actual PRIMERO, el resto anotado
@@ -38,8 +39,9 @@ class AgentWorkflowStore {
    *
    * `access` es el de la API key que llama (requireApiKey: `api-client:<label>` + globales). El
    * catálogo sin acceso es el de TODAS las keys, así que sin dueño no se consulta: devuelve [].
+   * Con `platform`, solo los que ese dispositivo sabe reproducir.
    */
-  async workflows(userId, apps, surface = null, access = null) {
+  async workflows(userId, apps, surface = null, access = null, platform = null) {
     const origin = `${surface?.origin || ''}`.trim();
     const pathname = `${surface?.pathname || ''}`.trim();
     if (!`${access?.ownerId || ''}`.trim()) return [];
@@ -51,7 +53,9 @@ class AgentWorkflowStore {
       return []; // sin Neo4j no hay workflows; el turno sigue con el catálogo base
     }
 
-    const usable = catalog.filter((wf) => Array.isArray(wf.steps) && wf.steps.length > 0);
+    const usable = catalog
+      .filter((wf) => Array.isArray(wf.steps) && wf.steps.length > 0)
+      .filter((wf) => !platform || workflowRunsOn(wf, platform));
     const current = [];
     const others = [];
     for (const wf of usable) {
@@ -84,13 +88,13 @@ class AgentWorkflowStore {
     const app = `${wf.sourceOrigin || ''}`.replace(/^[a-z]+:\/\//i, '').split('/')[0];
     const steps = (Array.isArray(wf.steps) ? wf.steps : []).map((step) => ({
       action: `${step.explanation || step.label || step.actionType || 'paso'}`.slice(0, 80),
-      app,
-      subconscious: true
+      app
     }));
     return {
       id: wf.id,
       name: wf.id, // el nombre MCP sale de sanitize(name): con el id es determinista y reversible
       description: `${wf.summary || wf.description || 'Workflow aprendido.'}`.slice(0, 300),
+      sourceOrigin: `${wf.sourceOrigin || ''}`.trim(), // de qué dispositivo es (workflowRunsOn)
       steps
     };
   }

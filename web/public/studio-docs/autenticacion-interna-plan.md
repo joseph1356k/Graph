@@ -1,6 +1,12 @@
 # Autenticación interna: enrolamiento por instalación (PLAN)
 
-> Estado: **planificado, no implementado.** Es la evolución natural de la key embebida
+> Estado: **primer corte implementado el 2026-09-30, sin encender** — spec 076 de `apps/windows`:
+> `WindowsDeviceService`, `registerWindowsDeviceRoutes` y `WINDOWS_DEVICE_GATE_LABELS`. Lo que sigue
+> es el análisis original. Difiere en dos cosas: una instalación nace **pendiente** y la aprueba un
+> administrador en Provider Studio (el alta sola no da acceso), y la credencial viaja en su propia
+> cabecera (`X-Device-Token`) junto a la key embebida, no en su lugar.
+>
+> Es la evolución natural de la key embebida
 > compartida (ver [Distribución conectada](#)). Aquí se analiza y se decide el enfoque.
 
 ## El problema que resuelve

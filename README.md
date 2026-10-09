@@ -1,5 +1,9 @@
 # Graph
 
+> Cómo se trabaja aquí —el ciclo, el contrato y el portero— está en [`AGENTS.md`](AGENTS.md).
+> Este README describe el motor de workflows con el que nació Graph. Hoy Graph es además la API a
+> la que llaman los clientes de Ü y el portal.
+
 Graph is a workflow learning and replay engine for web applications.
 
 It watches a user interact with a page, stores the workflow as structured steps, and later lets an assistant choose and execute the right workflow with Playwright.

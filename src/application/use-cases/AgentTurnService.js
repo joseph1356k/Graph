@@ -8,32 +8,46 @@
 // SAGRADO: mismos nombres de campos JSON que Protocol.cs del cliente.
 //
 // CONTRATO (espejo de windows-client/src/Domain/Protocol.cs):
-//   Request : { session?, goal?, userId?, state{screen,uiContext,width,height,
-//               screenshot?,apps?,surfaceId?,surfaceOrigin?,surfacePathname?},
-//               results?[], inform? }
+//   Request : { session?, goal?, userId?, profile?, state{screen,uiContext,width,
+//               height,screenshot?,apps?,surfaceId?,surfaceOrigin?,surfacePathname?},
+//               results?[], inform?, timezone?, locale?, clientNowUtc? }
 //   Response: { session, actions[], question?, done, text, needsScreenshot,
 //               narration, speech?, intents[] }  |  { error }
 //
 // surface*: el ID de superficie del SurfaceLocator del cliente (uia://proc.exe
-// + /ventana, web://dominio + /ruta). Con él se scopean los workflows que el
-// catálogo MCP declara este turno (solo los del lugar donde el usuario está
-// parado). Campos opcionales: sin ellos, el catálogo no incluye workflows.
+// + /ventana, web://dominio + /ruta). Ordena los workflows que el catálogo MCP
+// declara este turno: primero los del lugar donde el usuario está parado, después
+// los demás. Lo que decide QUÉ workflows se ven es el acceso de la API key.
 //
 // La autenticación NO vive aquí: el gate de X-API-Key de /api/v1 (requireApiKey)
 // reemplaza al CLIENT_TOKEN Bearer del backend viejo.
 //
-// PLATAFORMA. La app Android usa este mismo turno y se identifica con
-// X-Miracle-App: android_app. Eso cambia el prompt y el catálogo MCP (teléfono
-// en vez de PC) y, si está configurado, el modelo (conscious-brain/config.js).
-// Se decide en el primer turno y queda en la sesión firmada. Sin cabecera, o con
-// cualquier otra app, el turno es el de Windows de siempre, byte a byte
-// (lo vigila scripts/verify-agent-platform.js).
+// PLATAFORMA. La app Android (X-Miracle-App: android_app) y el cliente Mac
+// (mac_app) usan este mismo turno. Eso cambia el prompt y el catálogo MCP y, en
+// Android y si está configurado, el modelo (conscious-brain/config.js). Se decide
+// en el primer turno y queda en la sesión firmada. Sin cabecera, o con cualquier
+// otra app, el turno es el de Windows. Lo que U.exe ve de la respuesta está
+// congelado en tests/fixtures/agent-platform/windows-contract-e9d0d44.json (lo
+// vigila scripts/verify-agent-platform.js).
+//
+// PERFIL. `profile` ({kind: medico|persona, specialty}) dice con quién habla Ü.
+// Cuenta solo en el primer turno y queda congelado en la sesión, como la
+// plataforma; sin él, el prompt no lleva bloque «QUIÉN TE HABLA».
+//
+// LA HORA. `timezone` y `clientNowUtc` (Windows los manda en cada turno) le dicen
+// al modelo qué día y qué hora es para la persona; sin ellos, la hora del
+// servidor en America/Bogota.
+//
+// LO QUE SE IGNORA A PROPÓSITO: `userContext` del Mac (hoy mezcla la política de
+// su voz con el texto personal; cuando el Mac mande solo el texto personal, irá
+// dentro de <memoria>) y `state.platform` (la plataforma la dice X-Miracle-App).
 
 const { freshSession, encodeSession, decodeSession } = require('../../domain/agent/session');
 const { PLATFORMS, platformFromApp, platformOfSession } = require('../../domain/agent/platform');
+const { normalizeProfile } = require('../../domain/agent/profile');
 const { imageSize, screenScale } = require('../../domain/agent/screenScale');
 const { baseCatalog, catalogNames } = require('../../domain/agent/mcpCatalog');
-const { learnedToMcp, workflowToMcp, InMemoryAgentLearningStore } = require('../../domain/agent/learning');
+const { workflowToMcp, workflowRunsOn, InMemoryAgentLearningStore } = require('../../domain/agent/learning');
 const { runProviderTurn } = require('../../infrastructure/conscious-brain');
 const { resolveConsciousConfig } = require('../../infrastructure/conscious-brain/config');
 
@@ -58,7 +72,7 @@ class AgentTurnService {
   /**
    * @param {object} deps
    * @param {object} deps.memoryRepository forPrompt(userId)/remember(...) — Supabase con fallback en memoria.
-   * @param {object} [deps.learningStore]  learnedTools(userId, apps)/workflows(userId, apps).
+   * @param {object} [deps.learningStore]  workflows(userId, apps, surface, access).
    * @param {Function} [deps.runProviderTurn] inyectable para tests (mock del cerebro).
    * @param {Function} [deps.resolveConfig]   inyectable para tests (config fake).
    */
@@ -74,25 +88,31 @@ class AgentTurnService {
 
   /**
    * Ensambla el catálogo MCP que el cerebro declara al modelo este turno: base
-   * (gestos + sistema) + herramientas aprendidas + workflows DE LA SUPERFICIE
-   * ACTUAL (scoping por origin+pathname del SurfaceLocator). Todo esto es
-   * innovación server-side; el cliente solo recibe el `Action[]` resultante.
+   * (gestos + sistema) + workflows (los de la superficie actual primero, por
+   * origin+pathname del SurfaceLocator). Todo esto es innovación server-side; el
+   * cliente solo recibe el `Action[]` resultante.
    *
    * Devuelve además el mapa herramienta→workflowId: el nombre MCP (workflow_*)
    * es para el modelo; el cliente ejecuta por id (WorkflowPlayer), así que el
    * turno inyecta el id en los args de la llamada (ver handleTurn).
    *
-   * La base depende de la plataforma; aprendidas y workflows son iguales en las dos.
-   * `workflowAccess` es el de la API key que llama: cada key ve sus workflows y los globales.
+   * La base depende de la plataforma, y los workflows también: cada cliente recibe
+   * solo los que su dispositivo sabe reproducir (learning.js, workflowRunsOn). Un
+   * workflow grabado en U.exe (uia://, sapgui://, web://, una app .exe) no le llega
+   * al teléfono, ni uno del teléfono (android://) a Windows; el Mac no lleva
+   * ninguno. Lo que no dice de dónde es se declara, como siempre. `workflowAccess`
+   * es el de la API key que llama: cada key ve sus workflows y los globales.
    */
   async assembleTools(userId, apps, surface = null, platform = PLATFORMS.WINDOWS, workflowAccess = null) {
-    const learned = await this.learningStore.learnedTools(userId, apps, surface, workflowAccess);
-    const workflows = await this.learningStore.workflows(userId, apps, surface, workflowAccess);
+    const workflows = platform === PLATFORMS.MAC
+      ? []
+      : (await this.learningStore.workflows(userId, apps, surface, workflowAccess, platform))
+        .filter((workflow) => workflowRunsOn(workflow, platform));
     const workflowTools = workflows.map(workflowToMcp);
     const workflowIdByTool = new Map(
       workflowTools.map((tool, i) => [tool.name, `${workflows[i].id || workflows[i].name || ''}`])
     );
-    const tools = [...baseCatalog(platform), ...learned.map(learnedToMcp), ...workflowTools];
+    const tools = [...baseCatalog(platform), ...workflowTools];
     return { tools, workflowIdByTool };
   }
 
@@ -121,6 +141,9 @@ class AgentTurnService {
       }
     }
     const platform = body.session ? platformOfSession(decoded) : platformFromApp(context && context.app);
+    // El perfil, igual que la plataforma: lo del primer turno, congelado. El de los
+    // turnos siguientes se ignora (los brains lo leen de la sesión).
+    const profile = body.session ? null : normalizeProfile(body.profile);
 
     const config = this.resolveConfig({ platform });
     if (!config.configured) {
@@ -143,14 +166,15 @@ class AgentTurnService {
       return { status: 400, json: { error: 'falta `state` (screen, uiContext, width, height)' } };
     }
 
-    const userId = `${body.userId || ''}`.trim() || 'anon';
+    // Sin usuario no hay memoria (ni la de nadie más): ver SupabaseAgentMemoryRepository.
+    const userId = `${body.userId || ''}`.trim();
 
     let session;
     try {
       if (decodeError) throw decodeError;
       session = body.session
         ? decoded
-        : freshSession(config.provider, `${body.goal || ''}`.trim(), config.model, config.effort, platform);
+        : freshSession(config.provider, `${body.goal || ''}`.trim(), config.model, config.effort, platform, profile);
     } catch (error) {
       return { status: 400, json: { error: `sesión inválida: ${error.message}` } };
     }
@@ -169,7 +193,7 @@ class AgentTurnService {
       };
       const workflowAccess = (context && context.workflowAccess) || null;
       const { tools, workflowIdByTool } = await this.assembleTools(userId, apps, surface, platform, workflowAccess);
-      const memory = await this.memoryRepository.forPrompt(userId);
+      const memory = userId ? await this.memoryRepository.forPrompt(userId) : '';
 
       // Android manda la captura achicada: el modelo da píxeles de la imagen y el
       // cliente espera píxeles de pantalla (domain/agent/screenScale). La última
@@ -191,7 +215,8 @@ class AgentTurnService {
         state: body.state,
         results: Array.isArray(body.results) ? body.results : [],
         apiKey,
-        screenScale: screenScaleOfTurn
+        screenScale: screenScaleOfTurn,
+        clock: { timezone: body.timezone, nowUtc: body.clientNowUtc }
       });
 
       // El modelo llama workflow_<nombre>; el cliente ejecuta por id (WorkflowPlayer).

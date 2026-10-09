@@ -1,6 +1,6 @@
 const clauses = require('../prompts/PromptClauses');
 
-const PROMPT_VERSION = clauses.promptVersion('runtime-execution', '2026-09-02.1');
+const PROMPT_VERSION = clauses.promptVersion('runtime-execution', '2026-10-01.1');
 
 function buildRuntimeDecisionPrompt() {
   return [
@@ -24,7 +24,8 @@ function buildRuntimeDecisionPrompt() {
     'Never invent selectors or option values that are not visible in currentPage.pageSnapshot.',
     'Never navigate back to the originally learned entity just to satisfy stale step URLs.',
     'Keep decisions small: patch only the current step or upcoming steps needed to continue.',
-    'Return JSON only.',
+    'userMessage is shown to the user: write it in Spanish (the product language), in one short, plain sentence.',
+    clauses.EN.JSON_ONLY,
     'Schema:',
     '{',
     '  "action": "continue" | "patch_step" | "skip_step" | "retry_step" | "ask_user" | "abort",',

@@ -423,6 +423,38 @@
                 <svg class="studio-lab-entry-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 7 7-7 7M3 12h18"/></svg>
             </a>
 
+            <!-- Una credencial por instalación (spec 076 de apps/windows). El instalador es público y su
+                 API key solo sirve para presentarse: cada instalación aparece aquí PENDIENTE y no entra
+                 hasta que alguien la aprueba. Revocar corta a esa instalación y a ninguna otra. -->
+            <section class="studio-section studio-api-keys-section" id="windows-devices-section">
+                <div class="studio-section-head">
+                    <div>
+                        <p class="studio-kicker">Windows</p>
+                        <h2>Instalaciones</h2>
+                    </div>
+                    <div class="studio-status-meta">
+                        <strong id="windows-devices-metric">Cargando</strong>
+                        <span id="windows-devices-pill" class="status-pill">Cargando</span>
+                    </div>
+                </div>
+                <p class="studio-current">Cada Ü instalada se presenta una vez y espera aquí. Compara el <strong>código</strong> con el que ve la persona en su pantalla antes de aprobar.</p>
+                <ul id="windows-devices-list" class="api-key-list"></ul>
+                <!-- LA COMPUERTA. Aprobar no cierra nada mientras esté apagada: la clave del instalador, que
+                     es pública, sigue abriéndolo todo. Encenderla es este botón, y ya trae la etiqueta de la
+                     clave con la que se presentan las instalaciones (spec 004 de Graph, promesas 411-413). -->
+                <div id="windows-gate-row" class="api-key-row" hidden>
+                    <div class="api-key-info">
+                        <strong id="windows-gate-title"></strong>
+                        <span id="windows-gate-detail" style="font-size:12px;opacity:.7"></span>
+                    </div>
+                    <button type="button" class="button ghost api-key-revoke" id="windows-gate-button"></button>
+                </div>
+                <div class="studio-actions">
+                    <button type="button" class="button ghost" id="windows-devices-refresh">Releer</button>
+                </div>
+                <p id="windows-devices-message" class="form-message"></p>
+            </section>
+
             <section class="studio-board">
                 <section class="studio-card is-collapsed" id="conscious-card">
                     <button type="button" class="studio-card-head" id="conscious-toggle" aria-expanded="false" aria-controls="conscious-body">
@@ -882,6 +914,239 @@
         });
 
         els.refresh.addEventListener('click', load);
+        load();
+      })();
+    </script>
+    <script>
+      // Instalaciones de Windows: listar, aprobar y revocar (spec 076 de apps/windows).
+      //
+      // TODO LO QUE VIENE DE UNA INSTALACIÓN SE PINTA CON textContent, nunca con innerHTML. El correo,
+      // el nombre y la máquina los escribe quien se presenta, y presentarse es lo único que se puede
+      // hacer con la clave del instalador, que es pública: un nombre con una etiqueta <script> dentro
+      // acabaría ejecutándose en la sesión del administrador.
+      (function () {
+        const els = {
+          metric: document.getElementById('windows-devices-metric'),
+          pill: document.getElementById('windows-devices-pill'),
+          list: document.getElementById('windows-devices-list'),
+          refresh: document.getElementById('windows-devices-refresh'),
+          message: document.getElementById('windows-devices-message'),
+          gateRow: document.getElementById('windows-gate-row'),
+          gateTitle: document.getElementById('windows-gate-title'),
+          gateDetail: document.getElementById('windows-gate-detail'),
+          gateButton: document.getElementById('windows-gate-button')
+        };
+        if (!els.list) return;
+        let compuerta = null;
+
+        const NOMBRES = { pendiente: 'Pendiente', aprobada: 'Aprobada', revocada: 'Revocada' };
+        const TONOS = { pendiente: 'warning', aprobada: 'success', revocada: 'danger' };
+
+        function setMessage(text, tone) {
+          els.message.textContent = text || '';
+          if (tone) els.message.setAttribute('data-tone', tone);
+          else els.message.removeAttribute('data-tone');
+        }
+
+        async function authedFetch(url, options) {
+          const opts = options || {};
+          const headers = Object.assign({}, opts.headers);
+          if (window.MiracleAuth && typeof window.MiracleAuth.whenAuthenticated === 'function') {
+            await window.MiracleAuth.whenAuthenticated();
+            const token = typeof window.MiracleAuth.getAccessToken === 'function'
+              ? window.MiracleAuth.getAccessToken() : null;
+            if (token) headers.Authorization = 'Bearer ' + token;
+          }
+          return fetch(url, Object.assign({}, opts, { headers }));
+        }
+
+        function cuando(iso) {
+          const t = Date.parse(iso || '');
+          return Number.isFinite(t) ? new Date(t).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+        }
+
+        function boton(texto, device, status, pregunta) {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'button ghost api-key-revoke';
+          b.textContent = texto;
+          b.addEventListener('click', () => decidir(device, status, pregunta, b));
+          return b;
+        }
+
+        function render(devices) {
+          const pendientes = devices.filter((d) => d.status === 'pendiente').length;
+          els.metric.textContent = devices.length === 1 ? '1 instalación' : devices.length + ' instalaciones';
+          els.pill.textContent = pendientes ? pendientes + ' por aprobar' : 'Al día';
+          els.pill.setAttribute('data-tone', pendientes ? 'warning' : 'success');
+
+          els.list.innerHTML = '';
+          if (!devices.length) {
+            const empty = document.createElement('li');
+            empty.className = 'api-key-empty';
+            empty.textContent = 'Todavía no se ha presentado ninguna instalación.';
+            els.list.appendChild(empty);
+            return;
+          }
+          // Las pendientes arriba: son las que piden una decisión.
+          const orden = { pendiente: 0, aprobada: 1, revocada: 2 };
+          devices.slice().sort((a, b) => (orden[a.status] ?? 3) - (orden[b.status] ?? 3)).forEach((device) => {
+            const li = document.createElement('li');
+            li.className = 'api-key-row';
+
+            const info = document.createElement('div');
+            info.className = 'api-key-info';
+            const codigo = document.createElement('strong');
+            codigo.textContent = (device.codigo || '(sin código)') + ' · ' + (NOMBRES[device.status] || device.status);
+            const quien = document.createElement('code');
+            quien.textContent = [device.machine_name, device.email, device.display_name, device.app_version && ('v' + device.app_version),
+              device.api_label && ('clave «' + device.api_label + '»')]
+              .filter(Boolean).join(' · ');
+            const fechas = document.createElement('span');
+            fechas.style.cssText = 'font-size:12px;opacity:.7';
+            fechas.textContent = 'Se presentó ' + cuando(device.enrolled_at)
+              + (device.last_seen_at ? ' · vista ' + cuando(device.last_seen_at) : '')
+              + (device.decided_by ? ' · decidió ' + device.decided_by : '');
+            info.appendChild(codigo);
+            info.appendChild(quien);
+            info.appendChild(fechas);
+            li.appendChild(info);
+            li.setAttribute('data-tone', TONOS[device.status] || '');
+
+            if (device.status !== 'aprobada') {
+              li.appendChild(boton('Aprobar', device, 'aprobada',
+                '¿Aprobar la instalación ' + (device.codigo || '') + ' (' + (device.machine_name || 'sin nombre') + ')? Podrá usar Ü con todo lo que eso gasta.'));
+            }
+            if (device.status !== 'revocada') {
+              li.appendChild(boton('Revocar', device, 'revocada',
+                '¿Revocar la instalación ' + (device.codigo || '') + '? Deja de entrar en un minuto como mucho; las demás no se tocan.'));
+            }
+            els.list.appendChild(li);
+          });
+        }
+
+        // La compuerta: qué está pasando HOY, dicho sin rodeos, y el botón que lo cambia.
+        function renderCompuerta(estado) {
+          compuerta = estado && typeof estado === 'object' ? estado : null;
+          if (!compuerta || !els.gateRow) {
+            if (els.gateRow) els.gateRow.hidden = true;
+            return;
+          }
+          const puestas = Array.isArray(compuerta.etiquetas) ? compuerta.etiquetas : [];
+          const vistas = Array.isArray(compuerta.etiquetas_de_las_instalaciones) ? compuerta.etiquetas_de_las_instalaciones : [];
+          els.gateRow.hidden = false;
+          let detalle;
+          let puedeCambiar = Boolean(compuerta.se_puede_cambiar);
+          if (compuerta.encendida) {
+            els.gateRow.setAttribute('data-tone', 'success');
+            els.gateTitle.textContent = 'Compuerta puesta · clave «' + puestas.join('», «') + '»';
+            detalle = 'La clave del instalador, sola, solo sirve para presentarse. Entra quien esté aprobada aquí arriba, '
+              + 'y las claves de OpenAI y TypeSafe solo se le entregan a una instalación aprobada.';
+            els.gateButton.textContent = 'Apagar la compuerta';
+          } else {
+            els.gateRow.setAttribute('data-tone', 'warning');
+            els.gateTitle.textContent = 'Compuerta apagada';
+            detalle = 'La clave del instalador todavía lo abre todo, apruebes o no: quien descargue el instalador puede pedir las claves. ';
+            if (vistas.length) {
+              detalle += 'Las instalaciones se presentan con la clave «' + vistas.join('», «') + '».';
+            } else {
+              detalle += 'Aún no se ha presentado ninguna instalación, así que no se sabe con qué clave vienen.';
+              puedeCambiar = false;
+            }
+            els.gateButton.textContent = 'Encender la compuerta';
+          }
+          if (!compuerta.se_puede_cambiar) {
+            detalle += ' Este Graph no puede escribir sus variables en Vercel: se cambia a mano con WINDOWS_DEVICE_GATE_LABELS.';
+          }
+          els.gateDetail.textContent = detalle;
+          els.gateButton.hidden = !puedeCambiar;
+          els.gateButton.disabled = false;
+        }
+
+        async function mandarCompuerta(etiquetas, forzar) {
+          els.gateButton.disabled = true;
+          setMessage('Guardando la compuerta…', 'warning');
+          try {
+            const res = await authedFetch('/api/windows/devices/gate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ etiquetas, forzar: Boolean(forzar) })
+            });
+            const data = await res.json();
+            if (res.status === 409 && data.code === 'sin_instalaciones_aprobadas' && !forzar) {
+              const igual = window.confirm('Ninguna instalación APROBADA se presentó con la clave «' + (data.etiqueta || '') + '». '
+                + 'Si enciendes ahora, TODAS quedan fuera hasta que apruebes alguna. ¿Encender igual?');
+              if (igual) return mandarCompuerta(etiquetas, true);
+              setMessage('No se encendió: aprueba primero una instalación.', 'warning');
+              return;
+            }
+            if (!res.ok) throw new Error(data.error || 'No fue posible cambiar la compuerta.');
+            const despliegue = data.deployment && data.deployment.triggered
+              ? ' Se está redesplegando: en un par de minutos vale para todo Graph.'
+              : ' ' + ((data.deployment && data.deployment.message) || 'Falta redesplegar para que valga en todo Graph.');
+            setMessage((data.compuerta && data.compuerta.encendida ? 'Compuerta puesta.' : 'Compuerta apagada.') + despliegue, 'success');
+            await load();
+          } catch (error) {
+            setMessage(error.message || 'No fue posible cambiar la compuerta.', 'error');
+          } finally {
+            els.gateButton.disabled = false;
+          }
+        }
+
+        function cambiarCompuerta() {
+          if (!compuerta) return;
+          if (compuerta.encendida) {
+            if (!window.confirm('¿Apagar la compuerta? La clave del instalador vuelve a abrirlo todo, también para quien solo descargó el instalador.')) return;
+            mandarCompuerta([], false);
+            return;
+          }
+          const etiquetas = Array.isArray(compuerta.etiquetas_de_las_instalaciones) ? compuerta.etiquetas_de_las_instalaciones : [];
+          if (!etiquetas.length) return;
+          const pregunta = '¿Encender la compuerta para la clave «' + etiquetas.join('», «') + '»? Desde ese momento solo entran las instalaciones '
+            + 'aprobadas. Las pendientes, y las Ü que aún no se han actualizado y no saben presentarse, se quedan fuera.\n\n'
+            + 'Además, las claves de OpenAI y TypeSafe dejan de entregarse a las demás API keys (Mac, Android, la extensión…). '
+            + 'Si alguna las necesita, su etiqueta va en AGENT_KEYS_ALLOWED_LABELS.';
+          if (!window.confirm(pregunta)) return;
+          mandarCompuerta(etiquetas, false);
+        }
+
+        async function load() {
+          try {
+            const res = await authedFetch('/api/windows/devices');
+            if (!res.ok) throw new Error('No se pudo leer la lista (' + res.status + ').');
+            const data = await res.json();
+            render(Array.isArray(data.devices) ? data.devices : []);
+            renderCompuerta(data.compuerta);
+          } catch (error) {
+            els.metric.textContent = 'Error';
+            els.pill.textContent = 'Error';
+            els.pill.setAttribute('data-tone', 'danger');
+            setMessage(error.message || 'No fue posible leer las instalaciones.', 'error');
+          }
+        }
+
+        async function decidir(device, status, pregunta, button) {
+          if (!window.confirm(pregunta)) return;
+          button.disabled = true;
+          setMessage('Guardando…', 'warning');
+          try {
+            const res = await authedFetch('/api/windows/devices/' + encodeURIComponent(device.device_id) + '/status', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'No fue posible cambiar el estado.');
+            setMessage('Instalación ' + (device.codigo || '') + ': ' + (NOMBRES[status] || status).toLowerCase() + '.', 'success');
+            await load();
+          } catch (error) {
+            button.disabled = false;
+            setMessage(error.message || 'No fue posible cambiar el estado.', 'error');
+          }
+        }
+
+        els.refresh.addEventListener('click', load);
+        if (els.gateButton) els.gateButton.addEventListener('click', cambiarCompuerta);
         load();
       })();
     </script>

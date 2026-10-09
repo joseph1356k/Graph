@@ -40,7 +40,7 @@ async function main() {
   const state = { screen: 'com.miui.home · Inicio', uiContext: 'paquete: com.miui.home\ntipo: launcher de Android (home o cajón de apps)\netiquetas visibles: Ajustes · Cámara · Reloj' };
   const body = {
     model: config.model,
-    instructions: goalPrompt({ goal: 'Abre los ajustes de Wi-Fi.', tools, memory: '', stateBlock: '', platform: PLATFORMS.ANDROID }),
+    instructions: goalPrompt({ goal: 'Abre los ajustes de Wi-Fi.', tools, memory: '', platform: PLATFORMS.ANDROID }),
     input: [{ type: 'message', role: 'user', content: [{ type: 'input_text', text: describeState(state, PLATFORMS.ANDROID) }] }],
     tools: toolDeclarations(tools),
     truncation: 'auto',

@@ -62,6 +62,30 @@ check('verbatimCoverage es 1 cuando la sección sale del dictado y baja cuando n
   assert.strictEqual(text.verbatimCoverage('', transcript), 1);
 });
 
+check('MEDIDAS DICTADAS no penaliza la cobertura literal: «3 x 4 cm» sale de «tres por cuatro centímetros»', () => {
+  assert.strictEqual(text.verbatimCoverage('3 x 4 cm', 'tres por cuatro centímetros'), 1);
+  assert.strictEqual(text.verbatimCoverage('Lesión de 0.6 cm.', 'lesión de cero punto seis centímetros'), 1);
+  assert.strictEqual(text.verbatimCoverage('Omeprazol 20 mg.', 'omeprazol veinte miligramos'), 1);
+  assert.ok(text.verbatimCoverage('Lesión de 0.8 cm.', 'lesión de cero punto seis centímetros') < 0.85, 'una cifra cambiada sigue sin pasar');
+});
+
+check('un documento que el STT partió en grupos cuenta como dictado cuando la nota lo escribe corrido', () => {
+  assert.strictEqual(text.verbatimCoverage('Documento: 1036457892', 'documento 1036 457 892'), 1);
+  assert.strictEqual(text.verbatimCoverage('Documento: 1036457892', 'documento uno cero tres seis cuatro cinco siete ocho nueve dos'), 1);
+  assert.ok(text.verbatimCoverage('Documento: 1036457893', 'documento 1036 457 892') < 0.85, 'una cifra cambiada es otro documento');
+  assert.strictEqual(text.verbatimCoverage('Documento: 1.036.457.892', 'documento 1036 457 892'), 1, 'los puntos de miles no parten el número');
+});
+
+check('un decimal no es un grupo: «2.5 mg» y «25 mg» son dosis distintas, y una fecha no se pega con otra', () => {
+  const dictado = 'metotrexato dos punto cinco miligramos semanal';
+  assert.strictEqual(text.verbatimCoverage('Metotrexato 2.5 mg semanal.', dictado), 1);
+  assert.strictEqual(text.verbatimCoverage('Metotrexato 2,5 mg semanal.', 'metotrexato dos coma cinco miligramos semanal'), 1);
+  assert.ok(text.verbatimCoverage('Metotrexato 25 mg semanal.', dictado) < 0.85, 'el decimal corrido es otra dosis');
+  assert.ok(text.verbatimCoverage('2 x 12 x 04 cm', 'uno punto dos por cero punto cuatro centímetros') < 0.85, 'ni en una medida');
+  assert.strictEqual(text.verbatimCoverage('1.2 x 0.4 cm', 'uno punto dos por cero punto cuatro centímetros'), 1);
+  assert.ok(text.verbatimCoverage('Fecha 1/12/2024', 'fecha 11/2/2024') < 0.85, 'el 1 de diciembre no es el 11 de febrero');
+});
+
 check('grounding: normaliza, calcula confidence y acepta sólo explicit/entailed para autofill', () => {
   assert.strictEqual(grounding.normalizeGrounding(' Explicit '), 'explicit');
   assert.strictEqual(grounding.normalizeGrounding('maybe'), null);
