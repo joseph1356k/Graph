@@ -80,7 +80,15 @@ const GENERIC_TERMS = new Set([
   'usar', 'uso', 'usa', 'dar', 'doy', 'mando', 'formular', 'formulo', 'revisar', 'revisa', 'resumen', 'resume',
   'propon', 'propones', 'sugiere', 'sugerir', 'ajuste', 'ajustes', 'redaccion', 'secciones', 'seccion',
   'documentar', 'documentados', 'dejar', 'registrado', 'registrar', 'preguntar', 'falta', 'faltan', 'dia', 'dias',
-  'senor', 'senora', 'caballero', 'hago', 'hacemos', 'haria', 'mando', 'mandar', 'tengo', 'vida', 'peor', 'bien', 'mal'
+  'senor', 'senora', 'caballero', 'hago', 'hacemos', 'haria', 'mando', 'mandar', 'tengo', 'vida', 'peor', 'bien', 'mal',
+  // La población no es el tema: la decide inferPopulations y pesa por boost.
+  'nino', 'nina', 'pediatrico', 'pediatrica', 'infantil', 'hombre', 'paciente',
+  // Palabras de cualquier pregunta médica que no identifican el cuadro.
+  'diagnostico', 'diagnosticar', 'enfermedad', 'sindrome', 'sintoma', 'signo', 'cuadro', 'tipo', 'causa', 'causas',
+  // Palabras de la app y de la conversación.
+  'carga', 'cargar', 'grabacion', 'grabar', 'pantalla', 'blanco', 'soporte', 'tecnico', 'hora', 'horario', 'momento',
+  'descargo', 'descargar', 'historia', 'boton', 'guardar', 'enlace', 'correo', 'sesion', 'cuenta', 'plantilla',
+  'app', 'aplicacion', 'celular', 'foto', 'pdf', 'nota', 'notas'
 ]);
 
 // Un número suelto en la pregunta («165/100», «38.2») casi nunca identifica la
@@ -110,16 +118,45 @@ function stem(token) {
   return word;
 }
 
-/** Expande sinónimos sobre el texto normalizado (las claves pueden tener varias palabras). */
-function expandSynonyms(normalized, synonyms) {
-  if (!synonyms || typeof synonyms !== 'object') return normalized;
-  const extras = [];
-  const padded = ` ${normalized} `;
+// Sinónimos compilados una vez por mapa: claves de una palabra en un Map (una
+// búsqueda por palabra del texto) y claves de varias palabras en una lista.
+// Antes se normalizaba cada clave en cada texto: era el 70 % del tiempo de
+// construir el índice.
+const compiledSynonyms = new WeakMap();
+
+function compileSynonyms(synonyms) {
+  if (compiledSynonyms.has(synonyms)) return compiledSynonyms.get(synonyms);
+  const single = new Map();
+  const multi = [];
   for (const [rawKey, values] of Object.entries(synonyms)) {
     const key = normalizeText(rawKey);
-    if (!key || !padded.includes(` ${key} `)) continue;
-    for (const value of Array.isArray(values) ? values : [values]) {
-      extras.push(normalizeText(value));
+    if (!key) continue;
+    const expansions = (Array.isArray(values) ? values : [values]).map((value) => normalizeText(value)).filter(Boolean);
+    if (!expansions.length) continue;
+    if (key.includes(' ')) {
+      multi.push([` ${key} `, expansions]);
+    } else {
+      single.set(key, [...(single.get(key) || []), ...expansions]);
+    }
+  }
+  const compiled = { single, multi };
+  compiledSynonyms.set(synonyms, compiled);
+  return compiled;
+}
+
+/** Expande sinónimos sobre el texto normalizado (las claves pueden tener varias palabras). */
+function expandSynonyms(normalized, synonyms) {
+  if (!synonyms || typeof synonyms !== 'object' || !normalized) return normalized;
+  const { single, multi } = compileSynonyms(synonyms);
+  const extras = [];
+  for (const word of new Set(normalized.split(' '))) {
+    const expansions = single.get(word);
+    if (expansions) extras.push(...expansions);
+  }
+  if (multi.length) {
+    const padded = ` ${normalized} `;
+    for (const [key, expansions] of multi) {
+      if (padded.includes(key)) extras.push(...expansions);
     }
   }
   return extras.length ? `${normalized} ${extras.join(' ')}` : normalized;

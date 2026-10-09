@@ -1007,5 +1007,218 @@
   ],
   "uretrocistografia": [
     "cistouretrografia miccional"
+  ],
+  "hincho la cara": [
+    "angioedema anafilaxia"
+  ],
+  "cara hinchada": [
+    "angioedema"
+  ],
+  "labios hinchados": [
+    "angioedema"
+  ],
+  "mani": [
+    "alergia alimentaria anafilaxia"
+  ],
+  "cuesta respirar": [
+    "disnea"
+  ],
+  "le cuesta respirar": [
+    "disnea"
+  ],
+  "va a dar un infarto": [
+    "panico miedo a morir"
+  ],
+  "sale a la calle": [
+    "agorafobia"
+  ],
+  "miedo a salir": [
+    "agorafobia"
+  ],
+  "cerveza": [
+    "alcohol"
+  ],
+  "aguardiente": [
+    "alcohol"
+  ],
+  "emborracharse": [
+    "alcohol consumo"
+  ],
+  "emborracha": [
+    "alcohol consumo"
+  ],
+  "borrachera": [
+    "alcohol consumo"
+  ],
+  "convulsionando": [
+    "convulsiones estado epileptico"
+  ],
+  "convulsiono": [
+    "convulsiones"
+  ],
+  "no tiene vena": [
+    "sin acceso venoso intramuscular"
+  ],
+  "olvida": [
+    "deterioro cognitivo demencia"
+  ],
+  "olvidadiza": [
+    "deterioro cognitivo demencia"
+  ],
+  "se pierde": [
+    "deterioro cognitivo demencia"
+  ],
+  "memoria": [
+    "deterioro cognitivo"
+  ],
+  "abuela": [
+    "adulto mayor"
+  ],
+  "abuelo": [
+    "adulto mayor"
+  ],
+  "abuelito": [
+    "adulto mayor"
+  ],
+  "abuelita": [
+    "adulto mayor"
+  ],
+  "triste": [
+    "animo deprimido depresion"
+  ],
+  "tristeza": [
+    "animo deprimido depresion"
+  ],
+  "no disfruta": [
+    "anhedonia depresion"
+  ],
+  "arde el estomago": [
+    "dispepsia pirosis"
+  ],
+  "ardor de estomago": [
+    "dispepsia pirosis"
+  ],
+  "acidez": [
+    "pirosis reflujo gastroesofagico"
+  ],
+  "sube acido": [
+    "reflujo gastroesofagico pirosis regurgitacion"
+  ],
+  "agrieras": [
+    "pirosis reflujo gastroesofagico"
+  ],
+  "dolor en el pecho": [
+    "dolor toracico"
+  ],
+  "sudor frio": [
+    "diaforesis"
+  ],
+  "opresion en el pecho": [
+    "dolor toracico"
+  ],
+  "duele la garganta": [
+    "faringoamigdalitis odinofagia"
+  ],
+  "dolor en la garganta": [
+    "faringoamigdalitis odinofagia"
+  ],
+  "placas blancas": [
+    "exudado amigdalino faringoamigdalitis"
+  ],
+  "placas en la garganta": [
+    "exudado amigdalino faringoamigdalitis"
+  ],
+  "nacio el bebe": [
+    "posparto"
+  ],
+  "despues del parto": [
+    "posparto"
+  ],
+  "sangra": [
+    "hemorragia sangrado"
+  ],
+  "sangrando": [
+    "hemorragia sangrado"
+  ],
+  "pus por el pene": [
+    "uretritis secrecion uretral"
+  ],
+  "secrecion por el pene": [
+    "uretritis secrecion uretral"
+  ],
+  "pene": [
+    "uretritis"
+  ],
+  "flema": [
+    "expectoracion"
+  ],
+  "flema verde": [
+    "expectoracion purulenta"
+  ],
+  "dolor al respirar": [
+    "dolor pleuritico"
+  ],
+  "ulcera genital": [
+    "chancro sifilis"
+  ],
+  "llaga": [
+    "ulcera"
+  ],
+  "ulcera que no duele": [
+    "chancro sifilis"
+  ],
+  "pantorrilla": [
+    "pierna"
+  ],
+  "pantorrilla hinchada": [
+    "trombosis venosa profunda"
+  ],
+  "hincho la pantorrilla": [
+    "trombosis venosa profunda"
+  ],
+  "tose": [
+    "tos"
+  ],
+  "tosiendo": [
+    "tos"
+  ],
+  "bota sangre": [
+    "hemoptisis"
+  ],
+  "tos con sangre": [
+    "hemoptisis"
+  ],
+  "bajado de peso": [
+    "perdida de peso"
+  ],
+  "bajo de peso": [
+    "perdida de peso"
+  ],
+  "deficit neurologico": [
+    "focalizacion neurologica acv ictus"
+  ],
+  "glucosa": [
+    "glucemia"
+  ],
+  "sudoroso": [
+    "sudoracion diaforesis"
+  ],
+  "sudorosa": [
+    "sudoracion diaforesis"
+  ],
+  "medio cuerpo": [
+    "hemiparesia focalizacion neurologica"
+  ],
+  "se le durmio": [
+    "parestesia"
+  ],
+  "habla enredado": [
+    "disartria afasia"
+  ],
+  "habla enredada": [
+    "disartria afasia"
+  ],
+  "boca torcida": [
+    "paralisis facial"
   ]
 }

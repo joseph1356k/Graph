@@ -4,7 +4,10 @@
 //   - digitación: errores de tecleo frecuentes;
 //   - seguimiento: preguntas cortas que dependen de la anterior;
 //   - población: la misma pregunta con un niño, un adulto o una gestante;
-//   - fuera de tema: charla o preguntas de la app que NO deben traer guías.
+//   - fuera de tema: charla o preguntas de la app que NO deben traer guías;
+//   - fuera del corpus: preguntas médicas reales sin guía en el corpus; no
+//     deben traer ningún extracto de relevancia «alta» (no hay respuesta en
+//     el corpus y el prompt no debe recibir un vecino cercano como si lo fuera).
 // Mide recall@1, recall@3, MRR y la latencia de búsqueda, y falla si alguna
 // métrica cae por debajo del umbral. Sin modelo, sin red: corre en `npm test`.
 //   node scripts/eval-guideline-retrieval.js [--verbose]
@@ -18,10 +21,17 @@ const {
 } = require('../src/application/knowledge/ClinicalGuidelineIndex');
 
 const THRESHOLDS = Object.freeze({
-  recallAt3: 0.9,
-  mrr: 0.75,
+  minQuestions: 300,
+  minPerGuide: 4,
+  minOffTopic: 60,
+  minOutOfCorpus: 40,
+  recallAt1: 0.9,
+  recallAt3: 0.97,
+  mrr: 0.93,
   offTopicPrecision: 1,
-  p95LatencyMs: 25
+  outOfCorpusNoHigh: 0.9,
+  p95LatencyMs: 10,
+  indexBuildMs: 300
 });
 
 const verbose = process.argv.includes('--verbose');
@@ -43,7 +53,9 @@ function runCase(index, item) {
 }
 
 function main() {
+  const buildStarted = process.hrtime.bigint();
   const index = loadDefaultIndex({ force: true });
+  const indexBuildMs = Number(process.hrtime.bigint() - buildStarted) / 1e6;
   const known = new Set(index.chunks.map((chunk) => chunk.guideline_id));
   const latencies = [];
   const rows = [];
@@ -82,6 +94,23 @@ function main() {
     else failures.push(`[fuera de tema] «${message}» trajo ${ids.slice(0, 3).join(', ')}`);
   }
 
+  let outOfCorpusNoHigh = 0;
+  const outOfCorpus = Array.isArray(fixtures.fueraDelCorpus) ? fixtures.fueraDelCorpus : [];
+  for (const message of outOfCorpus) {
+    const started = process.hrtime.bigint();
+    const results = index.search({ message });
+    latencies.push(Number(process.hrtime.bigint() - started) / 1e6);
+    const high = results.filter((item) => item.relevance === 'alta');
+    if (!high.length) outOfCorpusNoHigh += 1;
+    else failures.push(`[fuera del corpus] «${message}» trajo con relevancia alta ${[...new Set(high.map((item) => item.guideline_id))].join(', ')}`);
+  }
+
+  const perGuide = new Map([...known].map((id) => [id, 0]));
+  for (const items of Object.values(fixtures.sets)) {
+    for (const item of items) for (const id of asList(item.expected)) perGuide.set(id, (perGuide.get(id) || 0) + 1);
+  }
+  const thinGuides = [...perGuide].filter(([, count]) => count < THRESHOLDS.minPerGuide).map(([id]) => id);
+
   latencies.sort((a, b) => a - b);
   const p95 = latencies[Math.min(latencies.length - 1, Math.floor(latencies.length * 0.95))];
   const metrics = {
@@ -90,16 +119,26 @@ function main() {
     recallAt3: hits3 / total,
     mrr: reciprocal / total,
     offTopicPrecision: fixtures.offTopic.length ? offTopicEmpty / fixtures.offTopic.length : 1,
-    p95LatencyMs: p95
+    outOfCorpusNoHigh: outOfCorpus.length ? outOfCorpusNoHigh / outOfCorpus.length : 1,
+    p95LatencyMs: p95,
+    indexBuildMs
   };
 
   const pct = (value) => `${(value * 100).toFixed(1)} %`;
   console.log(`[eval-guideline-retrieval] ${index.stats().guidelines} guías · ${index.stats().chunks} fragmentos · ${total} preguntas + ${fixtures.offTopic.length} fuera de tema`);
   for (const row of rows) console.log(`  ${row.set.padEnd(12)} n=${String(row.n).padStart(3)}  recall@3 ${pct(row.recallAt3)}`);
   console.log(`  global       recall@1 ${pct(metrics.recallAt1)} · recall@3 ${pct(metrics.recallAt3)} · MRR ${metrics.mrr.toFixed(3)} · fuera de tema sin guías ${pct(metrics.offTopicPrecision)} · p95 ${metrics.p95LatencyMs.toFixed(2)} ms`);
+  console.log(`  fuera del corpus sin extracto de relevancia alta ${pct(metrics.outOfCorpusNoHigh)} (${outOfCorpusNoHigh}/${outOfCorpus.length}) · construcción del índice ${metrics.indexBuildMs.toFixed(0)} ms · guías con < ${THRESHOLDS.minPerGuide} preguntas: ${thinGuides.length}`);
   if (verbose || failures.length) for (const failure of failures) console.log(`   ✗ ${failure}`);
 
   const below = [];
+  if (total < THRESHOLDS.minQuestions) below.push(`preguntas ${total} < ${THRESHOLDS.minQuestions}`);
+  if (fixtures.offTopic.length < THRESHOLDS.minOffTopic) below.push(`fuera de tema ${fixtures.offTopic.length} < ${THRESHOLDS.minOffTopic}`);
+  if (outOfCorpus.length < THRESHOLDS.minOutOfCorpus) below.push(`fuera del corpus ${outOfCorpus.length} < ${THRESHOLDS.minOutOfCorpus}`);
+  if (thinGuides.length) below.push(`guías con menos de ${THRESHOLDS.minPerGuide} preguntas: ${thinGuides.join(', ')}`);
+  if (metrics.recallAt1 < THRESHOLDS.recallAt1) below.push(`recall@1 ${pct(metrics.recallAt1)} < ${pct(THRESHOLDS.recallAt1)}`);
+  if (metrics.outOfCorpusNoHigh < THRESHOLDS.outOfCorpusNoHigh) below.push(`fuera del corpus sin relevancia alta ${pct(metrics.outOfCorpusNoHigh)} < ${pct(THRESHOLDS.outOfCorpusNoHigh)}`);
+  if (metrics.indexBuildMs > THRESHOLDS.indexBuildMs) below.push(`construcción del índice ${metrics.indexBuildMs.toFixed(0)} ms > ${THRESHOLDS.indexBuildMs} ms`);
   if (metrics.recallAt3 < THRESHOLDS.recallAt3) below.push(`recall@3 ${pct(metrics.recallAt3)} < ${pct(THRESHOLDS.recallAt3)}`);
   if (metrics.mrr < THRESHOLDS.mrr) below.push(`MRR ${metrics.mrr.toFixed(3)} < ${THRESHOLDS.mrr}`);
   if (metrics.offTopicPrecision < THRESHOLDS.offTopicPrecision) below.push(`fuera de tema ${pct(metrics.offTopicPrecision)} < ${pct(THRESHOLDS.offTopicPrecision)}`);

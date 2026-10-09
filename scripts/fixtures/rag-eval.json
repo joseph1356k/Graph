@@ -270,6 +270,253 @@
       {
         "message": "niña de 1 año con fiebre y orina fétida",
         "expected": "infeccion-urinaria-pediatrica"
+      },
+      {
+        "message": "se le durmió medio cuerpo y habla enredado desde hace dos horas",
+        "expected": "acv-isquemico-agudo"
+      },
+      {
+        "message": "se hinchó la cara y le cuesta respirar después de comer maní",
+        "expected": "anafilaxia"
+      },
+      {
+        "message": "paciente pálida y cansada con hemoglobina en 9",
+        "expected": "anemia-ferropenica"
+      },
+      {
+        "message": "siente que le va a dar un infarto y se ahoga cuando sale a la calle",
+        "expected": "ansiedad-y-riesgo-suicida"
+      },
+      {
+        "message": "quiere planificar y tiene migraña con aura",
+        "expected": "anticoncepcion"
+      },
+      {
+        "message": "cuánta cefalexina le doy a un adulto con infección de piel",
+        "expected": "antibioticos-dosis-frecuentes"
+      },
+      {
+        "message": "niño que silba en el pecho por las noches y se ahoga con el ejercicio",
+        "expected": "asma-adultos-y-ninos"
+      },
+      {
+        "message": "bebé de 3 meses con mocos, tos y respiración rápida",
+        "expected": "bronquiolitis"
+      },
+      {
+        "message": "le duele la cabeza de un lado, pulsátil, con vómito y no tolera la luz",
+        "expected": "cefalea-migrana-tensional"
+      },
+      {
+        "message": "qué diagnóstico CIE-10 le pongo a una infección urinaria",
+        "expected": "cie10-frecuente-atencion-primaria"
+      },
+      {
+        "message": "toma cerveza todos los fines de semana hasta emborracharse",
+        "expected": "consumo-de-alcohol"
+      },
+      {
+        "message": "primer control de embarazo, qué exámenes le mando",
+        "expected": "control-prenatal"
+      },
+      {
+        "message": "lleva 10 minutos convulsionando y no tiene vena",
+        "expected": "convulsiones-estatus-y-febril"
+      },
+      {
+        "message": "diabético con glucometría en 'HI', vómito y respiración profunda",
+        "expected": "crisis-hiperglucemicas-e-hipoglucemia"
+      },
+      {
+        "message": "abuela que olvida todo y se pierde en la casa",
+        "expected": "delirium-y-demencia"
+      },
+      {
+        "message": "fiebre de 3 días con dolor detrás de los ojos y plaquetas bajas",
+        "expected": "dengue"
+      },
+      {
+        "message": "está muy triste hace dos meses y ya no disfruta nada",
+        "expected": "depresion-adultos"
+      },
+      {
+        "message": "niño muy flaco con brazo delgado y no quiere comer",
+        "expected": "desnutricion-aguda-infantil"
+      },
+      {
+        "message": "señora con el azúcar alto y sed todo el tiempo",
+        "expected": "diabetes-mellitus-tipo-2"
+      },
+      {
+        "message": "niño con popó líquido muchas veces y no quiere tomar nada",
+        "expected": "diarrea-aguda-y-deshidratacion-pediatrica"
+      },
+      {
+        "message": "triglicéridos en 500 y colesterol alto",
+        "expected": "dislipidemia-riesgo-cardiovascular"
+      },
+      {
+        "message": "le arde el estómago después de comer y le sube ácido a la boca",
+        "expected": "dispepsia-erge-helicobacter"
+      },
+      {
+        "message": "dolor de barriga que empezó en el ombligo y se fue a la derecha",
+        "expected": "dolor-abdominal-agudo-apendicitis"
+      },
+      {
+        "message": "dolor de espalda de años que no mejora con nada",
+        "expected": "dolor-cronico-y-opioides"
+      },
+      {
+        "message": "dolor en el pecho como un peso, con sudor frío",
+        "expected": "dolor-toracico-sindrome-coronario-agudo"
+      },
+      {
+        "message": "los riñones le están fallando, creatinina en 2",
+        "expected": "enfermedad-renal-cronica"
+      },
+      {
+        "message": "fumador viejo que se ahoga y tose con flema todas las mañanas",
+        "expected": "epoc"
+      },
+      {
+        "message": "le duele mucho la garganta y tiene placas blancas",
+        "expected": "faringoamigdalitis-aguda"
+      },
+      {
+        "message": "pulso irregular y palpitaciones, el electro sale sin ondas P",
+        "expected": "fibrilacion-auricular-anticoagulacion"
+      },
+      {
+        "message": "bebé de un mes con fiebre de 38,5 sin foco",
+        "expected": "fiebre-sin-foco-lactante"
+      },
+      {
+        "message": "se despertó con el dedo gordo del pie hinchado y rojo",
+        "expected": "gota"
+      },
+      {
+        "message": "está haciendo popó negra y se marea al pararse",
+        "expected": "hemorragia-digestiva"
+      },
+      {
+        "message": "sangra muchísimo después de que nació el bebé",
+        "expected": "hemorragia-posparto"
+      },
+      {
+        "message": "la tensión le sale en 160/100 en varias tomas",
+        "expected": "hipertension-arterial-adultos"
+      },
+      {
+        "message": "cansancio, frío y aumento de peso con TSH en 12",
+        "expected": "hipotiroidismo"
+      },
+      {
+        "message": "recién nacido amarillo hasta las piernas",
+        "expected": "ictericia-neonatal"
+      },
+      {
+        "message": "niño con tos, fiebre y se le hunden las costillas",
+        "expected": "infeccion-respiratoria-aguda-pediatrica"
+      },
+      {
+        "message": "señora con ardor al orinar y ganas de orinar a cada rato",
+        "expected": "infeccion-urinaria-adultos"
+      },
+      {
+        "message": "bebé con fiebre alta y orina con olor fuerte",
+        "expected": "infeccion-urinaria-pediatrica"
+      },
+      {
+        "message": "tiene un forúnculo grande con pus en la pierna",
+        "expected": "infecciones-piel-tejidos-blandos"
+      },
+      {
+        "message": "le sale pus por el pene y le arde al orinar",
+        "expected": "infecciones-transmision-sexual"
+      },
+      {
+        "message": "no logra dormir hace meses y se despierta a las 3 de la mañana",
+        "expected": "insomnio"
+      },
+      {
+        "message": "se ahoga al acostarse y tiene los pies hinchados",
+        "expected": "insuficiencia-cardiaca"
+      },
+      {
+        "message": "le duele la parte baja de la espalda después de cargar algo pesado",
+        "expected": "lumbalgia-aguda"
+      },
+      {
+        "message": "viene de la selva con fiebre y escalofríos",
+        "expected": "malaria"
+      },
+      {
+        "message": "tos con flema verde, fiebre y dolor al respirar",
+        "expected": "neumonia-adquirida-comunidad-adulto"
+      },
+      {
+        "message": "quiere bajar de peso, tiene IMC de 36",
+        "expected": "obesidad-y-tabaquismo"
+      },
+      {
+        "message": "se fracturó la cadera con una caída simple",
+        "expected": "osteoporosis"
+      },
+      {
+        "message": "niño con dolor de oído y fiebre desde ayer",
+        "expected": "otitis-media-y-sinusitis-aguda"
+      },
+      {
+        "message": "se desplomó y no tiene pulso",
+        "expected": "paro-cardiorrespiratorio-rcp"
+      },
+      {
+        "message": "embarazada con dolor de cabeza fuerte y ve lucecitas",
+        "expected": "preeclampsia-trastornos-hipertensivos-embarazo"
+      },
+      {
+        "message": "estornuda todo el día y se le tapa la nariz con el polvo",
+        "expected": "rinitis-alergica"
+      },
+      {
+        "message": "paciente con fiebre, confuso y la presión en 80/50",
+        "expected": "sepsis-adultos"
+      },
+      {
+        "message": "le salió una úlcera que no duele en los genitales",
+        "expected": [
+          "sifilis",
+          "infecciones-transmision-sexual"
+        ]
+      },
+      {
+        "message": "se desmayó de pie en la fila y se recuperó rápido",
+        "expected": "sincope"
+      },
+      {
+        "message": "a qué edad le pido la citología",
+        "expected": "tamizaje-de-cancer"
+      },
+      {
+        "message": "se golpeó la cabeza, vomitó una vez y está bien",
+        "expected": "trauma-menor-reglas-de-decision"
+      },
+      {
+        "message": "le duele y se le hinchó la pantorrilla después de una cirugía",
+        "expected": "tromboembolia-venosa"
+      },
+      {
+        "message": "tose hace más de un mes, bota sangre y ha bajado de peso",
+        "expected": "tuberculosis"
+      },
+      {
+        "message": "todo le da vueltas cuando se acuesta o mira hacia arriba",
+        "expected": "vertigo-y-mareo"
+      },
+      {
+        "message": "tuvo relaciones sin condón con una persona con VIH",
+        "expected": "vih-tamizaje-y-profilaxis"
       }
     ],
     "digitacion": [
@@ -318,6 +565,250 @@
       {
         "message": "cetoasidosis diabetica",
         "expected": "crisis-hiperglucemicas-e-hipoglucemia"
+      },
+      {
+        "message": "ACV con NIHSS de 8, trombolizo?",
+        "expected": "acv-isquemico-agudo"
+      },
+      {
+        "message": "anafilacsia en niño, adrenalina IM",
+        "expected": "anafilaxia"
+      },
+      {
+        "message": "ferropenia, ferritina baja, sulfato ferroso",
+        "expected": "anemia-ferropenica"
+      },
+      {
+        "message": "GAD-7 alto, ansiedad generalizada",
+        "expected": "ansiedad-y-riesgo-suicida"
+      },
+      {
+        "message": "ACO combinados criterios de elegibilidad OMS",
+        "expected": "anticoncepcion"
+      },
+      {
+        "message": "dosis de amoxi en adultos",
+        "expected": "antibioticos-dosis-frecuentes"
+      },
+      {
+        "message": "crisis asmática, salbutamol con inhalocámara",
+        "expected": "asma-adultos-y-ninos"
+      },
+      {
+        "message": "bronquiolitis por VSR, oxígeno",
+        "expected": "bronquiolitis"
+      },
+      {
+        "message": "migrana con aura, sumatriptan",
+        "expected": "cefalea-migrana-tensional"
+      },
+      {
+        "message": "codigo cie10 para lumbalgia",
+        "expected": "cie10-frecuente-atencion-primaria"
+      },
+      {
+        "message": "AUDIT-C positivo, intervención breve",
+        "expected": "consumo-de-alcohol"
+      },
+      {
+        "message": "paraclinicos prenatales del primer trimestre",
+        "expected": "control-prenatal"
+      },
+      {
+        "message": "estatus epileptico, lorazepam IV",
+        "expected": "convulsiones-estatus-y-febril"
+      },
+      {
+        "message": "CAD con potasio de 3,2",
+        "expected": "crisis-hiperglucemicas-e-hipoglucemia"
+      },
+      {
+        "message": "4AT positivo, delirium hipoactivo",
+        "expected": "delirium-y-demencia"
+      },
+      {
+        "message": "dengue grave, choque, cristaloides",
+        "expected": "dengue"
+      },
+      {
+        "message": "PHQ-9 de 18, sertralina",
+        "expected": "depresion-adultos"
+      },
+      {
+        "message": "DNT aguda severa, FTLC y prueba de apetito",
+        "expected": "desnutricion-aguda-infantil"
+      },
+      {
+        "message": "DM2 con HbA1c de 9, metformina",
+        "expected": "diabetes-mellitus-tipo-2"
+      },
+      {
+        "message": "EDA con deshidratación, plan B con SRO",
+        "expected": "diarrea-aguda-y-deshidratacion-pediatrica"
+      },
+      {
+        "message": "LDL de 190, estatina de alta intensidad",
+        "expected": "dislipidemia-riesgo-cardiovascular"
+      },
+      {
+        "message": "ERGE, IBP por 8 semanas",
+        "expected": "dispepsia-erge-helicobacter"
+      },
+      {
+        "message": "apendicitis, escala de Alvarado",
+        "expected": "dolor-abdominal-agudo-apendicitis"
+      },
+      {
+        "message": "MME de tramadol, naloxona",
+        "expected": "dolor-cronico-y-opioides"
+      },
+      {
+        "message": "SCA con troponina positiva, ECG",
+        "expected": "dolor-toracico-sindrome-coronario-agudo"
+      },
+      {
+        "message": "ERC estadio 3, albuminuria KDIGO",
+        "expected": "enfermedad-renal-cronica"
+      },
+      {
+        "message": "EPOC GOLD E, LAMA LABA",
+        "expected": "epoc"
+      },
+      {
+        "message": "faringitis estreptococica, criterios de Centor",
+        "expected": "faringoamigdalitis-aguda"
+      },
+      {
+        "message": "FA no valvular, apixaban dosis",
+        "expected": "fibrilacion-auricular-anticoagulacion"
+      },
+      {
+        "message": "lactante febril de 22 a 60 dias, procalcitonina",
+        "expected": "fiebre-sin-foco-lactante"
+      },
+      {
+        "message": "crisis de gota, colchicina dosis baja",
+        "expected": "gota"
+      },
+      {
+        "message": "HVDA, puntaje Glasgow-Blatchford",
+        "expected": "hemorragia-digestiva"
+      },
+      {
+        "message": "HPP, código rojo, ácido tranexámico",
+        "expected": "hemorragia-posparto"
+      },
+      {
+        "message": "HTA estadio 2, losartan",
+        "expected": "hipertension-arterial-adultos"
+      },
+      {
+        "message": "hipotiroidismo subclinico, levotiroxina",
+        "expected": "hipotiroidismo"
+      },
+      {
+        "message": "hiperbilirrubinemia, BTc, fototerapia",
+        "expected": "ictericia-neonatal"
+      },
+      {
+        "message": "neumonia en niño AIEPI, amoxicilina",
+        "expected": "infeccion-respiratoria-aguda-pediatrica"
+      },
+      {
+        "message": "ITU baja, nitrofurantoina 5 dias",
+        "expected": "infeccion-urinaria-adultos"
+      },
+      {
+        "message": "IVU febril en lactante, cefixima",
+        "expected": "infeccion-urinaria-pediatrica"
+      },
+      {
+        "message": "celulitis no purulenta, cefalexina",
+        "expected": "infecciones-piel-tejidos-blandos"
+      },
+      {
+        "message": "uretritis gonococica, ceftriaxona",
+        "expected": "infecciones-transmision-sexual"
+      },
+      {
+        "message": "insomnio cronico, TCC-I",
+        "expected": "insomnio"
+      },
+      {
+        "message": "ICFEr, cuatro pilares, sacubitrilo",
+        "expected": "insuficiencia-cardiaca"
+      },
+      {
+        "message": "lumbago con ciatica",
+        "expected": "lumbalgia-aguda"
+      },
+      {
+        "message": "paludismo por falciparum, artemeter lumefantrina",
+        "expected": "malaria"
+      },
+      {
+        "message": "NAC, CURB-65 de 2",
+        "expected": "neumonia-adquirida-comunidad-adulto"
+      },
+      {
+        "message": "cesacion tabaquica, vareniclina",
+        "expected": "obesidad-y-tabaquismo"
+      },
+      {
+        "message": "osteopenia, DXA, FRAX",
+        "expected": "osteoporosis"
+      },
+      {
+        "message": "OMA en niño de 2 años, amoxicilina",
+        "expected": "otitis-media-y-sinusitis-aguda"
+      },
+      {
+        "message": "RCP de alta calidad, adrenalina 1 mg",
+        "expected": "paro-cardiorrespiratorio-rcp"
+      },
+      {
+        "message": "preclampsia con criterios de severidad, sulfato de magnesio",
+        "expected": "preeclampsia-trastornos-hipertensivos-embarazo"
+      },
+      {
+        "message": "rinitis alergica persistente, corticoide nasal",
+        "expected": "rinitis-alergica"
+      },
+      {
+        "message": "choque septico, norepinefrina",
+        "expected": "sepsis-adultos"
+      },
+      {
+        "message": "VDRL reactivo, penicilina benzatínica",
+        "expected": "sifilis"
+      },
+      {
+        "message": "sincope vasovagal, mesa basculante",
+        "expected": "sincope"
+      },
+      {
+        "message": "tamizaje de cancer de colon con sangre oculta",
+        "expected": "tamizaje-de-cancer"
+      },
+      {
+        "message": "TCE leve, regla canadiense",
+        "expected": "trauma-menor-reglas-de-decision"
+      },
+      {
+        "message": "TEP, angiotomografía, dímero D",
+        "expected": "tromboembolia-venosa"
+      },
+      {
+        "message": "TBC pulmonar, prueba molecular",
+        "expected": "tuberculosis"
+      },
+      {
+        "message": "VPPB, maniobra de Epley",
+        "expected": "vertigo-y-mareo"
+      },
+      {
+        "message": "PEP VIH 28 dias",
+        "expected": "vih-tamizaje-y-profilaxis"
       }
     ],
     "seguimiento": [
@@ -424,6 +915,860 @@
         ],
         "message": "¿y si no responde a dos dosis?",
         "expected": "anafilaxia"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "trombólisis en ataque cerebrovascular isquémico"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿hasta cuántas horas?",
+        "expected": "acv-isquemico-agudo"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "adrenalina intramuscular en anafilaxia"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cuánto tiempo lo observo?",
+        "expected": "anafilaxia"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "hierro oral en anemia ferropénica"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y si no responde?",
+        "expected": "anemia-ferropenica"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "crisis de pánico, tratamiento"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y las benzodiacepinas?",
+        "expected": "ansiedad-y-riesgo-suicida"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "anticoncepción de emergencia con levonorgestrel"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿hasta cuántas horas sirve?",
+        "expected": "anticoncepcion"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "dosis de azitromicina en adultos"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y en niños?",
+        "expected": "antibioticos-dosis-frecuentes"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "tratamiento de mantenimiento del asma"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y si sigue con síntomas?",
+        "expected": "asma-adultos-y-ninos"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "manejo de la bronquiolitis"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cuándo lo hospitalizo?",
+        "expected": "bronquiolitis"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "profilaxis de la migraña"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿por cuánto tiempo la dejo?",
+        "expected": "cefalea-migrana-tensional"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "código CIE-10 de hipertensión esencial"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y si tiene enfermedad renal?",
+        "expected": "cie10-frecuente-atencion-primaria"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "síndrome de abstinencia alcohólica"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cuánta tiamina le pongo?",
+        "expected": "consumo-de-alcohol"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "vacunas en el embarazo"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y la Tdap cuándo?",
+        "expected": "control-prenatal"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "crisis febril simple en lactante"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿le hago punción lumbar?",
+        "expected": "convulsiones-estatus-y-febril"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "hipoglucemia en diabético consciente"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y si está inconsciente?",
+        "expected": "crisis-hiperglucemicas-e-hipoglucemia"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "manejo del delirium en el hospital"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿le doy haloperidol?",
+        "expected": "delirium-y-demencia"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "dengue con signos de alarma"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cuándo le doy de alta?",
+        "expected": "dengue"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "antidepresivo en depresión moderada"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y si no responde en 6 semanas?",
+        "expected": "depresion-adultos"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "manejo hospitalario de la desnutrición severa"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y si está deshidratado?",
+        "expected": "desnutricion-aguda-infantil"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "metas de hemoglobina glicosilada en diabetes"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y en un adulto mayor frágil?",
+        "expected": "diabetes-mellitus-tipo-2"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "plan A de rehidratación en casa"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y el zinc?",
+        "expected": "diarrea-aguda-y-deshidratacion-pediatrica"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "metas de LDL en prevención secundaria"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y si no llega a la meta?",
+        "expected": "dislipidemia-riesgo-cardiovascular"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "erradicación de Helicobacter pylori"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cómo confirmo que se curó?",
+        "expected": "dispepsia-erge-helicobacter"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "cólico renal en urgencias"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿qué analgésico doy?",
+        "expected": "dolor-abdominal-agudo-apendicitis"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "cómo desmontar opioides"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿qué tan rápido reduzco?",
+        "expected": "dolor-cronico-y-opioides"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "infarto con elevación del ST"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿qué le doy mientras llega a hemodinamia?",
+        "expected": "dolor-toracico-sindrome-coronario-agudo"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "nefroprotección en enfermedad renal crónica"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y los iSGLT2?",
+        "expected": "enfermedad-renal-cronica"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "exacerbación de EPOC"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cuándo doy antibiótico?",
+        "expected": "epoc"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "antibiótico en faringoamigdalitis"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y si es alérgico a la penicilina?",
+        "expected": "faringoamigdalitis-aguda"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "anticoagulación en fibrilación auricular"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y si tiene falla renal?",
+        "expected": "fibrilacion-auricular-anticoagulacion"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "fiebre sin foco en lactante"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿lo hospitalizo?",
+        "expected": "fiebre-sin-foco-lactante"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "alopurinol en gota"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿qué meta de ácido úrico busco?",
+        "expected": "gota"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "sangrado por várices esofágicas"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿qué antibiótico le doy?",
+        "expected": "hemorragia-digestiva"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "manejo de la hemorragia posparto"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y si no responde a la oxitocina?",
+        "expected": "hemorragia-posparto"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "tratamiento farmacológico de la hipertensión"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y si no se controla con dos medicamentos?",
+        "expected": "hipertension-arterial-adultos"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "dosis de levotiroxina"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cada cuánto controlo la TSH?",
+        "expected": "hipotiroidismo"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "fototerapia en recién nacido"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cuándo la suspendo?",
+        "expected": "ictericia-neonatal"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "crup en niños"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cuánta dexametasona?",
+        "expected": "infeccion-respiratoria-aguda-pediatrica"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "pielonefritis aguda"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿la trato ambulatoria?",
+        "expected": "infeccion-urinaria-adultos"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "infección urinaria en niños"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cuándo pido ecografía renal?",
+        "expected": "infeccion-urinaria-pediatrica"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "absceso cutáneo drenado"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿le doy antibiótico?",
+        "expected": "infecciones-piel-tejidos-blandos"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "flujo vaginal con mal olor"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿trato a la pareja?",
+        "expected": "infecciones-transmision-sexual"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "hipnóticos para el insomnio"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿por cuánto tiempo los dejo?",
+        "expected": "insomnio"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "tratamiento de la insuficiencia cardiaca"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y si se descompensa?",
+        "expected": "insuficiencia-cardiaca"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "lumbalgia aguda sin banderas rojas"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿le doy incapacidad?",
+        "expected": "lumbalgia-aguda"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "malaria complicada"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿qué dosis de artesunato?",
+        "expected": "malaria"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "antibiótico en neumonía ambulatoria"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cuántos días?",
+        "expected": "neumonia-adquirida-comunidad-adulto"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "tratamiento farmacológico de la obesidad"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y la cirugía bariátrica?",
+        "expected": "obesidad-y-tabaquismo"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "bifosfonatos en osteoporosis"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cuándo hago vacaciones del tratamiento?",
+        "expected": "osteoporosis"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "sinusitis bacteriana aguda"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cuándo le doy antibiótico?",
+        "expected": "otitis-media-y-sinusitis-aguda"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "ritmo desfibrilable en paro"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cuándo doy amiodarona?",
+        "expected": "paro-cardiorrespiratorio-rcp"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "hipertensión gestacional"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cuándo termino el embarazo?",
+        "expected": "preeclampsia-trastornos-hipertensivos-embarazo"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "antihistamínicos en rinitis alérgica"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y si no mejora?",
+        "expected": "rinitis-alergica"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "antibiótico empírico en sepsis"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cuándo desescalo?",
+        "expected": "sepsis-adultos"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "sífilis congénita"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cómo trato al recién nacido?",
+        "expected": "sifilis"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "síncope de alto riesgo"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿lo hospitalizo?",
+        "expected": "sincope"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "tamizaje de cáncer de mama"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y en mujeres de 40 años?",
+        "expected": "tamizaje-de-cancer"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "reglas de Ottawa para tobillo"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y para la rodilla?",
+        "expected": "trauma-menor-reglas-de-decision"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "anticoagulación en trombosis venosa profunda"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y si tiene cáncer?",
+        "expected": "tromboembolia-venosa"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "tratamiento de la tuberculosis sensible"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y la infección latente?",
+        "expected": "tuberculosis"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "vértigo agudo con nistagmo"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿cómo descarto un ACV?",
+        "expected": "vertigo-y-mareo"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "profilaxis preexposición al VIH"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿qué exámenes pido antes?",
+        "expected": "vih-tamizaje-y-profilaxis"
       }
     ],
     "poblacion": [
@@ -485,6 +1830,481 @@
           "edad": 1
         },
         "expected": "infeccion-urinaria-pediatrica"
+      },
+      {
+        "message": "déficit neurológico súbito",
+        "patient": {
+          "edad": 72
+        },
+        "expected": "acv-isquemico-agudo"
+      },
+      {
+        "message": "reacción alérgica grave con hipotensión",
+        "patient": {
+          "edad": 6
+        },
+        "expected": "anafilaxia"
+      },
+      {
+        "message": "anemia, cuánto hierro le doy",
+        "patient": {
+          "edad": 2
+        },
+        "expected": "anemia-ferropenica"
+      },
+      {
+        "message": "ideas de muerte, cómo evalúo el riesgo",
+        "patient": {
+          "edad": 35
+        },
+        "expected": "ansiedad-y-riesgo-suicida"
+      },
+      {
+        "message": "método anticonceptivo después del parto lactando",
+        "patient": {
+          "edad": 24,
+          "sexo": "F"
+        },
+        "expected": "anticoncepcion"
+      },
+      {
+        "message": "dosis de amoxicilina",
+        "patient": {
+          "edad": 6
+        },
+        "expected": "antibioticos-dosis-frecuentes"
+      },
+      {
+        "message": "crisis de asma en urgencias",
+        "patient": {
+          "edad": 7
+        },
+        "expected": "asma-adultos-y-ninos"
+      },
+      {
+        "message": "sibilancias y tos con rinorrea",
+        "patient": {
+          "edad": 0
+        },
+        "expected": "bronquiolitis"
+      },
+      {
+        "message": "cefalea crónica diaria",
+        "patient": {
+          "edad": 40
+        },
+        "expected": "cefalea-migrana-tensional"
+      },
+      {
+        "message": "qué código uso para el control de crecimiento",
+        "patient": {
+          "edad": 1
+        },
+        "expected": "cie10-frecuente-atencion-primaria"
+      },
+      {
+        "message": "consumo de riesgo de alcohol",
+        "patient": {
+          "edad": 50
+        },
+        "expected": "consumo-de-alcohol"
+      },
+      {
+        "message": "ácido fólico y hierro, desde cuándo",
+        "patient": {
+          "edad": 30,
+          "sexo": "F"
+        },
+        "expected": "control-prenatal",
+        "codes": [
+          {
+            "codigo": "Z34.9"
+          }
+        ]
+      },
+      {
+        "message": "convulsión que no cede",
+        "patient": {
+          "edad": 40
+        },
+        "expected": "convulsiones-estatus-y-febril"
+      },
+      {
+        "message": "glucosa en 45 y sudoroso",
+        "patient": {
+          "edad": 68
+        },
+        "expected": "crisis-hiperglucemicas-e-hipoglucemia"
+      },
+      {
+        "message": "deterioro cognitivo, qué laboratorios pido",
+        "patient": {
+          "edad": 78
+        },
+        "expected": "delirium-y-demencia"
+      },
+      {
+        "message": "fiebre y dolor muscular en zona endémica",
+        "patient": {
+          "edad": 9
+        },
+        "expected": "dengue"
+      },
+      {
+        "message": "ánimo deprimido después del parto",
+        "patient": {
+          "edad": 28,
+          "sexo": "F"
+        },
+        "expected": "depresion-adultos"
+      },
+      {
+        "message": "bajo peso para la talla",
+        "patient": {
+          "edad": 2
+        },
+        "expected": "desnutricion-aguda-infantil"
+      },
+      {
+        "message": "glucemia elevada en ayunas",
+        "patient": {
+          "edad": 55
+        },
+        "expected": "diabetes-mellitus-tipo-2"
+      },
+      {
+        "message": "diarrea con ojos hundidos",
+        "patient": {
+          "edad": 1
+        },
+        "expected": "diarrea-aguda-y-deshidratacion-pediatrica"
+      },
+      {
+        "message": "colesterol alto, qué estatina",
+        "patient": {
+          "edad": 62
+        },
+        "expected": "dislipidemia-riesgo-cardiovascular"
+      },
+      {
+        "message": "dispepsia con pérdida de peso",
+        "patient": {
+          "edad": 65
+        },
+        "expected": "dispepsia-erge-helicobacter"
+      },
+      {
+        "message": "dolor abdominal agudo en fosa ilíaca derecha",
+        "patient": {
+          "edad": 10
+        },
+        "expected": "dolor-abdominal-agudo-apendicitis"
+      },
+      {
+        "message": "dolor neuropático diabético",
+        "patient": {
+          "edad": 60
+        },
+        "expected": "dolor-cronico-y-opioides"
+      },
+      {
+        "message": "dolor torácico en urgencias",
+        "patient": {
+          "edad": 58
+        },
+        "expected": "dolor-toracico-sindrome-coronario-agudo"
+      },
+      {
+        "message": "tasa de filtración baja",
+        "patient": {
+          "edad": 70
+        },
+        "expected": "enfermedad-renal-cronica"
+      },
+      {
+        "message": "disnea progresiva en fumador",
+        "patient": {
+          "edad": 68
+        },
+        "expected": "epoc"
+      },
+      {
+        "message": "dolor de garganta con fiebre",
+        "patient": {
+          "edad": 8
+        },
+        "expected": "faringoamigdalitis-aguda"
+      },
+      {
+        "message": "palpitaciones irregulares",
+        "patient": {
+          "edad": 76
+        },
+        "expected": "fibrilacion-auricular-anticoagulacion"
+      },
+      {
+        "message": "fiebre sin causa aparente",
+        "patient": {
+          "edad": 0
+        },
+        "expected": "fiebre-sin-foco-lactante"
+      },
+      {
+        "message": "ácido úrico alto con crisis repetidas",
+        "patient": {
+          "edad": 55
+        },
+        "expected": "gota"
+      },
+      {
+        "message": "hemorragia digestiva con hipotensión",
+        "patient": {
+          "edad": 64
+        },
+        "expected": "hemorragia-digestiva"
+      },
+      {
+        "message": "sangrado posparto con taquicardia",
+        "patient": {
+          "edad": 26,
+          "sexo": "F"
+        },
+        "expected": "hemorragia-posparto"
+      },
+      {
+        "message": "presión arterial elevada",
+        "patient": {
+          "edad": 52
+        },
+        "expected": "hipertension-arterial-adultos"
+      },
+      {
+        "message": "TSH elevada en el embarazo",
+        "patient": {
+          "edad": 30,
+          "sexo": "F"
+        },
+        "expected": "hipotiroidismo",
+        "codes": [
+          {
+            "codigo": "Z34.9"
+          }
+        ]
+      },
+      {
+        "message": "ictericia en las primeras 24 horas",
+        "patient": {
+          "edad": 0
+        },
+        "expected": "ictericia-neonatal"
+      },
+      {
+        "message": "respiración rápida con tos",
+        "patient": {
+          "edad": 2
+        },
+        "expected": "infeccion-respiratoria-aguda-pediatrica"
+      },
+      {
+        "message": "bacteriuria asintomática",
+        "patient": {
+          "edad": 30,
+          "sexo": "F"
+        },
+        "expected": "infeccion-urinaria-adultos",
+        "codes": [
+          {
+            "codigo": "Z34.9"
+          }
+        ]
+      },
+      {
+        "message": "fiebre sin foco con uroanálisis alterado",
+        "patient": {
+          "edad": 1
+        },
+        "expected": "infeccion-urinaria-pediatrica"
+      },
+      {
+        "message": "mordedura de perro en la mano",
+        "patient": {
+          "edad": 9
+        },
+        "expected": "infecciones-piel-tejidos-blandos"
+      },
+      {
+        "message": "enfermedad pélvica inflamatoria",
+        "patient": {
+          "edad": 22,
+          "sexo": "F"
+        },
+        "expected": "infecciones-transmision-sexual"
+      },
+      {
+        "message": "insomnio en el adulto mayor",
+        "patient": {
+          "edad": 80
+        },
+        "expected": "insomnio"
+      },
+      {
+        "message": "disnea con edemas",
+        "patient": {
+          "edad": 74
+        },
+        "expected": "insuficiencia-cardiaca"
+      },
+      {
+        "message": "dolor lumbar",
+        "patient": {
+          "edad": 38
+        },
+        "expected": "lumbalgia-aguda"
+      },
+      {
+        "message": "fiebre en zona endémica de malaria",
+        "patient": {
+          "edad": 12
+        },
+        "expected": "malaria"
+      },
+      {
+        "message": "neumonía en paciente mayor",
+        "patient": {
+          "edad": 81
+        },
+        "expected": "neumonia-adquirida-comunidad-adulto"
+      },
+      {
+        "message": "sobrepeso con cintura aumentada",
+        "patient": {
+          "edad": 45
+        },
+        "expected": "obesidad-y-tabaquismo"
+      },
+      {
+        "message": "densitometría en posmenopausia",
+        "patient": {
+          "edad": 66,
+          "sexo": "F"
+        },
+        "expected": "osteoporosis"
+      },
+      {
+        "message": "otalgia con tímpano abombado",
+        "patient": {
+          "edad": 3
+        },
+        "expected": "otitis-media-y-sinusitis-aguda"
+      },
+      {
+        "message": "paro cardiaco en niño",
+        "patient": {
+          "edad": 5
+        },
+        "expected": "paro-cardiorrespiratorio-rcp"
+      },
+      {
+        "message": "presión alta en el embarazo",
+        "patient": {
+          "edad": 30,
+          "sexo": "F"
+        },
+        "expected": "preeclampsia-trastornos-hipertensivos-embarazo",
+        "codes": [
+          {
+            "codigo": "Z34.9"
+          }
+        ]
+      },
+      {
+        "message": "congestión nasal alérgica",
+        "patient": {
+          "edad": 9
+        },
+        "expected": "rinitis-alergica"
+      },
+      {
+        "message": "sepsis de foco urinario",
+        "patient": {
+          "edad": 77
+        },
+        "expected": "sepsis-adultos"
+      },
+      {
+        "message": "sífilis en la gestante",
+        "patient": {
+          "edad": 30,
+          "sexo": "F"
+        },
+        "expected": "sifilis",
+        "codes": [
+          {
+            "codigo": "Z34.9"
+          }
+        ]
+      },
+      {
+        "message": "pérdida transitoria de conciencia",
+        "patient": {
+          "edad": 70
+        },
+        "expected": "sincope"
+      },
+      {
+        "message": "tamizaje de cuello uterino con prueba de VPH",
+        "patient": {
+          "edad": 35,
+          "sexo": "F"
+        },
+        "expected": "tamizaje-de-cancer"
+      },
+      {
+        "message": "trauma craneoencefálico leve",
+        "patient": {
+          "edad": 1
+        },
+        "expected": "trauma-menor-reglas-de-decision"
+      },
+      {
+        "message": "trombosis en el embarazo",
+        "patient": {
+          "edad": 30,
+          "sexo": "F"
+        },
+        "expected": "tromboembolia-venosa",
+        "codes": [
+          {
+            "codigo": "Z34.9"
+          }
+        ]
+      },
+      {
+        "message": "contacto de tuberculosis",
+        "patient": {
+          "edad": 4
+        },
+        "expected": "tuberculosis"
+      },
+      {
+        "message": "mareo persistente",
+        "patient": {
+          "edad": 66
+        },
+        "expected": "vertigo-y-mareo"
+      },
+      {
+        "message": "prueba de VIH en el embarazo",
+        "patient": {
+          "edad": 30,
+          "sexo": "F"
+        },
+        "expected": "vih-tamizaje-y-profilaxis",
+        "codes": [
+          {
+            "codigo": "Z34.9"
+          }
+        ]
       }
     ]
   },
@@ -497,6 +2317,109 @@
     "resume la consulta",
     "qué tratamiento le doy al paciente",
     "ok perfecto",
-    "buenas tardes, ¿me ayudas?"
+    "buenas tardes, ¿me ayudas?",
+    "¿cómo exporto la nota a PDF?",
+    "no me carga la grabación",
+    "¿dónde veo mis consultas de ayer?",
+    "cambia el idioma a inglés",
+    "¿cuánto cuesta la suscripción?",
+    "mi cuenta está bloqueada",
+    "¿puedo usar la app en el celular?",
+    "¿cómo agrego otro médico a mi consultorio?",
+    "no se escucha el micrófono",
+    "¿qué es Miracle?",
+    "te quiero agradecer por la ayuda",
+    "jajaja",
+    "ok, entendido",
+    "listo, ya",
+    "sí",
+    "no",
+    "¿estás ahí?",
+    "¿me escuchas?",
+    "hasta mañana",
+    "buenas noches",
+    "¿qué hora es?",
+    "cuéntame un chiste",
+    "¿cómo está el clima hoy?",
+    "¿quién ganó el partido?",
+    "escribe un poema",
+    "traduce esto al inglés",
+    "¿cómo firmo la nota?",
+    "¿dónde está el botón de guardar?",
+    "necesito soporte técnico",
+    "¿cómo cambio la plantilla?",
+    "borra esta consulta",
+    "¿por qué se demora tanto?",
+    "la pantalla quedó en blanco",
+    "¿cómo descargo la historia clínica?",
+    "quiero hablar con un asesor",
+    "¿tienen modo oscuro?",
+    "actualiza la página",
+    "¿cómo subo una foto?",
+    "¿se guarda automáticamente?",
+    "¿quién puede ver mis notas?",
+    "¿mis datos están seguros?",
+    "¿cómo cierro sesión?",
+    "me equivoqué de paciente",
+    "¿cómo cambio el correo?",
+    "¿cuál es el horario de soporte?",
+    "perfecto, muchas gracias doctor",
+    "de nada",
+    "nos vemos",
+    "un momento por favor",
+    "espera",
+    "sigue",
+    "continúa",
+    "repite",
+    "no entendí",
+    "¿puedes resumir?",
+    "mándame el enlace"
+  ],
+  "fueraDelCorpus": [
+    "tratamiento de la hidradenitis supurativa",
+    "diagnóstico de la enfermedad de Wilson",
+    "manejo de la crisis miasténica",
+    "tratamiento modificador de la esclerosis múltiple",
+    "criterios de clasificación del lupus eritematoso sistémico",
+    "dosis de metotrexato en artritis reumatoide",
+    "tratamiento tópico de la psoriasis en placas",
+    "manejo del vitíligo",
+    "tratamiento de la alopecia areata",
+    "tratamiento de la rosácea",
+    "gotas para glaucoma de ángulo abierto",
+    "degeneración macular asociada a la edad",
+    "tratamiento de la otosclerosis",
+    "tamsulosina en hiperplasia prostática benigna",
+    "sildenafil en disfunción eréctil",
+    "manejo del dolor en endometriosis",
+    "tratamiento de la miomatosis uterina",
+    "síntomas de leucemia linfoblástica aguda",
+    "estadificación del linfoma de Hodgkin",
+    "diagnóstico del mieloma múltiple",
+    "profilaxis con factor VIII en hemofilia A",
+    "crisis vasooclusiva en anemia de células falciformes",
+    "púrpura trombocitopénica inmune en niños",
+    "tratamiento de la enfermedad de Crohn",
+    "mesalazina en colitis ulcerosa",
+    "diagnóstico de hepatitis autoinmune",
+    "manejo de la fibrosis quística",
+    "sarcoidosis pulmonar",
+    "antifibróticos en fibrosis pulmonar idiopática",
+    "riluzol en esclerosis lateral amiotrófica",
+    "inmunoglobulina en síndrome de Guillain-Barré",
+    "prednisona en parálisis facial de Bell",
+    "diagnóstico del trastorno del espectro autista",
+    "dosis de metilfenidato en TDAH",
+    "antipsicótico de primera línea en esquizofrenia",
+    "criterios de hospitalización en anorexia nerviosa",
+    "manejo de la epistaxis anterior",
+    "enfermedad de Lyme",
+    "tratamiento del queratocono",
+    "estrabismo en niños",
+    "displasia del desarrollo de la cadera",
+    "pie equino varo congénito",
+    "escoliosis idiopática del adolescente",
+    "cuándo operar una hernia inguinal",
+    "tratamiento de las hemorroides"
   ]
 }
