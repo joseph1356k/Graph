@@ -16,7 +16,7 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 | MRR | 0,952 | 0,973 | ≥ 0,93 | cumple |
 | Fuera de tema sin guías | 100 % | 100 % | 100 % | cumple |
 | p95 de búsqueda | 2,85 ms | 1,8 ms | ≤ 10 ms | cumple |
-| Construcción del índice | no medido | ≈ 110–125 ms | ≤ 300 ms | cumple |
+| Construcción del índice | no medido | ≈ 115–130 ms | ≤ 300 ms | cumple |
 | Evaluación de respuestas sin red (casos) | no existe | 192 (12 omitidos) | ≥ 150 con 6 métricas | cumple |
 | · referencias inventadas eliminadas | no medido | 100 % | 100 % | cumple |
 | · cifras plantadas detectadas | no medido | 100 % (77/77) | ≥ 95 % | cumple |
@@ -27,7 +27,7 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 | Evaluación de respuestas en vivo | no existe | bloqueada | ≥ 60 casos | bloqueada: requiere humano |
 | Medicamentos en el diccionario | 170 | 320 | ≥ 250 | cumple |
 | Instantánea de fichas técnicas | 0 % | 0 % | ≥ 90 % del diccionario | bloqueada: requiere humano |
-| Cifras «de memoria» corregidas, verificadas o retiradas | 0 | 41 | todas las marcadas | en curso |
+| Cifras «de memoria» corregidas, verificadas o retiradas | 0 | 61 (todas las marcadas en la primera tanda) | todas las marcadas | cumple (el contraste con la fuente primaria queda para el médico) |
 | Graph `npm test` | verde | verde | verde | cumple |
 | Web lint / typecheck / tests / build | 0 errores / limpio / 908 / OK | 0 errores / limpio / 908 / OK (reverificado en la iteración 12) | verde | cumple |
 | E2E Playwright del chat | no existe | 5 escenarios en verde (`npm run test:e2e` en la web) | 5 escenarios | cumple |
@@ -37,8 +37,9 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 
 ## Backlog priorizado
 
-1. **Exactitud clínica (única meta en curso):** quedan pocas «Pendiente» de la primera tanda: anticoncepción (efectividad por método, categorías OMS 2025), desnutrición (egreso de la Res. 115, dosis del libro de bolsillo OMS), AUDIT > 15 de NICE, reglas de conducción ESC, muy alto riesgo AACE, redacción de ISPAD 24–48 h y edades de BHOF 2022. Lo marcado como «contrastar con la fuente primaria» queda para el médico.
-2. **Corpus (prioridad baja, la meta de 80 se cumple):** parto pretérmino, menopausia, sangrado uterino anormal, dermatitis atópica, ojo rojo, otitis externa, artrosis, tos ferina, varicela y sarampión, quemaduras.
+Todas las metas alcanzables desde este entorno se cumplen desde la iteración 13. Sin tareas de prioridad alta.
+
+1. **Corpus (prioridad baja, la meta de 80 se cumple):** parto pretérmino, menopausia, sangrado uterino anormal, dermatitis atópica, ojo rojo, otitis externa, artrosis, tos ferina, varicela y sarampión, quemaduras.
 
 ## Hecho
 
@@ -66,6 +67,8 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 
 - **Iteración 12 (2026-10-09):** optimización. Nuevo `scripts/measure-chat-tokens.js` (en `npm test`; `npm run measure:tokens`): servicio real con modelo falso sobre tres consultas típicas (crónicos 8 000 caracteres de transcripción, pediatría 5 000, prenatal 12 000; nota, códigos, paciente, dos turnos de historial; ficha técnica simulada del tamaño máximo en preguntas de medicamento). Primera medida: mediana 7 424 tokens. Tres cambios: (1) `selectForPrompt`, ≈ 5 000 caracteres de guías en el prompt, los dos mejores extractos siempre y después solo relevancia alta o media (→ 6 534); (2) prompt del chat v5 con las mismas reglas en forma compacta, 8 293 → 6 474 caracteres (→ 6 014); (3) con nota en el prompt, `contexto_consulta` lleva solo las keys obligatorias de la plantilla (→ 5 900). Evaluación de respuestas sin red y de retrieval idénticas (192 casos, 6 métricas en 100 % y 0 % de falsos positivos; recall@1 94,8 %, MRR 0,973). `verify-guideline-index` 111 → 112, `verify-clinical-assistant` 44 → 45. CIMA sigue en 403 (un intento).
 
+- **Iteración 13 (2026-10-09):** exactitud clínica. Las 7 entradas pendientes de la primera tanda (20 cifras) revisadas con búsqueda web (41 → 61). Verificadas con fuentes secundarias: déficit de líquidos en 24–48 h (ISPAD 2022), dosis de la OMS en desnutrición grave (ampicilina, gentamicina, ReSoMal, choque, transfusión, F-75 130 mL/kg/día), colchicina 1 mg + 0,5 mg una hora después (EULAR), DXA a los 65/70 años (BHOF 2022) y muy alto riesgo de AACE 2020. Corregidas: NICE AUDIT > 15 aplica a adultos remitidos a servicios especializados; solo progestágeno en la lactancia antes de 6 semanas (OMS 5.ª ed.: píldora e implante 2, inyectable 3). Retiradas: efectividad exacta de píldora, inyectable y condón (cambia entre ediciones del CDC), «112 recomendaciones» de la OMS 2025, Z ≥ −1 como egreso de la Res. 115 y el detalle de las reglas de conducción de la ESC 2018. Al quitar «actualizó» del corpus, «actualiza la página» empezó a traer escabiosis (fuera de tema 100 → 98,5 %): «página», «actualiza» y «refresca» pasan a palabras de la app y vuelve a 100 % con rangos idénticos a HEAD en las 483 preguntas. Resto de métricas sin cambios; CIMA sigue en 403 (un intento).
+
 ## Decisiones
 
 - La verificación de cifras se hace con búsqueda web; los sitios oficiales no son alcanzables desde el sandbox. Una cifra se corrige con al menos dos fuentes secundarias concordantes; si no hay ninguna, se retira y queda en `PENDIENTES-REVISION.md`.
@@ -81,7 +84,7 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 
 ## Requiere humano
 
-- **Revisión médica** de las 80 guías, empezando por lo marcado «Pendiente» en `knowledge/guias-clinicas/PENDIENTES-REVISION.md`.
+- **Revisión médica** de las 80 guías, empezando por lo marcado «Pendiente» en `knowledge/guias-clinicas/PENDIENTES-REVISION.md` (contraste con la fuente primaria que no se pudo leer desde el sandbox: ISPAD 2022, EULAR 2016, categorías de la 6.ª edición de la OMS, anexo técnico de la Res. 115, tabla de conducción de la ESC 2018, entre otras).
 - **Clave de modelo para la evaluación en vivo:** no hay `MIRACLE_ASSISTANT_LLM_API_KEY` en el sandbox. Bloqueada: requiere humano.
 - **graphify:** el CLAUDE.md de la web pide `graphify update .` tras cambiar código, pero la herramienta no está instalada en el sandbox; correrlo donde esté instalada.
 - **CIMA:** el proxy del sandbox responde 403 a `cima.aemps.es` (`npm run check:cima` falla en ~90 ms). Correr `npm run check:cima` en el entorno de Graph y, si responde, `npm run build:drug-labels` desde una máquina con red. Bloqueada: requiere humano.
