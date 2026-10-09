@@ -182,7 +182,9 @@ function parseGuideline(markdown, filename = '') {
 function listGuidelineFiles(dir = CORPUS_DIR) {
   if (!fs.existsSync(dir)) return [];
   return fs.readdirSync(dir)
-    .filter((name) => name.endsWith('.md') && name !== 'README.md')
+    // Las guías van en kebab-case minúscula; los documentos de la carpeta en
+    // MAYÚSCULAS (README.md, PENDIENTES-REVISION.md) no son guías.
+    .filter((name) => name.endsWith('.md') && !/^[A-Z0-9-]+\.md$/.test(name))
     .sort()
     .map((name) => path.join(dir, name));
 }

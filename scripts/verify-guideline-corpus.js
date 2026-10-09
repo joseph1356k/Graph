@@ -80,6 +80,13 @@ function main() {
     }
   });
 
+  check('los documentos en MAYÚSCULAS de la carpeta no se compilan como guías', () => {
+    const names = files.map((file) => file.split('/').pop());
+    assert.ok(!names.includes('README.md'));
+    assert.ok(!names.includes('PENDIENTES-REVISION.md'));
+    assert.ok(fs.existsSync(`${corpusLib.CORPUS_DIR}/PENDIENTES-REVISION.md`), 'falta la lista de cifras pendientes de revisión médica');
+  });
+
   check('el README de la carpeta explica el formato', () => {
     const readme = fs.readFileSync(`${corpusLib.CORPUS_DIR}/README.md`, 'utf8');
     assert.ok(readme.includes('build:corpus'));
