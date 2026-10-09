@@ -587,6 +587,58 @@
       {
         "message": "¿Cuánto líquido le pongo a un paciente con inflamación del páncreas por cálculos, y cuándo puede volver a comer?",
         "expected": "pancreatitis-y-colecistitis"
+      },
+      {
+        "message": "A un campesino lo mordió una culebra en el pie hace 2 horas, tiene el pie hinchado y le sangran las encías, ¿cuánto suero le pongo?",
+        "expected": "accidente-ofidico"
+      },
+      {
+        "message": "¿Qué hago si a un niño lo mordió una serpiente rayada roja, negra y amarilla y se le empiezan a caer los párpados?",
+        "expected": "accidente-ofidico"
+      },
+      {
+        "message": "Me picó un pito en la finca hace unas semanas y tengo fiebre que no se quita, ¿qué examen me deben mandar?",
+        "expected": "enfermedad-de-chagas"
+      },
+      {
+        "message": "A mi esposa embarazada le salió positiva la prueba del parásito del pito, ¿le pueden dar tratamiento ya o hay que esperar?",
+        "expected": "enfermedad-de-chagas"
+      },
+      {
+        "message": "Paciente con ELISA reactiva para T. cruzi en control de rutina, asintomático, ¿cómo confirmo y qué le hago al corazón?",
+        "expected": "enfermedad-de-chagas"
+      },
+      {
+        "message": "Llegó un señor que se tomó un veneno para fumigar el cultivo, tiene pupilas puntiformes, babea y está lleno de secreciones en el pecho, ¿cuánta atropina le pongo y cada cuánto?",
+        "expected": "intoxicacion-por-organofosforados"
+      },
+      {
+        "message": "¿Hasta cuándo sigo subiendo la atropina en alguien que se tomó un insecticida? ¿Qué metas tengo que buscar para saber que ya está atropinizado?",
+        "expected": "intoxicacion-por-organofosforados"
+      },
+      {
+        "message": "Llegó un soldado que estuvo en el monte con una úlcera en la pierna que no cierra hace dos meses, bordes levantados y no le duele. ¿Cómo lo confirmo y qué le doy?",
+        "expected": "leishmaniasis"
+      },
+      {
+        "message": "¿Cómo calculo cuántos mL de antimonial le pongo a un paciente de 70 kg con una úlcera por el mosquito de la selva y cuántos días?",
+        "expected": "leishmaniasis"
+      },
+      {
+        "message": "Arrocero con fiebre, dolor muy fuerte en las pantorrillas y ojos rojos después de las inundaciones, ¿qué antibiótico le mando para la casa?",
+        "expected": "leptospirosis"
+      },
+      {
+        "message": "Trabajador de alcantarillado con fiebre, piel amarilla y creatinina alta, ¿qué sospecho y con qué lo trato en el hospital?",
+        "expected": "leptospirosis"
+      },
+      {
+        "message": "Me mordió un perro callejero en la mano y salió corriendo, ¿qué vacunas me tienen que poner?",
+        "expected": "mordeduras-y-profilaxis-de-rabia"
+      },
+      {
+        "message": "El gato del vecino aruñó a mi hijo en la pierna, el gato está sano en la casa, ¿hay que vacunar al niño?",
+        "expected": "mordeduras-y-profilaxis-de-rabia"
       }
     ],
     "digitacion": [
@@ -941,6 +993,42 @@
       {
         "message": "colecistits tg18 grado 3 se opera o se drena?",
         "expected": "pancreatitis-y-colecistitis"
+      },
+      {
+        "message": "mordedura de mapana sangre incoagulable cuantos viales de SAO",
+        "expected": "accidente-ofidico"
+      },
+      {
+        "message": "dosis benzinidazol chagaz cronico adulto 60 kg",
+        "expected": "enfermedad-de-chagas"
+      },
+      {
+        "message": "nifurtimx niño 15 kg cuantos dias",
+        "expected": "enfermedad-de-chagas"
+      },
+      {
+        "message": "intox x organofosforado dosis de pralidoxima y atropinisacion",
+        "expected": "intoxicacion-por-organofosforados"
+      },
+      {
+        "message": "dosis glucantim leismaniasis cutanea cuantos dias",
+        "expected": "leishmaniasis"
+      },
+      {
+        "message": "dosis doxicilina lepto leve adulto",
+        "expected": "leptospirosis"
+      },
+      {
+        "message": "cuando tomar la 2da muestra para MAT en leptopirosis",
+        "expected": "leptospirosis"
+      },
+      {
+        "message": "dosis suero antirabico x kg exposicion grave aptr",
+        "expected": "mordeduras-y-profilaxis-de-rabia"
+      },
+      {
+        "message": "esquema vacuna antirrabica pos exposicion colombia 4 dosis o 5",
+        "expected": "mordeduras-y-profilaxis-de-rabia"
       }
     ],
     "seguimiento": [
@@ -2050,6 +2138,104 @@
         ],
         "message": "¿y si además tiene fiebre e ictericia?",
         "expected": "pancreatitis-y-colecistitis"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo se clasifica la gravedad de una mordedura de mapaná?"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿Y cuándo repito el tiempo de coagulación después del suero?",
+        "expected": "accidente-ofidico"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo se diagnostica el Chagas crónico?"
+          },
+          {
+            "role": "assistant",
+            "content": "Con dos pruebas serológicas de principio distinto; en Colombia, ELISA de antígenos totales y ELISA de antígenos recombinantes, y una tercera prueba (IFI o inmunoblot) si discrepan."
+          }
+        ],
+        "message": "¿y cuánto dura el tratamiento y con qué dosis?",
+        "expected": "enfermedad-de-chagas"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "Gestante con Chagas confirmado, ¿qué hago con el bebé al nacer?"
+          },
+          {
+            "role": "assistant",
+            "content": "Buscar el parásito al nacer con microhematocrito o PCR, repetir a las 4–6 semanas si es negativo y hacer serología a los 9–12 meses."
+          }
+        ],
+        "message": "¿y a la mamá cuándo la trato?",
+        "expected": "enfermedad-de-chagas"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo manejo en urgencias una intoxicación por organofosforados?"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿Y si a los dos días empieza con debilidad para levantar la cabeza?",
+        "expected": "intoxicacion-por-organofosforados"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cuál es el tratamiento de primera línea de la leishmaniasis cutánea en Colombia?"
+          },
+          {
+            "role": "assistant",
+            "content": "Según MinSalud, antimoniato de meglumina a 20 mg de Sb5+/kg/día IM o IV durante 20 días, calculado por el antimonio y no por la sal, con controles de ECG y función renal, hepática y pancreática en mayores de 45 años."
+          }
+        ],
+        "message": "¿Y si está embarazada?",
+        "expected": "leishmaniasis"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo se trata la leptospirosis grave en adultos?"
+          },
+          {
+            "role": "assistant",
+            "content": "Se hospitaliza y se da penicilina G cristalina IV o ceftriaxona IV, con soporte renal y respiratorio según la necesidad…"
+          }
+        ],
+        "message": "¿y en un niño de 5 años?",
+        "expected": "leptospirosis"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "Paciente mordido en la cara por un perro desconocido que no se pudo ubicar, ¿cómo clasifico la exposición?"
+          },
+          {
+            "role": "assistant",
+            "content": "Es exposición grave: perro no observable con lesión en la cara. Requiere lavado de 10 a 15 minutos, suero o inmunoglobulina antirrábica más vacuna, y notificación en la ficha 300 del Sivigila."
+          }
+        ],
+        "message": "¿y cuánto suero le pongo y dónde?",
+        "expected": "mordeduras-y-profilaxis-de-rabia"
       }
     ],
     "poblacion": [
@@ -2232,7 +2418,10 @@
         "patient": {
           "edad": 9
         },
-        "expected": "dengue"
+        "expected": [
+          "dengue",
+          "leptospirosis"
+        ]
       },
       {
         "message": "ánimo deprimido después del parto",
@@ -2680,6 +2869,118 @@
           "sexo": "M"
         },
         "expected": "pancreatitis-y-colecistitis"
+      },
+      {
+        "message": "Gestante de 28 semanas mordida por una equis, ¿le puedo poner antiveneno?",
+        "patient": {
+          "edad": 24,
+          "sexo": "F"
+        },
+        "expected": "accidente-ofidico"
+      },
+      {
+        "message": "Niño mordido por serpiente, ¿le bajo la dosis de suero por el peso?",
+        "patient": {
+          "edad": 6,
+          "sexo": "M"
+        },
+        "expected": "accidente-ofidico"
+      },
+      {
+        "message": "Señor de 70 años con serología positiva para Chagas y bloqueo de rama derecha, ¿le doy benznidazol?",
+        "patient": {
+          "edad": 70,
+          "sexo": "M"
+        },
+        "expected": "enfermedad-de-chagas"
+      },
+      {
+        "message": "Recién nacido de madre seropositiva para Chagas, ¿qué pruebas le hago y cuándo?",
+        "patient": {
+          "edad": 0,
+          "sexo": "F"
+        },
+        "expected": "enfermedad-de-chagas"
+      },
+      {
+        "message": "Mujer de 25 años con Chagas crónico que quiere quedar embarazada, ¿la trato antes?",
+        "patient": {
+          "edad": 25,
+          "sexo": "F"
+        },
+        "expected": "enfermedad-de-chagas"
+      },
+      {
+        "message": "Niño que se tomó insecticida guardado en un envase de gaseosa, tiene sialorrea, miosis y vomita, ¿qué dosis de atropina le doy?",
+        "patient": {
+          "edad": 4,
+          "sexo": "M"
+        },
+        "expected": "intoxicacion-por-organofosforados"
+      },
+      {
+        "message": "Gestante de 28 semanas con intento de suicidio con un plaguicida y broncorrea, ¿puedo usar atropina y pralidoxima?",
+        "patient": {
+          "edad": 24,
+          "sexo": "F"
+        },
+        "expected": "intoxicacion-por-organofosforados"
+      },
+      {
+        "message": "Señor con leishmaniasis cutánea confirmada por frotis, ¿qué exámenes le pido antes del antimoniato y qué vigilo?",
+        "patient": {
+          "edad": 70,
+          "sexo": "M"
+        },
+        "expected": "leishmaniasis"
+      },
+      {
+        "message": "Gestante de 24 semanas con úlcera de leishmania confirmada, ¿la trato ya o espero?",
+        "patient": {
+          "edad": 26,
+          "sexo": "F"
+        },
+        "expected": "leishmaniasis"
+      },
+      {
+        "message": "Gestante con fiebre y mialgias después de limpiar la casa inundada, ¿le puedo dar doxiciclina?",
+        "patient": {
+          "edad": 27,
+          "sexo": "F"
+        },
+        "expected": "leptospirosis"
+      },
+      {
+        "message": "Señor con fiebre, ictericia y poca orina después de trabajar en una finca con ratas, ¿lo hospitalizo?",
+        "patient": {
+          "edad": 70,
+          "sexo": "M"
+        },
+        "expected": "leptospirosis"
+      },
+      {
+        "message": "Gestante mordida por un murciélago en el pie, ¿se le puede aplicar vacuna y suero antirrábico?",
+        "patient": {
+          "edad": 27,
+          "sexo": "F"
+        },
+        "expected": "mordeduras-y-profilaxis-de-rabia"
+      },
+      {
+        "message": "Niño de 1 año mordido por un perro no observable, ¿en qué sitio aplico la vacuna antirrábica?",
+        "patient": {
+          "edad": 1,
+          "sexo": "M"
+        },
+        "expected": "mordeduras-y-profilaxis-de-rabia"
+      },
+      {
+        "message": "Señor diabético mordido por un gato en la mano, ¿le doy antibiótico y cuál?",
+        "patient": {
+          "edad": 70,
+          "sexo": "M"
+        },
+        "expected": "mordeduras-y-profilaxis-de-rabia"
       }
     ]
   },

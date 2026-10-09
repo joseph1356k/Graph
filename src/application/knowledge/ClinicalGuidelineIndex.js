@@ -57,6 +57,32 @@ const PREVIOUS_QUESTION_MAX_CHARS = 300;
 const FOLLOW_UP_SHORT_MAX_TERMS = 3;
 const FOLLOW_UP_WEIGHT_SHORT = 0.8;
 const FOLLOW_UP_WEIGHT_LONG = 0.4;
+// Una pregunta de seguimiento corta casi siempre sigue en el mismo tema: la
+// guía cuyo título o palabras clave nombran el tema anterior sube.
+const FOLLOW_TOPIC_BOOST = 1.25;
+const FOLLOW_TOPIC_IDF_RATIO = 0.75;
+
+// Valores de laboratorio escritos en la pregunta («sodio de 127», «K 6,8»,
+// «azúcar a 50»): se traducen al trastorno que definen, con los cortes de las
+// guías del corpus (hiponatremia < 135, hiperpotasemia ≥ 5,5, hipoglucemia < 70).
+const LAB_SIGNALS = [
+  { pattern: /\b(?:sodio|na)\s*(?:de|en|a|:|=)?\s*(\d{2,3}(?:[.,]\d+)?)\b/g, terms: (v) => (v < 135 ? ['hiponatremia'] : v > 145 ? ['hipernatremia'] : []), range: [90, 200] },
+  { pattern: /\b(?:potasio|k)\s*(?:de|en|a|:|=)?\s*(\d{1,2}(?:[.,]\d+)?)\b/g, terms: (v) => (v >= 5.5 ? ['hiperpotasemia'] : v < 3.5 ? ['hipopotasemia'] : []), range: [1, 12] },
+  { pattern: /\b(?:glucosa|glucemia|glicemia|azucar|glucometria)\s*(?:de|en|a|:|=)?\s*(\d{2,4})\b/g, terms: (v) => (v < 70 ? ['hipoglucemia'] : v >= 250 ? ['hiperglucemia'] : []), range: [10, 2000] }
+];
+
+function labSignals(message) {
+  const plain = String(message || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const found = new Set();
+  for (const { pattern, terms, range } of LAB_SIGNALS) {
+    for (const match of plain.matchAll(pattern)) {
+      const value = Number(match[1].replace(',', '.'));
+      if (!Number.isFinite(value) || value < range[0] || value > range[1]) continue;
+      for (const term of terms(value)) found.add(term);
+    }
+  }
+  return [...found];
+}
 
 const STOPWORDS = new Set([
   'a', 'al', 'algo', 'alguna', 'algunas', 'alguno', 'algunos', 'ante', 'antes', 'aqui', 'asi', 'aun', 'cada',
@@ -433,8 +459,10 @@ class ClinicalGuidelineIndex {
    */
   search({ message = '', context = '', followUp = '', specialty = '', cie10 = [], populations = [], k = this.topK } = {}) {
     if (!this.chunks.length) return [];
-    const rawMessageTokens = new Set(tokenize(message, this.synonyms));
-    const expandedMessage = ` ${expandSynonyms(normalizeText(message), this.synonyms)} `;
+    const labTerms = labSignals(message);
+    const messageText = labTerms.length ? `${message} ${labTerms.join(' ')}` : message;
+    const rawMessageTokens = new Set(tokenize(messageText, this.synonyms));
+    const expandedMessage = ` ${expandSynonyms(normalizeText(messageText), this.synonyms)} `;
     const messageTokens = new Set();
     const fuzzyTerms = new Set();
     const weights = new Map();
@@ -454,6 +482,7 @@ class ClinicalGuidelineIndex {
     // sus términos cuentan casi como propios (también para la regla de
     // «al menos un término propio»).
     const followTokens = new Set(tokenize(followUp, this.synonyms));
+    let followTopic = null;
     if (followTokens.size && messageTokens.size) {
       const short = specificMessage.size <= FOLLOW_UP_SHORT_MAX_TERMS;
       const followWeight = short ? FOLLOW_UP_WEIGHT_SHORT : FOLLOW_UP_WEIGHT_LONG;
@@ -461,7 +490,14 @@ class ClinicalGuidelineIndex {
         if (isGenericTerm(term)) continue;
         if ((weights.get(term) || 0) < followWeight) weights.set(term, followWeight);
       }
-      if (short) specificMessage = new Set([...specificMessage, ...[...followTokens].filter((term) => !isGenericTerm(term))]);
+      if (short) {
+        const topic = [...followTokens].filter((term) => !isGenericTerm(term));
+        specificMessage = new Set([...specificMessage, ...topic]);
+        // El tema son los términos más raros de la pregunta anterior
+        // («hepatitis» y no «crónica», que nombra media biblioteca).
+        const maxIdf = Math.max(0, ...topic.map((term) => this.idf(term)));
+        followTopic = new Set(topic.filter((term) => this.idf(term) >= maxIdf * FOLLOW_TOPIC_IDF_RATIO));
+      }
     }
     if (!weights.size) return [];
     const wantedPopulations = new Set(Array.isArray(populations) ? populations : []);
@@ -511,6 +547,7 @@ class ClinicalGuidelineIndex {
         score *= CIE10_BOOST;
       }
       if (headHit) score *= HEAD_MATCH_BOOST;
+      if (followTopic && [...followTopic].some((term) => chunk.headTerms.has(term))) score *= FOLLOW_TOPIC_BOOST;
       if (chunk.keyPhrases.some((phrase) => expandedMessage.includes(phrase))) score *= KEY_PHRASE_BOOST;
       if (wantedPopulations.size && chunk.populations.size) {
         const matches = [...chunk.populations].some((population) => wantedPopulations.has(population));
@@ -591,6 +628,7 @@ module.exports = {
   lastUserQuestion,
   inferPopulations,
   populationsInText,
+  labSignals,
   trigrams,
   diceSimilarity,
   relevanceLabel,

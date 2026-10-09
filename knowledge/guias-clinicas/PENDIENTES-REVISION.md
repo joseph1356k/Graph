@@ -153,6 +153,82 @@ No es un archivo de guía: `build-guideline-corpus` solo compila los `.md` con c
 - **Pendiente:** No se revisó el contenido de la guía colombiana de 2010 ni del estándar de la Universidad Nacional de 2025
 - **Pendiente:** CIE-10: se usaron las subcategorías K85.0 a K85.9; verificar si RIPS en Colombia usa K85X
 
+## accidente-ofidico
+- **Nueva (2026-10-09):** redactada con búsqueda web; 14 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
+- **Retirado antes de entrar:** Viales iniciales de antiveneno para Bothrops según gravedad: las fuentes se contradicen (2/4/6; 2–3/4–6/6–10; 2–3/4–6/7–10; 6–8/10–12/20–25); Viales para Lachesis (8, 10–12, 20–25) y para Crotalus (8/12/20 y otras pautas): solo aparecen en tablas institucionales que no coinciden entre sí; Umbrales de fibrinógeno por gravedad (100–130 mg/dL en el moderado, menos de 100 en el grave): otra clasificación colombiana da valores distintos; Umbral de presión intracompartimental para la fasciotomía (más de 30 mmHg): no hay consenso, las fuentes dan 30–40 mmHg; Volumen de dilución (250–500 mL en adultos; 125–250 o 200 mL en niños) y goteo inicial de 10–15 gotas por minuto; Momento de aparición de la enfermedad del suero (1–12, 5–14, 5–20 o 5–24 días); Repetir el antiveneno cada 6 horas según la OMS: no se encontró el texto literal de la OMS; Proporción de casos por Bothrops (94,6 %) y por Crotalus (1 %), casos al año (≈4 500; 4 702 en 2021; 7 013 en 2024) y letalidad (0,57 %); Capacidad del suero INS contra Lachesis (15 mg de L. muta y 50 mg de L. acrochorda): las versiones del inserto no coinciden; Notificación inmediata de las muertes y registro del lote del antiveneno según la Circular 048: no se pudo confirmar; Dosis de adrenalina para las reacciones al antiveneno; volumen de sangre para la prueba del todo o nada (2 mL según la OMS, 5 mL según una fuente colombiana).
+- **Pendiente:** No se pudo consultar la guía MinSalud/INS 2019 de atención clínica integral. Hay que confirmar con ella y con el protocolo INS vigente la tabla de viales por género, gravedad y producto, y añadirla si coincide
+- **Pendiente:** Confirmar si el suero polivalente INS vigente cubre Lachesis, o qué producto se usa para Lachesis en Colombia
+- **Pendiente:** La dosis anticoral difiere entre el protocolo INS (10 ampollas en moderado y grave) y el inserto (5 o 10 según la región): decidir cuál prima
+- **Pendiente:** Manitol al 20 % a 1 g/kg (recomendación por consenso, es controvertida) y la condición de corregir la coagulopatía antes de la fasciotomía (viene de una fuente secundaria)
+- **Pendiente:** Momento de la redosificación: las guías colombianas antiguas usan 24 h y 12 h; la OMS usa controles más tempranos
+- **Pendiente:** Periodicidad de la notificación al Sivigila (semanal) y si las muertes requieren notificación inmediata
+- **Pendiente:** 'No requiere prueba de sensibilidad previa' tiene una sola fuente (inserto INS)
+- **Pendiente:** Medidas generales sin fuente textual: retirar anillos, evitar inyecciones intramusculares durante la coagulopatía, medir el perímetro de la extremidad
+- **Pendiente:** Año exacto de las 'Guías para el manejo de urgencias toxicológicas' de MinSalud citadas
+- **Pendiente:** Pertinencia de W59 entre los códigos CIE-10
+
+## enfermedad-de-chagas
+- **Nueva (2026-10-09):** redactada con búsqueda web; 16 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
+- **Retirado antes de entrar:** Dosis de benznidazol y nifurtimox de la guía colombiana de 2010 (no se pudo leer la sección de tratamiento); Tabla de dosis de la guía OPS 2018 (no se pudo leer el texto primario); Franjas pediátricas antiguas de nifurtimox de CDC por edad (15–20 mg/kg en 10 años o menos; 12,5–15 mg/kg de 11 a 16 años); Letalidad de cerca del 13 % en los brotes de transmisión oral en Colombia entre 1992 y 2014 (una sola fuente); Hemograma de control hacia el día 21 de benznidazol (no se pudo identificar la fuente); Evitar el alcohol hasta 3 días después de terminar benznidazol (solo una fuente secundaria); Frecuencia de dermatitis con benznidazol (25,4 % en el ensayo EQUITY) y de efectos adversos con nifurtimox; Tasa de transmisión congénita y edad exacta de la serología del lactante en el lineamiento colombiano (10 meses); Plazos en horas de la notificación inmediata y de la investigación de campo en el protocolo vigente del INS; Periodicidad anual del electrocardiograma en la forma indeterminada; Título de IFI de 1:32 o más como positivo (guía colombiana antigua).
+- **Pendiente:** Contrastar las dosis con la guía colombiana vigente y con la tabla de la guía OPS 2018. Este documento usa CDC, FDA y Brasil 2018, que difieren en el rango para adultos (5 frente a 5–7 mg/kg/día) y en la duración del nifurtimox (60 frente a 90 días)
+- **Pendiente:** Confirmar en el protocolo INS 2022 (evento 205) si el caso agudo y el brote se notifican de forma inmediata y la notificación de los crónicos es semanal; esto se tomó del protocolo anterior del Ministerio
+- **Pendiente:** Revisar si el plan nacional de eliminación 2025-2031 adopta las metas ETMI Plus para Chagas y si amplía el tamizaje de gestantes más allá de las zonas endémicas
+- **Pendiente:** Verificar la edad de la serología de seguimiento del hijo de madre positiva en el lineamiento colombiano (CDC indica 9–12 meses)
+- **Pendiente:** Conducta durante la lactancia: CDC recomienda no tratar; otros protocolos solo difieren el tratamiento al posparto
+- **Pendiente:** Indicación en adultos mayores de 50 años y en miocardiopatía avanzada según la guía OPS 2018 (la guía cita a CDC y una tabla de Annals)
+- **Pendiente:** Disponibilidad de benznidazol y nifurtimox en Colombia, formulación pediátrica y canal de suministro por el programa ETV
+- **Pendiente:** Monitoreo de laboratorio durante el tratamiento (hemograma, función hepática): falta la periodicidad
+
+## intoxicacion-por-organofosforados
+- **Nueva (2026-10-09):** redactada con búsqueda web; 16 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
+- **Retirado antes de entrar:** Dosis de diazepam (10 mg IV) en convulsiones por organofosforados: no hubo fuente con la dosis IV textual; Umbrales de gravedad por colinesterasa (20 a 50 %, 10 a 20 %, menos de 10 %): son de la colinesterasa sérica y otras fuentes dicen que no se correlaciona con la gravedad; Duración del síndrome intermedio (5 a 18 días; 5 a 15 días): una sola fuente o no encontrada; Plazo de la polineuropatía tardía: las fuentes difieren (1 a 4 semanas, 2 a 3 semanas, 8 a 14 días); Dosis pediátrica de pralidoxima (15 mg/kg y luego 10 mg/kg/h según Queensland, frente a 25 mg/kg en reportes de caso); Máximos de pralidoxima (2 g de carga, 650 mg/h) y de atropina pediátrica (3 mg por dosis): una sola fuente; Tiempo de observación del paciente expuesto asintomático antes del egreso; Letalidad de la intoxicación (más del 15 a 20 %; 2 a 40 %): cifras discordantes; Carbón activado 1 g/kg en la primera hora; Esquema de atropina de la guía colombiana de 2008 (2 a 5 mg y luego 1 mg cada 5 minutos): no se pudo confirmar en el PDF oficial; Periodicidad semanal y definición de caso (inicio dentro de 14 días) del evento 365 en el protocolo vigente del INS.
+- **Pendiente:** Contrastar con el capítulo de inhibidores de colinesterasa de la guía MinSalud-OPS 2017 (dosis de atropina, indicación y dosis de pralidoxima, lavado gástrico y carbón activado): no se pudo leer el texto de ese capítulo
+- **Pendiente:** Confirmar en el texto completo de la revisión Lancet 2008 el bolo de 1,8 a 3 mg con duplicación cada 5 minutos (verificado solo en protocolos que lo citan)
+- **Pendiente:** La guía del Ministerio de Salud de El Salvador (Acuerdo 2968) apareció en una búsqueda atribuida por error a Chile; confirmar el país y el año
+- **Pendiente:** Confirmar en el protocolo vigente del INS las reglas de notificación 365 frente a 356 y la periodicidad
+- **Pendiente:** Dosis de benzodiacepinas y dosis pediátrica de pralidoxima según la fuente primaria
+- **Pendiente:** Disponibilidad de pralidoxima y obidoxima en Colombia (INVIMA, nivel de atención) y si la guía colombiana mantiene la recomendación de oximas pese a la conclusión de Cochrane
+- **Pendiente:** Uso de oximas en intoxicación por carbamatos o por un agente desconocido
+
+## leishmaniasis
+- **Nueva (2026-10-09):** redactada con búsqueda web; 16 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
+- **Retirado antes de entrar:** Intralesional según OPS 2022 para 1 a 3 lesiones de 3 cm o menos: solo una fuente secundaria; un esquema anterior hablaba de 4 lesiones de hasta 4 cm; Anfotericina B liposomal en la forma visceral: 3 mg/kg/día por 7 días o 4 mg/kg/día por 5 días (solo una fuente brasileña); dosis total de 15 a 30 mg/kg (MSF); Anfotericina B deoxicolato de 0,5 a 1 mg/kg/día y su dosis total; Pentoxifilina 400 mg cada 8 horas en la forma mucosa; Miltefosina de 1,5 a 2,5 mg/kg/día con máximo de 150 mg/día y dosis pediátricas para menos de 30 kg; Umbral de QTc de 500 ms para suspender el antimonial; Número de sesiones de termoterapia (una sola según la OPS frente a tres por semana en otra fuente); Porcentaje de sensibilidad del frotis directo; Calendario oficial de seguimiento de MinSalud (45 días, 3, 6 y 12 meses); Definición de caso del INS con más de 2 semanas de evolución de la lesión; Duración de 30 días en la forma mucosa (Brasil), distinta de los 28 días de Colombia.
+- **Pendiente:** Versión vigente de la guía de MinSalud: solo se encontró la de 2010; confirmar si hay actualización de 2018 o posterior y si mantiene 'sin límite de dosis'
+- **Pendiente:** Criterios de selección (número y tamaño de lesiones, localización), técnica y número de infiltraciones del lineamiento intralesional de MinSalud 2024
+- **Pendiente:** Pentamidina en Colombia: número de dosis y si los 4 mg/kg son de sal o de base
+- **Pendiente:** Dosis y esquema de anfotericina B liposomal y deoxicolato en las formas visceral y mucosa, en adultos y niños
+- **Pendiente:** Termoterapia: número de sesiones y criterios de lesión elegibles
+- **Pendiente:** Disponibilidad actual de la prueba de Montenegro en Colombia
+- **Pendiente:** Criterios y plazos oficiales de curación y seguimiento para las formas cutánea, mucosa y visceral
+- **Pendiente:** Miltefosina en niños de menos de 30 kg y su lugar en la guía colombiana
+- **Pendiente:** Frecuencia del electrocardiograma durante el tratamiento y criterio de suspensión por QTc
+- **Pendiente:** Manejo de gestantes con forma mucosa o visceral
+
+## leptospirosis
+- **Nueva (2026-10-09):** redactada con búsqueda web; 21 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
+- **Retirado antes de entrar:** Incubación habitual de 5 a 14 días (OMS 2003): no se encontró el texto; el Manual MSD da de 2 a 20 días; Proporción de formas graves o síndrome de Weil del 5 al 10 %: solo la dan fuentes secundarias; Letalidad del síndrome de Weil del 5 al 15 %; Título MAT único igual o mayor de 1:800 (criterio peruano) y de 1:400 para muerte probable (fragmento ambiguo del INS 2024); Umbral numérico de seroconversión MAT del INS: las fuentes dicen tanto 'cuatro diluciones' como 'cuatro veces'; Ceftriaxona 2 g IV durante 72 h y luego 1 g IM al día (fuente no identificada); Ceftriaxona pediátrica 80 a 100 mg/kg/día (solo la da MSF); Doxiciclina pediátrica 2 a 4 mg/kg/día (solo la da BMJ); Duración de la azitromicina (3 días en adultos; no establecida en niños); Dosis máxima de penicilina de 24 millones de U/día (solo en los lineamientos de El Salvador); Doxiciclina profiláctica 100 mg semanal entre 8 y 12 años (solo Argentina); Iniciar la profilaxis 1 a 2 días antes de la exposición; Amoxicilina 2 g/día (OMS 2003); Periodicidad de notificación (semanal o inmediata) y unidad de análisis de las muertes.
+- **Pendiente:** Verificar en el PDF del protocolo INS 2024 si la ELISA IgM positiva forma parte de la definición de caso probable o es un criterio de clasificación posterior, dado que se notifica antes de tener el resultado
+- **Pendiente:** Confirmar el criterio de seroconversión MAT del INS: incremento de cuatro diluciones frente a cuatro veces el título
+- **Pendiente:** Confirmar la periodicidad de notificación y el manejo de las muertes (unidad de análisis) en el protocolo 2024
+- **Pendiente:** Discrepancias de dosis en adultos: amoxicilina cada 6 h (CDC) frente a cada 8 h (MinSalud 2009); penicilina 1,5 millones de U (CDC) frente a 2 a 4 millones de U cada 6 h (MinSalud 2009). Verificar también si hay una guía clínica MinSalud/INS vigente posterior al protocolo de 2009
+- **Pendiente:** Amoxicilina pediátrica: la herramienta MinSalud da 25 a 50 mg/kg/día y el protocolo de 2009 '40-50 mg/kg cada 8 horas', con una transcripción ambigua
+- **Pendiente:** Quimioprofilaxis: no se encontró una recomendación colombiana vigente; el esquema se tomó de la nota técnica brasileña de 2024
+- **Pendiente:** Los criterios de hospitalización se redactaron a partir de las manifestaciones de gravedad del INS 2024 y de los CDC, no de una lista oficial
+- **Pendiente:** Incubación: ECDC da de 2 a 30 días y el Manual MSD de 2 a 20 días
+
+## mordeduras-y-profilaxis-de-rabia
+- **Nueva (2026-10-09):** redactada con búsqueda web; 20 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
+- **Retirado antes de entrar:** Periodicidad formal del evento 300 (inmediata o semanal) y del evento 670 de rabia humana: las fuentes se contradicen. Solo quedó 'diligenciar de inmediato', como dice MinSalud; Suspender la vacuna si el animal sigue sano al quinto día de observación (boletín MinSalud 2015): no se encontró en los lineamientos vigentes; Quinta dosis el día 28 en inmunosuprimidos y suero también en exposición leve (categoría II) en inmunosuprimidos: las fuentes se contradicen; Número de dosis previas que define a alguien como 'previamente vacunado' (al menos 2 dosis) y esquema colombiano específico de reexposición; Dosis pediátricas de metronidazol, clindamicina y doxiciclina para alérgicos a la penicilina; Duración exacta del tratamiento de una herida ya infectada (de 7 a 10 días), que solo aparece en una fuente secundaria; Período de observación de 14 días (fuente antigua y no confiable); Que la vacuna y el suero no requieran ajuste en la insuficiencia renal: no se buscó ni se verificó, así que no se escribió; Cifras de agresiones notificadas en 2024 (unas 180 000): no hacían falta en la guía.
+- **Pendiente:** Confirmar en el lineamiento vigente de MinSalud e INS que el esquema de 4 dosis (0, 3, 7 y 14) reemplazó al de 5 dosis de la guía de 2009, y que aplica tanto a la exposición leve como a la grave. El documento de escenarios del PAI no tiene fecha visible
+- **Pendiente:** Contrastar con el algoritmo actual del INS la definición de 'no exposición': si un perro o gato observable y sano que muerde en la cara o la mano queda en 'no exposición' con observación, frente a los criterios por localización de la guía de 2009
+- **Pendiente:** Verificar si Colombia adoptó la regla de la OMS 2018 de no aplicar el sobrante del suero por vía intramuscular, o si sigue la de 2009 (resto en el glúteo). Verificar también si el inserto del suero disponible en Colombia aún exige prueba cutánea
+- **Pendiente:** El límite de 7 días para la inmunoglobulina proviene de la ficha técnica de HyperRAB y de guías de Estados Unidos, no de la guía colombiana
+- **Pendiente:** El umbral de 3 meses para la reexposición sin vacuna proviene de diapositivas que resumen a la OMS 2018: confirmarlo en el documento WER 2018
+- **Pendiente:** Dosis pediátrica de amoxicilina-clavulanato: verificar la tabla original de IDSA 2014; la cifra proviene de protocolos pediátricos (UCSF, Children's Mercy)
+- **Pendiente:** Tétanos: IDSA da 10 años y CDC da 5 años para heridas contaminadas. Definir cuál adoptar y si en Colombia se usa Td o Tdap
+- **Pendiente:** La regla de no reiniciar el esquema si se retrasa una dosis proviene de un acta distrital de Bogotá (2023): confirmarla en el lineamiento nacional
+- **Pendiente:** Disponibilidad real en Colombia de la inmunoglobulina antirrábica humana frente al suero equino
+
 ## Guías de la primera tanda (33)
 Redactadas sin acceso a las fuentes primarias. Todas requieren revisión médica completa antes de llenar
 `revisado_por`; prioridad: dosis pediátricas (antibióticos, IRA, EDA, fiebre sin foco), embarazo (control

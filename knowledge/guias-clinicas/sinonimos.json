@@ -1527,5 +1527,234 @@
   ],
   "hace anos": [
     "cronico"
+  ],
+  "mapana": [
+    "Bothrops",
+    "accidente bothropico"
+  ],
+  "equis": [
+    "Bothrops"
+  ],
+  "cuatro narices": [
+    "Bothrops"
+  ],
+  "verrugosa": [
+    "Lachesis",
+    "accidente lachesico"
+  ],
+  "cascabel": [
+    "Crotalus",
+    "accidente crotalico"
+  ],
+  "coral": [
+    "Micrurus",
+    "accidente micrurico"
+  ],
+  "sao": [
+    "suero antiofidico",
+    "antiveneno"
+  ],
+  "suero anticoral": [
+    "antiveneno anticoral"
+  ],
+  "mordedura de culebra": [
+    "accidente ofidico"
+  ],
+  "ofidismo": [
+    "accidente ofidico"
+  ],
+  "prueba del todo o nada": [
+    "tiempo de coagulacion",
+    "prueba de coagulacion en 20 minutos"
+  ],
+  "pito": [
+    "triatomino",
+    "enfermedad de Chagas"
+  ],
+  "chinche": [
+    "triatomino"
+  ],
+  "t. cruzi": [
+    "Trypanosoma cruzi"
+  ],
+  "tripanosomiasis americana": [
+    "enfermedad de Chagas"
+  ],
+  "bzn": [
+    "benznidazol"
+  ],
+  "benzinidazol": [
+    "benznidazol"
+  ],
+  "nfx": [
+    "nifurtimox"
+  ],
+  "lampit": [
+    "nifurtimox"
+  ],
+  "chagaz": [
+    "enfermedad de Chagas"
+  ],
+  "cardiopatia chagasica": [
+    "miocardiopatia chagasica"
+  ],
+  "chagas del bebe": [
+    "Chagas congenito"
+  ],
+  "organofosforado": [
+    "organofosforados"
+  ],
+  "organofosfatos": [
+    "organofosforados"
+  ],
+  "carbamato": [
+    "carbamatos"
+  ],
+  "2-pam": [
+    "pralidoxima"
+  ],
+  "contrathion": [
+    "pralidoxima"
+  ],
+  "fumigante": [
+    "plaguicidas"
+  ],
+  "insecticida": [
+    "plaguicidas"
+  ],
+  "pesticida": [
+    "plaguicidas"
+  ],
+  "atropinizar": [
+    "atropinizacion"
+  ],
+  "seudocolinesterasa": [
+    "colinesterasa"
+  ],
+  "pseudocolinesterasa": [
+    "colinesterasa"
+  ],
+  "acetilcolinesterasa": [
+    "colinesterasa"
+  ],
+  "toxindrome colinergico": [
+    "sindrome colinergico"
+  ],
+  "sd intermedio": [
+    "sindrome intermedio"
+  ],
+  "glucantime": [
+    "antimoniato de meglumina"
+  ],
+  "glucantim": [
+    "antimoniato de meglumina"
+  ],
+  "antimonial": [
+    "antimoniato de meglumina"
+  ],
+  "leismaniasis": [
+    "leishmaniasis"
+  ],
+  "lesmaniasis": [
+    "leishmaniasis"
+  ],
+  "kala-azar": [
+    "leishmaniasis visceral"
+  ],
+  "impavido": [
+    "miltefosina"
+  ],
+  "montenegro": [
+    "prueba de Montenegro",
+    "intradermorreaccion"
+  ],
+  "pentacarinat": [
+    "isetionato de pentamidina"
+  ],
+  "lepto": [
+    "leptospirosis"
+  ],
+  "orina de rata": [
+    "leptospirosis"
+  ],
+  "enfermedad de weil": [
+    "sindrome de Weil"
+  ],
+  "mat": [
+    "microaglutinacion"
+  ],
+  "ojos rojos sin secrecion": [
+    "sufusion conjuntival"
+  ],
+  "doxi": [
+    "doxiciclina"
+  ],
+  "penicilina sodica": [
+    "penicilina cristalina"
+  ],
+  "sangrado pulmonar": [
+    "hemorragia pulmonar"
+  ],
+  "aptr": [
+    "agresion por animal potencialmente transmisor de rabia"
+  ],
+  "mordida de perro": [
+    "mordedura de perro"
+  ],
+  "mordida de gato": [
+    "mordedura de gato"
+  ],
+  "aruñazo": [
+    "arañazo"
+  ],
+  "aruñado": [
+    "arañazo"
+  ],
+  "suero antirrabico": [
+    "inmunoglobulina antirrabica"
+  ],
+  "rig": [
+    "inmunoglobulina antirrabica"
+  ],
+  "hrig": [
+    "inmunoglobulina antirrabica humana"
+  ],
+  "erig": [
+    "inmunoglobulina antirrabica equina",
+    "suero antirrabico"
+  ],
+  "pep rabia": [
+    "profilaxis antirrabica posexposicion"
+  ],
+  "antirrabica": [
+    "vacuna antirrabica"
+  ],
+  "evento 300": [
+    "agresion por animal potencialmente transmisor de rabia",
+    "sivigila"
+  ],
+  "augmentin": [
+    "amoxicilina clavulanato"
+  ],
+  "antitetanica": [
+    "tetanos"
+  ],
+  "escalofrios cada dos dias": [
+    "fiebre terciana malaria"
+  ],
+  "fiebre cada dos dias": [
+    "fiebre terciana malaria"
+  ],
+  "fiebre cada tercer dia": [
+    "fiebre terciana malaria"
+  ],
+  "fiebre cada 48 horas": [
+    "fiebre terciana malaria"
+  ],
+  "selva": [
+    "zona endemica"
+  ],
+  "choco": [
+    "zona endemica"
   ]
 }

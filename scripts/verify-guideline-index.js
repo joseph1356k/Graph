@@ -12,6 +12,7 @@ const {
   stem,
   extractCie10Codes,
   buildRetrievalContext,
+  labSignals,
   DEFAULT_CHAR_BUDGET
 } = require('../src/application/knowledge/ClinicalGuidelineIndex');
 const corpusLib = require('./lib/guideline-corpus');
@@ -94,6 +95,12 @@ const CANONICAL = [
   ['delirium en adulto mayor hospitalizado', 'delirium-y-demencia'],
   ['equivalentes de morfina y naloxona en dolor crónico', 'dolor-cronico-y-opioides'],
   ['tamizaje de cáncer de cuello uterino con prueba de VPH', 'tamizaje-de-cancer'],
+  ['dosis de suero antiofídico en accidente bothrópico moderado', 'accidente-ofidico'],
+  ['dosis de benznidazol para enfermedad de Chagas', 'enfermedad-de-chagas'],
+  ['dosis de atropina en intoxicación por organofosforados', 'intoxicacion-por-organofosforados'],
+  ['dosis de antimoniato de meglumina en leishmaniasis cutanea', 'leishmaniasis'],
+  ['tratamiento de leptospirosis con doxiciclina o penicilina cristalina', 'leptospirosis'],
+  ['mordedura de perro esquema de vacuna antirrabica y suero', 'mordeduras-y-profilaxis-de-rabia'],
   ['manejo de ascitis en cirrosis: diuréticos, restricción de sodio y albúmina en paracentesis', 'cirrosis-y-complicaciones'],
   ['criterios de tratamiento hepatitis B cronica y profilaxis del recien nacido de madre HBsAg positiva', 'hepatitis-b-y-c'],
   ['manejo de hiponatremia grave sintomática con solución salina al 3 %', 'hiponatremia-e-hiperpotasemia'],
@@ -127,6 +134,21 @@ function main() {
   check('el índice carga el corpus commiteado', () => {
     assert.ok(stats.guidelines >= 3, `guías: ${stats.guidelines}`);
     assert.ok(stats.chunks >= stats.guidelines * 2, `fragmentos: ${stats.chunks}`);
+  });
+
+  check('valores de laboratorio en la pregunta se traducen al trastorno', () => {
+    assert.deepStrictEqual(labSignals('sodio de 127 y somnolienta'), ['hiponatremia']);
+    assert.deepStrictEqual(labSignals('K 6,8 con T picudas'), ['hiperpotasemia']);
+    assert.deepStrictEqual(labSignals('le bajó el azúcar a 50'), ['hipoglucemia']);
+    assert.deepStrictEqual(labSignals('sodio 140, potasio 4,1, glucosa 98'), [], 'valores normales no agregan nada');
+    assert.deepStrictEqual(labSignals('paciente de 45 años, 70 kg'), [], 'edad y peso no son laboratorio');
+    const top = index.search({ message: 'adulta mayor con tiazida y sodio de 127, se cae', populations: ['adultos_mayores'] });
+    assert.strictEqual(top[0]?.guideline_id, 'hiponatremia-e-hiperpotasemia', `sodio de 127: ${top.map((r) => r.guideline_id)}`);
+  });
+
+  check('seguimiento corto: sube la guía del tema anterior', () => {
+    const ids = index.search({ message: '¿y en niños?', followUp: 'dosis de doxiciclina en leptospirosis' }).map((r) => r.guideline_id);
+    assert.strictEqual(ids[0], 'leptospirosis', `seguimiento de leptospirosis: ${ids}`);
   });
 
   check('tokenizador: acentos, mayúsculas, plurales y sinónimos', () => {
