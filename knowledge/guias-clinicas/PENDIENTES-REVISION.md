@@ -16,7 +16,7 @@ No es un archivo de guía: `build-guideline-corpus` solo compila los `.md` con c
 ## crisis-hiperglucemicas-e-hipoglucemia
 - **Corregido (2026-10-09):** potasio en CAD/EHH del consenso 2024: < 3,5 mmol/L diferir insulina y reponer 10–20 mmol/h; 3,5–5,0 mmol/L añadir 10–20 mmol por litro; > 5,0 mmol/L insulina sin potasio. El texto anterior decía 20–30 mmol/L (cifra de ADA 2009). Fuentes secundarias: guía de estudio BCEMP, presentación ABCD 2025.
 - **Verificado (secundario, 2026-10-09):** potasio de 40 mmol/L en los líquidos una vez documentada la diuresis (recurso docente basado en ISPAD; ISPAD 2022 pide vía central por encima de 40 mmol/L) y cálculo de líquidos para las primeras 48 h.
-- **Pendiente:** confirmar en el texto de ISPAD 2022 la frase «reponer el déficit en 24–48 h».
+- **Verificado (secundario, 2026-10-09):** reponer el déficit restante más el mantenimiento de forma gradual en 24–48 h (guía de estudio que lo atribuye a ISPAD 2022 y tabla de revisión de 2020 concordantes). El texto primario de ISPAD 2022 no se pudo leer: contrastarlo.
 
 ## paro-cardiorrespiratorio-rcp
 - **Verificado (secundario):** control de temperatura 32–37,5 °C por al menos 36 h; SpO2 90–98 % (PaO2 60–105 mmHg).
@@ -31,14 +31,19 @@ No es un archivo de guía: `build-guideline-corpus` solo compila los `.md` con c
 ## desnutricion-aguda-infantil
 - **Verificado (secundario, 2026-10-09):** Resolución 115 del 27 de enero de 2026 (modifica parcialmente la 2350): atención al riesgo de desnutrición aguda con puntaje Z > −2 y < −1 DE; F-100 obligatorio en el tratamiento intrahospitalario y ambulatorio y disponibilidad de F-75, F-100 y FTLC por las EPS; el egreso con Z ≥ −2 se considera insuficiente (recuperación con Z ≥ −1 según fuente secundaria). Sivigila «evento 113» confirmado (protocolo actualizado en 2023; Circular 028 de 2025).
 - **Retirado (2026-10-09):** «la Res. 115 ordena garantizar fórmula de inicio a menores de 6 meses»: no se encontró en las fuentes consultadas.
-- **Pendiente:** confirmar el umbral exacto de egreso en el anexo técnico de la Res. 115; dosis del libro de bolsillo de la OMS 2013 (F-75 130 mL/kg/día, ampicilina 50 mg/kg cada 6 h más gentamicina 7,5 mg/kg/día, ReSoMal 5 mL/kg cada 30 min por 2 h, choque 15 mL/kg en 1 h, transfusión 10 mL/kg en 3 h): coinciden con el conocimiento del revisor del loop, falta contraste con la fuente primaria.
+- **Verificado (secundario, 2026-10-09):** ampicilina 50 mg/kg IM o IV cada 6 h por 2 días, luego amoxicilina oral por 5 días, más gentamicina 7,5 mg/kg una vez al día por 7 días (recomendación OMS registrada en la base BIGG); ReSoMal 5 mL/kg cada 30 min las primeras 2 h, choque 15 mL/kg en 1 h repetible una vez y transfusión 10 mL/kg en 3 h si no mejora (tabla de revisión que reproduce la guía OMS); F-75 130 mL/kg/día en 8 a 12 tomas (protocolo hospitalario basado en la OMS y ficha del fabricante).
+- **Verificado con una sola fuente secundaria:** F-75 100 mL/kg/día con edema +++ (material docente); contrastar con el manual de la OMS.
+- **Retirado (2026-10-09):** «puntaje Z de −1 DE o más» como umbral de egreso de la Res. 115: el texto de la resolución dice «hasta que el niño alcance un peso adecuado para su talla o longitud» y el valor no se encontró en las fuentes consultadas. El texto remite al anexo técnico.
 
 ## hemorragia-posparto
 - **Verificado (secundario, 2026-10-09):** tabla de choque del Código Rojo (Rev Colomb Obstet Ginecol 2009): leve 16–25 %, pulso 91–100, sistólica 80–90; moderado 26–35 %, pulso 101–120, sistólica 70–79 (corregido: decía 70–80); severo > 35 %, pulso > 120, sistólica < 70. Umbral OMS/FIGO/ICM del 5 de octubre de 2025: actuar desde 300 mL con signos vitales anormales o desde 500 mL.
 - **Retirado (2026-10-09):** cifras de la fila «compensado» (500–1 000 mL, 10–15 %) y los cortes de signos vitales anormales de la guía 2025 (pulso > 100, índice de choque > 1, sistólica < 100, diastólica < 60): no confirmados en las fuentes consultadas.
 
 ## anticoncepcion
-- **Pendiente:** porcentajes de efectividad por método (CDC); categorías de la 6.ª edición de los criterios de elegibilidad de la OMS (2025).
+- **Verificado (secundario, 2026-10-09):** implante y DIU con menos de 1 embarazo por cada 100 usuarias al año en uso típico (tabla del CDC y resumen de la HHS); la 6.ª edición de los criterios de elegibilidad de la OMS salió el 3 de noviembre de 2025, diez años después de la 5.ª.
+- **Retirado (2026-10-09):** porcentajes exactos de píldora, parche, anillo, inyectable y condón (7, 4 y 13): las fuentes dan cifras distintas según la edición de la tabla (la del MMWR de 2014 da 9, 6 y 18). Retirado también «la 6.ª edición actualizó 112 recomendaciones», no encontrado.
+- **Corregido (2026-10-09):** métodos de solo progestágeno en la lactancia antes de 6 semanas: la 5.ª edición de la OMS pone píldora e implante en categoría 2 y el inyectable trimestral en 3 (material docente OMS 2022 y artículo de GHSP); el texto decía categoría 2 para los tres «según la OMS 2025», que no se pudo confirmar.
+- **Pendiente:** categorías puntuales de la 6.ª edición (2025), que no se pudieron leer.
 
 ## hemorragia-digestiva
 - **Verificado (secundario, 2026-10-09):** ESGE 2021: no suspender la aspirina de prevención secundaria y, si se suspendió, reanudarla lo antes posible, idealmente en 3–5 días (la frase «hacia el día 3» es de la ESGE 2015). Vasoactivos: terlipresina 2 mg IV cada 4 h por 48 h y luego 1 mg cada 4 h (dos revisiones concordantes); octreotide 50 µg en bolo y 50 µg/h, y somatostatina 250 µg en bolo y 250–500 µg/h (una tabla de revisión; otra revisión usa somatostatina 500 µg y 500 µg/h).
@@ -64,22 +69,22 @@ No es un archivo de guía: `build-guideline-corpus` solo compila los `.md` con c
 
 ## consumo-de-alcohol
 - **Verificado (secundario, 2026-10-09):** dosis dirigidas por síntomas con CIWA-Ar (diazepam 10–20 mg o lorazepam 2–4 mg, reevaluación horaria); acamprosato 666 mg tres veces al día con 60 kg o más (666/333/333 mg con menos de 60 kg), naltrexona 50 mg al día y disulfiram desde 200 mg al día (formularios del NHS que aplican NICE CG115).
-- **Pendiente:** umbral NICE «AUDIT mayor de 15» para la evaluación integral.
+- **Corregido (2026-10-09):** NICE CG115 dice «considerar una evaluación integral para todos los adultos remitidos a servicios especializados con AUDIT mayor de 15» (página de prioridades de NICE); el texto omitía «remitidos a servicios especializados».
 
 ## dolor-cronico-y-opioides
 - **Verificado (secundario, 2026-10-09):** naloxona 0,4 a 2 mg IV, IM o SC repetible cada 2–3 minutos (referencias de medicamentos que resumen la ficha); CDC 2022: reevaluar al menos cada 2 semanas si se continúan opioides por dolor agudo.
 
 ## gota
 - **Verificado (secundario, 2026-10-09):** EULAR 2016: colchicina en las primeras 12 h con 1 mg y 0,5 mg el primer día; prednisolona equivalente 30–35 mg al día por 3–5 días (resumen de la guía en prensa médica; la dosis de prednisolona coincide con resúmenes británicos y con el ensayo de Janssens 2008 con 35 mg).
-- **Pendiente:** el intervalo de «una hora» entre la dosis de 1 mg y la de 0,5 mg está en otras fuentes (ensayo AGREE), no en el resumen EULAR consultado.
+- **Verificado (secundario, 2026-10-09):** 1 mg y 0,5 mg una hora después, dentro de las primeras 12 h (nota de prensa farmacéutica francesa que cita EULAR y la Sociedad Francesa de Reumatología, y ficha francesa de la colchicina). El texto primario de EULAR 2016 no se pudo leer.
 
 ## osteoporosis
 - **Verificado (secundario, 2026-10-09):** calcio total 1 000 mg/día en hombres de 50 a 70 años y 1 200 mg/día en mujeres de 51 o más y hombres de 71 o más; vitamina D 800–1 000 UI/día desde los 50 años (resumen de BHOF 2022). DXA en mujeres de 65 años o más y hombres de 70 o más (guía NOF 2014, antecesora de BHOF).
-- **Pendiente:** confirmar que BHOF 2022 mantiene esas edades y los criterios de muy alto riesgo de AACE 2020.
+- **Verificado (secundario, 2026-10-09):** BHOF 2022 mantiene DXA en mujeres de 65 años o más y hombres de 70 o más (tabla en PMC que resume la guía 2022); AACE 2020, muy alto riesgo: fractura en los últimos 12 meses, fractura durante el tratamiento, fracturas múltiples, fractura con fármacos que dañan el hueso, T-score menor de −3,0, alto riesgo de caídas o caídas con lesión y FRAX mayor de 30 % (fractura mayor) o de 4,5 % (cadera) (varios resúmenes concordantes).
 
 ## sincope
 - **Retirado (2026-10-09):** «2–3 litros de agua y 10 g de sal al día»: no se encontró en las fuentes consultadas y las guías difieren en la cantidad de sal (6 a 10 g/día); el texto dice «más agua y más sal si no hay contraindicación».
-- **Pendiente:** reglas de conducción de la ESC 2018 (contrastar con la normativa colombiana).
+- **Retirado (2026-10-09):** el detalle de las reglas de conducción de la ESC 2018 (por tipo de síncope y de conductor): tres búsquedas no encontraron su tabla. El texto remite a la tabla de la ESC y a la normativa colombiana, y pide preguntar si el paciente conduce por oficio.
 
 ## cirrosis-y-complicaciones
 - **Nueva (2026-10-09):** redactada con búsqueda web; 26 cifras verificadas con al menos una fuente secundaria que las dice textualmente.

@@ -129,7 +129,8 @@ const GENERIC_TERMS = new Set([
   // Palabras de la app y de la conversación.
   'carga', 'cargar', 'grabacion', 'grabar', 'pantalla', 'blanco', 'soporte', 'tecnico', 'hora', 'horario', 'momento',
   'descargo', 'descargar', 'historia', 'boton', 'guardar', 'enlace', 'correo', 'sesion', 'cuenta', 'plantilla',
-  'app', 'aplicacion', 'celular', 'foto', 'pdf', 'nota', 'notas'
+  'app', 'aplicacion', 'celular', 'foto', 'pdf', 'nota', 'notas', 'pagina', 'paginas', 'actualiza', 'actualizar',
+  'refresca', 'refrescar'
 ]);
 
 // Un número suelto en la pregunta («165/100», «38.2») casi nunca identifica la
