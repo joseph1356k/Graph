@@ -15,7 +15,8 @@ No es un archivo de guía: `build-guideline-corpus` solo compila los `.md` con c
 
 ## crisis-hiperglucemicas-e-hipoglucemia
 - **Corregido (2026-10-09):** potasio en CAD/EHH del consenso 2024: < 3,5 mmol/L diferir insulina y reponer 10–20 mmol/h; 3,5–5,0 mmol/L añadir 10–20 mmol por litro; > 5,0 mmol/L insulina sin potasio. El texto anterior decía 20–30 mmol/L (cifra de ADA 2009). Fuentes secundarias: guía de estudio BCEMP, presentación ABCD 2025.
-- **Pendiente:** ISPAD 2022 «déficit en 24–48 h» y «40 mmol/L de potasio en los líquidos».
+- **Verificado (secundario, 2026-10-09):** potasio de 40 mmol/L en los líquidos una vez documentada la diuresis (recurso docente basado en ISPAD; ISPAD 2022 pide vía central por encima de 40 mmol/L) y cálculo de líquidos para las primeras 48 h.
+- **Pendiente:** confirmar en el texto de ISPAD 2022 la frase «reponer el déficit en 24–48 h».
 
 ## paro-cardiorrespiratorio-rcp
 - **Verificado (secundario):** control de temperatura 32–37,5 °C por al menos 36 h; SpO2 90–98 % (PaO2 60–105 mmHg).
@@ -24,7 +25,8 @@ No es un archivo de guía: `build-guideline-corpus` solo compila los `.md` con c
 ## tamizaje-de-cancer
 - **Verificado (secundario):** mamografía bienal 50–69 años (Res. 276 de 2019 que modifica la 3280); examen clínico anual 40–49 años (lineamiento MinSalud).
 - **Retirado (2026-10-09):** edades y periodicidad colombianas de FIT (50–75, cada 2 años) y de PSA con tacto rectal (50–75, cada 5 años): no se encontraron en fuentes consultables. El texto remite a la resolución vigente.
-- **Pendiente:** citología 1-3-3 de 25 a 29 años, ADN-VPH cada 5 años de 30 a 65, VIA-VILI de 30 a 50 en zonas rurales dispersas; «ver y tratar» y repetir ADN-VPH a los 18 meses con citología de triaje negativa (GPC 2014).
+- **Verificado (secundario, 2026-10-09):** citología 1-3-3 de 25 a 29 años, ADN-VPH de 30 a 65 años cada 5 años si es negativa, VIA-VILI con tratamiento inmediato en zonas de difícil acceso por personal entrenado y certificado, y repetir ADN-VPH a los 18 meses con citología de triaje negativa (GPC 2014 y documentos que la resumen; la Res. 3280 fija la prueba molecular de 30 a 65).
+- **Retirado (2026-10-09):** edades de 30 a 50 años e «intervalo no mayor de 3 años» para VIA-VILI: no se encontraron en las fuentes consultadas.
 
 ## desnutricion-aguda-infantil
 - **Verificado (secundario, 2026-10-09):** Resolución 115 del 27 de enero de 2026 (modifica parcialmente la 2350): atención al riesgo de desnutrición aguda con puntaje Z > −2 y < −1 DE; F-100 obligatorio en el tratamiento intrahospitalario y ambulatorio y disponibilidad de F-75, F-100 y FTLC por las EPS; el egreso con Z ≥ −2 se considera insuficiente (recuperación con Z ≥ −1 según fuente secundaria). Sivigila «evento 113» confirmado (protocolo actualizado en 2023; Circular 028 de 2025).
@@ -47,7 +49,7 @@ No es un archivo de guía: `build-guideline-corpus` solo compila los `.md` con c
 - **Corregido (2026-10-09):** NICE NG258 (27 de mayo de 2026) reemplazó a CG134; se retiró la frase «observar a los mayores de 16 años 6 a 12 horas» de CG134 y los menores de 16 se hospitalizan solo si no cumplen los criterios de alta.
 
 ## dolor-abdominal-agudo-apendicitis
-- **Pendiente:** 3–5 días de antibiótico posoperatorio en apendicitis complicada (WSES).
+- **Verificado (secundario, 2026-10-09):** WSES 2020 (recomendación 7.2, 1A): no prolongar el antibiótico posoperatorio más de 3–5 días en la apendicitis complicada con control adecuado del foco. Existe una actualización WSES 2025 que no se revisó.
 
 ## malaria
 - **Verificado (secundario, 2026-10-09):** cloroquina 25 mg base/kg en 3 días repartida 10 / 7,5 / 7,5 mg/kg (estudio colombiano que cita la guía 2010; un ensayo de Antioquia usa 600 / 450 / 450 mg en adultos, proporción equivalente).
@@ -57,23 +59,27 @@ No es un archivo de guía: `build-guideline-corpus` solo compila los `.md` con c
 - **Corregido (2026-10-09):** la regla de la CDC 2021 no es «si se pierde una dosis»: el intervalo óptimo es de 7 días y, en la gestante, más de 9 días entre dosis obliga a repetir el esquema completo (página de sífilis latente de la CDC y resumen del departamento de salud de Maine). Algunas guías estatales recientes (California 2025) son más estrictas: reiniciar ante cualquier dosis tardía.
 
 ## infecciones-piel-tejidos-blandos
-- **Pendiente:** vancomicina 30 mg/kg/día y piperacilina/tazobactam 3,375 g cada 6–8 h (tablas IDSA).
+- **Verificado (secundario, 2026-10-09):** piperacilina/tazobactam 3,375 g cada 6–8 h en la infección necrosante (material docente basado en IDSA 2014).
+- **Retirado (2026-10-09):** vancomicina «30 mg/kg/día en 2 dosis»: no se encontró en las fuentes consultadas y hay una carta en CID 2015 sobre discrepancias de dosis en esa guía; el texto remite a la dosis por peso del protocolo institucional con niveles.
 
 ## consumo-de-alcohol
-- **Pendiente:** dosis de ejemplo dirigidas por síntomas (diazepam 10–20 mg, lorazepam 2–4 mg); acamprosato 666 mg tres veces al día, naltrexona 50 mg, disulfiram 200 mg; umbral NICE «AUDIT > 15».
+- **Verificado (secundario, 2026-10-09):** dosis dirigidas por síntomas con CIWA-Ar (diazepam 10–20 mg o lorazepam 2–4 mg, reevaluación horaria); acamprosato 666 mg tres veces al día con 60 kg o más (666/333/333 mg con menos de 60 kg), naltrexona 50 mg al día y disulfiram desde 200 mg al día (formularios del NHS que aplican NICE CG115).
+- **Pendiente:** umbral NICE «AUDIT mayor de 15» para la evaluación integral.
 
 ## dolor-cronico-y-opioides
-- **Pendiente:** naloxona 0,4–2 mg (ficha técnica); reevaluar al menos cada 2 semanas en dolor agudo (CDC 2022).
+- **Verificado (secundario, 2026-10-09):** naloxona 0,4 a 2 mg IV, IM o SC repetible cada 2–3 minutos (referencias de medicamentos que resumen la ficha); CDC 2022: reevaluar al menos cada 2 semanas si se continúan opioides por dolor agudo.
 
 ## gota
 - **Verificado (secundario, 2026-10-09):** EULAR 2016: colchicina en las primeras 12 h con 1 mg y 0,5 mg el primer día; prednisolona equivalente 30–35 mg al día por 3–5 días (resumen de la guía en prensa médica; la dosis de prednisolona coincide con resúmenes británicos y con el ensayo de Janssens 2008 con 35 mg).
 - **Pendiente:** el intervalo de «una hora» entre la dosis de 1 mg y la de 0,5 mg está en otras fuentes (ensayo AGREE), no en el resumen EULAR consultado.
 
 ## osteoporosis
-- **Pendiente:** edades de tamizaje y dosis de calcio de BHOF; criterios de muy alto riesgo de AACE.
+- **Verificado (secundario, 2026-10-09):** calcio total 1 000 mg/día en hombres de 50 a 70 años y 1 200 mg/día en mujeres de 51 o más y hombres de 71 o más; vitamina D 800–1 000 UI/día desde los 50 años (resumen de BHOF 2022). DXA en mujeres de 65 años o más y hombres de 70 o más (guía NOF 2014, antecesora de BHOF).
+- **Pendiente:** confirmar que BHOF 2022 mantiene esas edades y los criterios de muy alto riesgo de AACE 2020.
 
 ## sincope
-- **Pendiente:** 2–3 L de agua y 10 g de sal en hipotensión ortostática; reglas de conducción de la ESC (contrastar con la normativa colombiana).
+- **Retirado (2026-10-09):** «2–3 litros de agua y 10 g de sal al día»: no se encontró en las fuentes consultadas y las guías difieren en la cantidad de sal (6 a 10 g/día); el texto dice «más agua y más sal si no hay contraindicación».
+- **Pendiente:** reglas de conducción de la ESC 2018 (contrastar con la normativa colombiana).
 
 ## cirrosis-y-complicaciones
 - **Nueva (2026-10-09):** redactada con búsqueda web; 26 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
