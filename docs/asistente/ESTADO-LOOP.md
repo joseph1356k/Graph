@@ -3,7 +3,8 @@
 Todas las metas alcanzables desde este entorno se cumplieron en dos iteraciones seguidas (13 y 14) y el
 backlog no tiene tareas de prioridad alta. Las que no se pueden cumplir desde el sandbox quedan
 «bloqueadas: requiere humano» con su razón. El loop se detuvo; los PR van en borrador y nadie los
-marca listos ni los fusiona salvo una persona.
+marca listos ni los fusiona salvo una persona: Graph [#42](https://github.com/joseph1356k/Graph/pull/42) y web
+[#31](https://github.com/joseph1356k/Pagina-web-clientes-final/pull/31).
 
 | Métrica | Línea base | Final | Meta | Estado |
 |---|---|---|---|---|
