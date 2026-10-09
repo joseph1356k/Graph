@@ -30,7 +30,7 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 | Cifras «de memoria» corregidas, verificadas o retiradas | 0 | 41 | todas las marcadas | en curso |
 | Graph `npm test` | verde | verde | verde | cumple |
 | Web lint / typecheck / tests / build | 0 errores / limpio / 908 / OK | 0 errores / limpio / 908 / OK | verde | cumple |
-| E2E Playwright del chat | no existe | no existe | 5 escenarios | pendiente |
+| E2E Playwright del chat | no existe | 5 escenarios en verde (`npm run test:e2e` en la web) | 5 escenarios | cumple |
 | Tokens de entrada del chat (mediana) | no medido | no medido | ≤ 6 000 | pendiente |
 | `guidelines.corpus.json` | 570 KB | 816 KB | ≤ 2 MB | cumple |
 | Llamadas al modelo por pregunta | 1 | 1 | 1 | cumple |
@@ -38,9 +38,8 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 ## Backlog priorizado
 
 1. **Exactitud clínica:** quedan pocas «Pendiente» de la primera tanda: anticoncepción (efectividad por método, categorías OMS 2025), desnutrición (egreso de la Res. 115, dosis del libro de bolsillo OMS), AUDIT > 15 de NICE, reglas de conducción ESC, muy alto riesgo AACE. Lo marcado como «contrastar con la fuente primaria» queda para el médico.
-2. **Funcionamiento:** E2E con Playwright del chat en la web (v1, abstención, fuentes guía + ficha, cifras sin fuente, aplicar propuesta).
-3. **Optimización:** script que mida los tokens de entrada del chat (mediana ≤ 6 000).
-4. **Corpus (prioridad baja, la meta de 80 se cumple):** parto pretérmino, menopausia, sangrado uterino anormal, dermatitis atópica, ojo rojo, otitis externa, artrosis, tos ferina, varicela y sarampión, quemaduras.
+2. **Optimización:** script que mida los tokens de entrada del chat (mediana ≤ 6 000).
+3. **Corpus (prioridad baja, la meta de 80 se cumple):** parto pretérmino, menopausia, sangrado uterino anormal, dermatitis atópica, ojo rojo, otitis externa, artrosis, tos ferina, varicela y sarampión, quemaduras.
 
 ## Hecho
 
@@ -64,6 +63,8 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 
 - **Iteración 10 (2026-10-09):** exactitud clínica. 19 cifras de la primera tanda revisadas con búsqueda web (22 → 41): verificadas el tamizaje de cuello uterino de la Res. 3280/GPC 2014, potasio de 40 mmol/L en CAD pediátrica, WSES 3–5 días, piperacilina/tazobactam, dosis de abstinencia alcohólica y de prevención de recaídas, naloxona, reevaluación de opioides cada 2 semanas, calcio, vitamina D y edades de DXA; retiradas las edades e intervalo de VIA-VILI, la vancomicina «30 mg/kg/día en 2 dosis» y «2–3 L de agua y 10 g de sal». Métricas de retrieval y respuestas sin cambios. La construcción del índice midió una vez 273 ms dentro de `npm test` (fuera de él, 105–150 ms): se vigila.
 
+- **Iteración 11 (2026-10-09):** funcionamiento (web). Prueba E2E con Playwright 1.56.1 (el que corresponde al Chromium del entorno): `npm run test:e2e` monta el `MedicalChat` real con Vite en `e2e/harness`, con sesión y navegación simuladas y la API en el mismo origen, e intercepta `/api/clinical/assistant/chat`. 5 escenarios en verde: v1 en texto plano, abstención, fuentes de guía y ficha con enlace (y el contexto sin identificadores), cifras sin fuente, aplicar una propuesta que cambia solo su sección. Web: lint 0 errores (24 avisos, como antes), typecheck limpio, 908 pruebas, build OK. Decisión D24 en la web. `graphify` no está instalado en el entorno: no se actualizó `graphify-out`.
+
 ## Decisiones
 
 - La verificación de cifras se hace con búsqueda web; los sitios oficiales no son alcanzables desde el sandbox. Una cifra se corrige con al menos dos fuentes secundarias concordantes; si no hay ninguna, se retira y queda en `PENDIENTES-REVISION.md`.
@@ -80,4 +81,5 @@ Repos: Graph `feat/asistente-contexto-rag` · Web `claude/clinical-assistant-rag
 
 - **Revisión médica** de las 80 guías, empezando por lo marcado «Pendiente» en `knowledge/guias-clinicas/PENDIENTES-REVISION.md`.
 - **Clave de modelo para la evaluación en vivo:** no hay `MIRACLE_ASSISTANT_LLM_API_KEY` en el sandbox. Bloqueada: requiere humano.
+- **graphify:** el CLAUDE.md de la web pide `graphify update .` tras cambiar código, pero la herramienta no está instalada en el sandbox; correrlo donde esté instalada.
 - **CIMA:** el proxy del sandbox responde 403 a `cima.aemps.es` (`npm run check:cima` falla en ~90 ms). Correr `npm run check:cima` en el entorno de Graph y, si responde, `npm run build:drug-labels` desde una máquina con red. Bloqueada: requiere humano.
