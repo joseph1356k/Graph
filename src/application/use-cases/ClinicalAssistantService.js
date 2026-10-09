@@ -4,7 +4,7 @@ const ClinicalAssistantValidationService = require('./ClinicalAssistantValidatio
 const ClinicalAssistantPromptBuilder = require('./ClinicalAssistantPromptBuilder');
 const { parseAssistantReply } = require('./ClinicalAssistantResponseParser');
 const NoteModeResolver = require('./NoteModeResolver');
-const { buildRetrievalContext, inferPopulations, lastUserQuestion, isRagDisabled } = require('../knowledge/ClinicalGuidelineIndex');
+const { buildRetrievalContext, inferPopulations, lastUserQuestion, isRagDisabled, selectForPrompt } = require('../knowledge/ClinicalGuidelineIndex');
 const { verifyFigures } = require('./ClinicalAnswerVerifier');
 
 const { withFeature } = require('../../infrastructure/usage/UsageContext');
@@ -233,14 +233,14 @@ class ClinicalAssistantService {
     try {
       const codes = Array.isArray(clinicalContext.codes) ? clinicalContext.codes : [];
       const context = buildRetrievalContext({ noteJson: clinicalContext.note_json, codes });
-      return this.guidelineIndex.search({
+      return selectForPrompt(this.guidelineIndex.search({
         message,
         context,
         followUp: lastUserQuestion(clinicalContext.history),
         specialty: clinicalContext.specialty,
         cie10: codes.filter((code) => code.sistema === 'CIE-10').map((code) => code.codigo),
         populations: inferPopulations({ message, patient: clinicalContext.patient, context, codes })
-      });
+      }));
     } catch (error) {
       console.warn(`[Clinical Assistant] retrieval de guías falló: ${error.message}`);
       return [];

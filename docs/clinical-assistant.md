@@ -209,6 +209,10 @@ Modos: con `encounter_id` (contextual: transcripción + nota); sin encounter per
 - Devuelve **vacío a propósito** cuando la pregunta no aporta términos propios («hola», «resume la consulta»): entonces
   el mensaje al modelo dice «No se recuperaron guías clínicas: no cites ninguna». Máximo 6 fragmentos, 3 por guía,
   ≈ 9 000 caracteres, numerados `[G1]…[Gn]` dentro de `<guias_clinicas>`.
+- Al prompt del chat entra una selección de esa lista (`selectForPrompt`): ≈ 5 000 caracteres; los dos mejores
+  fragmentos entran siempre (aunque sean de relevancia baja, para que el modelo vea el mejor vecino y pueda abstenerse)
+  y del tercero en adelante se omiten los de relevancia baja. Las referencias se renumeran `[G1]…[Gn]` después de
+  seleccionar, así que lo que el modelo cita es exactamente lo que recibió.
 - Apagado de emergencia: `MIRACLE_ASSISTANT_RAG_DISABLED=1`. Tope: `MIRACLE_ASSISTANT_RAG_TOP_K` (default 6).
 - Privacidad: los fragmentos pasan por el escudo como cualquier texto; `verify-guideline-corpus.js` exige que ninguno
   produzca marcadores (una cifra de dosis nunca debe salir tapada como si fuera un documento).
@@ -245,7 +249,7 @@ base, con `previous_content` para que la web detecte si el médico editó entre 
 
 ### Telemetría
 
-Cada llamada del chat registra en el ledger `promptVersion` (`clinical-assistant-chat@4…`), `guidelineHits` (cuántos
+Cada llamada del chat registra en el ledger `promptVersion` (`clinical-assistant-chat@5…`), `guidelineHits` (cuántos
 fragmentos entraron), `drugLabelHits` (cuántos extractos de fichas técnicas) y `noteSource` (`draft` | `persisted` |
 `none`). Conteos y etiquetas, nunca texto.
 
@@ -350,6 +354,22 @@ referencias inventadas eliminadas (100 %), cifras plantadas detectadas (≥ 95 %
 chat (100 %) y propuestas de nota que no persisten y respetan `note_editable` (100 %), con al menos 150 casos. Está en
 `npm test`; `npm run eval:answers` muestra el detalle. El modo en vivo (modelo real) necesita
 `MIRACLE_ASSISTANT_LLM_API_KEY` y aún no existe.
+
+### Tokens de entrada (chat v5, 2026-10-09)
+
+`scripts/measure-chat-tokens.js` (en `npm test`; `npm run measure:tokens` lista cada pregunta) corre el servicio real
+con un modelo falso que solo captura los mensajes, sobre tres consultas típicas de `scripts/fixtures/token-budget.json`
+(control de crónicos con 8 000 caracteres de transcripción, fiebre en pediatría con 5 000 y control prenatal con
+12 000; nota en pantalla, códigos, edad y sexo, dos turnos de historial y 7 preguntas cada una). En las preguntas de
+medicamento simula una ficha técnica del tamaño máximo (1 800 caracteres), así que la medida es conservadora. Estima
+3,5 caracteres por token y falla si la mediana pasa de 6 000.
+
+Qué se hizo para llegar (mediana 7 424 → 5 900): la selección de extractos para el prompt (arriba, 7 424 → 6 534), el
+prompt de sistema v5 con las mismas reglas en forma compacta (8 293 → 6 474 caracteres; se quitaron las frases que
+repetían otra regla) y, cuando la nota viaja en el prompt, `contexto_consulta` lleva solo las keys obligatorias de la
+plantilla en vez de repetir todas sus secciones. La evaluación de respuestas sin red y la de retrieval quedaron
+idénticas. La transcripción es lo que más pesa (≈ 2 300 tokens en el perfil de crónicos) y no se recorta: es la
+fuente primaria.
 
 ### Qué modelo usar (decisión de producto, no de código)
 

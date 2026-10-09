@@ -776,6 +776,23 @@ async function main() {
       assert.strictEqual(conBorrador.body.used_context.note_draft, true);
       assert.strictEqual(conBorrador.body.used_context.note_json, true);
     });
+    await check('v5: con nota en el prompt, la plantilla viaja solo como secciones obligatorias', () => {
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(!prompt.includes('template_sections'), 'las secciones de la plantilla no se repiten junto a la nota');
+      const compact = ClinicalAssistantPromptBuilder.compactEncounterContext;
+      const encounterContext = {
+        id: 'e1',
+        template_name: 'Consulta',
+        template_sections: [{ key: 'motivo', label: 'Motivo', required: true }, { key: 'plan', label: 'Plan', required: false }]
+      };
+      assert.deepStrictEqual(
+        compact(encounterContext, { sections: [{ key: 'motivo', label: 'Motivo', content: 'x' }] }),
+        { id: 'e1', template_name: 'Consulta', secciones_obligatorias: ['motivo'] }
+      );
+      assert.deepStrictEqual(compact(encounterContext, null), encounterContext, 'sin nota, la plantilla completa orienta al modelo');
+      assert.deepStrictEqual(compact(encounterContext, { sections: [] }), encounterContext);
+      assert.strictEqual(compact(null, null), null);
+    });
     await check('v3: códigos y paciente se sanean (whitelist, enums, sin nombre ni documento)', () => {
       const prompt = promptTextOf(llm.state.calls.at(-1));
       assert.ok(prompt.includes('"codigo":"R51"'), 'el código se normaliza a mayúsculas');
@@ -1001,7 +1018,7 @@ async function main() {
       assert.ok(cifras.body.figures_checked >= 2, `figures_checked=${cifras.body.figures_checked}`);
       assert.deepStrictEqual(cifras.body.unverified_figures, ['35 mg/kg']);
       const prompt = promptTextOf(llm.state.calls.at(-1));
-      assert.ok(prompt.includes('clinical-assistant-chat@4') || ClinicalAssistantPromptBuilder.CHAT_PROMPT_VERSION.startsWith('clinical-assistant-chat@4'));
+      assert.ok(ClinicalAssistantPromptBuilder.CHAT_PROMPT_VERSION.startsWith('clinical-assistant-chat@5'), ClinicalAssistantPromptBuilder.CHAT_PROMPT_VERSION);
       assert.ok(prompt.includes('CIFRAS:'), 'la regla de cifras está en el system prompt');
       assert.ok(/Relevancia: (alta|media|baja)/.test(prompt), 'cada extracto declara su relevancia');
     });

@@ -13,7 +13,9 @@ const {
   extractCie10Codes,
   buildRetrievalContext,
   labSignals,
-  DEFAULT_CHAR_BUDGET
+  selectForPrompt,
+  DEFAULT_CHAR_BUDGET,
+  PROMPT_CHAR_BUDGET
 } = require('../src/application/knowledge/ClinicalGuidelineIndex');
 const corpusLib = require('./lib/guideline-corpus');
 
@@ -242,6 +244,32 @@ function main() {
     for (const item of results) {
       assert.ok(item.title && item.organism && item.year && item.section && item.source);
     }
+  });
+
+  check('selectForPrompt: presupuesto del prompt, relevancia baja fuera y G1..Gn renumeradas', () => {
+    const make = (id, size, relevance) => ({ ref: `G${id}`, guideline_id: `g${id}`, relevance, text: 'x'.repeat(size) });
+    const selected = selectForPrompt([
+      make(1, 2000, 'alta'),
+      make(2, 1500, 'media'),
+      make(3, 1200, 'baja'),
+      make(4, 1000, 'media'),
+      make(5, 900, 'alta'),
+      make(6, 400, 'media')
+    ]);
+    assert.deepStrictEqual(selected.map((item) => item.guideline_id), ['g1', 'g2', 'g4', 'g6']);
+    selected.forEach((item, position) => assert.strictEqual(item.ref, `G${position + 1}`));
+    assert.ok(selected.reduce((sum, item) => sum + item.text.length, 0) <= PROMPT_CHAR_BUDGET);
+    // Los dos primeros entran aunque sean de relevancia baja: con una pregunta
+    // difícil el modelo debe ver al menos el mejor vecino para poder abstenerse.
+    const low = selectForPrompt([make(1, 800, 'baja'), make(2, 700, 'baja'), make(3, 600, 'baja')]);
+    assert.deepStrictEqual(low.map((item) => item.guideline_id), ['g1', 'g2']);
+    // El primero entra aunque solo él ya pase el presupuesto.
+    assert.strictEqual(selectForPrompt([make(1, PROMPT_CHAR_BUDGET + 500, 'alta'), make(2, 100, 'alta')]).length, 1);
+    assert.deepStrictEqual(selectForPrompt([]), []);
+    assert.deepStrictEqual(selectForPrompt(null), []);
+    const real = selectForPrompt(index.search({ message: 'amoxicilina dosis otitis faringitis neumonía adulto niño' }));
+    assert.ok(real.length >= 1);
+    real.forEach((item, position) => assert.strictEqual(item.ref, `G${position + 1}`));
   });
 
   check('cada resultado trae solo el fragmento citado, nunca la guía entera', () => {

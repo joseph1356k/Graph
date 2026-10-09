@@ -23,6 +23,9 @@ const BM25_B = 0.75;
 const DEFAULT_TOP_K = 6;
 const DEFAULT_PER_GUIDE_CAP = 3;
 const DEFAULT_CHAR_BUDGET = 9000;
+// Presupuesto de guías dentro del prompt del chat (ver selectForPrompt).
+const PROMPT_CHAR_BUDGET = 5000;
+const PROMPT_ALWAYS_KEEP = 2;
 const RELATIVE_THRESHOLD = 0.35;
 const MIN_ABSOLUTE_SCORE = 1.5;
 const HEAD_WEIGHT = 2;
@@ -614,6 +617,27 @@ class ClinicalGuidelineIndex {
   }
 }
 
+/**
+ * Lo que entra al prompt del chat: los dos mejores extractos siempre (si caben)
+ * y, después, solo los de relevancia alta o media, hasta el presupuesto. Los de
+ * relevancia baja más allá de los dos primeros eran vecinos lejanos que costaban
+ * tokens sin aportar («revisa la redacción de la nota» traía 8 000 caracteres de
+ * guías). Las referencias se renumeran G1..Gn.
+ */
+function selectForPrompt(results, { charBudget = PROMPT_CHAR_BUDGET, alwaysKeep = PROMPT_ALWAYS_KEEP } = {}) {
+  const selected = [];
+  let used = 0;
+  for (const result of Array.isArray(results) ? results : []) {
+    const size = `${result.text || ''}`.length;
+    const lowRelevance = result.relevance === 'baja';
+    if (selected.length >= alwaysKeep && lowRelevance) continue;
+    if (selected.length > 0 && used + size > charBudget) continue;
+    selected.push(result);
+    used += size;
+  }
+  return selected.map((result, index) => ({ ...result, ref: `G${index + 1}` }));
+}
+
 let defaultIndex = null;
 
 /**
@@ -650,6 +674,8 @@ module.exports = {
   inferPopulations,
   populationsInText,
   labSignals,
+  selectForPrompt,
+  PROMPT_CHAR_BUDGET,
   trigrams,
   diceSimilarity,
   relevanceLabel,
