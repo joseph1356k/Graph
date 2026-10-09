@@ -163,7 +163,10 @@
       },
       {
         "message": "le bajó el azúcar a 50 y está sudando, qué le doy",
-        "expected": "crisis-hiperglucemicas-e-hipoglucemia"
+        "expected": [
+          "crisis-hiperglucemicas-e-hipoglucemia",
+          "diabetes-mellitus-tipo-2"
+        ]
       },
       {
         "message": "cirrótico vomitando sangre",
@@ -517,6 +520,73 @@
       {
         "message": "tuvo relaciones sin condón con una persona con VIH",
         "expected": "vih-tamizaje-y-profilaxis"
+      },
+      {
+        "message": "señor con el hígado duro y la barriga llena de líquido, ¿cuánta espironolactona y furosemida le doy y cuánto peso debe bajar al día?",
+        "expected": "cirrosis-y-complicaciones"
+      },
+      {
+        "message": "paciente cirrótico que llega confuso, con flapping y estreñido, ¿cómo le doy la lactulosa y cuándo agrego rifaximina?",
+        "expected": "cirrosis-y-complicaciones"
+      },
+      {
+        "message": "Me llegó una embarazada con antígeno de superficie positivo, ¿qué le hago y qué le pongo al bebé cuando nazca?",
+        "expected": "hepatitis-b-y-c"
+      },
+      {
+        "message": "Paciente con anticuerpos contra el virus C positivos, ¿qué pido para confirmar y con qué la trato si no tiene cirrosis?",
+        "expected": "hepatitis-b-y-c"
+      },
+      {
+        "message": "Tengo un paciente con HBsAg positivo y transaminasas un poco altas, ¿desde qué carga viral se le da tratamiento?",
+        "expected": "hepatitis-b-y-c"
+      },
+      {
+        "message": "paciente con sodio de 118, vomitando y somnoliento, cuánta solución hipertónica le pongo y qué tan rápido?",
+        "expected": "hiponatremia-e-hiperpotasemia"
+      },
+      {
+        "message": "el potasio salió en 6,8 y el electro tiene T picudas, qué hago primero?",
+        "expected": [
+          "hiponatremia-e-hiperpotasemia",
+          "lesion-renal-aguda"
+        ]
+      },
+      {
+        "message": "cuánto puedo subirle el sodio en un día sin que haga mielinolisis?",
+        "expected": "hiponatremia-e-hiperpotasemia"
+      },
+      {
+        "message": "A un paciente hospitalizado le subió la creatinina de 0,9 a 1,4 en dos días, ¿eso ya cuenta como daño agudo del riñón y en qué estadio va?",
+        "expected": "lesion-renal-aguda"
+      },
+      {
+        "message": "Señor con diarrea de varios días que casi no orina y tiene la creatinina alta, ¿qué hago primero y cuándo lo mando a diálisis?",
+        "expected": "lesion-renal-aguda"
+      },
+      {
+        "message": "¿Hay que hidratar con suero antes de un TAC contrastado a un paciente con filtración de 25?",
+        "expected": "lesion-renal-aguda"
+      },
+      {
+        "message": "paciente de 25 años con fiebre, dolor de cabeza fuerte, cuello rígido y unas manchitas moradas en las piernas que no se borran al apretar, qué antibiótico le pongo y le hago TAC antes de puncionar?",
+        "expected": "meningitis-bacteriana"
+      },
+      {
+        "message": "a los familiares de un niño hospitalizado por meningococo qué les doy y hasta cuándo puedo darlo?",
+        "expected": "meningitis-bacteriana"
+      },
+      {
+        "message": "Paciente con dolor epigástrico que se le va a la espalda y lipasa cuatro veces por encima de lo normal, ¿necesito TAC para confirmar el diagnóstico?",
+        "expected": "pancreatitis-y-colecistitis"
+      },
+      {
+        "message": "Señora con dolor en hipocondrio derecho, Murphy positivo, fiebre y leucocitos de 20 000, ¿qué tan grave es y cuándo la deben operar?",
+        "expected": "pancreatitis-y-colecistitis"
+      },
+      {
+        "message": "¿Cuánto líquido le pongo a un paciente con inflamación del páncreas por cálculos, y cuándo puede volver a comer?",
+        "expected": "pancreatitis-y-colecistitis"
       }
     ],
     "digitacion": [
@@ -809,6 +879,68 @@
       {
         "message": "PEP VIH 28 dias",
         "expected": "vih-tamizaje-y-profilaxis"
+      },
+      {
+        "message": "dosis albumina en pbe y cuando repetir la paracentesis",
+        "expected": "cirrosis-y-complicaciones"
+      },
+      {
+        "message": "sindrome hepatorenal terlipresina albumina criterios",
+        "expected": "cirrosis-y-complicaciones"
+      },
+      {
+        "message": "hbsag + anti hbc + anti hbs negativo q significa",
+        "expected": "hepatitis-b-y-c"
+      },
+      {
+        "message": "dosis tenofovir hepatitis b gestnte carga viral alta",
+        "expected": "hepatitis-b-y-c"
+      },
+      {
+        "message": "sofosbuvir velpatasvir cuantas semanas vhc",
+        "expected": "hepatitis-b-y-c"
+      },
+      {
+        "message": "hipercalemia con QRS ancho dosis de gluconato de calsio",
+        "expected": [
+          "hiponatremia-e-hiperpotasemia",
+          "lesion-renal-aguda"
+        ]
+      },
+      {
+        "message": "SIADH con Na 124 asintomatico manejo restriccion hidrica o urea",
+        "expected": "hiponatremia-e-hiperpotasemia"
+      },
+      {
+        "message": "insuf renal aguda k 6,8 gluconato de calcio dosis",
+        "expected": [
+          "hiponatremia-e-hiperpotasemia",
+          "lesion-renal-aguda"
+        ]
+      },
+      {
+        "message": "nefropatia x contraste profilaxis tfg 30 ssn o bicarbonato",
+        "expected": "lesion-renal-aguda"
+      },
+      {
+        "message": "LRA kdigo estadios creatinina diuresis",
+        "expected": "lesion-renal-aguda"
+      },
+      {
+        "message": "dexa en meningitis bacteriana dosis y si ya le puse la ceftriaxona hace 3 horas igual se la pongo?",
+        "expected": "meningitis-bacteriana"
+      },
+      {
+        "message": "cuantos liquidos le pongo a una pancreatits leve, ringer o ssn?",
+        "expected": "pancreatitis-y-colecistitis"
+      },
+      {
+        "message": "criterios tokio colangitis grado 2",
+        "expected": "pancreatitis-y-colecistitis"
+      },
+      {
+        "message": "colecistits tg18 grado 3 se opera o se drena?",
+        "expected": "pancreatitis-y-colecistitis"
       }
     ],
     "seguimiento": [
@@ -1110,7 +1242,10 @@
           }
         ],
         "message": "¿y si está inconsciente?",
-        "expected": "crisis-hiperglucemicas-e-hipoglucemia"
+        "expected": [
+          "crisis-hiperglucemicas-e-hipoglucemia",
+          "diabetes-mellitus-tipo-2"
+        ]
       },
       {
         "history": [
@@ -1769,6 +1904,152 @@
         ],
         "message": "¿qué exámenes pido antes?",
         "expected": "vih-tamizaje-y-profilaxis"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo se diagnostica la peritonitis bacteriana espontánea en un paciente con ascitis?"
+          },
+          {
+            "role": "assistant",
+            "content": "Con paracentesis diagnóstica: polimorfonucleares en líquido ascítico de 250 células/mm³ o más, con o sin cultivo positivo; además se toman hemocultivos y se inicia una cefalosporina de tercera generación con albúmina."
+          }
+        ],
+        "message": "¿y después del episodio qué profilaxis dejo?",
+        "expected": "cirrosis-y-complicaciones"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo se maneja una gestante con hepatitis B?"
+          },
+          {
+            "role": "assistant",
+            "content": "OMS 2024: tenofovir si el ADN del VHB es de 200 000 UI/mL o más o el HBeAg es positivo, de preferencia desde el segundo trimestre; el recién nacido recibe vacuna e inmunoglobulina en las primeras 12 horas."
+          }
+        ],
+        "message": "¿Y puede dar pecho?",
+        "expected": "hepatitis-b-y-c"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Con qué se trata la hepatitis C crónica?"
+          },
+          {
+            "role": "assistant",
+            "content": "Antivirales de acción directa pangenotípicos: sofosbuvir/velpatasvir por 12 semanas o glecaprevir/pibrentasvir por 8 semanas."
+          }
+        ],
+        "message": "¿Cuándo controlo si quedó curado?",
+        "expected": "hepatitis-b-y-c"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "cómo trato una hiperpotasemia grave en urgencias?"
+          },
+          {
+            "role": "assistant",
+            "content": "Primero se estabiliza la membrana con calcio intravenoso si hay cambios en el ECG, luego se desplaza el potasio al interior de la célula con insulina y glucosa (más salbutamol como coadyuvante) y después se elimina con quelantes, diuréticos o diálisis…"
+          }
+        ],
+        "message": "y si la glucosa antes de la insulina estaba baja?",
+        "expected": [
+          "hiponatremia-e-hiperpotasemia",
+          "lesion-renal-aguda"
+        ]
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "paciente con hiponatremia profunda crónica, cómo la corrijo?"
+          },
+          {
+            "role": "assistant",
+            "content": "Sin síntomas graves no se usa la salina al 3 % en bolos; se trata la causa y se limita la corrección a no más de 10 mmol/L las primeras 24 horas…"
+          }
+        ],
+        "message": "y si ya se pasó del límite?",
+        "expected": "hiponatremia-e-hiperpotasemia"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo se clasifica la lesión renal aguda según KDIGO?"
+          },
+          {
+            "role": "assistant",
+            "content": "KDIGO 2012 la clasifica en tres estadios según el aumento de creatinina frente a la basal y la caída de la diuresis…"
+          }
+        ],
+        "message": "¿Y cuándo está indicada la diálisis?",
+        "expected": "lesion-renal-aguda"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "Paciente con lesión renal aguda y potasio de 6,7, ¿cómo lo manejo?"
+          },
+          {
+            "role": "assistant",
+            "content": "Es hiperpotasemia grave: electrocardiograma, calcio IV si hay cambios, insulina con glucosa…"
+          }
+        ],
+        "message": "¿Y si la glucemia está baja antes de la insulina?",
+        "expected": [
+          "hiponatremia-e-hiperpotasemia",
+          "lesion-renal-aguda"
+        ]
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "cuál es el antibiótico empírico para meningitis bacteriana en un adulto?"
+          },
+          {
+            "role": "assistant",
+            "content": "Según IDSA 2004, de 1 mes a 50 años se usa vancomicina más ceftriaxona o cefotaxima; en mayores de 50 años se añade ampicilina para cubrir Listeria. NICE 2024 usa ceftriaxona y añade amoxicilina si hay factores de riesgo para Listeria. Ceftriaxona 2 g IV cada 12 horas, sin esperar la TAC ni la punción lumbar."
+          }
+        ],
+        "message": "y si está embarazada?",
+        "expected": "meningitis-bacteriana"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo clasifico la gravedad de una pancreatitis aguda?"
+          },
+          {
+            "role": "assistant",
+            "content": "Con Atlanta 2012: leve, sin falla orgánica ni complicaciones; moderadamente grave, con falla orgánica transitoria (menos de 48 horas) o complicaciones locales; grave, con falla orgánica persistente de más de 48 horas, medida con la escala de Marshall modificada."
+          }
+        ],
+        "message": "¿y si es grave le doy antibiótico profiláctico?",
+        "expected": "pancreatitis-y-colecistitis"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "Tengo un paciente con pancreatitis biliar leve, ¿qué hago con la vesícula?"
+          },
+          {
+            "role": "assistant",
+            "content": "AGA 2018 recomienda valoración por cirugía para colecistectomía durante la misma hospitalización; ACG 2024 la indica para prevenir recurrencias."
+          }
+        ],
+        "message": "¿y si además tiene fiebre e ictericia?",
+        "expected": "pancreatitis-y-colecistitis"
       }
     ],
     "poblacion": [
@@ -1934,7 +2215,10 @@
         "patient": {
           "edad": 68
         },
-        "expected": "crisis-hiperglucemicas-e-hipoglucemia"
+        "expected": [
+          "crisis-hiperglucemicas-e-hipoglucemia",
+          "diabetes-mellitus-tipo-2"
+        ]
       },
       {
         "message": "deterioro cognitivo, qué laboratorios pido",
@@ -2305,6 +2589,97 @@
             "codigo": "Z34.9"
           }
         ]
+      },
+      {
+        "message": "Paciente con cirrosis Child B, ¿le hago tamizaje de cáncer de hígado y cada cuánto?",
+        "patient": {
+          "edad": 72,
+          "sexo": "M"
+        },
+        "expected": "cirrosis-y-complicaciones"
+      },
+      {
+        "message": "Paciente con hepatitis B crónica y enfermedad renal, ¿cómo ajusto el tenofovir?",
+        "patient": {
+          "edad": 70,
+          "sexo": "M"
+        },
+        "expected": "hepatitis-b-y-c"
+      },
+      {
+        "message": "Recién nacido de madre HBsAg positiva que pesó 1 800 g, ¿qué vacunas y cuándo?",
+        "patient": {
+          "edad": 0,
+          "sexo": "F"
+        },
+        "expected": "hepatitis-b-y-c"
+      },
+      {
+        "message": "Gestante de 20 semanas con hepatitis B y HBeAg positivo, ¿le inicio antiviral?",
+        "patient": {
+          "edad": 27,
+          "sexo": "F"
+        },
+        "expected": "hepatitis-b-y-c"
+      },
+      {
+        "message": "adulta mayor con tiazida y sodio de 127, se cae seguido, qué hago?",
+        "patient": {
+          "edad": 82,
+          "sexo": "F"
+        },
+        "expected": "hiponatremia-e-hiperpotasemia"
+      },
+      {
+        "message": "paciente en diálisis con enalapril y potasio de 6,2, lo remito?",
+        "patient": {
+          "edad": 70,
+          "sexo": "M"
+        },
+        "expected": [
+          "hiponatremia-e-hiperpotasemia",
+          "lesion-renal-aguda"
+        ]
+      },
+      {
+        "message": "Paciente de 78 años con creatinina que se duplicó tras una neumonía, toma enalapril, furosemida e ibuprofeno, ¿qué le suspendo?",
+        "patient": {
+          "edad": 78,
+          "sexo": "M"
+        },
+        "expected": "lesion-renal-aguda"
+      },
+      {
+        "message": "Señora de 80 años con insuficiencia cardiaca que necesita un TAC con contraste, ¿qué riesgo renal tiene y cómo la preparo?",
+        "patient": {
+          "edad": 80,
+          "sexo": "F"
+        },
+        "expected": "lesion-renal-aguda"
+      },
+      {
+        "message": "señor con fiebre, confusión y rigidez de nuca, qué esquema empírico le pongo?",
+        "patient": {
+          "edad": 70,
+          "sexo": "M"
+        },
+        "expected": "meningitis-bacteriana"
+      },
+      {
+        "message": "Paciente con fiebre, ictericia y bilirrubina de 6, ¿qué grado de colangitis es y qué hago?",
+        "patient": {
+          "edad": 80,
+          "sexo": "F"
+        },
+        "expected": "pancreatitis-y-colecistitis"
+      },
+      {
+        "message": "Colecistitis aguda en paciente con mucha comorbilidad y ASA 3, ¿cirugía temprana o drenaje de la vesícula?",
+        "patient": {
+          "edad": 78,
+          "sexo": "M"
+        },
+        "expected": "pancreatitis-y-colecistitis"
       }
     ]
   },

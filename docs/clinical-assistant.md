@@ -254,14 +254,15 @@ fragmentos entraron), `drugLabelHits` (cuántos extractos de fichas técnicas) y
 Objetivo: que cada respuesta diga de dónde sale y que lo que no se pueda respaldar se vea. Todo en Graph, en memoria
 y sin proveedor nuevo; la única salida nueva es CIMA (solo el nombre del principio activo).
 
-### Corpus (61 guías, 296 fragmentos)
+### Corpus (67 guías, 329 fragmentos)
 
 Atención primaria y crónicos (HTA, DM2, dislipidemia, ERC, insuficiencia cardiaca, FA, EPOC, asma, hipotiroidismo,
 anemia ferropénica, dispepsia/ERGE/H. pylori, gota, osteoporosis, rinitis alérgica, obesidad y tabaquismo, lumbalgia,
 cefalea, vértigo, síncope, insomnio, dolor crónico y opioides, tamizaje de cáncer, CIE-10 frecuente); urgencias
 (dolor torácico/SCA, sepsis, ACV, TEP/TVP, anafilaxia, RCP AHA 2025, CAD/EHH e hipoglucemia, hemorragia digestiva,
-abdomen agudo y cólico renal, reglas de decisión en trauma menor, estatus epiléptico); infecciosas y del trópico
-(NAC, ITU, faringoamigdalitis, otitis/sinusitis, piel y tejidos blandos, ITS, sífilis, VIH, tuberculosis, malaria,
+abdomen agudo y cólico renal, reglas de decisión en trauma menor, estatus epiléptico, lesión renal aguda,
+hiponatremia e hiperpotasemia, pancreatitis y colecistitis, cirrosis y sus complicaciones); infecciosas y del trópico
+(meningitis bacteriana, hepatitis B y C, NAC, ITU, faringoamigdalitis, otitis/sinusitis, piel y tejidos blandos, ITS, sífilis, VIH, tuberculosis, malaria,
 dengue, tabla de antibióticos); pediatría y neonatos (IRA/AIEPI, bronquiolitis, EDA y deshidratación, fiebre sin foco,
 IVU pediátrica, ictericia neonatal, desnutrición aguda Res. 2350/2020 y Res. 115/2026, convulsión febril); gineco-
 obstetricia (control prenatal Res. 3280, preeclampsia, hemorragia posparto, anticoncepción); salud mental y geriatría
@@ -278,7 +279,10 @@ obstetricia (control prenatal Res. 3280, preeclampsia, hemorragia posparto, anti
   «¿por cuánto tiempo anticoagulo?») sus términos pesan 0.8 y cuentan como propios; si es larga, 0.4.
 - **Digitación.** Un término que no existe en el corpus se corrige al más parecido por trigramas (Dice ≥ 0.7),
   con peso 0.8; un término corregido nunca basta por sí solo para traer una guía («factura» no trae «fractura»).
-- **Ruido.** Saludos, muletillas y números sueltos pesan como genéricos.
+- **Ruido.** Saludos, muletillas, números sueltos, palabras de la app («carga», «pantalla», «soporte») y de población
+  («niño», «hombre») pesan como genéricos; la población la decide `inferPopulations`, no el término.
+- **Frase clave.** Si la pregunta, ya con sinónimos, contiene completa una frase del título o de `palabras_clave`
+  («lesion renal aguda»), la guía sube ×1.1. Los sinónimos se compilan una vez por mapa (construcción ≈ 150 ms).
 - **Relevancia.** Cada extracto lleva `relevance` (alta, media, baja) según cuánto de la pregunta cubre y su
   distancia al mejor; el prompt la muestra para que el modelo no tome un vecino cercano como respuesta.
 

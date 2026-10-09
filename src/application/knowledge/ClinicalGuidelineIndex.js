@@ -31,6 +31,9 @@ const GENERIC_TERM_WEIGHT = 0.3;
 const SPECIALTY_BOOST = 1.15;
 const CIE10_BOOST = 1.3;
 const HEAD_MATCH_BOOST = 1.1;
+// La pregunta (con sinónimos) contiene una frase clave completa de la guía
+// («lesion renal aguda»): señal más fuerte que los términos sueltos.
+const KEY_PHRASE_BOOST = 1.1;
 // Población: la guía de la población del paciente (o la que nombra la
 // pregunta) sube; la de otra población baja sin desaparecer (la pregunta
 // puede ser sobre otra población aunque el paciente sea adulto).
@@ -85,6 +88,7 @@ const GENERIC_TERMS = new Set([
   'nino', 'nina', 'pediatrico', 'pediatrica', 'infantil', 'hombre', 'paciente',
   // Palabras de cualquier pregunta médica que no identifican el cuadro.
   'diagnostico', 'diagnosticar', 'enfermedad', 'sindrome', 'sintoma', 'signo', 'cuadro', 'tipo', 'causa', 'causas',
+  'aparente', 'aparentemente',
   // Palabras de la app y de la conversación.
   'carga', 'cargar', 'grabacion', 'grabar', 'pantalla', 'blanco', 'soporte', 'tecnico', 'hora', 'horario', 'momento',
   'descargo', 'descargar', 'historia', 'boton', 'guardar', 'enlace', 'correo', 'sesion', 'cuenta', 'plantilla',
@@ -335,6 +339,10 @@ class ClinicalGuidelineIndex {
       const specialties = new Set((guideline.especialidades || []).map((value) => normalizeText(value).replace(/ /g, '_')));
       const cie10 = new Set((guideline.cie10 || []).map(normalizeCie10));
       const populations = new Set(guideline.poblacion || []);
+      const keyPhrases = [guideline.titulo, ...(guideline.palabras_clave || [])]
+        .map((value) => normalizeText(value))
+        .filter((value) => value.includes(' '))
+        .map((value) => ` ${value} `);
       for (const section of guideline.secciones || []) {
         const sectionTokens = tokenize(section.titulo, this.synonyms);
         const bodyTokens = tokenize(section.texto, this.synonyms);
@@ -359,6 +367,7 @@ class ClinicalGuidelineIndex {
           populations,
           sectionPopulations: populationsInText(section.titulo),
           headTerms: new Set(head),
+          keyPhrases,
           tf,
           length: tokens.length
         });
@@ -425,6 +434,7 @@ class ClinicalGuidelineIndex {
   search({ message = '', context = '', followUp = '', specialty = '', cie10 = [], populations = [], k = this.topK } = {}) {
     if (!this.chunks.length) return [];
     const rawMessageTokens = new Set(tokenize(message, this.synonyms));
+    const expandedMessage = ` ${expandSynonyms(normalizeText(message), this.synonyms)} `;
     const messageTokens = new Set();
     const fuzzyTerms = new Set();
     const weights = new Map();
@@ -501,6 +511,7 @@ class ClinicalGuidelineIndex {
         score *= CIE10_BOOST;
       }
       if (headHit) score *= HEAD_MATCH_BOOST;
+      if (chunk.keyPhrases.some((phrase) => expandedMessage.includes(phrase))) score *= KEY_PHRASE_BOOST;
       if (wantedPopulations.size && chunk.populations.size) {
         const matches = [...chunk.populations].some((population) => wantedPopulations.has(population));
         score *= matches ? POPULATION_MATCH_BOOST : POPULATION_MISMATCH_FACTOR;

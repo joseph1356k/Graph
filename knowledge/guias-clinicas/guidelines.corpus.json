@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source_hash": "3dd3023e92c115399413d39d156060e13ac280dfc1d8e7674007e6d7aa424082",
+  "source_hash": "9c7f7810a97a06425b479d786353d782d8700dd81674b73168b724e053928b8d",
   "guidelines": [
     {
       "id": "acv-isquemico-agudo",
@@ -735,6 +735,88 @@
       ]
     },
     {
+      "id": "cirrosis-y-complicaciones",
+      "titulo": "Cirrosis hepática y sus complicaciones: Child-Pugh, MELD, ascitis, peritonitis bacteriana espontánea, encefalopatía y síndrome hepatorrenal",
+      "organismo": "AASLD · EASL · ACG",
+      "anio": 2021,
+      "fuente": "AASLD. Diagnosis, Evaluation, and Management of Ascites, Spontaneous Bacterial Peritonitis and Hepatorenal Syndrome: 2021 Practice Guidance (Hepatology 2021;74:1014); EASL. Clinical Practice Guidelines for the management of patients with decompensated cirrhosis (J Hepatol 2018;69:406); AASLD · EASL. Hepatic Encephalopathy in Chronic Liver Disease: 2014 Practice Guideline (Hepatology 2014;60:715); American College of Gastroenterology. ACG Clinical Guideline: Hepatic Encephalopathy (Am J Gastroenterol 2026;121:588); AASLD. Practice Guidance on prevention, diagnosis, and treatment of hepatocellular carcinoma (Hepatology 2023;78:1922); EASL. Clinical Practice Guidelines: Management of hepatocellular carcinoma (J Hepatol 2018;69:182); AASLD · AST. Evaluation for liver transplantation in adults: 2013 practice guideline (Hepatology 2014;59:1144); FDA. Ficha técnica de terlipresina inyectable",
+      "especialidades": [
+        "medicina_general",
+        "medicina_familiar",
+        "medicina_interna",
+        "urgencias",
+        "gastroenterologia",
+        "cuidado_intensivo",
+        "nefrologia"
+      ],
+      "cie10": [
+        "K74.6",
+        "K70.3",
+        "K74.3",
+        "K76.6",
+        "R18",
+        "K65.0",
+        "K72.9",
+        "K76.7",
+        "C22.0"
+      ],
+      "palabras_clave": [
+        "cirrosis",
+        "cirrosis hepatica",
+        "descompensacion",
+        "hipertension portal",
+        "Child-Pugh",
+        "MELD",
+        "ascitis",
+        "paracentesis",
+        "albumina",
+        "espironolactona",
+        "furosemida",
+        "peritonitis bacteriana espontanea",
+        "PBE",
+        "encefalopatia hepatica",
+        "lactulosa",
+        "rifaximina",
+        "sindrome hepatorrenal",
+        "terlipresina",
+        "carcinoma hepatocelular",
+        "alfafetoproteina"
+      ],
+      "poblacion": [
+        "adultos",
+        "adultos_mayores"
+      ],
+      "fecha_revision": "2026-10-09",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; en el paciente con cirrosis y fiebre, dolor abdominal, confusión, sangrado digestivo u oliguria, la paracentesis diagnóstica, los antibióticos y la remisión no deben retrasarse. La hemorragia por várices se trata en la guía de hemorragia digestiva.",
+      "secciones": [
+        {
+          "titulo": "Cirrosis compensada y descompensada: estadificación con Child-Pugh y MELD",
+          "texto": "La cirrosis es la etapa final de la fibrosis hepática de cualquier causa: alcohol, hepatitis B o C, enfermedad hepática esteatósica metabólica, enfermedades autoinmunes y colestásicas. La cirrosis compensada suele ser asintomática; la descompensación se define por la aparición de ascitis, hemorragia variceal o encefalopatía hepática, y la ictericia progresiva también marca deterioro. La descompensación empeora el pronóstico y obliga a valoración por hepatología. Clasificación de Child-Pugh: suma cinco variables con 1 a 3 puntos cada una: bilirrubina (menor de 2 mg/dL, 2 a 3 mg/dL, mayor de 3 mg/dL), albúmina (mayor de 3,5 g/dL, 2,8 a 3,5 g/dL, menor de 2,8 g/dL), INR (rangos según la tabla de referencia), ascitis y encefalopatía (ausente, leve o controlada, grave). Clase A: 5 a 6 puntos; clase B: 7 a 9; clase C: 10 a 15. El MELD se calcula con bilirrubina, INR y creatinina; el MELD-Na añade el sodio sérico y el MELD 3.0 añade además albúmina y sexo; se usa para priorizar el trasplante y estimar mortalidad. AASLD 2014 (evaluación para trasplante): considerar la remisión para evaluación de trasplante hepático cuando aparece la primera complicación mayor (ascitis, hemorragia variceal o encefalopatía) o cuando el MELD es de 15 o más; el deterioro renal o la descompensación rápida exigen evaluación pronta. En atención primaria: abstinencia total de alcohol, tratar la causa (antivirales para hepatitis B o C), vacunar contra hepatitis A y B si no hay inmunidad, evitar AINE y sedantes, y revisar la nutrición sin restringir proteínas."
+        },
+        {
+          "titulo": "Ascitis: paracentesis diagnóstica, sodio, diuréticos y albúmina",
+          "texto": "AASLD 2021: hacer paracentesis diagnóstica en toda ascitis de reciente aparición, cuando aumenta la distensión, ante síntomas sugestivos de infección y en todo paciente con ascitis que se hospitaliza. Pedir recuento celular con diferencial, albúmina y proteínas totales del líquido, y cultivo inoculado en frascos de hemocultivo a la cabecera del paciente. Un gradiente de albúmina suero-ascitis de 1,1 g/dL o más indica hipertensión portal con exactitud cercana al 97 %; un gradiente bajo orienta a carcinomatosis, tuberculosis o pancreatitis. Restricción de sodio: AASLD 2021, 2 g de sodio al día o menos; EASL 2018, restricción moderada de 80 a 120 mmol de sodio al día (sin sal añadida y evitando alimentos precocinados), sin restricciones más estrictas que empeoran la desnutrición. Restringir líquidos solo si el sodio sérico es menor de 125 mmol/L. Diuréticos: espironolactona 100 mg con furosemida 40 mg al día, aumentando de forma escalonada y manteniendo la proporción 100:40 hasta un máximo de 400 mg y 160 mg al día; en el primer episodio puede iniciarse espironolactona sola, con ajustes a intervalos no menores de 72 horas. EASL 2018: buscar una pérdida de peso máxima de 0,5 kg al día sin edemas y de 1 kg al día con edemas periféricos. Suspender o reducir diuréticos ante hiponatremia grave, lesión renal aguda, encefalopatía o calambres incapacitantes, y bajar a la menor dosis eficaz cuando la ascitis se controle. Evitar AINE, IECA y ARA II en pacientes con ascitis. Ascitis a tensión o refractaria: paracentesis evacuatoria; si se extraen más de 5 L, reponer albúmina 6 a 8 g por litro extraído (AASLD 2021) u 8 g por litro (EASL 2018). La ascitis refractaria se remite a hepatología para valorar derivación portosistémica intrahepática transyugular o trasplante."
+        },
+        {
+          "titulo": "Peritonitis bacteriana espontánea: diagnóstico, tratamiento y profilaxis",
+          "texto": "Sospecharla en todo paciente con ascitis y fiebre, dolor abdominal, encefalopatía, lesión renal aguda o deterioro sin causa clara; puede ser poco sintomática, por eso se hace paracentesis diagnóstica al hospitalizar. Diagnóstico: polimorfonucleares en líquido ascítico de 250 células/mm³ o más, con o sin cultivo positivo; tomar también hemocultivos. Un cultivo polimicrobiano o una evolución tórpida obligan a descartar peritonitis secundaria por perforación. Tratamiento (AASLD 2021): iniciar de inmediato una cefalosporina de tercera generación intravenosa (cefotaxima o ceftriaxona, dosis según la ficha técnica y la función renal) y ampliar el espectro en infección nosocomial o con riesgo de multirresistencia, según la epidemiología local. Repetir la paracentesis a las 48 horas: si los polimorfonucleares no han disminuido al menos 25 %, considerar falla, ampliar antibióticos y buscar causa secundaria. Albúmina intravenosa 1,5 g/kg en las primeras 6 horas del diagnóstico y 1 g/kg el día 3, para prevenir la lesión renal y mejorar la supervivencia, con mayor beneficio en quienes tienen deterioro renal o hepático. Profilaxis secundaria tras un episodio: norfloxacino 400 mg al día (EASL 2018) de forma prolongada; donde no se consigue, ciprofloxacino o trimetoprim-sulfametoxazol, revisando periódicamente su indicación por el riesgo de resistencia y de infección por Clostridioides difficile. Profilaxis primaria (EASL 2018): considerarla cuando las proteínas del líquido ascítico son menores de 1,5 g/dL y hay insuficiencia hepática avanzada, deterioro renal o hiponatremia; AASLD 2021 es más restrictiva fuera de estos pacientes de alto riesgo. La profilaxis antibiótica durante la hemorragia variceal se describe en la guía de hemorragia digestiva."
+        },
+        {
+          "titulo": "Encefalopatía hepática: precipitantes, lactulosa y rifaximina",
+          "texto": "Es una disfunción cerebral por insuficiencia hepática o derivación portosistémica que va de la forma encubierta (mínima y grado 1 de West Haven, con alteraciones sutiles de atención o del sueño) a la manifiesta: grado 2, letargia, desorientación en tiempo, conducta inapropiada y asterixis; grado 3, somnolencia y desorientación marcada; grado 4, coma. El diagnóstico es clínico y exige excluir hipoglucemia, hiponatremia, intoxicación, ataque cerebrovascular e infección del sistema nervioso central. ACG 2026 sugiere no medir el amonio sérico de rutina para diagnosticar ni para guiar el tratamiento. Buscar y corregir el precipitante: infección (incluida la peritonitis bacteriana espontánea), hemorragia digestiva, exceso de diuréticos, deshidratación, trastornos del potasio o del sodio, lesión renal, estreñimiento y benzodiacepinas u opioides. Tratamiento del episodio (AASLD/EASL 2014, ACG 2026): lactulosa oral o por sonda nasogástrica en dosis frecuentes, cada 1 a 2 horas, hasta lograr deposiciones blandas, y luego titular para 2 a 3 deposiciones blandas al día; el polietilenglicol es una alternativa si no se tolera la lactulosa (ACG 2026). Tras el primer episodio, mantener lactulosa como prevención secundaria; tras la recurrencia, añadir rifaximina a la lactulosa (AASLD/EASL 2014), en los ensayos a dosis de 550 mg dos veces al día. No restringir proteínas: la restricción empeora la sarcopenia; preferir comidas fraccionadas con refrigerio nocturno. La encefalopatía manifiesta requiere hospitalización y, si el paciente no protege la vía aérea, cuidado intensivo. En adultos mayores vigilar deshidratación e hipernatremia por exceso de lactulosa y evitar sedantes."
+        },
+        {
+          "titulo": "Lesión renal aguda y síndrome hepatorrenal",
+          "texto": "AASLD 2021, con criterios del Club Internacional de Ascitis: lesión renal aguda en cirrosis es el aumento de creatinina de 0,3 mg/dL o más en 48 horas o de 50 % o más respecto al valor basal en los 7 días previos. Conducta inicial: suspender diuréticos y nefrotóxicos (AINE, aminoglucósidos, medio de contraste), revisar antihipertensivos, tratar infecciones, reponer pérdidas y, si la creatinina no mejora, expandir con albúmina 1 g/kg al día durante 2 días, con un máximo de 100 g al día. Síndrome hepatorrenal con lesión renal aguda: cirrosis con ascitis, lesión renal sin respuesta tras 48 horas de retiro de diuréticos y expansión con albúmina, sin choque, sin nefrotóxicos recientes y sin signos de daño estructural (proteinuria mayor de 500 mg al día, microhematuria mayor de 50 eritrocitos por campo de alto poder o ecografía renal anormal). Tratamiento (AASLD 2021 y EASL 2018): vasoconstrictor más albúmina; la terlipresina es de primera línea y la norepinefrina en cuidado intensivo es una alternativa. Ficha técnica de la FDA para terlipresina: puede causar insuficiencia respiratoria grave o mortal, con mayor riesgo en sobrecarga de volumen o falla hepática aguda sobre crónica grado 3; no iniciarla con saturación de oxígeno menor de 90 % y suspenderla si cae por debajo de ese valor; con creatinina mayor de 5 mg/dL es poco probable el beneficio. Este manejo es hospitalario, con monitoreo de volumen, y obliga a valorar trasplante hepático."
+        },
+        {
+          "titulo": "Tamizaje de carcinoma hepatocelular, signos de alarma y remisión",
+          "texto": "AASLD 2023: vigilar a los adultos con cirrosis con ecografía hepática cada 6 meses junto con alfafetoproteína sérica (versiones previas la consideraban opcional); la alfafetoproteína sola no sirve como tamizaje. EASL 2018: ecografía abdominal cada 6 meses realizada por personal experimentado. AASLD sugiere no hacer vigilancia en cirrosis Child-Pugh C salvo que el paciente esté en lista de trasplante, por su baja supervivencia esperada. Un nódulo nuevo, el crecimiento de una lesión, una ecografía con mala visualización o una alfafetoproteína en ascenso requieren tomografía o resonancia multifásica y remisión a hepatología. En Colombia, las hepatitis B y C son eventos de notificación obligatoria al Sivigila del Instituto Nacional de Salud. Signos de alarma que exigen urgencias u hospitalización: fiebre o dolor abdominal con ascitis, confusión o somnolencia, hematemesis o melenas (ver guía de hemorragia digestiva), oliguria o ascenso de creatinina, hiponatremia grave, ictericia progresiva y ascitis a tensión. Remitir a hepatología: primera descompensación, MELD de 15 o más, ascitis refractaria, encefalopatía recurrente, sospecha de carcinoma hepatocelular o candidato a trasplante."
+        }
+      ]
+    },
+    {
       "id": "consumo-de-alcohol",
       "titulo": "Consumo de alcohol: tamizaje AUDIT, intervención breve, abstinencia y prevención de recaídas",
       "organismo": "OMS · NICE · ASAM",
@@ -1032,7 +1114,7 @@
         },
         {
           "titulo": "Hipoglucemia: niveles, regla de 15 a 20 g y glucagón (ADA 2025)",
-          "texto": "Clasificación ADA: nivel 1, glucosa menor de 70 mg/dL (3,9 mmol/L) y de 54 mg/dL (3,0 mmol/L) o más; nivel 2, glucosa menor de 54 mg/dL; nivel 3, evento grave con alteración del estado mental o físico que requiere ayuda de otra persona, sin importar la cifra. Tratamiento de la persona consciente con glucosa menor de 70 mg/dL: 15 a 20 g de glucosa (opción preferida; sirve cualquier carbohidrato que contenga glucosa, como tabletas, jugo o bebida azucarada); repetir la medición a los 15 minutos y repetir el tratamiento si persiste la hipoglucemia; cuando la glucosa se normalice, consumir una comida o refrigerio para evitar la recurrencia. La grasa añadida retarda y prolonga la respuesta, y la proteína no sirve para corregir la hipoglucemia. Si no puede tragar o está inconsciente: glucagón, que debe formularse a toda persona que usa insulina o tiene alto riesgo de hipoglucemia, preferiblemente en presentaciones listas para usar que no requieren reconstitución; familiares, cuidadores y personal escolar deben saber dónde está y cómo aplicarlo. Dosis según ficha técnica: glucagón 1 mg IM o SC (0,5 mg en niños de menos de 25 kg) o glucagón intranasal 3 mg. En el hospital o con acceso venoso, dextrosa intravenosa según protocolo institucional, que debe existir en todo servicio. Hipoglucemia por sulfonilureas o insulinas de acción prolongada: puede recurrir durante horas, por lo que requiere observación prolongada. Tras un evento de nivel 3, ante hipoglucemias de nivel 2 repetidas o hipoglucemia inadvertida, reevaluar el esquema de tratamiento; en la hipoglucemia inadvertida, subir las metas glucémicas durante algunas semanas ayuda a recuperar la percepción, y el monitoreo continuo de glucosa es útil."
+          "texto": "Síntomas (ADA): temblor, irritabilidad, confusión, taquicardia y hambre; también sudoración y palpitaciones (síntomas autonómicos), y en la grave, convulsiones o pérdida de la conciencia. Clasificación ADA: nivel 1, glucosa menor de 70 mg/dL (3,9 mmol/L) y de 54 mg/dL (3,0 mmol/L) o más; nivel 2, glucosa menor de 54 mg/dL; nivel 3, evento grave con alteración del estado mental o físico que requiere ayuda de otra persona, sin importar la cifra. Tratamiento de la persona consciente con glucosa menor de 70 mg/dL: 15 a 20 g de glucosa (opción preferida; sirve cualquier carbohidrato que contenga glucosa, como tabletas, jugo o bebida azucarada); repetir la medición a los 15 minutos y repetir el tratamiento si persiste la hipoglucemia; cuando la glucosa se normalice, consumir una comida o refrigerio para evitar la recurrencia. La grasa añadida retarda y prolonga la respuesta, y la proteína no sirve para corregir la hipoglucemia. Si no puede tragar o está inconsciente: glucagón, que debe formularse a toda persona que usa insulina o tiene alto riesgo de hipoglucemia, preferiblemente en presentaciones listas para usar que no requieren reconstitución; familiares, cuidadores y personal escolar deben saber dónde está y cómo aplicarlo. Dosis según ficha técnica: glucagón 1 mg IM o SC (0,5 mg en niños de menos de 25 kg) o glucagón intranasal 3 mg. En el hospital o con acceso venoso, dextrosa intravenosa según protocolo institucional, que debe existir en todo servicio. Hipoglucemia por sulfonilureas o insulinas de acción prolongada: puede recurrir durante horas, por lo que requiere observación prolongada. Tras un evento de nivel 3, ante hipoglucemias de nivel 2 repetidas o hipoglucemia inadvertida, reevaluar el esquema de tratamiento; en la hipoglucemia inadvertida, subir las metas glucémicas durante algunas semanas ayuda a recuperar la percepción, y el monitoreo continuo de glucosa es útil."
         }
       ]
     },
@@ -2401,6 +2483,87 @@
       ]
     },
     {
+      "id": "hepatitis-b-y-c",
+      "titulo": "Hepatitis B y C crónicas: tamizaje, serología, prevención perinatal y tratamiento",
+      "organismo": "OMS · AASLD-IDSA · CDC · MinSalud Colombia",
+      "anio": 2024,
+      "fuente": "OMS. Guidelines for the prevention, diagnosis, care and treatment for people with chronic hepatitis B infection (marzo de 2024); OMS. Updated recommendations on treatment of adolescents and children with chronic HCV infection (2022); AASLD-IDSA. HCV Guidance: Recommendations for Testing, Managing, and Treating Hepatitis C (versión en línea vigente, 2026); CDC. Recommendations for Hepatitis B Screening and Testing — United States, 2023 (MMWR Recomm Rep 2023); CDC. Recommendations for Hepatitis C Screening Among Adults — United States, 2020 (MMWR Recomm Rep 2020;69(2):1-17); MinSalud-IETS. Guía de práctica clínica para el diagnóstico y tratamiento de la hepatitis B crónica (Guía No. 56, 2016); MinSalud-IETS. Guía de práctica clínica para la tamización, diagnóstico y tratamiento de personas con infección por el virus de la hepatitis C (2016; segunda edición 2018); MinSalud. Marco para la eliminación de la transmisión materno infantil del VIH, la sífilis, la hepatitis B y la enfermedad de Chagas, ETMI-Plus Colombia 2021-2030; MinSalud. Resolución 1692 de 2017, compra centralizada de medicamentos para hepatitis C crónica",
+      "especialidades": [
+        "medicina_general",
+        "medicina_familiar",
+        "medicina_interna",
+        "gastroenterologia",
+        "infectologia",
+        "ginecologia_y_obstetricia",
+        "pediatria",
+        "neonatologia"
+      ],
+      "cie10": [
+        "B16.9",
+        "B17.1",
+        "B18.0",
+        "B18.1",
+        "B18.2",
+        "Z22.5",
+        "O98.4",
+        "Z24.6"
+      ],
+      "palabras_clave": [
+        "hepatitis B",
+        "hepatitis C",
+        "VHB",
+        "VHC",
+        "HBsAg",
+        "antigeno de superficie",
+        "anti-HBc",
+        "HBeAg",
+        "carga viral",
+        "tenofovir",
+        "entecavir",
+        "sofosbuvir velpatasvir",
+        "glecaprevir pibrentasvir",
+        "antivirales de accion directa",
+        "inmunoglobulina hepatitis B",
+        "vacuna hepatitis B",
+        "transmision materno infantil",
+        "APRI",
+        "FIB-4",
+        "cirrosis"
+      ],
+      "poblacion": [
+        "adultos",
+        "adultos_mayores",
+        "gestantes",
+        "pediatria",
+        "neonatos"
+      ],
+      "fecha_revision": "2026-10-09",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; ajustar tenofovir y entecavir a la función renal, revisar interacciones de los antivirales de acción directa y confirmar el acceso al tratamiento por la ruta vigente de MinSalud.",
+      "secciones": [
+        {
+          "titulo": "Tamizaje de hepatitis B y C, incluida la gestante",
+          "texto": "CDC 2023: tamizar hepatitis B al menos una vez en la vida a todo adulto de 18 años o más con el panel de tres pruebas: antígeno de superficie (HBsAg), anticuerpo contra el antígeno de superficie (anti-HBs) y anticuerpo total contra el core (anti-HBc). El panel identifica infección activa, infección resuelta con riesgo de reactivación, personas susceptibles que deben vacunarse y personas vacunadas; tras un panel negativo no hace falta repetirlo salvo que aparezca un riesgo nuevo, y quien mantiene exposición se reevalúa periódicamente. Gestante (CDC 2023): HBsAg en cada embarazo, de preferencia en el primer trimestre, sin importar la vacunación previa. OMS 2024: toda gestante debe tamizarse para hepatitis B, junto con VIH y sífilis, al menos una vez y lo antes posible. En Colombia la ruta materno perinatal (Resolución 3280 de 2018) incluye el antígeno de superficie en el primer control prenatal, dentro de la estrategia ETMI-Plus. Hepatitis C (CDC 2020): tamizar a todo adulto de 18 años o más al menos una vez en la vida y a toda gestante en cada embarazo, salvo donde la prevalencia de ARN del virus de la hepatitis C (VHC) sea menor de 0,1 %; AASLD-IDSA también recomienda la prueba en cada embarazo, idealmente en el primer control. Repetir la prueba mientras persista el riesgo (uso de drogas inyectables, hemodiálisis, prácticas sexuales de riesgo). El diagnóstico de hepatitis C se hace con anticuerpos anti-VHC y, si son positivos, ARN del VHC; la prueba refleja (ARN en la misma muestra) reduce las pérdidas en el seguimiento. Anticuerpo positivo con ARN indetectable indica infección resuelta o falso positivo y no requiere tratamiento. A toda persona con hepatitis B o C ofrecer pruebas de VIH y sífilis, y vacunar contra hepatitis B a quien sea susceptible."
+        },
+        {
+          "titulo": "Interpretación serológica de la hepatitis B y evaluación inicial",
+          "texto": "CDC: HBsAg positivo con anti-HBc total positivo, IgM anti-HBc negativa y anti-HBs negativo corresponde a infección crónica; la definición de caso CDC 2024 la confirma, entre otros criterios, con HBsAg en dos muestras tomadas con 6 meses o más de diferencia. HBsAg positivo con IgM anti-HBc positiva indica infección reciente (menos de 6 meses), aunque la IgM también puede positivizarse en exacerbaciones de la infección crónica. HBsAg negativo con anti-HBc y anti-HBs positivos: infección resuelta; no requiere tratamiento, pero puede reactivarse con quimioterapia, anti-CD20 u otra inmunosupresión intensa. HBsAg y anti-HBc negativos con anti-HBs positivo: vacunado; ACIP considera protector un anti-HBs de 10 mUI/mL o más medido tras el esquema, y un valor menor años después no significa necesariamente falta de protección. Todo negativo: susceptible, vacunar. Anti-HBc aislado: infección resuelta con anti-HBs no detectable, falso positivo o infección crónica de bajo nivel; solicitar ADN del VHB si se va a inmunosuprimir o hay enfermedad hepática. Evaluación del HBsAg positivo en atención primaria: HBeAg, ADN del VHB (carga viral), ALT, AST, hemograma con plaquetas para calcular el APRI, creatinina, ecografía hepática, elastografía si está disponible, y pruebas de VIH, hepatitis C y anticuerpos contra el virus delta (la coinfección B-Delta es la forma más grave de hepatitis viral crónica). Tamizar y vacunar a convivientes y parejas sexuales. Antes de quimioterapia o inmunosupresores (AGA y EASL 2025): HBsAg y anti-HBc, y profilaxis antiviral en el HBsAg positivo, manejada con el especialista."
+        },
+        {
+          "titulo": "Tratamiento de la hepatitis B crónica (OMS 2024)",
+          "texto": "OMS 2024 recomienda tratar a adultos y adolescentes desde los 12 años con HBsAg positivo que tengan: fibrosis significativa (F2 o mayor) por APRI mayor de 0,5 o elastografía mayor de 7 kPa, o cirrosis por criterios clínicos, APRI mayor de 1 o elastografía mayor de 12,5 kPa, sin importar ADN ni ALT; o ADN del VHB mayor de 2 000 UI/mL con ALT por encima del límite superior normal, que la OMS fija en 30 U/L para hombres y niños y 19 U/L para mujeres y niñas (incluidas gestantes y mujeres en edad fértil); o, sin importar APRI, ADN ni ALT, coinfecciones (VIH, hepatitis C), antecedente familiar de cáncer hepático o cirrosis, inmunosupresión, comorbilidades como diabetes o manifestaciones extrahepáticas. Donde no se disponga de ADN del VHB, una ALT persistentemente anormal basta para indicar tratamiento. Primera línea (OMS): tenofovir disoproxil fumarato (TDF) o entecavir; si no hay acceso a tenofovir en monoterapia, TDF con lamivudina o con emtricitabina. Dosis según ficha técnica: TDF 300 mg una vez al día en adultos y en pacientes de 35 kg o más; con depuración de creatinina de 30 a 49 mL/min, cada 48 horas; de 10 a 29 mL/min, cada 72 a 96 horas; en hemodiálisis, una vez por semana después de la sesión. Entecavir 0,5 mg una vez al día en ayunas en quien no ha recibido nucleósidos y 1 mg al día en enfermedad hepática descompensada, ajustado a la depuración. Tenofovir alafenamida 25 mg una vez al día (adultos con enfermedad compensada; ficha europea desde 12 años y 35 kg) es alternativa con mejor perfil renal y óseo que el TDF. El tratamiento es prolongado: no suspenderlo sin el especialista por el riesgo de exacerbación. Quien no cumple criterios sigue en controles de ALT, ADN y fibrosis. Vigilancia de carcinoma hepatocelular (OMS 2024): ecografía abdominal y alfafetoproteína cada 6 meses en cirrosis y en antecedente familiar de carcinoma hepatocelular; considerarla en mayores de 40 años sin cirrosis con ADN mayor de 2 000 UI/mL."
+        },
+        {
+          "titulo": "Gestante y recién nacido: tenofovir, vacuna e inmunoglobulina",
+          "texto": "OMS 2024: a la gestante HBsAg positiva con ADN del VHB de 200 000 UI/mL o más, o con HBeAg positivo, dar TDF preferiblemente desde el segundo trimestre y hasta al menos el parto o hasta completar el esquema de vacunación del lactante; donde no haya ADN ni HBeAg puede considerarse TDF para toda gestante HBsAg positiva (recomendación condicional). La versión OMS 2020 indicaba iniciarlo en la semana 28. ETMI-Plus Colombia 2021-2030 adopta el mismo umbral (200 000 UI/mL o HBeAg positivo) con tenofovir como fármaco de elección; si la gestante cumple criterios de tratamiento por su propia enfermedad, se trata como cualquier adulto. Todo recién nacido (OMS): vacuna contra hepatitis B en las primeras 24 horas y al menos tres dosis en total; el PAI colombiano pide la dosis del recién nacido en las primeras 12 horas y continúa con pentavalente a los 2, 4 y 6 meses. Hijo de madre HBsAg positiva (CDC y ETMI-Plus): vacuna e inmunoglobulina antihepatitis B en las primeras 12 horas, en sitios de aplicación distintos; si pesa menos de 2 000 g, la dosis al nacer no cuenta y se aplican tres dosis más desde el mes de edad. Madre con estado desconocido al parto: hacer HBsAg y, si resulta positivo, aplicar la inmunoglobulina cuanto antes y a más tardar a los 7 días de vida. Prueba posvacunal (CDC): HBsAg y anti-HBs a los 9 a 12 meses, no antes, para no medir el anticuerpo pasivo de la inmunoglobulina. La lactancia materna se permite si el recién nacido recibió vacuna e inmunoglobulina. Hijo de madre con hepatitis C: ARN del VHC desde los 2 meses (AASLD-IDSA) o entre los 2 y 6 meses (CDC); los anticuerpos solo se interpretan desde los 18 meses. En la gestante con hepatitis C el tratamiento suele planearse después del parto, individualizado con el especialista. Plan Nacional 2025-2031 de MinSalud: meta de transmisión materno infantil de hepatitis B del 2 % o menos y aplicación de inmunoglobulina en el 95 % o más de los hijos de madres infectadas."
+        },
+        {
+          "titulo": "Hepatitis C: tratamiento pangenotípico, remisión y lo propio de Colombia",
+          "texto": "OMS 2022: antivirales de acción directa pangenotípicos para todo adulto, adolescente y niño desde los 3 años con infección crónica, sin importar el estadio. Esquemas en adultos: sofosbuvir/velpatasvir 12 semanas, sofosbuvir/daclatasvir 12 semanas o glecaprevir/pibrentasvir 8 semanas. AASLD-IDSA, tratamiento simplificado en adultos sin tratamiento previo y sin cirrosis: glecaprevir 300 mg/pibrentasvir 120 mg con comida por 8 semanas, o sofosbuvir 400 mg/velpatasvir 100 mg por 12 semanas. Se presume cirrosis con FIB-4 mayor de 3,25, elastografía mayor de 12,5 kPa, plaquetas menores de 150 000/mm³, signos clínicos o biopsia; la cirrosis compensada tiene su propio algoritmo simplificado (en genotipo 3 se exige estudio de resistencia en NS5A antes de sofosbuvir/velpatasvir) y vigilancia con ecografía cada 6 meses. No aplica el esquema simplificado (remitir): tratamiento previo, HBsAg positivo, embarazo, carcinoma hepatocelular conocido o sospechado o trasplante hepático. Durante el tratamiento advertir hipoglucemia en diabéticos y vigilar el INR con warfarina. Curación: ARN del VHC y perfil hepático 12 semanas o más después de terminar; si las transaminasas siguen altas, buscar otra causa. La curación no protege de reinfección. Colombia: GPC MinSalud-IETS de hepatitis C (2016, segunda edición 2018); la Resolución 1692 de 2017 fija la compra centralizada de antivirales de acción directa por el Fondo Estratégico de la OPS, con seguimiento de la Cuenta de Alto Costo; hepatitis B, C y coinfección B-Delta se notifican al Sivigila (evento 340). Urgencias u hospitalización: ictericia con alteración de la coagulación, encefalopatía, ascitis o hemorragia digestiva. Remitir a hepatología, gastroenterología o infectología: cirrosis, sospecha de carcinoma, coinfección por VIH o delta, falla a antivirales, enfermedad renal avanzada, niños, gestantes y HBsAg positivo que iniciará inmunosupresión."
+        }
+      ]
+    },
+    {
       "id": "hipertension-arterial-adultos",
       "titulo": "Hipertensión arterial en adultos",
       "organismo": "ESC · ACC/AHA · MinSalud Colombia (GPC)",
@@ -2469,6 +2632,77 @@
         {
           "titulo": "Situaciones especiales y remisión",
           "texto": "Embarazo: no usar IECA, ARA II ni inhibidores directos de renina; de elección labetalol, nifedipino de liberación prolongada o metildopa. Adultos mayores: iniciar a dosis bajas, vigilar ortostatismo y caídas. Enfermedad renal crónica con albuminuria: preferir IECA o ARA II. Remitir a segundo nivel ante sospecha de hipertensión secundaria, hipertensión resistente verdadera, daño de órgano progresivo, emergencia hipertensiva o hipertensión en embarazo. Signos de alarma que exigen atención inmediata: cefalea intensa con alteración neurológica, dolor torácico, disnea súbita, déficit focal, visión borrosa aguda o convulsiones con PA elevada."
+        }
+      ]
+    },
+    {
+      "id": "hiponatremia-e-hiperpotasemia",
+      "titulo": "Hiponatremia e hiperpotasemia: diagnóstico, corrección segura y tratamiento urgente",
+      "organismo": "ESE · ESICM · ERBP · UKKA · KDIGO",
+      "anio": 2014,
+      "fuente": "European Society of Endocrinology, European Society of Intensive Care Medicine y European Renal Best Practice (ERA-EDTA). Clinical practice guideline on diagnosis and treatment of hyponatraemia (Eur J Endocrinol 2014;170:G1; Nephrol Dial Transplant 2014;29 Suppl 2:i1); Society for Endocrinology. Emergency management of severe and moderately severely symptomatic hyponatraemia in adult patients (2022); Expert panel recommendations. Diagnosis, evaluation, and treatment of hyponatremia (Am J Med 2013;126 Suppl 1:S1); UK Kidney Association. Clinical practice guideline: treatment of acute hyperkalaemia in adults (2023); MHRA. National Patient Safety Alert: potential risk of underdosing with calcium gluconate in severe hyperkalaemia (2023); KDIGO. Potassium homeostasis and management of dyskalemia in kidney diseases: conclusions from a KDIGO Controversies Conference (Kidney Int 2020;97:42)",
+      "especialidades": [
+        "medicina_general",
+        "medicina_interna",
+        "urgencias",
+        "cuidado_intensivo",
+        "nefrologia",
+        "endocrinologia",
+        "geriatria"
+      ],
+      "cie10": [
+        "E87.1",
+        "E22.2",
+        "G37.2",
+        "E87.5"
+      ],
+      "palabras_clave": [
+        "hiponatremia",
+        "sodio bajo",
+        "hiperpotasemia",
+        "hipercalemia",
+        "hiperkalemia",
+        "potasio alto",
+        "solucion salina hipertonica",
+        "salino al 3 por ciento",
+        "SIADH",
+        "osmolalidad",
+        "desmielinizacion osmotica",
+        "mielinolisis pontina",
+        "sobrecorreccion de sodio",
+        "gluconato de calcio",
+        "insulina con dextrosa",
+        "salbutamol nebulizado",
+        "quelantes de potasio",
+        "T picudas"
+      ],
+      "poblacion": [
+        "adultos",
+        "adultos_mayores"
+      ],
+      "fecha_revision": "2026-10-09",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; la solución salina al 3 % y el calcio intravenoso exigen monitorización, doble verificación de la preparación y controles seriados de sodio, potasio y glucemia.",
+      "secciones": [
+        {
+          "titulo": "Hiponatremia: gravedad y diagnóstico por osmolalidad y volemia",
+          "texto": "ESE/ESICM/ERBP 2014 clasifica la hiponatremia por la cifra de sodio sérico en leve (130–135 mmol/L), moderada (125–129 mmol/L) y profunda (menos de 125 mmol/L); en sodio y potasio, 1 mmol/L equivale a 1 mEq/L, que es como informan muchos laboratorios en Colombia. Por el tiempo es aguda si está documentada hace menos de 48 horas y crónica si lleva 48 horas o más; cuando no se puede precisar, se maneja como crónica salvo evidencia clínica de lo contrario. Los síntomas pesan más que la cifra: moderadamente graves son náuseas sin vómito, confusión y cefalea; graves son vómito, dificultad cardiorrespiratoria, somnolencia profunda o anormal, convulsiones y coma (Glasgow de 8 o menos). Antes de atribuirlos a la hiponatremia hay que descartar otras causas, como hipoglucemia, trauma craneoencefálico o intoxicación. El estudio es escalonado. Primero, confirmar que es hipotónica: osmolalidad plasmática medida menor de 275 mOsm/kg; si es normal o alta, buscar hiperglucemia, manitol o seudohiponatremia por hiperlipidemia o hiperproteinemia. Segundo, osmolalidad urinaria: un valor de 100 mOsm/kg o menos indica ingesta relativamente excesiva de agua (polidipsia primaria, potomanía de cerveza, dieta pobre en solutos). Tercero, si es mayor, sodio urinario: 30 mmol/L o menos sugiere volumen arterial efectivo bajo (pérdidas digestivas, tercer espacio, insuficiencia cardiaca, cirrosis, síndrome nefrótico); por encima de 30 mmol/L se revisan diuréticos y enfermedad renal y luego el volumen extracelular. Con hipovolemia se piensa en vómito, insuficiencia suprarrenal primaria, nefropatía perdedora de sal o pérdida cerebral de sal; con euvolemia, en síndrome de secreción inadecuada de hormona antidiurética (SIADH), hipotiroidismo o insuficiencia suprarrenal secundaria. El SIADH es diagnóstico de exclusión. Tomar las muestras de orina antes de iniciar líquidos o fármacos."
+        },
+        {
+          "titulo": "Hiponatremia sintomática: solución salina al 3 % y límites de corrección",
+          "texto": "ESE 2014 y Society for Endocrinology 2022: con síntomas graves, sea aguda o crónica, administrar de inmediato 150 mL de solución salina hipertónica al 3 % intravenosa en 20 minutos, medir el sodio a los 20 minutos mientras se pasa un segundo bolo igual y repetir el ciclo dos veces o hasta lograr un aumento de 5 mmol/L. Hacerlo en un área con monitorización, preparando la solución según el protocolo institucional. Si los síntomas mejoran con ese aumento, suspender la solución hipertónica, mantener la vía con el menor volumen posible de solución salina al 0,9 % hasta iniciar el tratamiento de la causa y medir el sodio a las 6 y 12 horas y luego a diario hasta que se estabilice. Si no mejoran, continuar la infusión hipertónica con controles frecuentes y detenerla cuando mejoren los síntomas, cuando el sodio haya subido 10 mmol/L en total o cuando llegue a 130 mmol/L, lo que ocurra primero, y buscar otra causa de los síntomas. Límite de corrección (ESE 2014): no más de 10 mmol/L en las primeras 24 horas ni más de 8 mmol/L en cada 24 horas siguientes, hasta alcanzar 130 mmol/L. Con síntomas moderadamente graves se usa una sola infusión de 150 mL al 3 % en 20 minutos, con estudio diagnóstico rápido y los mismos límites. En la hiponatremia con volumen circulante bajo, ESE 2014 recomienda restaurar el volumen extracelular con solución salina al 0,9 % o cristaloide balanceado a 0,5–1,0 mL/kg/h. Ojo: al reponer el volumen, suspender tiazidas o desmopresina o tratar una insuficiencia suprarrenal puede aparecer una diuresis acuosa con ascenso brusco del sodio; vigilar el gasto urinario y la natremia con frecuencia."
+        },
+        {
+          "titulo": "Hiponatremia crónica, desmielinización osmótica y sobrecorrección",
+          "texto": "Sin síntomas graves, la prioridad es tratar la causa y suspender lo que no sea esencial: tiazidas, antidepresivos inhibidores de la recaptación de serotonina, carbamazepina o exceso de líquidos hipotónicos. En SIADH con hiponatremia moderada o profunda, ESE 2014 propone la restricción hídrica como primera línea; como segunda, aumentar la ingesta de solutos con urea (0,25–0,50 g/kg al día) o combinar diurético de asa en dosis baja con cloruro de sodio oral. No recomienda litio ni demeclociclina, y tampoco recomendó antagonistas del receptor de vasopresina como el tolvaptán, por el riesgo de corrección demasiado rápida y la falta de beneficio demostrado en desenlaces; el panel estadounidense de expertos de 2013 sí los incluye entre las opciones. La desmielinización osmótica aparece sobre todo al corregir con rapidez una hiponatremia crónica y profunda, y se manifiesta típicamente entre el segundo y el sexto día con disartria, disfagia, cuadriparesia, alteración de la conciencia, convulsiones o coma; puede ser más tardía. Factores de riesgo: alcoholismo, desnutrición, hipopotasemia, enfermedad hepática avanzada e hipovolemia. En estos pacientes el panel estadounidense de 2013 propone una meta de 4–6 mmol/L por día con límite de 8 mmol/L en 24 horas. La reposición de potasio también eleva la natremia y debe contarse. Sobrecorrección (ESE 2014): si el sodio sube más de 10 mmol/L en las primeras 24 horas o más de 8 mmol/L en cualquiera de las 24 horas siguientes, suspender el tratamiento activo, consultar a un experto y considerar 10 mL/kg de agua libre de electrolitos (solución glucosada) en 1 hora, con control estricto de diuresis y balance, y desmopresina 2 µg intravenosa no más de cada 8 horas. En adultos mayores la hiponatremia crónica, aun leve, se asocia con caídas, fracturas y trastornos de la atención: revisar fármacos de forma sistemática. Hospitalizar ante síntomas moderadamente graves o graves, hiponatremia profunda, caída rápida del sodio o sospecha de insuficiencia suprarrenal."
+        },
+        {
+          "titulo": "Hiperpotasemia: gravedad, electrocardiograma y estabilización con calcio",
+          "texto": "UKKA 2023 clasifica la hiperpotasemia en leve (5,5–5,9 mmol/L), moderada (6,0–6,4 mmol/L) y grave (6,5 mmol/L o más); cualquier cambio electrocardiográfico la convierte en emergencia. KDIGO 2020 insiste en descartar la seudohiperpotasemia (hemólisis, torniquete prolongado o puño cerrado, trombocitosis o leucocitosis marcadas, muestra procesada tarde) repitiendo la medición con buena técnica o en gases, sin retrasar el tratamiento si hay cambios en el ECG o alto riesgo. Causas frecuentes: lesión renal aguda o enfermedad renal crónica, IECA, ARA II, antagonistas mineralocorticoides, ahorradores de potasio, AINE, trimetoprim, acidosis, rabdomiólisis, lisis tumoral e insuficiencia suprarrenal. Tomar de inmediato un ECG de 12 derivaciones y monitorizar en hiperpotasemia moderada o grave. Hallazgos en orden aproximado de gravedad: ondas T picudas, aplanamiento o ausencia de la onda P, PR prolongado, QRS ancho, patrón sinusoidal, bradicardia y bloqueos, taquicardia o fibrilación ventricular y asistolia; un ECG normal no descarta riesgo de arritmia. Estabilización de membrana (UKKA 2023 y alerta de seguridad británica MHRA 2023): ante cambios en el ECG, 30 mL de gluconato de calcio al 10 % o 10 mL de cloruro de calcio al 10 % intravenosos (ambos aportan 6,8 mmol de calcio), en 10 minutos en el paciente sin paro. Repetir el ECG y repetir la dosis si los cambios persisten a los 5–10 minutos. Las dos sales no son intercambiables en volumen: hacen falta tres ampollas de 10 mL de gluconato para igualar una de cloruro, y dar una sola de gluconato es subdosificar. El calcio no baja el potasio y su efecto es transitorio, así que siempre debe seguirse de medidas para desplazarlo y eliminarlo. Usar con precaución en pacientes que reciben digoxina. La UKKA publicó en 2026 una actualización que, según los resúmenes disponibles, rebaja la certeza de la evidencia del calcio intravenoso tras una revisión de ILCOR de 2025: verificar la versión vigente."
+        },
+        {
+          "titulo": "Hiperpotasemia: desplazamiento y eliminación del potasio, ERC y remisión",
+          "texto": "Desplazamiento intracelular (UKKA 2023): 10 unidades de insulina regular con 25 g de glucosa (50 mL de dextrosa al 50 %) intravenosas en 15 minutos. El principal riesgo es la hipoglucemia, a veces tardía: si la glucemia previa al tratamiento es menor de 7,0 mmol/L (unos 126 mg/dL), la UKKA indica continuar con dextrosa al 10 % durante 5 horas, que aporta otros 25 g de glucosa, y vigilar la glucemia capilar de forma seriada durante varias horas. El salbutamol nebulizado en dosis altas es coadyuvante de la insulina con glucosa, no monoterapia; usarlo con precaución en cardiopatía isquémica o taquiarritmias y ajustar la dosis según el protocolo institucional. El bicarbonato de sodio se considera cuando hay acidosis metabólica, no como tratamiento aislado. Eliminación: la actualización UKKA 2023 amplió el uso de los quelantes nuevos (ciclosilicato de sodio y zirconio, patirómero) a la hiperpotasemia moderada y grave, en las dosis de la ficha técnica, y dejó sin papel en el manejo agudo al poliestireno sulfonato de calcio. Los diuréticos de asa ayudan si hay volemia adecuada y diuresis conservada. La hemodiálisis está indicada en hiperpotasemia refractaria, sobre todo con lesión renal aguda oligúrica o enfermedad renal crónica terminal. Medir el potasio de forma seriada tras el tratamiento, porque el efecto de la insulina y del salbutamol es transitorio y hay rebote. En la fase aguda se suspenden los fármacos causantes; KDIGO 2020 aconseja, una vez controlado el episodio, mantener o reintroducir el bloqueo del sistema renina-angiotensina-aldosterona cuando está indicado, apoyándose en quelantes, corrección de la acidosis, diuréticos y revisión de dieta y medicamentos, en lugar de suspenderlo indefinidamente. Remisión: en atención primaria, un potasio de 6,5 mmol/L o más requiere remisión urgente al hospital en la mayoría de los casos; entre 6,0 y 6,4 mmol/L puede valorarse sin hospitalizar si el paciente no está agudamente enfermo ni tiene lesión renal aguda. Hospitalizar siempre ante cambios en el ECG, debilidad muscular, palpitaciones o lesión renal aguda. Las guías citadas son de adultos; en niños usar protocolos pediátricos."
         }
       ]
     },
@@ -3132,6 +3366,86 @@
       ]
     },
     {
+      "id": "lesion-renal-aguda",
+      "titulo": "Lesión renal aguda en adultos: criterios KDIGO, causas, contraste, potasio y diálisis",
+      "organismo": "KDIGO · NICE · ACR · NKF · UKKA",
+      "anio": 2012,
+      "fuente": "KDIGO. KDIGO Clinical Practice Guideline for Acute Kidney Injury (Kidney Int Suppl 2012;2:1–138); NICE. Acute kidney injury: prevention, detection and management, NG148 (2019, actualizada en 2024); American College of Radiology y National Kidney Foundation. Use of Intravenous Iodinated Contrast Media in Patients with Kidney Disease: Consensus Statements (Radiology 2020;294:660; Kidney Med 2020;2:85); UK Kidney Association. Clinical Practice Guideline: Treatment of Acute Hyperkalaemia in Adults (2023); Resuscitation Council UK. Special circumstances guidelines, hiperpotasemia; Ensayo PRESERVE. Outcomes after angiography with sodium bicarbonate and acetylcysteine (N Engl J Med 2018;378:603)",
+      "especialidades": [
+        "medicina_general",
+        "medicina_familiar",
+        "medicina_interna",
+        "urgencias",
+        "cuidado_intensivo",
+        "nefrologia",
+        "geriatria"
+      ],
+      "cie10": [
+        "N17",
+        "N17.0",
+        "N17.9",
+        "N14.1",
+        "N99.0",
+        "N13.9",
+        "R34",
+        "E87.5"
+      ],
+      "palabras_clave": [
+        "lesion renal aguda",
+        "LRA",
+        "AKI",
+        "insuficiencia renal aguda",
+        "falla renal aguda",
+        "KDIGO",
+        "creatinina elevada",
+        "oliguria",
+        "anuria",
+        "azoemia prerrenal",
+        "necrosis tubular aguda",
+        "uropatia obstructiva",
+        "nefrotoxicos",
+        "nefropatia por contraste",
+        "medio de contraste yodado",
+        "hiperpotasemia",
+        "hiperkalemia",
+        "dialisis",
+        "terapia de reemplazo renal"
+      ],
+      "poblacion": [
+        "adultos",
+        "adultos_mayores"
+      ],
+      "fecha_revision": "2026-10-09",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; ajustar todos los medicamentos a la función renal y tratar la hiperpotasemia con cambios en el electrocardiograma como emergencia, según el protocolo institucional.",
+      "secciones": [
+        {
+          "titulo": "Definición, criterios diagnósticos y estadios KDIGO",
+          "texto": "KDIGO 2012 define la lesión renal aguda (LRA) por cualquiera de tres criterios: aumento de la creatinina sérica de 0,3 mg/dL (26,5 µmol/L) o más en 48 horas; aumento a 1,5 veces o más del valor basal, conocido o presumido en los 7 días previos; o diuresis menor de 0,5 mL/kg/h durante 6 horas. NICE 2019 usa criterios equivalentes para detectarla: aumento de 26 µmol/L o más en 48 horas, aumento de 50 % o más en 7 días, o diuresis menor de 0,5 mL/kg/h por más de 6 horas en adultos (en niños, más de 8 horas, o caída de la filtración glomerular estimada de 25 % o más en 7 días). Estadios KDIGO, asignando el más grave que se cumpla por creatinina o por diuresis: estadio 1, creatinina 1,5 a 1,9 veces la basal o aumento de 0,3 mg/dL o más, o diuresis menor de 0,5 mL/kg/h durante 6 a 12 horas; estadio 2, creatinina 2,0 a 2,9 veces la basal, o diuresis menor de 0,5 mL/kg/h durante 12 horas o más; estadio 3, creatinina 3,0 veces la basal, creatinina de 4,0 mg/dL (353,6 µmol/L) o más, inicio de terapia de reemplazo renal, o diuresis menor de 0,3 mL/kg/h durante 24 horas o más o anuria durante 12 horas o más. La creatinina sube con retraso y depende de la masa muscular: en adultos mayores o con sarcopenia un valor \"normal\" puede ocultar una LRA; en la gestante la creatinina basal es más baja. NICE 2019 recomienda medir la creatinina y compararla con la basal en todo adulto con enfermedad aguda que tenga enfermedad renal crónica, insuficiencia cardiaca, enfermedad hepática, diabetes, LRA previa, oliguria o uso en la última semana de AINE, aminoglucósidos, IECA, ARA II o diuréticos."
+        },
+        {
+          "titulo": "Causas prerrenales, renales y posrenales y evaluación inicial",
+          "texto": "Prerrenal: hipovolemia (vómito, diarrea, hemorragia, exceso de diuréticos), hipotensión, sepsis, insuficiencia cardiaca, cirrosis y fármacos que reducen la perfusión glomerular (AINE, IECA, ARA II). Renal o intrínseca: necrosis tubular aguda por isquemia sostenida o por tóxicos (aminoglucósidos, anfotericina B, medio de contraste, rabdomiólisis), nefritis intersticial aguda por fármacos, glomerulonefritis y vasculitis, microangiopatía trombótica y mieloma. Posrenal: obstrucción por hiperplasia prostática, litiasis en riñón único o bilateral, tumores pélvicos o sonda vesical obstruida. En zonas endémicas de Colombia considerar causas infecciosas y tóxicas como leptospirosis, malaria grave, dengue grave y accidente ofídico. Evaluar volemia, globo vesical, fármacos recientes y signos de enfermedad sistémica. Pedir creatinina, nitrógeno ureico, electrolitos, bicarbonato o gases, hemograma y, según sospecha, CK. NICE 2019: tira reactiva de orina para sangre, proteínas, leucocitos, nitritos y glucosa en toda persona apenas se sospeche la LRA (su estándar de calidad mide que se haga dentro de las 6 horas); si no hay causa evidente y la tira muestra hematuria con proteinuria, sin infección ni trauma por sonda, pensar en nefritis aguda y comentar con nefrología. Ecografía de vías urinarias (NICE 2019): inmediata, realizada dentro de 6 horas, si se sospecha pionefrosis (riñón obstruido e infectado); urgente, dentro de 24 horas, si no se identifica la causa o hay riesgo de obstrucción; no hacerla de rutina cuando la causa ya está clara."
+        },
+        {
+          "titulo": "Manejo inicial: líquidos, vasopresores, diuréticos y nefrotóxicos",
+          "texto": "Tratar la causa y evaluar la volemia antes y después de cada intervención: reponer volumen en la LRA prerrenal hipovolémica y evitar la sobrecarga en el paciente oligúrico. KDIGO 2012: en ausencia de choque hemorrágico, usar cristaloides isotónicos en lugar de coloides (albúmina o almidones) para la expansión inicial del volumen intravascular (sugerencia 2B); en el choque vasomotor con LRA o en riesgo de ella, usar vasopresores junto con los líquidos (recomendación 1C). No usar diuréticos para prevenir la LRA (1B) ni para tratarla (2C), excepto para manejar la sobrecarga de volumen. No usar dopamina en dosis baja para prevenir ni tratar la LRA (1A). Revisar toda la medicación: suspender o ajustar los nefrotóxicos y los fármacos que empeoran la hemodinámica renal (AINE, IECA, ARA II, diuréticos), suspender suplementos de potasio y ajustar cada dosis a la función renal según la ficha técnica, incluida la metformina. KDIGO 2012: evitar aminoglucósidos en pacientes con LRA o en riesgo, salvo que no exista una alternativa terapéutica adecuada y menos nefrotóxica; con función renal normal y estable, preferir una dosis única diaria a varias dosis al día (2B). Nutrición, KDIGO 2012: aporte energético de 20 a 30 kcal/kg/día."
+        },
+        {
+          "titulo": "Hiperpotasemia y otras complicaciones",
+          "texto": "UKKA 2023 clasifica la hiperpotasemia en leve (5,5 a 5,9 mmol/L), moderada (6,0 a 6,4 mmol/L) y grave (6,5 mmol/L o más); cualquier nivel con cambios electrocardiográficos es una emergencia. Si hay cambios en el electrocardiograma, estabilizar la membrana con calcio intravenoso: 30 mL de gluconato de calcio al 10 % o 10 mL de cloruro de calcio al 10 %, que aportan una dosis de calcio similar (las sales no son equivalentes mililitro a mililitro); el cloruro causa necrosis si se extravasa. El calcio no baja el potasio y se usa con precaución en pacientes con digoxina. Para desplazar el potasio al interior de la célula (UKKA y Resuscitation Council UK): insulina de acción rápida 10 unidades con 25 g de glucosa intravenosa en 15 a 30 minutos; si la glucemia previa es menor de 7,0 mmol/L (126 mg/dL), continuar dextrosa al 10 % a 50 mL/h durante 5 horas, y vigilar la glucemia por lo menos 6 horas por riesgo de hipoglucemia. Salbutamol nebulizado de 10 a 20 mg como coadyuvante de la insulina con glucosa en la hiperpotasemia moderada o grave, nunca como monoterapia en la grave. Para eliminar potasio, UKKA 2023 amplió el uso de los quelantes orales nuevos (ciclosilicato de sodio y zirconio, patiromer) a la hiperpotasemia moderada y grave y ya no da papel al poliestireno sulfonato de calcio en el contexto agudo. Controlar el potasio repetidamente tras el tratamiento (UKKA: a las 1, 2, 4, 6 y 24 horas). La hiperpotasemia refractaria es indicación de diálisis. Vigilar además acidosis metabólica, sobrecarga de volumen con edema pulmonar y signos de uremia (pericarditis, encefalopatía)."
+        },
+        {
+          "titulo": "Medio de contraste yodado: riesgo y prevención",
+          "texto": "ACR-NKF 2020, contraste intravenoso: la profilaxis con solución salina normal intravenosa está indicada en pacientes con LRA o con filtración glomerular estimada menor de 30 mL/min/1,73 m² que no están en diálisis de mantenimiento; entre 30 y 44 mL/min/1,73 m² puede considerarse en circunstancias individuales de alto riesgo, a criterio del médico tratante, y no está indicada con valores superiores. El riñón único no cambia por sí solo el riesgo; usar la mínima cantidad de contraste necesaria sin bajar de la dosis diagnóstica; suspender nefrotóxicos si hay LRA o filtración menor de 30; no iniciar ni ajustar la diálisis solo por el contraste. NICE (actualización 2024): el riesgo aumenta con enfermedad renal crónica con filtración menor de 30 mL/min/1,73 m² (antes 40), diabetes con esa enfermedad renal, insuficiencia cardiaca, trasplante renal, edad de 75 años o más, hipovolemia, mayor volumen de contraste y administración intraarterial con paso renal directo. Estimular la hidratación oral en adultos en riesgo y considerar expansión intravenosa con bicarbonato de sodio isotónico o cloruro de sodio al 0,9 % solo en hospitalizados de riesgo particularmente alto; considerar suspender temporalmente IECA y ARA II en enfermedad renal crónica con filtración menor de 30. KDIGO 2012, más intervencionista: expansión intravenosa con cloruro de sodio o bicarbonato isotónicos en pacientes en riesgo (1A), no usar solo líquidos orales (1C), contraste isoosmolar o de baja osmolaridad (1B), no usar teofilina (2C) ni hemodiálisis o hemofiltración profiláctica para retirar el contraste (2C); sugería N-acetilcisteína oral (2D), pero el ensayo PRESERVE (2018), con 5 177 pacientes con enfermedad renal crónica llevados a angiografía, no mostró beneficio del bicarbonato frente a la solución salina ni de la acetilcisteína frente a placebo, y sus autores concluyen que ya no se recomienda su uso rutinario."
+        },
+        {
+          "titulo": "Indicaciones de diálisis, remisión y seguimiento",
+          "texto": "NICE 2019: remitir de inmediato a nefrología o cuidado intensivo para terapia de reemplazo renal cuando no responden al tratamiento médico la hiperpotasemia, la acidosis metabólica, los síntomas o complicaciones de la uremia (pericarditis, encefalopatía), la sobrecarga de volumen o el edema pulmonar; la decisión se basa en la condición global y no en un valor aislado de urea, creatinina o potasio. KDIGO 2012: iniciar la terapia de reemplazo renal de urgencia ante alteraciones de líquidos, electrolitos o equilibrio ácido-base que amenazan la vida. La terapia continua y la intermitente son complementarias; KDIGO sugiere la continua en el paciente hemodinámicamente inestable (2B) y en lesión cerebral aguda o hipertensión intracraneal, con volumen de efluente de 20 a 25 mL/kg/h (1A). Catéter no tunelizado colocado con guía ecográfica, preferiblemente en yugular interna derecha (KDIGO). Comentar con nefrología lo antes posible y dentro de las 24 horas (NICE 2019) ante posible vasculitis, glomerulonefritis, nefritis tubulointersticial o mieloma; LRA sin causa clara; respuesta inadecuada al tratamiento; complicaciones; estadio 3; trasplante renal; o enfermedad renal crónica estadio 4 o 5. Signos de alarma para manejo hospitalario urgente: anuria u oliguria persistente, hiperpotasemia grave o con cambios electrocardiográficos, edema pulmonar, acidosis grave, encefalopatía, pericarditis u obstrucción infectada. Seguimiento (KDIGO 2012): evaluar a los 3 meses la recuperación, la aparición de enfermedad renal crónica o su empeoramiento, y considerar a quien no tenía enfermedad renal crónica como de riesgo aumentado; al alta, revisar el reinicio de los fármacos suspendidos."
+        }
+      ]
+    },
+    {
       "id": "lumbalgia-aguda",
       "titulo": "Dolor lumbar agudo y subagudo en adultos",
       "organismo": "ACP · NICE · Lancet Low Back Pain Series",
@@ -3274,6 +3588,88 @@
         {
           "titulo": "Malaria en el embarazo, en niños y notificación",
           "texto": "Toda gestante con malaria tiene mayor riesgo de malaria grave, hipoglucemia, anemia, aborto, parto pretérmino y bajo peso al nacer; hospitalizar ante cualquier signo de peligro. P. falciparum no complicada: la OMS (2022) recomienda artemeter-lumefantrina también en el primer trimestre y terapias combinadas con artemisinina en el segundo y tercero; la guía colombiana trata el uso en el primer trimestre en un anexo específico. P. vivax en el embarazo: solo cloroquina, con las mismas dosis de la población general; la primaquina está contraindicada en el embarazo y en la lactancia de menores de 6 meses, por lo que se difiere la cura radical y se considera quimioprofilaxis semanal con cloroquina hasta el final del embarazo y la lactancia, cuando se completa la primaquina. Malaria grave en gestantes: artesunato parenteral en cualquier trimestre, con vigilancia fetal y de glucemia. Niños: las mismas dosis por kilogramo; artemeter-lumefantrina desde 5 kg; artesunato 3 mg/kg por dosis si pesan menos de 20 kg; primaquina no en menores de 6 meses. Prevención: toldillos impregnados con insecticida, repelentes, ropa de manga larga y eliminación de criaderos; consulta inmediata ante fiebre durante o después de visitar zonas endémicas. Notificación: todo caso confirmado se notifica al SIVIGILA con la especie y la parasitemia; la malaria complicada y las muertes por malaria se notifican y analizan según el protocolo del INS, que también orienta la búsqueda activa de casos en brotes."
+        }
+      ]
+    },
+    {
+      "id": "meningitis-bacteriana",
+      "titulo": "Meningitis bacteriana aguda en niños mayores de 1 mes y adultos: sospecha, punción lumbar, antibiótico empírico, dexametasona y quimioprofilaxis",
+      "organismo": "NICE · ESCMID · IDSA · INS Colombia · MinSalud Colombia",
+      "anio": 2024,
+      "fuente": "NICE. Meningitis (bacterial) and meningococcal disease: recognition, diagnosis and management (NG240, 2024); ESCMID. ESCMID guideline: diagnosis and treatment of acute bacterial meningitis (Clin Microbiol Infect 2016;22 Suppl 3:S37); IDSA. Practice guidelines for the management of bacterial meningitis (Clin Infect Dis 2004;39:1267); Instituto Nacional de Salud. Protocolo de vigilancia en salud pública de meningitis bacteriana y enfermedad meningocócica (2024); Ministerio de Salud y Protección Social e Instituto Nacional de Salud. Circular conjunta 033 de 2016, intensificación de la vigilancia y control de la enfermedad meningocócica; Ministerio de Salud y Protección Social. Lineamientos para la atención clínica integral de pacientes con enfermedad meningocócica; CDC. Prevention and control of meningococcal disease (MMWR 2013) y selección de antibióticos para profilaxis en áreas con resistencia a ciprofloxacino (MMWR 2024)",
+      "especialidades": [
+        "medicina_general",
+        "medicina_familiar",
+        "medicina_interna",
+        "urgencias",
+        "pediatria",
+        "infectologia",
+        "neurologia",
+        "cuidado_intensivo"
+      ],
+      "cie10": [
+        "G00.0",
+        "G00.1",
+        "G00.2",
+        "G00.8",
+        "G00.9",
+        "A39.0",
+        "A39.2",
+        "A39.4",
+        "A32.1",
+        "G03.9"
+      ],
+      "palabras_clave": [
+        "meningitis bacteriana",
+        "meningitis meningococica",
+        "meningococo",
+        "meningococcemia",
+        "neumococo",
+        "Listeria",
+        "rigidez de nuca",
+        "cuello rigido",
+        "petequias",
+        "brote que no desaparece a la presion",
+        "puncion lumbar",
+        "PL",
+        "LCR",
+        "TAC antes de puncion lumbar",
+        "ceftriaxona",
+        "vancomicina",
+        "dexametasona",
+        "quimioprofilaxis de contactos",
+        "Sivigila",
+        "notificacion inmediata"
+      ],
+      "poblacion": [
+        "adultos",
+        "adultos_mayores",
+        "pediatria",
+        "gestantes"
+      ],
+      "fecha_revision": "2026-10-09",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; ante sospecha de meningitis bacteriana el antibiótico no espera la TAC ni la punción lumbar. No aplica a neonatos. En Colombia la meningitis bacteriana y la enfermedad meningocócica son de notificación obligatoria al Sivigila, inmediata ante un caso probable de enfermedad meningocócica.",
+      "secciones": [
+        {
+          "titulo": "Sospecha clínica y signos de alarma",
+          "texto": "Fuera del periodo neonatal, la meningitis bacteriana aguda adquirida en la comunidad la causan sobre todo Streptococcus pneumoniae y Neisseria meningitidis; Haemophilus influenzae tipo b persiste en no vacunados y Listeria monocytogenes afecta a adultos mayores, gestantes e inmunocomprometidos. En una cohorte prospectiva holandesa de adultos, la tríada clásica de fiebre, rigidez de nuca y alteración del estado mental apareció solo en 44 % de los casos, pero cerca de 95 % tenía al menos dos de cuatro hallazgos: cefalea, fiebre, rigidez de nuca y alteración de la conciencia; la ausencia de la tríada no descarta el diagnóstico. Los signos de Kernig y Brudzinski tienen sensibilidad muy baja y su ausencia tampoco descarta meningitis. NICE 2024: si hay síntomas de meningitis con exantema que no desaparece a la presión (petequias o púrpura), tratar como enfermedad meningocócica hasta demostrar lo contrario; son señales de alarma el exantema hemorrágico con lesiones mayores de 2 mm o el que se extiende con rapidez. La enfermedad meningocócica puede debutar solo con exantema y sepsis, sin cefalea ni rigidez de nuca: revisar toda la piel, incluidas la zona del pañal y las conjuntivas, y recordar que en piel oscura las lesiones se ven peor. La fiebre es menos frecuente en lactantes y adultos mayores; en el adulto mayor el cuadro puede presentarse como delirium y en el adulto joven la somnolencia puede atribuirse por error al alcohol o a drogas. Signos de gravedad que exigen reanimación y valoración por cuidado intensivo: choque, deterioro del nivel de conciencia, convulsiones, déficit focal, signos de hipertensión intracraneal y púrpura extensa o progresiva. Toda sospecha requiere traslado urgente a un hospital con capacidad de punción lumbar, hemocultivos y antibiótico intravenoso. NICE 2024: si el traslado se va a demorar y la sospecha es fuerte, aplicar antes una dosis de ceftriaxona (preferida) o de bencilpenicilina intravenosa o intramuscular, sin retrasar el traslado y salvo alergia grave a ambas."
+        },
+        {
+          "titulo": "Antibiótico inmediato, TAC previa y punción lumbar",
+          "texto": "El antibiótico no debe esperar la imagen ni la punción. IDSA 2004: tomar hemocultivos y administrar antibiótico y dexametasona antes de la punción lumbar o antes de enviar al paciente a tomografía cuando esta esté indicada. ESCMID 2016 (recomendación fuerte): iniciar el antibiótico lo antes posible, sin superar 1 hora desde la llegada al hospital; si la punción se retrasa, por ejemplo por la TAC, comenzar el tratamiento empírico de inmediato. NICE fija el mismo estándar de antibiótico intravenoso en la primera hora. TAC antes de la punción: NICE 2024 recuerda que la mayoría de pacientes no la necesita; solo se justifica ante factores de riesgo de una lesión ocupante de espacio en evolución o signos de hipertensión intracraneal, y la punción no debe retrasarse por esperar la imagen. IDSA 2004 la indica en inmunocomprometidos y ante convulsión en la semana previa, papiledema, alteración del nivel de conciencia o déficit neurológico focal. ESCMID 2016 es más restrictiva: déficit focal (excepto parálisis de pares craneales), convulsiones de reciente comienzo, alteración grave de la conciencia (Glasgow menor de 10) e inmunosupresión grave; sin esos hallazgos no recomienda imagen previa. Las recomendaciones pediátricas de NICE además posponen la punción ante choque, púrpura extensa o en progresión, convulsiones hasta estabilizar al paciente, alteraciones de la coagulación o anticoagulación. En el líquido cefalorraquídeo solicitar citoquímico con glucosa sérica simultánea, Gram, cultivo y, si está disponible, PCR; el patrón típico es pleocitosis de predominio neutrofílico, proteínas elevadas y glucosa baja en relación con la sanguínea. El antibiótico previo reduce el rendimiento del cultivo, por lo que los hemocultivos tomados antes de la primera dosis son valiosos; la punción hecha después del antibiótico sigue siendo útil para el citoquímico, el Gram y las pruebas moleculares."
+        },
+        {
+          "titulo": "Antibiótico empírico por edad, cobertura de Listeria y duración",
+          "texto": "IDSA 2004: elegir el esquema según la edad y los factores predisponentes, asumiendo resistencia; de 1 mes a 50 años, vancomicina más una cefalosporina de tercera generación (ceftriaxona o cefotaxima); en mayores de 50 años, añadir ampicilina para cubrir Listeria. NICE 2024: ceftriaxona intravenosa desde los 3 meses; en lactantes menores de 3 meses, cefotaxima más amoxicilina o ampicilina; añadir amoxicilina intravenosa a la ceftriaxona o cefotaxima en personas con factores de riesgo para Listeria, sin fijar una edad. La OMS define esos factores como edad mayor de 60 años, embarazo o inmunocompromiso. ESCMID 2016 agrega vancomicina o rifampicina donde circula neumococo con sensibilidad disminuida a las cefalosporinas. Dosis habituales: ceftriaxona 2 g IV cada 12 horas en adultos y 50 mg/kg cada 12 horas en niños (máximo 2 g por dosis); cefotaxima 2 g IV cada 4 a 6 horas en adultos; ampicilina o amoxicilina 2 g IV cada 4 horas en adultos; vancomicina 15 mg/kg IV cada 6 horas en niños y, en adultos, dosis por peso ajustada a niveles séricos y función renal. Ante alergia a la penicilina, trimetoprim-sulfametoxazol es la alternativa para cubrir Listeria, evitándolo en el primer trimestre del embarazo. Con el germen identificado, ajustar el esquema según el antibiograma. Duración (IDSA 2004, según la respuesta clínica): meningococo y H. influenzae 7 días, neumococo 10 a 14 días y Listeria 21 días o más; NICE 2024 también indica amoxicilina o ampicilina IV durante 21 días para Listeria. Ajustar ampicilina y vancomicina a la función renal y consultar a infectología en inmunocomprometidos, alergia grave a betalactámicos, falla terapéutica o germen resistente."
+        },
+        {
+          "titulo": "Dexametasona adyuvante",
+          "texto": "IDSA 2004: dexametasona 0,15 mg/kg IV cada 6 horas durante 2 a 4 días, con la primera dosis 10 a 20 minutos antes del antibiótico o al mismo tiempo; recomendada en todo adulto con sospecha o confirmación de meningitis neumocócica y en niños con meningitis por H. influenzae tipo b (en niños con neumococo su uso es controvertido); no iniciarla si el paciente ya recibió antibiótico. Esquema usado en adultos en el ensayo europeo de referencia y en guías británicas: 10 mg IV cada 6 horas durante 4 días; en niños, 0,15 mg/kg (máximo 10 mg por dosis) cada 6 horas durante 4 días. NICE 2024: dexametasona IV en mayores de 3 meses con sospecha fuerte o confirmación de meningitis bacteriana, idealmente antes o con la primera dosis de antibiótico pero sin retrasarlo; si se inicia dentro de las 12 horas siguientes al antibiótico, darla cuanto antes, y pasado ese plazo pedir concepto a infectología, igual que en lactantes de 28 días a 3 meses. ESCMID 2016, por consenso, acepta iniciarla hasta 4 horas después del antibiótico. NICE y ESCMID: continuarla si el germen es neumococo o H. influenzae y suspenderla si se descarta meningitis bacteriana o se identifica otro germen. En la meningitis por Listeria varias guías aconsejan no darla o suspenderla, por la peor evolución observada en cohortes. No se recomienda en neonatos."
+        },
+        {
+          "titulo": "Quimioprofilaxis de contactos y notificación en Colombia",
+          "texto": "La quimioprofilaxis se indica a los contactos estrechos de enfermedad meningocócica, no a todos los expuestos. CDC: convivientes, contactos de jardín infantil y cualquier persona expuesta directamente a secreciones orales del caso en los 7 días previos al inicio de síntomas; personal de salud que manejó la vía aérea o se expuso a secreciones respiratorias sin protección; en vuelos de 8 horas o más, el pasajero sentado al lado del caso. Administrarla lo antes posible: el protocolo del INS indica idealmente en las primeras 48 horas de identificado el caso probable; después de 14 días del inicio de síntomas del caso tiene poco o ningún valor. Esquemas: ciprofloxacino 500 mg VO en dosis única en adultos; rifampicina 600 mg VO cada 12 horas por 2 días en adultos, 10 mg/kg (máximo 600 mg) cada 12 horas por 2 días en niños desde 1 mes y 5 mg/kg en menores de 1 mes; ceftriaxona IM en dosis única, 250 mg en adultos y 125 mg en niños (el corte de edad es 12 o 15 años según la guía). En gestantes se evitan rifampicina y ciprofloxacino, por lo que se usa ceftriaxona. CDC 2024: donde circulan cepas resistentes a ciprofloxacino, preferir rifampicina, ceftriaxona o azitromicina. MinSalud: antes del egreso, el paciente debe recibir rifampicina en dosis de quimioprofilaxis para eliminar el estado de portador. En Colombia, el INS vigila la meningitis por Neisseria meningitidis, Streptococcus pneumoniae y Haemophilus influenzae mediante notificación al Sivigila; la Circular conjunta 033 de 2016 de MinSalud e INS exige notificar de inmediato todo caso probable de enfermedad meningocócica, definido como enfermedad de inicio súbito con fiebre mayor de 38 °C y al menos uno de varios signos, entre ellos cefalea, rigidez de nuca o alteración de la conciencia. Enviar muestras de LCR y hemocultivo para la vigilancia por laboratorio de serogrupos, avisar a la secretaría de salud para la investigación de campo y la quimioprofilaxis de contactos, y verificar el esquema de vacunación del paciente y de sus contactos."
         }
       ]
     },
@@ -3569,6 +3965,89 @@
         {
           "titulo": "Rinosinusitis aguda: tratamiento",
           "texto": "En rinosinusitis bacteriana no complicada de adultos, AAO-HNS permite la espera vigilante hasta 7 días con analgesia, lavados nasales con solución salina y corticoide intranasal, con antibiótico si no mejora o empeora; IDSA recomienda iniciar antibiótico al diagnóstico clínico. Primera línea: amoxicilina/clavulanato 500/125 mg cada 8 h o 875/125 mg cada 12 h por 5–7 días en adultos (dosis alta 2 000/125 mg cada 12 h ante riesgo de resistencia: antibiótico reciente, hospitalización, inmunosupresión, alta resistencia local); en niños 45 mg/kg/día de amoxicilina en dos tomas (90 mg/kg/día con factores de riesgo) por 10–14 días. Alergia a penicilina: doxiciclina 100 mg cada 12 h (adultos) o levofloxacina/moxifloxacina (reservadas); en niños, cefixima más clindamicina o levofloxacina si hay anafilaxia. No usar macrólidos ni trimetoprim/sulfametoxazol de forma empírica por resistencia. Los descongestionantes y antihistamínicos no se recomiendan de rutina. Signos de alarma que exigen atención urgente: edema o eritema periorbitario, limitación de la movilidad ocular, diplopía o pérdida visual (celulitis orbitaria), cefalea intensa con rigidez de nuca o alteración de conciencia (meningitis, absceso intracraneal), edema frontal (tumor de Pott), fiebre alta persistente."
+        }
+      ]
+    },
+    {
+      "id": "pancreatitis-y-colecistitis",
+      "titulo": "Pancreatitis aguda, colecistitis aguda litiásica y colangitis aguda",
+      "organismo": "ACG · AGA · Tokyo Guidelines (TG18) · Atlanta 2012 · WSES",
+      "anio": 2024,
+      "fuente": "American College of Gastroenterology. American College of Gastroenterology Guidelines: Management of Acute Pancreatitis (Am J Gastroenterol 2024;119:419); American Gastroenterological Association Institute. AGA Institute Guideline on Initial Management of Acute Pancreatitis (Gastroenterology 2018;154:1096); Acute Pancreatitis Classification Working Group. Classification of acute pancreatitis 2012: revision of the Atlanta classification and definitions by international consensus (Gut 2013;62:102); Tokyo Guidelines 2018: diagnostic criteria and severity grading of acute cholecystitis (J Hepatobiliary Pancreat Sci 2018;25:41); Tokyo Guidelines 2018: flowchart for the management of acute cholecystitis (J Hepatobiliary Pancreat Sci 2018;25:55); Tokyo Guidelines 2018: diagnostic criteria and severity grading of acute cholangitis (J Hepatobiliary Pancreat Sci 2018;25:17); Tokyo Guidelines 2018: antimicrobial therapy for acute cholangitis and cholecystitis (J Hepatobiliary Pancreat Sci 2018;25:3); World Society of Emergency Surgery. 2019 WSES guidelines for the management of severe acute pancreatitis (World J Emerg Surg 2019;14:27)",
+      "especialidades": [
+        "urgencias",
+        "medicina_general",
+        "medicina_interna",
+        "gastroenterologia",
+        "cirugia_general",
+        "cuidado_intensivo",
+        "geriatria"
+      ],
+      "cie10": [
+        "K85.0",
+        "K85.1",
+        "K85.2",
+        "K85.9",
+        "K81.0",
+        "K80.0",
+        "K80.3",
+        "K83.0"
+      ],
+      "palabras_clave": [
+        "pancreatitis aguda",
+        "pancreatitis biliar",
+        "pancreatitis alcoholica",
+        "criterios de Atlanta",
+        "lipasa",
+        "amilasa",
+        "Marshall modificado",
+        "necrosis pancreatica",
+        "lactato de Ringer",
+        "nutricion temprana",
+        "colecistitis aguda",
+        "colecistitis litiasica",
+        "criterios de Tokio",
+        "TG18",
+        "signo de Murphy",
+        "colecistectomia laparoscopica",
+        "colangitis aguda",
+        "triada de Charcot",
+        "CPRE",
+        "drenaje biliar",
+        "calculos en la vesicula"
+      ],
+      "poblacion": [
+        "adultos",
+        "adultos_mayores",
+        "gestantes"
+      ],
+      "fecha_revision": "2026-10-09",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; ante fiebre, ictericia, confusión o hipotensión en un paciente con litiasis biliar o pancreatitis biliar, sospechar colangitis y remitir para drenaje biliar urgente.",
+      "secciones": [
+        {
+          "titulo": "Pancreatitis aguda: diagnóstico con criterios de Atlanta y búsqueda de la causa",
+          "texto": "Atlanta revisada 2012: el diagnóstico exige 2 de 3 criterios: dolor abdominal compatible (epigástrico, de inicio agudo, intenso y persistente, a menudo irradiado a la espalda); lipasa o amilasa séricas de al menos 3 veces el límite superior normal; y hallazgos característicos en la tomografía con contraste o, con menor frecuencia, en la resonancia o la ecografía. La lipasa es más sensible y específica que la amilasa. Si el dolor y las enzimas ya confirman el cuadro, no hace falta tomografía para diagnosticarlo. ACG 2024: no se recomienda tomografía de rutina al ingreso; reservarla para el diagnóstico dudoso o para el paciente que no mejora después de 48 a 72 horas de tratamiento. ACG 2024: ecografía transabdominal en todo paciente para buscar origen biliar, y repetirla si la primera no es concluyente. Las dos causas principales son la litiasis biliar y el alcohol. Descartadas ambas, medir triglicéridos: valores mayores de 1 000 mg/dL orientan a hipertrigliceridemia como causa. En mayores de 40 años sin causa aparente, considerar neoplasia pancreática (ACG 2024). AGA 2018 (recomendación fuerte): en la pancreatitis por alcohol, hacer una intervención breve sobre el consumo durante la hospitalización."
+        },
+        {
+          "titulo": "Gravedad de la pancreatitis: falla orgánica y complicaciones locales",
+          "texto": "Atlanta 2012 define tres grados. Leve: sin falla orgánica ni complicaciones locales o sistémicas; suele resolverse en la primera semana. Moderadamente grave: falla orgánica transitoria (resuelta en menos de 48 horas), complicaciones locales o exacerbación de una comorbilidad. Grave: falla orgánica persistente, es decir, de más de 48 horas. La falla orgánica se mide con la escala de Marshall modificada en tres sistemas, respiratorio, cardiovascular y renal, y existe con un puntaje de 2 o más en cualquiera de ellos: PaO2/FiO2 de 300 o menos, creatinina de 1,9 mg/dL o más, o presión sistólica menor de 90 mmHg que no responde a líquidos; en enfermedad renal crónica previa se valora el deterioro respecto a la función basal. Complicaciones locales: colecciones líquidas peripancreáticas, seudoquiste, necrosis pancreática o peripancreática (estéril o infectada) y necrosis encapsulada. La gravedad definitiva solo se conoce con la evolución, por eso se reevalúa con frecuencia en las primeras horas; se asocian a curso grave el síndrome de respuesta inflamatoria sistémica al ingreso y, sobre todo, su persistencia, la hemoconcentración, el nitrógeno ureico elevado o en ascenso, la edad avanzada, la obesidad y las comorbilidades. El paciente con falla orgánica, en especial si persiste, necrosis extensa o sospecha de infección de la necrosis, o colangitis asociada, debe manejarse en cuidado intermedio o intensivo, en un centro con endoscopia biliar (CPRE), radiología intervencionista y cirugía hepatobiliar."
+        },
+        {
+          "titulo": "Pancreatitis: líquidos, analgesia y nutrición temprana",
+          "texto": "ACG 2024: reanimación con líquidos moderadamente agresiva, con bolos adicionales si hay hipovolemia, y lactato de Ringer en lugar de solución salina normal; reevaluar con frecuencia en las primeras horas para evitar tanto la hipoperfusión como la sobrecarga. El esquema moderado que respalda este cambio, tomado del ensayo WATERFALL (2022) y recogido en los resúmenes de la guía, es un bolo de 10 mL/kg solo si hay hipovolemia, seguido de 1,5 mL/kg/h. En ese ensayo, el esquema agresivo (bolo de 20 mL/kg y luego 3 mL/kg/h) causó más sobrecarga hídrica (20,5 % frente a 6,3 %) sin mejorar la gravedad, y el estudio se detuvo en el análisis intermedio. AGA 2018: terapia hídrica dirigida por metas y no usar hidroxietil almidón. Vigilar con especial cuidado la sobrecarga en insuficiencia cardiaca, enfermedad renal y adultos mayores. Analgesia: ACG 2024 no emite recomendaciones específicas por la escasa evidencia. WSES 2019 (pancreatitis grave): no hay evidencia que justifique restringir ningún analgésico, incluidos los opioides; evitar AINE si hay lesión renal aguda; la analgesia epidural es alternativa o complemento de la intravenosa en un esquema multimodal. En la forma leve, un metaanálisis de 2021 encontró AINE y opioides igual de eficaces para reducir la analgesia de rescate. Dosis según ficha técnica y función renal. Nutrición: ACG 2024, en pancreatitis leve, vía oral temprana, dentro de las primeras 24 a 48 horas según tolerancia, en lugar del ayuno tradicional, comenzando con dieta sólida baja en grasa y no con progresión escalonada desde líquidos. AGA 2018 (recomendación fuerte): alimentación oral dentro de las primeras 24 horas según tolerancia y, si no es posible, nutrición enteral en lugar de parenteral."
+        },
+        {
+          "titulo": "Pancreatitis: antibióticos, necrosis y pancreatitis biliar (CPRE y colecistectomía)",
+          "texto": "ACG 2024: no dar antibióticos profilácticos en la pancreatitis grave. AGA 2018 sugiere lo mismo en la pancreatitis grave predicha y en la necrosante (recomendación condicional). Los antibióticos se reservan para infecciones documentadas, como la colangitis, o para la sospecha fundada de necrosis infectada (deterioro clínico o gas en la colección en la tomografía). ACG 2024: no se recomienda la punción aspirativa con aguja fina cuando se sospecha necrosis infectada; en pacientes estables con necrosis, diferir cualquier intervención quirúrgica, radiológica o endoscópica, preferiblemente 4 semanas, para que madure la pared de la colección. Pancreatitis biliar: ACG 2024 prefiere el tratamiento médico sobre la CPRE temprana (primeras 72 horas) cuando no hay colangitis; AGA 2018 tampoco indica CPRE urgente sin colangitis, porque la mayoría de los cálculos pasan espontáneamente. Con colangitis concomitante, la versión 2013 de la guía ACG indicaba CPRE dentro de las primeras 24 horas del ingreso. Colecistectomía: AGA 2018 recomienda valoración por cirugía para colecistectomía durante la misma hospitalización en toda pancreatitis biliar; ACG 2024 la indica para prevenir recurrencias. En la forma necrosante o con colecciones, el momento lo define el equipo quirúrgico."
+        },
+        {
+          "titulo": "Colecistitis aguda litiásica: criterios y grados de Tokio 2018 y momento de la cirugía",
+          "texto": "TG18, criterios diagnósticos: A, inflamación local (signo de Murphy; masa, dolor o sensibilidad en el hipocondrio derecho); B, inflamación sistémica (fiebre, proteína C reactiva elevada, leucocitosis); C, imagen característica de colecistitis aguda. Sospecha: un elemento de A más uno de B; diagnóstico definitivo: A, B y C. Si no se logra el diagnóstico definitivo al ingreso, reevaluar con los criterios cada 6 a 12 horas; descartar hepatitis aguda, otras causas de abdomen agudo y colecistitis crónica. Grado III (grave): disfunción de al menos un órgano o sistema: cardiovascular (hipotensión que requiere vasopresores), neurológica (alteración de la conciencia), respiratoria (PaO2/FiO2 menor de 300), renal (oliguria o creatinina mayor de 2,0 mg/dL), hepática (PT-INR mayor de 1,5) o hematológica (plaquetas menores de 100 000/mm³). Grado II (moderado): sin disfunción orgánica pero con cualquiera de: leucocitos mayores de 18 000/mm³, masa dolorosa palpable en el hipocondrio derecho, más de 72 horas de síntomas o inflamación local marcada (colecistitis gangrenosa o enfisematosa, absceso pericolecístico). Grado I (leve): no cumple criterios de II ni III. Conducta TG18: grado I, colecistectomía laparoscópica temprana si el índice de comorbilidad de Charlson es de 5 o menos y la clasificación ASA es de 2 o menos. Grado II, colecistectomía laparoscópica temprana por cirujanos experimentados en pacientes de bajo riesgo; en alto riesgo (Charlson de 6 o más o ASA de 3 o más), tratamiento médico y drenaje temprano de la vesícula, con colecistectomía diferida. Grado III, colecistectomía laparoscópica temprana solo en centros avanzados, con falla orgánica de tipo favorable, sin factores predictivos negativos, Charlson de 3 o menos y ASA de 2 o menos; si no, drenaje vesicular temprano o urgente y colecistectomía diferida cuando mejore el estado general. Todo grado III requiere soporte orgánico y remisión a un centro con cirugía y cuidado intensivo."
+        },
+        {
+          "titulo": "Colangitis aguda como signo de alarma, antibióticos y poblaciones especiales",
+          "texto": "Sospecharla ante fiebre, ictericia y dolor en el hipocondrio derecho (tríada de Charcot) en un paciente con litiasis, pancreatitis biliar o prótesis biliar; confusión o hipotensión indican gravedad. TG18: A, inflamación sistémica (fiebre mayor de 38 °C o escalofríos; leucocitos menores de 4 000 o mayores de 10 000/mm³, o proteína C reactiva de 1 mg/dL o más); B, colestasis (bilirrubina total de 2 mg/dL o más, o fosfatasa alcalina, GGT, AST o ALT mayores de 1,5 veces el límite superior); C, imagen con dilatación biliar o causa visible (cálculo, estenosis, prótesis). Sospecha: A más B o C; definitivo: A, B y C. Grado III: disfunción orgánica con los mismos criterios de la colecistitis. Grado II: 2 o más de leucocitos mayores de 12 000 o menores de 4 000/mm³, fiebre de 39 °C o más, edad de 75 años o más, bilirrubina total de 5 mg/dL o más e hipoalbuminemia. Grado I: ninguno de los anteriores. Conducta TG18: líquidos, analgesia, antibióticos y cultivos; grado I, drenaje biliar si no responde en 24 horas; grado II, drenaje temprano (asociado a menor mortalidad a 30 días); grado III, drenaje urgente endoscópico o percutáneo con soporte orgánico. Antibióticos (TG18): elegir según grado, origen comunitario o asociado a la atención en salud y antibiograma local; en grado III comunitario, cobertura antipseudomónica hasta identificar el germen; desescalonar o suspender pronto; en colangitis, 4 a 7 días después de controlar el foco. Ajustar dosis a la función renal. Adultos mayores: la edad ya suma para el grado II de colangitis y la comorbilidad decide entre cirugía temprana y drenaje vesicular. Gestantes: preferir la ecografía, que no irradia, y decidir CPRE o cirugía con obstetricia. Niños: no extrapolar umbrales ni dosis de adultos. En Colombia existen una guía de la Asociación Colombiana de Cirugía (2010) y un estándar clínico de la Universidad Nacional (2025) para adultos con pancreatitis aguda."
         }
       ]
     },

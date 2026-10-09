@@ -93,7 +93,13 @@ const CANONICAL = [
   ['insomnio crónico, terapia cognitivo conductual e hipnóticos', 'insomnio'],
   ['delirium en adulto mayor hospitalizado', 'delirium-y-demencia'],
   ['equivalentes de morfina y naloxona en dolor crónico', 'dolor-cronico-y-opioides'],
-  ['tamizaje de cáncer de cuello uterino con prueba de VPH', 'tamizaje-de-cancer']
+  ['tamizaje de cáncer de cuello uterino con prueba de VPH', 'tamizaje-de-cancer'],
+  ['manejo de ascitis en cirrosis: diuréticos, restricción de sodio y albúmina en paracentesis', 'cirrosis-y-complicaciones'],
+  ['criterios de tratamiento hepatitis B cronica y profilaxis del recien nacido de madre HBsAg positiva', 'hepatitis-b-y-c'],
+  ['manejo de hiponatremia grave sintomática con solución salina al 3 %', 'hiponatremia-e-hiperpotasemia'],
+  ['criterios KDIGO de lesión renal aguda y manejo inicial', 'lesion-renal-aguda'],
+  ['antibiótico empírico y dexametasona en meningitis bacteriana', 'meningitis-bacteriana'],
+  ['pancreatitis aguda criterios de Atlanta gravedad y manejo de liquidos', 'pancreatitis-y-colecistitis']
 ];
 
 // Nada clínico que recuperar: el índice debe devolver [] y el prompt dirá

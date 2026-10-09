@@ -1220,5 +1220,312 @@
   ],
   "boca torcida": [
     "paralisis facial"
+  ],
+  "pbe": [
+    "peritonitis bacteriana espontanea"
+  ],
+  "peritonitis espontanea": [
+    "peritonitis bacteriana espontanea"
+  ],
+  "coma hepatico": [
+    "encefalopatia hepatica"
+  ],
+  "encefalopatia portosistemica": [
+    "encefalopatia hepatica"
+  ],
+  "flapping": [
+    "asterixis"
+  ],
+  "shr": [
+    "sindrome hepatorrenal"
+  ],
+  "hepatorenal": [
+    "hepatorrenal"
+  ],
+  "chc": [
+    "carcinoma hepatocelular"
+  ],
+  "hepatocarcinoma": [
+    "carcinoma hepatocelular"
+  ],
+  "afp": [
+    "alfafetoproteina"
+  ],
+  "agua en la barriga": [
+    "ascitis"
+  ],
+  "liquido en el abdomen": [
+    "ascitis"
+  ],
+  "saag": [
+    "gradiente albumina suero ascitis"
+  ],
+  "child": [
+    "child-pugh"
+  ],
+  "vhb": [
+    "hepatitis B"
+  ],
+  "hbv": [
+    "hepatitis B"
+  ],
+  "vhc": [
+    "hepatitis C"
+  ],
+  "hcv": [
+    "hepatitis C"
+  ],
+  "hep b": [
+    "hepatitis B"
+  ],
+  "hep c": [
+    "hepatitis C"
+  ],
+  "antigeno australia": [
+    "HBsAg",
+    "antigeno de superficie"
+  ],
+  "hbsag": [
+    "antigeno de superficie",
+    "hepatitis B"
+  ],
+  "anticore": [
+    "anti-HBc"
+  ],
+  "anti core": [
+    "anti-HBc"
+  ],
+  "hbig": [
+    "inmunoglobulina hepatitis B"
+  ],
+  "gammaglobulina hepatitis b": [
+    "inmunoglobulina hepatitis B"
+  ],
+  "aad": [
+    "antivirales de accion directa"
+  ],
+  "daa": [
+    "antivirales de accion directa"
+  ],
+  "epclusa": [
+    "sofosbuvir velpatasvir"
+  ],
+  "maviret": [
+    "glecaprevir pibrentasvir"
+  ],
+  "tdf": [
+    "tenofovir"
+  ],
+  "taf": [
+    "tenofovir alafenamida"
+  ],
+  "carga viral b": [
+    "ADN del VHB",
+    "carga viral"
+  ],
+  "tmi hepatitis b": [
+    "transmision materno infantil"
+  ],
+  "fibroscan": [
+    "elastografia"
+  ],
+  "sodio bajo": [
+    "hiponatremia"
+  ],
+  "potasio alto": [
+    "hiperpotasemia"
+  ],
+  "hipercalemia": [
+    "hiperpotasemia"
+  ],
+  "hiperkalemia": [
+    "hiperpotasemia"
+  ],
+  "salino al 3": [
+    "solucion salina hipertonica"
+  ],
+  "ssh": [
+    "solucion salina hipertonica"
+  ],
+  "siadh": [
+    "sindrome de secrecion inadecuada de hormona antidiuretica"
+  ],
+  "mielinolisis pontina": [
+    "desmielinizacion osmotica"
+  ],
+  "ods": [
+    "desmielinizacion osmotica"
+  ],
+  "t picudas": [
+    "hiperpotasemia"
+  ],
+  "insulina con dextrosa": [
+    "insulina con glucosa"
+  ],
+  "kayexalate": [
+    "quelantes de potasio"
+  ],
+  "falla renal aguda": [
+    "lesion renal aguda"
+  ],
+  "insuficiencia renal aguda": [
+    "lesion renal aguda"
+  ],
+  "lra": [
+    "lesion renal aguda"
+  ],
+  "aki": [
+    "lesion renal aguda"
+  ],
+  "nefropatia por contraste": [
+    "medio de contraste yodado",
+    "lesion renal aguda"
+  ],
+  "trr": [
+    "terapia de reemplazo renal"
+  ],
+  "hemodialisis": [
+    "dialisis"
+  ],
+  "meningococo": [
+    "enfermedad meningocócica",
+    "Neisseria meningitidis"
+  ],
+  "meningococcemia": [
+    "enfermedad meningocócica",
+    "sepsis meningocócica"
+  ],
+  "pl": [
+    "punción lumbar"
+  ],
+  "lcr": [
+    "líquido cefalorraquídeo"
+  ],
+  "cuello rigido": [
+    "rigidez de nuca"
+  ],
+  "manchas que no se borran": [
+    "exantema que no desaparece a la presión",
+    "petequias",
+    "púrpura"
+  ],
+  "dexa": [
+    "dexametasona"
+  ],
+  "profilaxis de contactos": [
+    "quimioprofilaxis de contactos"
+  ],
+  "neumococo": [
+    "Streptococcus pneumoniae"
+  ],
+  "tac antes de puncionar": [
+    "TAC antes de la punción lumbar"
+  ],
+  "pancreatitis biliar": [
+    "pancreatitis aguda",
+    "litiasis biliar"
+  ],
+  "lipasa alta": [
+    "pancreatitis aguda"
+  ],
+  "vesicula inflamada": [
+    "colecistitis aguda"
+  ],
+  "piedras en la vesicula": [
+    "calculos en la vesicula",
+    "litiasis biliar"
+  ],
+  "colico biliar con fiebre": [
+    "colecistitis aguda"
+  ],
+  "murphy": [
+    "colecistitis aguda"
+  ],
+  "tg18": [
+    "criterios de tokio"
+  ],
+  "tokio": [
+    "criterios de tokio"
+  ],
+  "colangitis ascendente": [
+    "colangitis aguda"
+  ],
+  "charcot": [
+    "colangitis aguda"
+  ],
+  "ercp": [
+    "cpre"
+  ],
+  "lactato ringer": [
+    "lactato de ringer"
+  ],
+  "atlanta": [
+    "criterios de atlanta"
+  ],
+  "ibuprofeno": [
+    "aine"
+  ],
+  "naproxeno": [
+    "aine"
+  ],
+  "diclofenaco": [
+    "aine"
+  ],
+  "aines": [
+    "aine"
+  ],
+  "enalapril": [
+    "ieca"
+  ],
+  "captopril": [
+    "ieca"
+  ],
+  "losartan": [
+    "ara ii"
+  ],
+  "valsartan": [
+    "ara ii"
+  ],
+  "sudoracion fria": [
+    "diaforesis"
+  ],
+  "se duplico la creatinina": [
+    "lesion renal aguda"
+  ],
+  "creatinina que se duplico": [
+    "lesion renal aguda"
+  ],
+  "subio la creatinina": [
+    "lesion renal aguda"
+  ],
+  "le subio la creatinina": [
+    "lesion renal aguda"
+  ],
+  "casi no orina": [
+    "oliguria"
+  ],
+  "no orina": [
+    "oliguria anuria"
+  ],
+  "fiebre e ictericia": [
+    "colangitis"
+  ],
+  "ictericia y fiebre": [
+    "colangitis"
+  ],
+  "furosemida": [
+    "diuretico"
+  ],
+  "hidroclorotiazida": [
+    "diuretico tiazida"
+  ],
+  "espironolactona": [
+    "diuretico"
+  ],
+  "de anos": [
+    "cronico"
+  ],
+  "hace anos": [
+    "cronico"
   ]
 }
