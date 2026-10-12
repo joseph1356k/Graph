@@ -344,7 +344,14 @@ function registerClinicalAssistantRoutes(app, deps) {
         // Nombre y preferencias de trato del médico (web: Configuración >
         // Asistente). Se sanean en ClinicalAssistantContextBuilder antes de
         // tocar el prompt: whitelist de tres campos y enums cerrados.
-        doctor: req.body?.doctor
+        doctor: req.body?.doctor,
+        // v3: la nota tal como está en pantalla (manda sobre la persistida),
+        // los códigos de la pestaña Codificación, edad/sexo y si la nota
+        // admite cambios. Todo opcional y saneado en el context builder.
+        noteDraft: req.body?.note_json_draft,
+        codes: req.body?.codes,
+        patientContext: req.body?.patient_context,
+        noteEditable: req.body?.note_editable
       }, { doctorId: resolveDoctorId(req) });
       res.json(result);
     } catch (error) {

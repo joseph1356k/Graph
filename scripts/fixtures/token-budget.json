@@ -1,0 +1,147 @@
+{
+  "_comentario": "Consultas típicas para medir los tokens de entrada del chat (scripts/measure-chat-tokens.js). La transcripción se arma repitiendo las frases de cada perfil hasta su longitud objetivo (consulta corta, típica y larga); la nota es la que el médico tiene en pantalla. Son datos sintéticos, sin pacientes reales.",
+  "estimador": { "caracteres_por_token": 3.5 },
+  "perfiles": [
+    {
+      "id": "control-cronico",
+      "longitud_transcripcion": 8000,
+      "especialidad": "medicina_general",
+      "paciente": { "edad": 62, "sexo": "M" },
+      "codigos": [
+        { "sistema": "CIE-10", "codigo": "I10", "descripcion": "Hipertensión esencial", "estado": "aceptado" },
+        { "sistema": "CIE-10", "codigo": "E11.9", "descripcion": "Diabetes mellitus tipo 2 sin complicaciones", "estado": "sugerido" }
+      ],
+      "frases": [
+        "Médico: Buenos días, cuénteme cómo ha estado desde el último control.",
+        "Paciente: Bien, doctor, aunque a veces me duele la cabeza en las mañanas y me siento cansado.",
+        "Médico: ¿Se ha tomado la presión en la casa? ¿Qué valores ha visto?",
+        "Paciente: Sí, casi siempre sale alrededor de 150 la alta y 95 la baja, a veces un poco menos.",
+        "Médico: ¿Está tomando el losartán todos los días y la metformina con las comidas?",
+        "Paciente: El losartán sí, la metformina a veces se me olvida en la noche porque me cae pesada.",
+        "Médico: ¿Ha tenido dolor en el pecho, falta de aire al caminar o hinchazón en los pies?",
+        "Paciente: No, nada de eso. Solo me canso al subir las escaleras del barrio, pero siempre ha sido así.",
+        "Médico: ¿Cómo va la alimentación? ¿Sigue comiendo con sal en la mesa y gaseosa?",
+        "Paciente: He bajado la gaseosa, pero la sal sí, me gusta la comida salada, no le voy a mentir.",
+        "Médico: Los exámenes que trajo muestran la hemoglobina glicosilada en 8,1 y el colesterol LDL en 142.",
+        "Médico: Al examen la presión está en 152 sobre 94, la frecuencia en 78, el peso en 88 kilos con talla de 1,70.",
+        "Médico: Los pies están bien, sin heridas, con buena sensibilidad al monofilamento.",
+        "Paciente: ¿Y eso de la glicosilada es malo? Mi hermana dice que con la metformina basta.",
+        "Médico: Está por encima de la meta; hay que ajustar el tratamiento y revisar si le hace falta otro medicamento.",
+        "Paciente: Prefiero pastillas, a las inyecciones les tengo miedo.",
+        "Médico: Vamos a revisar las opciones y le explico los signos de alarma para consultar por urgencias."
+      ],
+      "nota": {
+        "summary": "Paciente de 62 años con hipertensión y diabetes tipo 2 en control, con cifras de presión y HbA1c por encima de la meta.",
+        "sections": [
+          { "key": "motivo_consulta", "label": "Motivo de consulta", "content": "Control de hipertensión arterial y diabetes mellitus tipo 2." },
+          { "key": "enfermedad_actual", "label": "Enfermedad actual", "content": "Refiere cefalea matutina ocasional y cansancio. Presiones domiciliarias alrededor de 150/95 mmHg. Adherencia irregular a la metformina nocturna por intolerancia gastrointestinal. Niega dolor torácico, disnea o edemas. Disminuyó el consumo de gaseosa; mantiene consumo alto de sal." },
+          { "key": "examen_fisico", "label": "Examen físico", "content": "PA 152/94 mmHg, FC 78 lpm, peso 88 kg, talla 1,70 m. Pies sin lesiones, monofilamento normal." },
+          { "key": "paraclinicos", "label": "Paraclínicos", "content": "HbA1c 8,1 %. LDL 142 mg/dL." },
+          { "key": "analisis", "label": "Análisis", "content": "Hipertensión arterial no controlada y diabetes tipo 2 con HbA1c por encima de la meta; riesgo cardiovascular alto." },
+          { "key": "plan", "label": "Plan", "content": "Ajustar tratamiento antihipertensivo e hipoglucemiante. Educación en dieta baja en sal. Control en 3 meses con paraclínicos." }
+        ]
+      },
+      "preguntas": [
+        "Resume esta consulta y dime qué falta por preguntar",
+        "¿Qué antihipertensivo agrego si no está en meta con losartán?",
+        "¿Qué segundo medicamento para la diabetes le conviene a este paciente?",
+        "¿Cuál es la meta de LDL y qué estatina inicio?",
+        "Revisa la nota y propón ajustes de redacción sin agregar datos",
+        "¿Qué signos de alarma debo dejar documentados?",
+        "¿Cada cuánto pido la microalbuminuria y la creatinina?"
+      ]
+    },
+    {
+      "id": "pediatria-fiebre",
+      "longitud_transcripcion": 5000,
+      "especialidad": "pediatria",
+      "paciente": { "edad": 2, "sexo": "F" },
+      "codigos": [
+        { "sistema": "CIE-10", "codigo": "H66.9", "descripcion": "Otitis media, no especificada", "estado": "sugerido" }
+      ],
+      "frases": [
+        "Médico: ¿Desde cuándo tiene fiebre la niña?",
+        "Madre: Desde hace dos días, doctor, le ha llegado hasta 39 y se jala la oreja derecha.",
+        "Médico: ¿Ha comido y tomado líquidos? ¿Cuántos pañales mojados al día?",
+        "Madre: Come poquito pero sí toma el tetero, moja como cinco pañales.",
+        "Médico: ¿Tiene tos, mocos, vómito o diarrea?",
+        "Madre: Mocos sí, desde la semana pasada; vómito no, diarrea tampoco.",
+        "Médico: ¿Tiene las vacunas al día? ¿Ha tenido otitis antes?",
+        "Madre: Sí, todas las vacunas; otitis una vez el año pasado.",
+        "Médico: Al examen la temperatura está en 38,6, el oído derecho tiene la membrana abombada y roja.",
+        "Médico: Pesa 12 kilos, está activa, hidratada, sin dificultad para respirar.",
+        "Madre: ¿Le va a mandar antibiótico? La vez pasada le dieron amoxicilina.",
+        "Médico: Le explico la dosis por peso y cuándo volver por urgencias."
+      ],
+      "nota": {
+        "summary": "Niña de 2 años con fiebre y otalgia derecha de dos días; otoscopia compatible con otitis media aguda.",
+        "sections": [
+          { "key": "motivo_consulta", "label": "Motivo de consulta", "content": "Fiebre y dolor de oído." },
+          { "key": "enfermedad_actual", "label": "Enfermedad actual", "content": "Fiebre de dos días hasta 39 °C, se jala el oído derecho, rinorrea desde hace una semana. Tolera líquidos, cinco pañales mojados al día. Sin vómito ni diarrea. Vacunas completas. Un episodio previo de otitis." },
+          { "key": "examen_fisico", "label": "Examen físico", "content": "T 38,6 °C, peso 12 kg. Activa, hidratada, sin dificultad respiratoria. Membrana timpánica derecha abombada y eritematosa." },
+          { "key": "analisis", "label": "Análisis", "content": "Otitis media aguda derecha." },
+          { "key": "plan", "label": "Plan", "content": "Antibiótico por peso, manejo de la fiebre y signos de alarma." }
+        ]
+      },
+      "preguntas": [
+        "Dosis de amoxicilina por peso en esta niña con otitis media aguda",
+        "¿Cuántos días de antibiótico y cuándo la reviso?",
+        "¿Qué signos de alarma le explico a la mamá?",
+        "Diferenciales según lo registrado, con lo que apoya y descarta cada uno",
+        "¿Cuándo debo remitir a otorrino?",
+        "Revisa la nota y propón ajustes de redacción sin agregar datos",
+        "¿Le doy acetaminofén o ibuprofeno para la fiebre y a qué dosis?"
+      ]
+    },
+    {
+      "id": "control-prenatal",
+      "longitud_transcripcion": 12000,
+      "especialidad": "ginecologia_y_obstetricia",
+      "paciente": { "edad": 28, "sexo": "F" },
+      "codigos": [
+        { "sistema": "CIE-10", "codigo": "Z34.9", "descripcion": "Supervisión de embarazo normal, no especificado", "estado": "aceptado" }
+      ],
+      "frases": [
+        "Médica: ¿Cómo se ha sentido en estas semanas? ¿Siente al bebé moverse?",
+        "Paciente: Sí, se mueve mucho, sobre todo en la noche. A veces me duele la cabeza.",
+        "Médica: ¿Ha tenido visión borrosa, lucecitas, dolor en la boca del estómago o hinchazón de la cara?",
+        "Paciente: Hinchazón de los pies al final del día, pero de la cara no. Lucecitas no.",
+        "Médica: ¿Ha tenido sangrado, salida de líquido o contracciones?",
+        "Paciente: No, nada de eso.",
+        "Médica: Tiene 28 semanas. La presión hoy está en 138 sobre 88, la altura uterina en 28 centímetros.",
+        "Médica: La frecuencia cardiaca fetal está en 142. Le traje los resultados de la curva de glucosa.",
+        "Médica: La glucosa en ayunas salió en 94, a la hora 182 y a las dos horas 150.",
+        "Paciente: ¿Y eso qué significa? ¿Le hace daño al bebé?",
+        "Médica: Hay que revisarlo con cuidado; le explico el control de la dieta y las mediciones de azúcar en casa.",
+        "Paciente: También me dijeron que me tocaba una vacuna de la tosferina.",
+        "Médica: Sí, revisamos el esquema de vacunación del embarazo y el hierro y el ácido fólico.",
+        "Paciente: El hierro me estriñe mucho, doctora.",
+        "Médica: Le explico cómo tomarlo y los signos de alarma para consultar por urgencias."
+      ],
+      "nota": {
+        "summary": "Gestante de 28 semanas en control prenatal, con PTOG alterada y cifras de presión limítrofes.",
+        "sections": [
+          { "key": "motivo_consulta", "label": "Motivo de consulta", "content": "Control prenatal de la semana 28." },
+          { "key": "enfermedad_actual", "label": "Enfermedad actual", "content": "Movimientos fetales presentes. Cefalea ocasional. Edema de miembros inferiores vespertino, sin edema facial. Niega fosfenos, epigastralgia, sangrado, amniorrea o actividad uterina. Estreñimiento con el hierro." },
+          { "key": "examen_fisico", "label": "Examen físico", "content": "PA 138/88 mmHg. Altura uterina 28 cm. FCF 142 lpm." },
+          { "key": "paraclinicos", "label": "Paraclínicos", "content": "PTOG 75 g: ayunas 94 mg/dL, 1 h 182 mg/dL, 2 h 150 mg/dL." },
+          { "key": "analisis", "label": "Análisis", "content": "Embarazo de 28 semanas. PTOG alterada. Presión arterial limítrofe." },
+          { "key": "plan", "label": "Plan", "content": "Educación nutricional, automonitoreo de glucosa, vacunación del embarazo, micronutrientes, signos de alarma y control en dos semanas." }
+        ]
+      },
+      "preguntas": [
+        "¿Esta curva de glucosa ya es diabetes gestacional?",
+        "¿Cuáles son las metas de glucometría y cuándo inicio insulina?",
+        "Con esta presión, ¿qué estudio para descartar preeclampsia?",
+        "¿Cuándo le aplico la Tdap y qué otras vacunas le tocan?",
+        "¿Qué signos de alarma debo dejar documentados?",
+        "Resume esta consulta y dime qué falta por preguntar",
+        "¿Qué hago con el estreñimiento por el hierro?"
+      ]
+    }
+  ],
+  "historial": [
+    { "role": "user", "content": "¿Qué datos me faltan en esta consulta?" },
+    { "role": "assistant", "content": "Faltan antecedentes familiares, la adherencia detallada a cada medicamento y los signos de alarma explicados. También conviene registrar el plan de seguimiento con fecha." }
+  ]
+}

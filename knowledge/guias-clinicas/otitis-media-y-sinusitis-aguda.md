@@ -1,0 +1,29 @@
+---
+id: otitis-media-y-sinusitis-aguda
+titulo: Otitis media aguda y rinosinusitis aguda
+organismo: AAP · IDSA · AAO-HNS
+anio: 2015
+fuente: AAP Clinical Practice Guideline: The Diagnosis and Management of Acute Otitis Media (2013); IDSA Clinical Practice Guideline for Acute Bacterial Rhinosinusitis in Children and Adults (2012); AAO-HNS Clinical Practice Guideline: Adult Sinusitis (2015 update)
+especialidades: [medicina_general, medicina_familiar, pediatria, otorrinolaringologia, urgencias]
+cie10: [H66.0, H66.9, H65.0, H65.9, J01.0, J01.9, J32.9, J00]
+palabras_clave: [otitis media aguda, OMA, otalgia, timpano abombado, otorrea, efusion, sinusitis, rinosinusitis, congestion nasal, amoxicilina, amoxicilina clavulanato, observacion, timpanostomia]
+poblacion: [pediatria, adultos]
+fecha_revision: 2026-10-01
+revisado_por:
+---
+> Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir.
+
+## Otitis media aguda: diagnóstico
+Diagnóstico de otitis media aguda (AAP 2013): abombamiento moderado o grave de la membrana timpánica, u otorrea nueva no debida a otitis externa, o abombamiento leve con otalgia de inicio en las últimas 48 h o eritema intenso. No se diagnostica sin efusión en el oído medio (otoscopia neumática o timpanometría). Distinguir de otitis media con efusión (líquido sin signos de inflamación aguda: no requiere antibiótico) y de otitis externa (dolor al traccionar el pabellón, conducto edematoso). Factores de riesgo: edad menor de 2 años, guardería, exposición a humo, uso de biberón acostado, chupete, ausencia de lactancia materna. Gravedad: otalgia moderada-grave, de más de 48 h o fiebre ≥39 °C.
+
+## Otitis media aguda: tratamiento
+Analgesia siempre (acetaminofén o ibuprofeno). Antibiótico de entrada en menores de 6 meses, en otitis grave a cualquier edad, en otitis bilateral de 6 a 23 meses y en otorrea; en otitis unilateral no grave de 6 a 23 meses y en no grave de 24 meses o más, es válida la observación 48–72 h con analgesia y antibiótico diferido si no mejora, acordada con los padres y con seguimiento asegurado. Primera línea: amoxicilina 80–90 mg/kg/día en dos tomas; amoxicilina/clavulanato (90 mg/kg/día de amoxicilina con 6,4 mg/kg/día de clavulanato, en dos tomas) si recibió amoxicilina en los últimos 30 días, hay conjuntivitis purulenta concomitante o antecedente de otitis recurrente que no respondió a amoxicilina. Alergia a penicilina: cefdinir 14 mg/kg/día, cefuroxima 30 mg/kg/día en dos tomas, cefpodoxima 10 mg/kg/día en dos tomas, o ceftriaxona 50 mg/kg intramuscular 1–3 días. Duración: 10 días en menores de 2 años y en enfermedad grave, 7 días entre 2 y 5 años, 5–7 días en mayores de 6 años con enfermedad leve-moderada. Si no mejora a las 48–72 h: reevaluar y cambiar a amoxicilina/clavulanato o ceftriaxona 3 días. Adultos: amoxicilina/clavulanato 875/125 mg cada 12 h o amoxicilina 500 mg cada 8 h por 5–10 días.
+
+## Otitis media: recurrencia, efusión y complicaciones
+Otitis recurrente: 3 episodios en 6 meses o 4 en un año (uno reciente). No usar antibiótico profiláctico; valorar tubos de timpanostomía si además hay efusión persistente con hipoacusia. Efusión persistente tras una otitis: observar 3 meses (resuelve en la mayoría), audiometría si persiste o hay retraso del lenguaje. Prevenir con vacuna antineumocócica conjugada, antigripal anual, lactancia materna hasta los 6 meses y evitar humo de tabaco. Complicaciones que exigen remisión urgente: mastoiditis (dolor, eritema y edema retroauricular con pabellón desplazado), parálisis facial, meningismo, vértigo o nistagmo (laberintitis), absceso, otorrea persistente más de 2 semanas.
+
+## Rinosinusitis aguda: cuándo es bacteriana
+La mayoría de las rinosinusitis agudas son virales y resuelven en menos de 10 días. Sospechar rinosinusitis bacteriana aguda (IDSA 2012, AAO-HNS 2015) con alguno de: síntomas persistentes de rinorrea purulenta, congestión y dolor facial por 10 días o más sin mejoría; inicio grave (fiebre ≥39 °C con rinorrea purulenta o dolor facial por 3–4 días consecutivos); o «doble empeoramiento» (recaída tras mejoría inicial de una infección viral de 5–6 días). La radiografía de senos paranasales no está indicada en la rinosinusitis aguda no complicada; la tomografía se reserva para sospecha de complicación, enfermedad recurrente o crónica (síntomas más de 12 semanas). Rinosinusitis crónica: congestión, rinorrea, hiposmia o dolor facial más de 12 semanas con evidencia objetiva de inflamación (endoscopia o TAC); tratar con lavados salinos y corticoide intranasal, remitir a otorrinolaringología.
+
+## Rinosinusitis aguda: tratamiento
+En rinosinusitis bacteriana no complicada de adultos, AAO-HNS permite la espera vigilante hasta 7 días con analgesia, lavados nasales con solución salina y corticoide intranasal, con antibiótico si no mejora o empeora; IDSA recomienda iniciar antibiótico al diagnóstico clínico. Primera línea: amoxicilina/clavulanato 500/125 mg cada 8 h o 875/125 mg cada 12 h por 5–7 días en adultos (dosis alta 2 000/125 mg cada 12 h ante riesgo de resistencia: antibiótico reciente, hospitalización, inmunosupresión, alta resistencia local); en niños 45 mg/kg/día de amoxicilina en dos tomas (90 mg/kg/día con factores de riesgo) por 10–14 días. Alergia a penicilina: doxiciclina 100 mg cada 12 h (adultos) o levofloxacina/moxifloxacina (reservadas); en niños, cefixima más clindamicina o levofloxacina si hay anafilaxia. No usar macrólidos ni trimetoprim/sulfametoxazol de forma empírica por resistencia. Los descongestionantes y antihistamínicos no se recomiendan de rutina. Signos de alarma que exigen atención urgente: edema o eritema periorbitario, limitación de la movilidad ocular, diplopía o pérdida visual (celulitis orbitaria), cefalea intensa con rigidez de nuca o alteración de conciencia (meningitis, absceso intracraneal), edema frontal (tumor de Pott), fiebre alta persistente.

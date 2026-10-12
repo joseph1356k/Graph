@@ -176,6 +176,12 @@ En `/api/v1/pipeline` un fallo del escudo no llega al cliente Windows como 503:
 `scripts/verify-egress-gateway.js` falla si aparece un transporte hacia un
 proveedor que no esté en esta tabla ni en la lista de transportes con escudo.
 
+### Salidas sin datos clínicos (no son proveedores de IA)
+
+| Salida | Qué sale | Por qué no pasa por el escudo | Cómo se comprueba |
+|---|---|---|---|
+| Fichas técnicas CIMA (`src/application/knowledge/DrugLabelService.js`, `https://cima.aemps.es/cima/rest`) para preguntas de dosis del asistente | SOLO el principio activo de una entrada del diccionario cerrado `knowledge/fichas-tecnicas/medicamentos.json` (p. ej. `practiv1=amoxicilina`) y el número de registro del producto elegido. Nunca texto del médico, de la nota ni del paciente | lo que sale se elige de una lista fija, no se copia del mensaje: no hay nada que tapar | `scripts/verify-drug-labels.js`: un mensaje con nombre y documento produce URLs sin ninguno de esos datos. Apagable con `MIRACLE_ASSISTANT_DRUG_LABELS=off`; sin red con `=snapshot` |
+
 ## Cómo se demuestra
 
 ```bash

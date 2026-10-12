@@ -75,6 +75,12 @@ const METADATA_ALLOWLIST = Object.freeze(new Set([
   // Cuántos fragmentos de evidencia descartó el validador por no estar en la
   // transcripción. Es la señal de que un prompt de nota está alucinando citas.
   'evidenceDropped',
+  // ASISTENTE v3: cuántos fragmentos de guías clínicas entraron al prompt y
+  // de dónde salió la nota del contexto ('draft' en pantalla, 'persisted',
+  // 'none'). Conteos y etiquetas, nunca el texto.
+  'guidelineHits',
+  'drugLabelHits',
+  'noteSource',
   // ESCUDO DE PRIVACIDAD (PrivacyShieldService): conteos y estados de la
   // protección con la que salió cada llamada. Nunca el valor tapado: solo
   // cuántos marcadores por tipo, el modo, el resultado del barrido y de la
