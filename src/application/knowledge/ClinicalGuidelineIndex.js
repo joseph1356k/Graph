@@ -123,6 +123,9 @@ const GENERIC_TERMS = new Set([
   // Palabras de cualquier pregunta médica que no identifican el cuadro.
   'diagnostico', 'diagnosticar', 'enfermedad', 'sindrome', 'sintoma', 'signo', 'cuadro', 'tipo', 'causa', 'causas',
   'aparente', 'aparentemente',
+  // La vía («tópico») y los verbos de la conversación («mejore», «evitar que
+  // vuelva») no dicen de qué trata la pregunta.
+  'topico', 'topica', 'topicos', 'topicas', 'mejore', 'mejora', 'evito', 'evitar', 'vuelva', 'vuelve',
   // Calificativos y «pecho» (tórax o seno): el sentido lo dan los sinónimos de frase
   // («azúcar baja», «presión alta», «dar pecho», «dolor en el pecho»).
   'bajo', 'baja', 'alto', 'alta', 'pecho',
@@ -130,7 +133,8 @@ const GENERIC_TERMS = new Set([
   'carga', 'cargar', 'grabacion', 'grabar', 'pantalla', 'blanco', 'soporte', 'tecnico', 'hora', 'horario', 'momento',
   'descargo', 'descargar', 'historia', 'boton', 'guardar', 'enlace', 'correo', 'sesion', 'cuenta', 'plantilla',
   'app', 'aplicacion', 'celular', 'foto', 'pdf', 'nota', 'notas', 'pagina', 'paginas', 'actualiza', 'actualizar',
-  'refresca', 'refrescar'
+  'refresca', 'refrescar', 'ayuda', 'ayudas', 'ayudar', 'ayudame', 'ayudarme', 'agradecer', 'agradezco',
+  'hacia', 'arriba', 'abajo', 'nunca', 'tuvo', 'tuve'
 ]);
 
 // Un número suelto en la pregunta («165/100», «38.2») casi nunca identifica la
@@ -508,7 +512,10 @@ class ClinicalGuidelineIndex {
     const followTokens = new Set(tokenize(followUp, this.synonyms));
     let followTopic = null;
     if (followTokens.size && messageTokens.size) {
-      const short = specificMessage.size <= FOLLOW_UP_SHORT_MAX_TERMS;
+      // Las palabras de población («¿y en una embarazada?») no alargan la
+      // pregunta: la población ya pesa por su cuenta.
+      const ownTerms = [...specificMessage].filter((term) => !populationsInText(term).size);
+      const short = ownTerms.length <= FOLLOW_UP_SHORT_MAX_TERMS;
       const followWeight = short ? FOLLOW_UP_WEIGHT_SHORT : FOLLOW_UP_WEIGHT_LONG;
       for (const term of followTokens) {
         if (isGenericTerm(term)) continue;

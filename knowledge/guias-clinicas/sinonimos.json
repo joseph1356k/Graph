@@ -2048,5 +2048,370 @@
   ],
   "respiracion profunda": [
     "respiracion de kussmaul acidosis"
+  ],
+  "ojo rojo": [
+    "conjuntivitis",
+    "hiperemia conjuntival"
+  ],
+  "lagañas": [
+    "secrecion mucopurulenta",
+    "conjuntivitis bacteriana"
+  ],
+  "ojo pegado": [
+    "conjuntivitis bacteriana"
+  ],
+  "pink eye": [
+    "conjuntivitis"
+  ],
+  "conjuntivitis del recien nacido": [
+    "oftalmia neonatal",
+    "conjuntivitis neonatal"
+  ],
+  "glaucoma agudo": [
+    "glaucoma agudo de angulo cerrado",
+    "cierre angular"
+  ],
+  "derrame en el ojo": [
+    "hemorragia subconjuntival"
+  ],
+  "sangre en el ojo": [
+    "hemorragia subconjuntival"
+  ],
+  "basurita en el ojo": [
+    "cuerpo extrano ocular"
+  ],
+  "quemadura con cal": [
+    "quemadura quimica ocular"
+  ],
+  "iritis": [
+    "uveitis anterior"
+  ],
+  "ulcera por lentes": [
+    "queratitis",
+    "lentes de contacto"
+  ],
+  "eczema": [
+    "dermatitis atopica"
+  ],
+  "eccema atopico": [
+    "dermatitis atopica"
+  ],
+  "piel atopica": [
+    "dermatitis atopica"
+  ],
+  "rasquiña en los pliegues": [
+    "prurito",
+    "dermatitis atopica"
+  ],
+  "ftu": [
+    "unidad punta de dedo"
+  ],
+  "tci": [
+    "inhibidores de calcineurina topicos"
+  ],
+  "eccema herpetico": [
+    "erupcion variceliforme de Kaposi"
+  ],
+  "eczema infectado": [
+    "sobreinfeccion bacteriana",
+    "impetiginizacion"
+  ],
+  "calores": [
+    "sofocos",
+    "sintomas vasomotores"
+  ],
+  "bochornos": [
+    "sofocos",
+    "sintomas vasomotores"
+  ],
+  "trh": [
+    "terapia hormonal de la menopausia"
+  ],
+  "thm": [
+    "terapia hormonal de la menopausia"
+  ],
+  "reemplazo hormonal": [
+    "terapia hormonal de la menopausia"
+  ],
+  "menopausia precoz": [
+    "insuficiencia ovarica primaria"
+  ],
+  "falla ovarica prematura": [
+    "insuficiencia ovarica primaria"
+  ],
+  "iop": [
+    "insuficiencia ovarica primaria"
+  ],
+  "poi": [
+    "insuficiencia ovarica primaria"
+  ],
+  "resequedad vaginal": [
+    "sindrome genitourinario de la menopausia",
+    "atrofia vaginal"
+  ],
+  "sgm": [
+    "sindrome genitourinario de la menopausia"
+  ],
+  "tpp": [
+    "trabajo de parto pretermino"
+  ],
+  "rpmp": [
+    "ruptura prematura de membranas pretermino"
+  ],
+  "pprom": [
+    "ruptura prematura de membranas pretermino"
+  ],
+  "parto prematuro": [
+    "parto pretermino"
+  ],
+  "rompio fuente": [
+    "ruptura prematura de membranas"
+  ],
+  "maduracion pulmonar": [
+    "corticoides antenatales",
+    "betametasona"
+  ],
+  "neuroproteccion": [
+    "sulfato de magnesio"
+  ],
+  "egb": [
+    "estreptococo del grupo B"
+  ],
+  "sgb": [
+    "estreptococo del grupo B"
+  ],
+  "cuello corto": [
+    "cervix corto"
+  ],
+  "ffn": [
+    "fibronectina fetal"
+  ],
+  "frenar contracciones": [
+    "tocolisis"
+  ],
+  "sua": [
+    "sangrado uterino anormal"
+  ],
+  "hemorragia uterina anormal": [
+    "sangrado uterino anormal"
+  ],
+  "sangrado uterino disfuncional": [
+    "sangrado uterino anormal"
+  ],
+  "menorragia": [
+    "sangrado menstrual abundante"
+  ],
+  "regla abundante": [
+    "sangrado menstrual abundante"
+  ],
+  "metrorragia": [
+    "sangrado intermenstrual"
+  ],
+  "sangrado entre reglas": [
+    "sangrado intermenstrual"
+  ],
+  "diu hormonal": [
+    "DIU de levonorgestrel"
+  ],
+  "siu-lng": [
+    "DIU de levonorgestrel"
+  ],
+  "sangrado despues de la menopausia": [
+    "sangrado posmenopausico"
+  ],
+  "vw": [
+    "von Willebrand"
+  ],
+  "nacer antes de tiempo": [
+    "parto pretermino"
+  ],
+  "madurar el pulmon": [
+    "maduracion pulmonar",
+    "corticoides antenatales"
+  ],
+  "brotar": [
+    "brote"
+  ],
+  "dolor detras de los ojos": [
+    "dolor retroocular"
+  ],
+  "dolor detras del ojo": [
+    "dolor retroocular"
+  ],
+  "osteoartritis": [
+    "artrosis"
+  ],
+  "osteoartrosis": [
+    "artrosis"
+  ],
+  "gonartrosis": [
+    "artrosis de rodilla"
+  ],
+  "coxartrosis": [
+    "artrosis de cadera"
+  ],
+  "rizartrosis": [
+    "artrosis de la base del pulgar"
+  ],
+  "desgaste de rodilla": [
+    "artrosis de rodilla"
+  ],
+  "diclofenaco gel": [
+    "AINE topico"
+  ],
+  "infiltracion de rodilla": [
+    "infiltracion intraarticular de corticoide"
+  ],
+  "protesis de rodilla": [
+    "reemplazo articular"
+  ],
+  "oa": [
+    "artrosis"
+  ],
+  "oido de nadador": [
+    "otitis externa"
+  ],
+  "otitis del nadador": [
+    "otitis externa"
+  ],
+  "oea": [
+    "otitis externa aguda"
+  ],
+  "otitis externa maligna": [
+    "otitis externa necrotizante"
+  ],
+  "hongos en el oido": [
+    "otomicosis"
+  ],
+  "tubos de ventilacion": [
+    "tubos de timpanostomia"
+  ],
+  "cipro dexa": [
+    "ciprofloxacino dexametasona"
+  ],
+  "mecha": [
+    "mecha otica"
+  ],
+  "scq": [
+    "superficie corporal quemada"
+  ],
+  "tbsa": [
+    "superficie corporal quemada"
+  ],
+  "regla de los 9": [
+    "regla de los nueves"
+  ],
+  "quemon": [
+    "quemadura"
+  ],
+  "escaldadura": [
+    "quemadura"
+  ],
+  "corrientazo": [
+    "quemadura electrica"
+  ],
+  "electrocucion": [
+    "quemadura electrica"
+  ],
+  "inhalacion de humo": [
+    "quemadura por inhalacion"
+  ],
+  "quemado con polvora": [
+    "quemadura",
+    "polvora"
+  ],
+  "parkland": [
+    "reanimacion con liquidos"
+  ],
+  "coqueluche": [
+    "tos ferina"
+  ],
+  "tos convulsiva": [
+    "tos ferina"
+  ],
+  "pertussis": [
+    "tos ferina"
+  ],
+  "tos de gallo": [
+    "estridor inspiratorio",
+    "tos ferina"
+  ],
+  "azitro": [
+    "azitromicina"
+  ],
+  "tmp-smx": [
+    "trimetoprim-sulfametoxazol"
+  ],
+  "dtpa": [
+    "Tdap"
+  ],
+  "estenosis de piloro": [
+    "estenosis hipertrofica del piloro"
+  ],
+  "viruela loca": [
+    "varicela"
+  ],
+  "lechina": [
+    "varicela"
+  ],
+  "chickenpox": [
+    "varicela"
+  ],
+  "measles": [
+    "sarampión"
+  ],
+  "mmr": [
+    "triple viral"
+  ],
+  "aciclobir": [
+    "aciclovir"
+  ],
+  "acyclovir": [
+    "aciclovir"
+  ],
+  "varizig": [
+    "inmunoglobulina contra varicela-zóster"
+  ],
+  "brote en la piel": [
+    "exantema"
+  ],
+  "rash": [
+    "exantema"
+  ],
+  "vit a": [
+    "vitamina A"
+  ],
+  "da vueltas": [
+    "vertigo"
+  ],
+  "ampollitas": [
+    "vesiculas",
+    "varicela"
+  ],
+  "ampollitas que pican": [
+    "exantema vesicular"
+  ],
+  "reglas muy abundantes": [
+    "sangrado menstrual abundante"
+  ],
+  "reglas abundantes": [
+    "sangrado menstrual abundante"
+  ],
+  "regla muy abundante": [
+    "sangrado menstrual abundante"
+  ],
+  "agua hirviendo": [
+    "escaldadura",
+    "quemadura"
+  ],
+  "pausas respiratorias": [
+    "apnea"
+  ],
+  "proteger el cerebro": [
+    "neuroproteccion"
+  ],
+  "angulo abierto": [
+    "glaucoma cronico de angulo abierto",
+    "hipertension ocular cronica"
   ]
 }

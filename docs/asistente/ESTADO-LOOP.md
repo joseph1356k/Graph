@@ -8,8 +8,8 @@ marca listos ni los fusiona salvo una persona: Graph [#42](https://github.com/jo
 
 | Métrica | Línea base | Final | Meta | Estado |
 |---|---|---|---|---|
-| Guías en el corpus | 61 | 80 (403 fragmentos) | ≥ 80 | cumple |
-| Preguntas de evaluación de retrieval | 86 | 483 (≥ 4 por guía) | ≥ 300 | cumple |
+| Guías en el corpus | 61 | 90 (461 fragmentos; 80 al cerrar el loop) | ≥ 80 | cumple |
+| Preguntas de evaluación de retrieval | 86 | 559 (≥ 4 por guía) | ≥ 300 | cumple |
 | Preguntas fuera de tema | 9 | 65 | ≥ 60 | cumple |
 | Fuera del corpus sin extracto de relevancia alta | no existía | 100 % (45 preguntas) | ≥ 90 % de ≥ 40 | cumple |
 | recall@3 / recall@1 / MRR | 100 % / 90,7 % / 0,952 | 100 % / 94,8 % / 0,973 | ≥ 97 % / ≥ 90 % / ≥ 0,93 | cumple |
@@ -26,7 +26,7 @@ marca listos ni los fusiona salvo una persona: Graph [#42](https://github.com/jo
 | Privacidad: gateway e2e y gateway de salida | verde | 17 y 5 comprobaciones OK | verde | cumple |
 | Tokens de entrada del chat (mediana) | no medido | 5 896 (p95 7 399) | ≤ 6 000 | cumple |
 | Llamadas al modelo por pregunta | 1 | 1 | 1 | cumple |
-| `guidelines.corpus.json` | 570 KB | 816 KB | ≤ 2 MB | cumple |
+| `guidelines.corpus.json` | 570 KB | 947 KB | ≤ 2 MB | cumple |
 
 # Estado del loop del asistente clínico
 
@@ -100,6 +100,8 @@ Todas las metas alcanzables desde este entorno se cumplen desde la iteración 13
 - **Iteración 13 (2026-10-09):** exactitud clínica. Las 7 entradas pendientes de la primera tanda (20 cifras) revisadas con búsqueda web (41 → 61). Verificadas con fuentes secundarias: déficit de líquidos en 24–48 h (ISPAD 2022), dosis de la OMS en desnutrición grave (ampicilina, gentamicina, ReSoMal, choque, transfusión, F-75 130 mL/kg/día), colchicina 1 mg + 0,5 mg una hora después (EULAR), DXA a los 65/70 años (BHOF 2022) y muy alto riesgo de AACE 2020. Corregidas: NICE AUDIT > 15 aplica a adultos remitidos a servicios especializados; solo progestágeno en la lactancia antes de 6 semanas (OMS 5.ª ed.: píldora e implante 2, inyectable 3). Retiradas: efectividad exacta de píldora, inyectable y condón (cambia entre ediciones del CDC), «112 recomendaciones» de la OMS 2025, Z ≥ −1 como egreso de la Res. 115 y el detalle de las reglas de conducción de la ESC 2018. Al quitar «actualizó» del corpus, «actualiza la página» empezó a traer escabiosis (fuera de tema 100 → 98,5 %): «página», «actualiza» y «refresca» pasan a palabras de la app y vuelve a 100 % con rangos idénticos a HEAD en las 483 preguntas. Resto de métricas sin cambios; CIMA sigue en 403 (un intento).
 
 - **Iteración 14 (2026-10-09):** segunda iteración seguida con todas las metas cumplidas. Web: lint 0 errores (24 avisos), typecheck limpio, 908 pruebas, build OK y E2E 5/5. Para abrir el PR, Graph integró `main` (4 commits: la spec 005 «una sola Ü», el contrato `scripts/contrato.js` como `npm test` y el límite de rol `roleBoundary`). Conflictos en `ClinicalAssistantPromptBuilder.js` y `package.json`: el chat pasa a v6 (v5 sobre el límite de rol de `main`, que ahora trata también `<guias_clinicas>` y `<fichas_tecnicas>` como dato), diferenciales y ajuste quedan en la v3 de `main`. El texto nuevo subía la mediana de tokens a 5 915; dos frases compactadas la dejan en 5 896. Las pruebas del asistente entran al contrato como la spec 006 (promesas 601–607; `verify-asistente-metricas.js` corre las tres evaluaciones); la 601 y la 607 se vieron en rojo al romperlas a propósito. `CONTRATO INTACTO: 113 promesas`. CIMA sigue en 403 (un intento). Se escribe «SISTEMA LISTO» y se abren los PR en borrador.
+
+- **Después del loop (2026-10-14):** corpus, 80 → 90 guías: parto pretérmino, menopausia, sangrado uterino anormal, dermatitis atópica, conjuntivitis y ojo rojo, otitis externa, artrosis, tos ferina, varicela y sarampión, y quemaduras (las de prioridad baja del backlog). 211 cifras verificadas con búsqueda web; las no verificables se retiraron (entre ellas un umbral de remisión de 34 semanas que era síntesis y no cifra de una fuente) y una frase escrita de memoria (USPSTF 2022) se confirmó en la fuente. Evaluación: 483 → 559 preguntas. Las guías nuevas competían con las viejas; se corrigió sin tocar ningún resultado viejo (las 482 preguntas anteriores dan los mismos rangos que en producción): sinónimos coloquiales («reglas abundantes», «agua hirviendo», «pausas respiratorias», «da vueltas», «ángulo abierto»), «tópico» y verbos de conversación («ayuda», «mejore», «vuelva», «hacia», «arriba») como palabras genéricas, las palabras de población no alargan una pregunta de seguimiento, y «dolor de oído» y «vitamina A» dejaron de ser palabras clave de otitis externa y de varicela. Sinónimos descartados por chocar con el corpus: «APP» (la app), «DA». Una pregunta de Tdap en el embarazo acepta también la guía de tos ferina, que trae esa conducta. Métricas: recall@1 94,8 %, recall@3 100 %, MRR 0,973, fuera de tema 100 %, fuera del corpus 100 %; respuestas sin red 212 casos (87/87 cifras plantadas, 0/182 falsos positivos); corpus 947 KB; mediana de tokens 5 896.
 
 ## Decisiones
 

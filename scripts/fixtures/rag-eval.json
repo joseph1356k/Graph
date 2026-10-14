@@ -713,11 +713,110 @@
       },
       {
         "message": "una embarazada de 22 semanas me pregunta si ya se puede poner la de la tosferina",
-        "expected": "vacunacion-pai-y-adulto"
+        "expected": [
+          "vacunacion-pai-y-adulto",
+          "tos-ferina"
+        ]
       },
       {
         "message": "un niño de 3 años solo tiene las vacunas hasta los 6 meses, ¿toca empezar todo de nuevo?",
         "expected": "vacunacion-pai-y-adulto"
+      },
+      {
+        "message": "Mi hijo amaneció con el ojo pegado de lagañas amarillas, ¿le pongo gotas de antibiótico y por cuántos días?",
+        "expected": "conjuntivitis-y-ojo-rojo"
+      },
+      {
+        "message": "Paciente con el ojo rojo y lloroso, ganglio delante de la oreja y gripa hace unos días, ¿necesita antibiótico y cuándo vuelve a trabajar?",
+        "expected": "conjuntivitis-y-ojo-rojo"
+      },
+      {
+        "message": "Señora con dolor fuerte en un ojo, visión borrosa, halos alrededor de las luces y vómito, ¿qué hago mientras la remito?",
+        "expected": "conjuntivitis-y-ojo-rojo"
+      },
+      {
+        "message": "niño de 3 años con piel muy reseca y rasquiña en los pliegues de codos y rodillas que va y viene, qué crema le formulo y cuánta",
+        "expected": "dermatitis-atopica"
+      },
+      {
+        "message": "se puede usar betametasona en la cara de un bebé con eccema o qué uso",
+        "expected": "dermatitis-atopica"
+      },
+      {
+        "message": "Tengo 52 años, hace un año no me llega la regla y me dan unos calores horribles por la noche, ¿qué me pueden formular?",
+        "expected": "menopausia"
+      },
+      {
+        "message": "¿Hasta qué edad se puede empezar el reemplazo hormonal, y si la paciente tiene útero qué debe tomar además del estrógeno?",
+        "expected": "menopausia"
+      },
+      {
+        "message": "Paciente de 30 semanas con contracciones cada 5 minutos y cuello en 3 cm, ¿qué le doy para frenar las contracciones y por cuánto tiempo?",
+        "expected": "parto-pretermino"
+      },
+      {
+        "message": "¿Qué dosis de betametasona se pone para madurar el pulmón de un bebé que puede nacer antes de tiempo?",
+        "expected": "parto-pretermino"
+      },
+      {
+        "message": "Gestante de 28 semanas que va a tener el bebé pronto, ¿le pongo magnesio para proteger el cerebro del bebé? ¿Cuánto?",
+        "expected": "parto-pretermino"
+      },
+      {
+        "message": "Embarazada de 31 semanas que rompió fuente hace 6 horas sin contracciones, ¿qué antibióticos le inicio?",
+        "expected": "parto-pretermino"
+      },
+      {
+        "message": "Paciente de 38 años con reglas muy abundantes, con coágulos, que le duran 10 días; ¿qué exámenes le pido y qué le puedo formular?",
+        "expected": "sangrado-uterino-anormal"
+      },
+      {
+        "message": "Señora de 47 años que lleva meses con sangrados irregulares entre las reglas, ¿le hago biopsia de endometrio o primero ecografía?",
+        "expected": "sangrado-uterino-anormal"
+      },
+      {
+        "message": "Señora de 62 años con dolor en la rodilla al caminar y rigidez de 10 minutos al levantarse, ¿le tengo que pedir radiografía?",
+        "expected": "artrosis"
+      },
+      {
+        "message": "¿Qué le doy para el dolor de rodilla por desgaste a una paciente de 78 años que tiene la función renal disminuida?",
+        "expected": "artrosis"
+      },
+      {
+        "message": "Me duele mucho el oído cuando me jalan la oreja desde que fui a la piscina, ¿qué gotas sirven?",
+        "expected": "otitis-externa"
+      },
+      {
+        "message": "Paciente con conducto auditivo hinchado, secreción y dolor al tocar el trago después de nadar, ¿le doy amoxicilina oral o gotas?",
+        "expected": "otitis-externa"
+      },
+      {
+        "message": "a un señor se le regó agua hirviendo en el brazo y le salieron ampollas, ¿cuánto tiempo lo dejo bajo el chorro de agua y le reviento las bombas?",
+        "expected": "quemaduras"
+      },
+      {
+        "message": "paciente de 70 kg con el 30 % del cuerpo quemado en un incendio, ¿cuánto lactato de Ringer le paso en las primeras 8 horas y qué diuresis busco?",
+        "expected": "quemaduras"
+      },
+      {
+        "message": "mi bebé de un mes tose en ataques, se pone morado y vomita después de toser, ¿qué antibiótico le doy y a qué dosis?",
+        "expected": "tos-ferina"
+      },
+      {
+        "message": "en el colegio a un niño le salió positiva la bacteria de la tos de gallo, ¿a la familia y a los compañeros hay que darles antibiótico?",
+        "expected": "tos-ferina"
+      },
+      {
+        "message": "Niño de 4 años con ampollitas que le pican por todo el cuerpo y fiebre, ¿le doy ibuprofeno o acetaminofén y necesita antiviral?",
+        "expected": "varicela-y-sarampion"
+      },
+      {
+        "message": "Llegó un paciente con fiebre alta, tos, ojos rojos y un brote que empezó en la cara y bajó al cuerpo, ¿qué muestras tomo y a quién notifico?",
+        "expected": "varicela-y-sarampion"
+      },
+      {
+        "message": "El hermano de un niño con viruela loca no está vacunado, ¿todavía sirve vacunarlo?",
+        "expected": "varicela-y-sarampion"
       }
     ],
     "digitacion": [
@@ -1174,6 +1273,86 @@
       {
         "message": "contraindicasiones verdaderas de vacunas en niño con gripa y antibiotico",
         "expected": "vacunacion-pai-y-adulto"
+      },
+      {
+        "message": "conjuntivitis bacterana cloranfenicol gotas cada cuanto",
+        "expected": "conjuntivitis-y-ojo-rojo"
+      },
+      {
+        "message": "dosis ceftriaxona oftalmia neonatal x gonococo",
+        "expected": "conjuntivitis-y-ojo-rojo"
+      },
+      {
+        "message": "quemadura quimica ojo irrigar hsta q ph",
+        "expected": "conjuntivitis-y-ojo-rojo"
+      },
+      {
+        "message": "dermatitis atopica moderada SCORAD 40 que topico uso y cada cuanto el tacrolimus",
+        "expected": "dermatitis-atopica"
+      },
+      {
+        "message": "dosis de fezolinetan y control de transaminasas para bochornos",
+        "expected": "menopausia"
+      },
+      {
+        "message": "THM transdermica vs oral riesgo de trombosis en paciente obesa",
+        "expected": "menopausia"
+      },
+      {
+        "message": "dosis de nifedipino para APP",
+        "expected": "parto-pretermino"
+      },
+      {
+        "message": "RPMP 32 sem antibioticos de latencia ampi eritro",
+        "expected": "parto-pretermino"
+      },
+      {
+        "message": "cervix corto 18 mm a las 22 semanas progesterona vajinal dosis",
+        "expected": "parto-pretermino"
+      },
+      {
+        "message": "dosis de acido tranexamico en SUA agudo",
+        "expected": "sangrado-uterino-anormal"
+      },
+      {
+        "message": "clasificasion palm coein sangrdo uterino anormal",
+        "expected": "sangrado-uterino-anormal"
+      },
+      {
+        "message": "gonartrosis tto inicial aine topico o oral, sirve el acido hialuronico?",
+        "expected": "artrosis"
+      },
+      {
+        "message": "osteoartritis rodiya sirve la glucosamina o condroitina?",
+        "expected": "artrosis"
+      },
+      {
+        "message": "otitis ext aguda gotas cipro dexa dosis niño",
+        "expected": "otitis-externa"
+      },
+      {
+        "message": "otomicosis tto clotrimasol cuanto tiempo",
+        "expected": "otitis-externa"
+      },
+      {
+        "message": "formula de parklan quemado 40% scq cuanto liquido",
+        "expected": "quemaduras"
+      },
+      {
+        "message": "dosis de azitro para tosferina en neonato y riesgo de estenosis pilorica",
+        "expected": "tos-ferina"
+      },
+      {
+        "message": "tdap en embaraso a q semana se pone",
+        "expected": "tos-ferina"
+      },
+      {
+        "message": "dosis de aciclobir para varisela en adolecente de 15 años",
+        "expected": "varicela-y-sarampion"
+      },
+      {
+        "message": "vit A en sarampion dosis x edad OMS",
+        "expected": "varicela-y-sarampion"
       }
     ],
     "seguimiento": [
@@ -2513,6 +2692,202 @@
         ],
         "message": "¿y a los 18 meses?",
         "expected": "vacunacion-pai-y-adulto"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo diferencio una conjuntivitis viral de una bacteriana?"
+          },
+          {
+            "role": "assistant",
+            "content": "La viral da secreción acuosa, folículos y adenopatía preauricular, a menudo después de un catarro; la bacteriana da secreción mucopurulenta que pega las pestañas al despertar y sin adenopatía…"
+          }
+        ],
+        "message": "¿y cuándo puede volver al colegio?",
+        "expected": "conjuntivitis-y-ojo-rojo"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "Recién nacido con conjuntivitis purulenta al tercer día de vida"
+          },
+          {
+            "role": "assistant",
+            "content": "Sospechar oftalmía gonocócica: Gram y cultivo, ceftriaxona sistémica en dosis única…"
+          }
+        ],
+        "message": "¿y si fuera por clamidia?",
+        "expected": "conjuntivitis-y-ojo-rojo"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "Cómo trato un brote de dermatitis atópica en un niño de 6 años?"
+          },
+          {
+            "role": "assistant",
+            "content": "Emolientes a diario en cantidad abundante y un corticoide tópico de potencia adecuada a la zona y la gravedad, 1 o 2 veces al día solo sobre las lesiones activas; potencia baja en cara y cuello."
+          }
+        ],
+        "message": "y cuando mejore, cómo evito que vuelva a brotar?",
+        "expected": "dermatitis-atopica"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cuándo está indicada la terapia hormonal en la menopausia?"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿Y si ya tiene más de 60 años?",
+        "expected": "menopausia"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo se maneja una amenaza de parto pretérmino a las 29 semanas?"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿Y si ya había recibido corticoides hace tres semanas?",
+        "expected": "parto-pretermino"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Qué tocolítico uso en trabajo de parto pretérmino a las 27 semanas?"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿Hasta qué semana se da el sulfato de magnesio?",
+        "expected": "parto-pretermino"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo evalúo a una mujer de 35 años con sangrado menstrual abundante?"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y si ya es posmenopáusica?",
+        "expected": "sangrado-uterino-anormal"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cuál es el tratamiento de primera línea del sangrado menstrual abundante sin causa estructural?"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿y si no quiere el DIU?",
+        "expected": "sangrado-uterino-anormal"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo se diagnostica la artrosis de rodilla en atención primaria?"
+          },
+          {
+            "role": "assistant",
+            "content": "…"
+          }
+        ],
+        "message": "¿Y cuándo la remito a ortopedia para prótesis?",
+        "expected": "artrosis"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo trato una otitis externa aguda en un adulto sano?"
+          },
+          {
+            "role": "assistant",
+            "content": "Con gotas tópicas de antibiótico, con o sin corticoide, durante al menos 7 días, analgesia según el dolor y sin antibiótico oral si la infección no se extiende fuera del conducto…"
+          }
+        ],
+        "message": "¿Y si tiene tubos de ventilación?",
+        "expected": "otitis-externa"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo calculo la superficie corporal quemada en un adulto?"
+          },
+          {
+            "role": "assistant",
+            "content": "Con la regla de los nueves: cabeza 9 %, cada brazo 9 %, tronco anterior 18 %, tronco posterior 18 %, cada pierna 18 % y periné 1 %; solo se suman las de espesor parcial y total."
+          }
+        ],
+        "message": "¿y en un niño de 3 años?",
+        "expected": "quemaduras"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿cómo se trata la tos ferina en un niño de 3 años?"
+          },
+          {
+            "role": "assistant",
+            "content": "Con azitromicina: 10 mg/kg el día 1 (máximo 500 mg) y 5 mg/kg/día los días 2 a 5 (máximo 250 mg)…"
+          }
+        ],
+        "message": "¿y cuándo puede volver al jardín?",
+        "expected": "tos-ferina"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Hasta cuándo contagia la varicela?"
+          },
+          {
+            "role": "assistant",
+            "content": "Según los CDC, desde 1 a 2 días antes del exantema hasta que todas las lesiones están en costra, por lo general hacia el quinto día."
+          }
+        ],
+        "message": "¿Y si el contacto es una embarazada que nunca la tuvo?",
+        "expected": "varicela-y-sarampion"
+      },
+      {
+        "history": [
+          {
+            "role": "user",
+            "content": "¿Cómo se notifica un caso sospechoso de sarampión en Colombia?"
+          },
+          {
+            "role": "assistant",
+            "content": "De inmediato al Sivigila (evento 730), sin esperar resultados, con suero para IgM y muestra respiratoria y de orina para RT-PCR."
+          }
+        ],
+        "message": "¿Y qué le doy al niño mientras tanto?",
+        "expected": "varicela-y-sarampion"
       }
     ],
     "poblacion": [
@@ -3398,6 +3773,150 @@
           "sexo": "F"
         },
         "expected": "vacunacion-pai-y-adulto"
+      },
+      {
+        "message": "Bebé de 8 días con secreción en ambos ojos, ¿qué antibiótico y a qué dosis?",
+        "patient": {
+          "edad": 0,
+          "sexo": "F"
+        },
+        "expected": "conjuntivitis-y-ojo-rojo"
+      },
+      {
+        "message": "Ojo rojo con dolor intenso, visión borrosa y pupila que no reacciona, ¿qué le doy mientras llega a oftalmología?",
+        "patient": {
+          "edad": 70,
+          "sexo": "M"
+        },
+        "expected": "conjuntivitis-y-ojo-rojo"
+      },
+      {
+        "message": "lactante de 8 meses con eccema grave que no mejora, le pido alergia al huevo o le quito la leche?",
+        "patient": {
+          "edad": 0,
+          "sexo": "F"
+        },
+        "expected": "dermatitis-atopica"
+      },
+      {
+        "message": "adulto con eccema de toda la vida que no responde a cremas, cuándo lo mando para dupilumab o un JAK?",
+        "patient": {
+          "edad": 70,
+          "sexo": "M"
+        },
+        "expected": "dermatitis-atopica"
+      },
+      {
+        "message": "Paciente de 36 años con 5 meses sin menstruar y FSH alta, ¿cómo confirmo el diagnóstico y qué tratamiento le doy?",
+        "patient": {
+          "edad": 36,
+          "sexo": "F"
+        },
+        "expected": "menopausia"
+      },
+      {
+        "message": "Paciente con resequedad vaginal y dolor en las relaciones que tuvo cáncer de mama, ¿puede usar estrógeno vaginal?",
+        "patient": {
+          "edad": 58,
+          "sexo": "F"
+        },
+        "expected": "menopausia"
+      },
+      {
+        "message": "Gestante de 17 años con 32 semanas y contracciones regulares, ¿hay que remitirla y qué le inicio antes del traslado?",
+        "patient": {
+          "edad": 17,
+          "sexo": "F"
+        },
+        "expected": "parto-pretermino"
+      },
+      {
+        "message": "Mujer de 38 años con antecedente de parto prematuro, ahora con 20 semanas de embarazo, ¿necesita progesterona?",
+        "patient": {
+          "edad": 38,
+          "sexo": "F"
+        },
+        "expected": "parto-pretermino"
+      },
+      {
+        "message": "Paciente con manchado vaginal después de 5 años sin reglas, ¿qué estudio y a dónde la remito?",
+        "patient": {
+          "edad": 58,
+          "sexo": "F"
+        },
+        "expected": "sangrado-uterino-anormal"
+      },
+      {
+        "message": "¿Puedo darle naproxeno para el dolor de cadera si tuvo un infarto hace dos años?",
+        "patient": {
+          "edad": 74,
+          "sexo": "M"
+        },
+        "expected": "artrosis"
+      },
+      {
+        "message": "Diabético con otalgia intensa que no mejora con gotas y tiene granulación en el piso del conducto, ¿qué hago?",
+        "patient": {
+          "edad": 72,
+          "sexo": "M"
+        },
+        "expected": "otitis-externa"
+      },
+      {
+        "message": "Niña con oído de nadador, ¿cuántas gotas de ofloxacino y por cuántos días?",
+        "patient": {
+          "edad": 5,
+          "sexo": "F"
+        },
+        "expected": "otitis-externa"
+      },
+      {
+        "message": "niño de 2 años con escaldadura en ambos pies en forma de calcetín y bordes nítidos, ¿qué debo sospechar y qué hago?",
+        "patient": {
+          "edad": 2,
+          "sexo": "M"
+        },
+        "expected": "quemaduras"
+      },
+      {
+        "message": "electricista que tocó un cable de alta tensión, solo tiene una quemadura pequeña en la mano, ¿lo puedo mandar para la casa?",
+        "patient": {
+          "edad": 35,
+          "sexo": "M"
+        },
+        "expected": "quemaduras"
+      },
+      {
+        "message": "gestante de 32 semanas con tos en accesos desde hace 3 semanas, ¿le doy antibiótico y cuál?",
+        "patient": {
+          "edad": 28,
+          "sexo": "F"
+        },
+        "expected": "tos-ferina"
+      },
+      {
+        "message": "recién nacido de 20 días con tos y pausas respiratorias, ¿se hospitaliza?",
+        "patient": {
+          "edad": 0,
+          "sexo": "M"
+        },
+        "expected": "tos-ferina"
+      },
+      {
+        "message": "Gestante de 16 semanas sin antecedente de varicela estuvo ayer con un sobrino que la tiene, ¿qué le indico?",
+        "patient": {
+          "edad": 28,
+          "sexo": "F"
+        },
+        "expected": "varicela-y-sarampion"
+      },
+      {
+        "message": "Lactante de 8 meses que estuvo en la misma sala de espera con un caso de sarampión hace 2 días, ¿qué profilaxis le pongo?",
+        "patient": {
+          "edad": 0,
+          "sexo": "M"
+        },
+        "expected": "varicela-y-sarampion"
       }
     ]
   },
