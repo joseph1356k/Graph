@@ -14,7 +14,12 @@ const {
   extractCie10Codes,
   buildRetrievalContext,
   labSignals,
+  guardColloquial,
+  relevanceLabel,
   selectForPrompt,
+  retrieveForPrompt,
+  headMode,
+  inDoubt,
   DEFAULT_CHAR_BUDGET,
   PROMPT_CHAR_BUDGET
 } = require('../src/application/knowledge/ClinicalGuidelineIndex');
@@ -166,6 +171,71 @@ function main() {
     assert.strictEqual(top[0]?.guideline_id, 'hiponatremia-e-hiperpotasemia', `sodio de 127: ${top.map((r) => r.guideline_id)}`);
   });
 
+  check('presión arterial escrita como cifra se traduce al trastorno', () => {
+    assert.deepStrictEqual(labSignals('le encontré la PA en 165/100'), ['hipertension']);
+    assert.deepStrictEqual(labSignals('tensión de 80/50 y pálido'), ['hipotension', 'choque']);
+    assert.deepStrictEqual(labSignals('PA 120/80'), [], 'una presión normal no agrega nada');
+  });
+
+  check('«pa» y «ta» coloquiales no se leen como presión arterial', () => {
+    assert.strictEqual(guardColloquial('lo mando pa la casa?'), 'lo mando para la casa?');
+    assert.strictEqual(guardColloquial('ta muy mal el señor'), 'esta muy mal el señor');
+    assert.strictEqual(guardColloquial('PA 150/90'), 'PA 150/90', 'en mayúscula es la sigla');
+    assert.strictEqual(guardColloquial('pa de 160/100'), 'pa de 160/100', 'junto a una cifra es la sigla');
+    assert.strictEqual(guardColloquial('papá'), 'papá', 'solo palabras completas');
+  });
+
+  check('regla enclítica: el pronombre pegado al verbo no cambia la raíz', () => {
+    assert.strictEqual(stem('quitarse'), stem('quitar'));
+    assert.strictEqual(stem('tomandolo'), stem('tomando'));
+    assert.strictEqual(stem('dolores'), 'dolor', 'los plurales siguen igual');
+    assert.strictEqual(stem('ase'), 'ase', 'palabras cortas no se tocan');
+  });
+
+  check('«alta» exige cubrir el 70 % del peso de los términos propios de la pregunta', () => {
+    const base = { score: 10, top: 10, coverage: 1, headHit: true };
+    assert.strictEqual(relevanceLabel({ ...base, idfCoverage: 0.9 }), 'alta');
+    assert.strictEqual(relevanceLabel({ ...base, idfCoverage: 0.5 }), 'media');
+    assert.strictEqual(relevanceLabel({ ...base, coverage: 0.2, idfCoverage: 1 }), 'baja');
+  });
+
+  check('las consultas (doc2query) suman a la búsqueda pero no dan relevancia «alta» por sí solas', () => {
+    const guideline = (id, titulo, consultas) => ({
+      id, titulo, organismo: 'X', anio: 2024, fuente: 'x', especialidades: ['medicina_general'], palabras_clave: [titulo],
+      consultas,
+      secciones: [
+        { titulo: 'Diagnóstico', texto: `${titulo}: criterios clínicos y estudios de primera línea.` },
+        { titulo: 'Tratamiento', texto: `${titulo}: manejo inicial y seguimiento ambulatorio.` }
+      ]
+    });
+    const corpus = {
+      guidelines: [
+        guideline('ofidismo', 'Accidente ofídico', ['lo mordió una culebra en el monte']),
+        guideline('rabia', 'Profilaxis de rabia', ['lo mordió un perro callejero']),
+        // Relleno para que el IDF de un corpus diminuto no tape la señal.
+        ...['Asma', 'Gota', 'Dengue', 'Insomnio', 'Anemia', 'Migraña'].map((titulo) => guideline(titulo.toLowerCase(), titulo, []))
+      ]
+    };
+    const tiny = new ClinicalGuidelineIndex({ corpus, synonyms: {} });
+    const results = tiny.search({ message: 'me llegó un señor que lo mordió una culebra' });
+    assert.strictEqual(results[0]?.guideline_id, 'ofidismo', `culebra: ${results.map((r) => r.guideline_id)}`);
+    assert.ok(results.every((item) => item.relevance !== 'alta'), 'solo por consultas no es «alta»');
+    // La digitación se corrige contra el texto de las guías, no contra las consultas.
+    assert.ok(!tiny.corpusTerms.has(stem('culebra')), 'culebra solo está en las consultas');
+    assert.strictEqual(tiny.closestTerm('culebrra'), null);
+  });
+
+  check('selección diversa: la segunda guía entra aunque la primera tenga varios fragmentos grandes', () => {
+    const make = (id, guide, size, relevance) => ({ ref: id, guideline_id: guide, relevance, text: 'x'.repeat(size) });
+    const selected = selectForPrompt([
+      make('a1', 'g1', 2000, 'alta'),
+      make('a2', 'g1', 2000, 'alta'),
+      make('a3', 'g1', 900, 'alta'),
+      make('b1', 'g2', 1500, 'media')
+    ]);
+    assert.deepStrictEqual(selected.map((item) => item.guideline_id), ['g1', 'g2', 'g1']);
+  });
+
   check('seguimiento corto: sube la guía del tema anterior', () => {
     const ids = index.search({ message: '¿y en niños?', followUp: 'dosis de doxiciclina en leptospirosis' }).map((r) => r.guideline_id);
     assert.strictEqual(ids[0], 'leptospirosis', `seguimiento de leptospirosis: ${ids}`);
@@ -306,6 +376,63 @@ function main() {
     assert.strictEqual(tiny.search({ message: 'salbutamol en crisis de asma' }).length, 1);
     const empty = new ClinicalGuidelineIndex({ corpus: { guidelines: [] } });
     assert.deepStrictEqual(empty.search({ message: 'asma' }), []);
+  });
+
+  check('cabeza léxica: el veto vacía el prompt cuando ninguna guía del buscador le parece posible', () => {
+    // Pregunta sin guía: el buscador trae vecinos de relevancia no alta.
+    const query = { message: 'hongos en las uñas de los pies, terbinafina cuánto tiempo' };
+    const lexical = retrieveForPrompt(index, query, { mode: 'off' });
+    assert.ok(lexical.guidelines.length > 0, 'el buscador solo trae vecinos');
+    assert.ok(inDoubt(index.search(query)));
+    const fakeHead = (ranking) => ({ rank: () => ranking, vetoK: 2, cupoP: 0.5 });
+    const vetoed = retrieveForPrompt(index, query, { mode: 'on', head: fakeHead([['asma-adultos-y-ninos', 0.3], ['gota', 0.2]]) });
+    assert.deepStrictEqual(vetoed, { guidelines: [], mode: 'veto' });
+    // Si la cabeza ve posible alguna guía del prompt, no veta.
+    const keep = retrieveForPrompt(index, query, { mode: 'on', head: fakeHead([[lexical.guidelines[0].guideline_id, 0.3], ['gota', 0.2]]) });
+    assert.strictEqual(keep.mode, 'lexico');
+    assert.deepStrictEqual(keep.guidelines.map((g) => g.guideline_id), lexical.guidelines.map((g) => g.guideline_id));
+  });
+
+  check('cabeza léxica: el cupo mete como segundo extracto la guía de la que está segura', () => {
+    const query = { message: 'hongos en las uñas de los pies, terbinafina cuánto tiempo' };
+    const lexical = retrieveForPrompt(index, query, { mode: 'off' });
+    const head = { rank: () => [['dermatitis-atopica', 0.9], [lexical.guidelines[0].guideline_id, 0.05]], vetoK: 5, cupoP: 0.5 };
+    const result = retrieveForPrompt(index, query, { mode: 'on', head });
+    assert.strictEqual(result.mode, 'cupo');
+    assert.strictEqual(result.guidelines[1].guideline_id, 'dermatitis-atopica');
+    assert.strictEqual(result.guidelines[1].relevance, 'baja', 'un fragmento del cupo nunca es «alta»');
+    result.guidelines.forEach((item, position) => assert.strictEqual(item.ref, `G${position + 1}`));
+    // Por debajo de su umbral, no entra.
+    assert.strictEqual(retrieveForPrompt(index, query, { mode: 'on', head: { ...head, cupoP: 0.95 } }).mode, 'lexico');
+  });
+
+  check('cabeza léxica: no opina si el buscador está seguro, ni con el buscador vacío, ni apagada', () => {
+    const vetoAll = { rank: () => [['gota', 0.99]], vetoK: 1, cupoP: 0.5 };
+    const sure = { message: 'CURB-65 en neumonía adquirida en la comunidad' };
+    assert.ok(!inDoubt(index.search(sure)), 'pregunta con G1 «alta» y sin rival cercano');
+    assert.strictEqual(retrieveForPrompt(index, sure, { mode: 'on', head: vetoAll }).mode, 'lexico');
+    assert.deepStrictEqual(retrieveForPrompt(index, { message: '¿cómo cambio la contraseña?' }, { mode: 'on', head: vetoAll }), { guidelines: [], mode: 'lexico' });
+    const doubtful = { message: 'hongos en las uñas de los pies, terbinafina cuánto tiempo' };
+    assert.strictEqual(retrieveForPrompt(index, doubtful, { mode: 'off', head: vetoAll }).mode, 'lexico');
+    const shadow = retrieveForPrompt(index, doubtful, { mode: 'shadow', head: vetoAll });
+    assert.strictEqual(shadow.mode, 'lexico');
+    assert.strictEqual(shadow.shadow, 'veto', 'en sombra dice qué habría hecho');
+    assert.ok(shadow.guidelines.length > 0, 'en sombra el prompt es el del buscador');
+    assert.strictEqual(headMode({}), 'on');
+    assert.strictEqual(headMode({ MIRACLE_ASSISTANT_RAG_HEAD: 'shadow' }), 'shadow');
+    assert.strictEqual(headMode({ MIRACLE_ASSISTANT_RAG_HEAD: 'OFF' }), 'off');
+    assert.strictEqual(headMode({ MIRACLE_ASSISTANT_RAG_HEAD: 'cualquiera' }), 'on');
+  });
+
+  check('la cabeza commiteada carga, es de este corpus y responde rápido', () => {
+    const head = index.getHead();
+    assert.ok(head, 'sin cabeza léxica: npm run build:head');
+    const ranking = head.rank('lo mordió una culebra en la finca', 3);
+    assert.strictEqual(ranking[0][0], 'accidente-ofidico');
+    assert.ok(Math.abs(head.rank('hola', 90).reduce((sum, [, p]) => sum + p, 0) - 1) < 1e-9, 'las probabilidades suman 1');
+    // Una cabeza de otro corpus se ignora (el índice sigue solo con el buscador).
+    const stale = new ClinicalGuidelineIndex({ corpus: { source_hash: 'otro', guidelines: [] }, head: () => head });
+    assert.strictEqual(stale.getHead(), null);
   });
 
   check('MIRACLE_ASSISTANT_RAG_DISABLED=1 apaga el retrieval', () => {

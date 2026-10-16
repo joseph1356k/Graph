@@ -79,6 +79,10 @@ const METADATA_ALLOWLIST = Object.freeze(new Set([
   // de dónde salió la nota del contexto ('draft' en pantalla, 'persisted',
   // 'none'). Conteos y etiquetas, nunca el texto.
   'guidelineHits',
+  // Cómo se eligieron las guías del chat: lexico | veto | cupo | apagado | error,
+  // y en modo sombra qué habría hecho la cabeza léxica. Nunca texto.
+  'retrievalMode',
+  'retrievalShadow',
   'drugLabelHits',
   'noteSource',
   // ESCUDO DE PRIVACIDAD (PrivacyShieldService): conteos y estados de la

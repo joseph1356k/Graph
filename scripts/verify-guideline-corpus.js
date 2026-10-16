@@ -81,6 +81,57 @@ function main() {
     }
   });
 
+  check(`cada guía trae al menos ${corpusLib.MIN_QUERIES} consultas (doc2query) en ${corpusLib.QUERIES_FILENAME}`, () => {
+    for (const guideline of built.guidelines) {
+      assert.ok(guideline.consultas.length >= corpusLib.MIN_QUERIES, `${guideline.id}: ${guideline.consultas.length} consultas`);
+    }
+  });
+
+  check('ninguna consulta dispara el escudo de privacidad ni copia una pregunta de la evaluación', () => {
+    const offenders = [];
+    for (const guideline of built.guidelines) {
+      for (const query of guideline.consultas) {
+        const map = new ProtectionMap({ seeds: [], excludedNames: [] });
+        if (map.protectText(query) !== query || map.hasTokens()) offenders.push(`${guideline.id}: «${query}»`);
+      }
+    }
+    assert.deepStrictEqual(offenders, [], `consultas que el escudo taparía:\n${offenders.join('\n')}`);
+    // Una consulta igual a una pregunta de la evaluación la contamina: la
+    // evaluación mediría memoria y no búsqueda.
+    const normalize = (text) => `${text || ''}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    const evaluated = new Set();
+    const repoEval = require('./fixtures/rag-eval.json');
+    for (const item of Object.values(repoEval.sets).flat()) evaluated.add(normalize(item.message));
+    for (const message of [...repoEval.offTopic, ...repoEval.fueraDelCorpus]) evaluated.add(normalize(message));
+    for (const file of ['coloquiales.json', 'fresco-d.json', 'fresco-c4.json']) {
+      const blind = require(`./fixtures/rag-ciego/${file}`);
+      for (const item of [...(blind.coloquiales || []), ...(blind.cases || [])]) evaluated.add(normalize(item.message));
+      for (const item of [...(blind.fueraDelCorpus || []), ...(blind.fueraDeTema || [])]) evaluated.add(normalize(item.message || item));
+    }
+    const copies = built.guidelines.flatMap((guideline) => guideline.consultas
+      .filter((query) => evaluated.has(normalize(query)))
+      .map((query) => `${guideline.id}: «${query}»`));
+    assert.deepStrictEqual(copies, [], `consultas copiadas de la evaluación:\n${copies.join('\n')}`);
+  });
+
+  check('la cabeza léxica es de este corpus y el runtime reproduce los rankings del build (npm run build:head)', () => {
+    // eslint-disable-next-line global-require
+    const model = require('../knowledge/guias-clinicas/guideline-head.json');
+    assert.strictEqual(model.source_hash, built.source_hash, 'guideline-head.json es de otro corpus: ejecuta `npm run build:head` y commitea el resultado');
+    assert.deepStrictEqual([...model.gids].sort(), built.guidelines.map((guideline) => guideline.id).sort(), 'la cabeza no conoce las mismas guías que el corpus');
+    assert.ok(Number.isInteger(model.veto_k) && model.veto_k > 0, 'falta veto_k');
+    assert.ok(model.cupo_p > 0 && model.cupo_p <= 1, 'falta cupo_p');
+    // eslint-disable-next-line global-require
+    const { GuidelineHead } = require('../src/application/knowledge/GuidelineHead');
+    // eslint-disable-next-line global-require
+    const { rankingFingerprint } = require('./build-guideline-head');
+    // eslint-disable-next-line global-require
+    const repoEval = require('./fixtures/rag-eval.json');
+    const texts = Object.values(repoEval.sets).flat().map((item) => item.message);
+    assert.strictEqual(texts.length, model.reference.texts, 'cambió la evaluación del repo: ejecuta `npm run build:head`');
+    assert.strictEqual(rankingFingerprint(new GuidelineHead(model), texts), model.reference.sha256, 'el runtime de la cabeza ya no da los rankings del build');
+  });
+
   check('los documentos en MAYÚSCULAS de la carpeta no se compilan como guías', () => {
     const names = files.map((file) => file.split('/').pop());
     assert.ok(!names.includes('README.md'));

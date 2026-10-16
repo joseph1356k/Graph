@@ -4,7 +4,7 @@ const ClinicalAssistantValidationService = require('./ClinicalAssistantValidatio
 const ClinicalAssistantPromptBuilder = require('./ClinicalAssistantPromptBuilder');
 const { parseAssistantReply } = require('./ClinicalAssistantResponseParser');
 const NoteModeResolver = require('./NoteModeResolver');
-const { buildRetrievalContext, inferPopulations, lastUserQuestion, isRagDisabled, selectForPrompt } = require('../knowledge/ClinicalGuidelineIndex');
+const { buildSearchQuery, retrieveForPrompt, lastUserQuestion, isRagDisabled } = require('../knowledge/ClinicalGuidelineIndex');
 const { verifyFigures } = require('./ClinicalAnswerVerifier');
 
 const { withFeature } = require('../../infrastructure/usage/UsageContext');
@@ -125,9 +125,14 @@ class ClinicalAssistantService {
       noteEditable
     });
     const { clinicalContext, usedContext } = built;
-    const guidelines = this.retrieveGuidelines({ message: cleanMessage, clinicalContext });
+    const retrieval = this.retrieveGuidelines({ message: cleanMessage, clinicalContext });
+    const { guidelines } = retrieval;
     clinicalContext.guidelines = guidelines;
     usedContext.guidelines = guidelines.length;
+    // Cómo se decidió el contexto de guías (buscador, veto o cupo de la cabeza
+    // léxica) y qué guías entraron: solo ids, nunca texto de la pregunta.
+    usedContext.retrieval_mode = retrieval.mode;
+    usedContext.guideline_ids = [...new Set(guidelines.map((guideline) => guideline.guideline_id))];
     const drugLabels = await this.retrieveDrugLabels({ message: cleanMessage, clinicalContext });
     clinicalContext.drug_labels = drugLabels;
     usedContext.drug_labels = drugLabels.length;
@@ -166,6 +171,8 @@ class ClinicalAssistantService {
               temperature: TEMPERATURE.chat,
               maxTokens: MAX_CHAT_OUTPUT_TOKENS,
               guidelineHits: guidelines.length,
+              retrievalMode: retrieval.mode,
+              ...(retrieval.shadow ? { retrievalShadow: retrieval.shadow } : {}),
               drugLabelHits: drugLabels.length,
               noteSource: clinicalContext.note_source || 'none'
             }
@@ -222,28 +229,28 @@ class ClinicalAssistantService {
   }
 
   /**
-   * Fragmentos de guías para esta pregunta. Nunca lanza: sin índice, con el
+   * Fragmentos de guías para esta pregunta y cómo se eligieron
+   * ({ guidelines, mode, shadow? }). Nunca lanza: sin índice, con el
    * retrieval apagado (MIRACLE_ASSISTANT_RAG_DISABLED=1) o ante un fallo, el
    * chat sigue sin citas y el prompt lo dice.
    */
   retrieveGuidelines({ message = '', clinicalContext = {} } = {}) {
     if (!this.guidelineIndex || typeof this.guidelineIndex.search !== 'function' || isRagDisabled()) {
-      return [];
+      return { guidelines: [], mode: 'apagado' };
     }
     try {
-      const codes = Array.isArray(clinicalContext.codes) ? clinicalContext.codes : [];
-      const context = buildRetrievalContext({ noteJson: clinicalContext.note_json, codes });
-      return selectForPrompt(this.guidelineIndex.search({
+      const query = buildSearchQuery({
         message,
-        context,
-        followUp: lastUserQuestion(clinicalContext.history),
+        noteJson: clinicalContext.note_json,
+        codes: clinicalContext.codes,
+        history: clinicalContext.history,
         specialty: clinicalContext.specialty,
-        cie10: codes.filter((code) => code.sistema === 'CIE-10').map((code) => code.codigo),
-        populations: inferPopulations({ message, patient: clinicalContext.patient, context, codes })
-      }));
+        patient: clinicalContext.patient
+      });
+      return retrieveForPrompt(this.guidelineIndex, query);
     } catch (error) {
       console.warn(`[Clinical Assistant] retrieval de guías falló: ${error.message}`);
-      return [];
+      return { guidelines: [], mode: 'error' };
     }
   }
 

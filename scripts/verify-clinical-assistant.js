@@ -848,6 +848,8 @@ async function main() {
       assert.ok(prompt.includes('<guias_clinicas>'), 'los extractos viajan delimitados');
       assert.ok(prompt.includes('[G1] Hipertensión arterial en adultos'), 'numerados y con título');
       assert.ok(conGuia.body.used_context.guidelines >= 1);
+      assert.strictEqual(conGuia.body.used_context.retrieval_mode, 'lexico');
+      assert.ok(conGuia.body.used_context.guideline_ids.includes('hipertension-arterial-adultos'), 'auditable con ids');
       assert.strictEqual(conGuia.body.support, 'guia');
       assert.strictEqual(conGuia.body.sources.length, 1);
       assert.strictEqual(conGuia.body.sources[0].ref, 'G1');
@@ -883,6 +885,29 @@ async function main() {
       assert.strictEqual(sinGuias.body.support, 'general', 'guia sin fuentes baja a general');
       assert.ok(!sinGuias.body.answer.includes('[G9]') && !sinGuias.body.answer.includes('[G1]'), sinGuias.body.answer);
       assert.strictEqual(sinGuias.body.answer, 'Según la guía se recomienda reposo. Nada más.');
+    });
+
+    // Tema sin guía en el corpus: la cabeza léxica veta los vecinos lejanos y el
+    // prompt dice que no hay guías (el modelo se abstiene en vez de citarlos).
+    llm.state.chatHandler = () => ({
+      respuesta: 'No hay una guía del corpus para esto.',
+      respaldo: 'insuficiente',
+      fuentes: [],
+      faltantes: ['Guía de hidradenitis supurativa'],
+      alertas: [],
+      propuesta_nota: null,
+      seguimientos: []
+    });
+    const sinGuiaDelTema = await call('POST', '/api/clinical/assistant/chat', {
+      message: 'tratamiento de la hidradenitis supurativa'
+    });
+    await check('v7 RAG: un tema sin guía no lleva vecinos lejanos al prompt (veto de la cabeza léxica)', () => {
+      assert.strictEqual(sinGuiaDelTema.status, 200, JSON.stringify(sinGuiaDelTema.body));
+      assert.strictEqual(sinGuiaDelTema.body.used_context.retrieval_mode, 'veto');
+      assert.strictEqual(sinGuiaDelTema.body.used_context.guidelines, 0);
+      assert.deepStrictEqual(sinGuiaDelTema.body.used_context.guideline_ids, []);
+      const prompt = promptTextOf(llm.state.calls.at(-1));
+      assert.ok(prompt.includes('No se recuperaron guías clínicas'), 'el prompt dice que no hay guías');
     });
 
     // Abstención: respaldo insuficiente nunca sale con faltantes vacíos.

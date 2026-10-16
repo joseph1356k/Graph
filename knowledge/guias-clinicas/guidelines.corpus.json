@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source_hash": "552df2ad143cdbcf36ce3b0218142c246fc17f9240ff5b7dad0da3dca083a6c8",
+  "source_hash": "a810262025d7686d4ca30d4dd295d834c972fb32ced9bb31d1de1fe2ef511afd",
   "guidelines": [
     {
       "id": "accidente-ofidico",
@@ -76,6 +76,14 @@
           "titulo": "Complicaciones, poblaciones especiales, remisión y notificación",
           "texto": "Complicaciones: síndrome compartimental, necrosis y amputación, infección o absceso, insuficiencia renal aguda, hemorragia grave (incluida la intracraneal), choque, coagulación intravascular diseminada y falla respiratoria en los accidentes por coral o cascabel. Universidad de Antioquia 2022: ante riesgo de síndrome compartimental puede considerarse manitol al 20 % a 1 g/kg endovenoso; una vez diagnosticado, se recomienda fasciotomía en las primeras 48 horas para disminuir la amputación, con la coagulopatía corregida con antiveneno. Gestantes: el antiveneno no se contraindica por el embarazo y tratar a la madre es la mejor protección fetal; el envenenamiento se asocia con aborto, parto pretérmino, abrupcio de placenta y muerte fetal, por lo que en el accidente moderado o grave se requiere valoración obstétrica y monitoreo fetal. Niños: misma dosis que el adulto, vigilando el volumen de líquidos. Adultos mayores y pacientes con enfermedad renal: vigilancia estrecha de creatinina y diuresis. Remisión: la Circular 048 de 2022 obliga a las instituciones con urgencias a tener un procedimiento documentado y antiveneno disponible, a las EPS a garantizarlo en su red y a remitir desde los servicios básicos a mayor complejidad cuando se requiera. Remitir el accidente grave, todo lachésico, el accidente por coral moderado o grave (tercer nivel, según el INS), el crotálico con compromiso neurológico o renal, el síndrome compartimental y a quien necesite cuidado intensivo, diálisis o ventilación; iniciar el antiveneno antes del traslado si está disponible. Notificación: el accidente ofídico es de notificación obligatoria individual al Sivigila como evento 100, incluidos los casos sin envenenamiento; las reacciones adversas al antiveneno se reportan al programa de farmacovigilancia y al productor."
         }
+      ],
+      "consultas": [
+        "lo mordió una culebra en el monte y se le hinchó el pie",
+        "picadura de serpiente, le sangran las encías y la sangre no coagula",
+        "le picó una víbora mapaná en la finca",
+        "cuántas ampollas de suero antiofídico le pongo",
+        "mordedura de culebra coral, qué hago",
+        "campesino con dos huellas de colmillos en la pierna y mucho dolor"
       ]
     },
     {
@@ -154,6 +162,14 @@
           "titulo": "Ataque isquémico transitorio y prevención secundaria",
           "texto": "El AIT (déficit focal transitorio sin infarto en la imagen) es una emergencia: 10–15 % tendrá un ACV en 3 meses, la mitad en las primeras 48 h. Estudiar en 24–48 h (ideal el mismo día): resonancia con difusión o TAC, imagen vascular de cuello (ecografía doppler, angiotomografía o angiorresonancia), ECG y monitoreo de ritmo (Holter de 24–72 h, prolongado si no hay causa), ecocardiograma si se sospecha fuente cardioembólica, perfil lipídico, glucemia y hemoglobina glicosilada. Puntaje ABCD2 (edad ≥60, presión ≥140/90, clínica: debilidad unilateral 2 puntos o alteración del habla 1, duración ≥60 min 2 o 10–59 min 1, diabetes) orienta la urgencia pero no sustituye la imagen vascular. Prevención secundaria para todos: antiagregante (aspirina 81–100 mg, clopidogrel 75 mg o aspirina/dipiridamol) salvo indicación de anticoagulación; anticoagulación oral (preferiblemente anticoagulante directo) en fibrilación auricular; endarterectomía carotídea en las 2 semanas siguientes en estenosis sintomática del 70–99 % (y 50–69 % seleccionados), stent como alternativa en menores de 70 años o alto riesgo quirúrgico; estatina de alta intensidad (atorvastatina 40–80 mg) con meta de LDL <70 mg/dL (añadir ezetimiba o inhibidor de PCSK9 si no se alcanza); presión arterial <130/80 mmHg iniciando o ajustando antihipertensivos después de las primeras 24–72 h; control de diabetes (considerar pioglitazona o agonistas GLP-1 según perfil), cesación del tabaco, actividad física, dieta mediterránea, limitar alcohol, tratar la apnea del sueño si existe; cierre del foramen oval permeable en menores de 60 años con ACV criptogénico y foramen con características de alto riesgo. Educar sobre los síntomas de alarma y la llamada inmediata al 123."
         }
+      ],
+      "consultas": [
+        "se le torció la cara y no mueve el brazo derecho",
+        "de repente habla enredado y se le cae la boca",
+        "le dio un derrame, hasta cuándo se puede trombolizar",
+        "perdió la fuerza de medio cuerpo hace dos horas",
+        "le dio un mareíto con la mano dormida y se le pasó a los 10 minutos",
+        "trombólisis con alteplasa, ventana de tiempo"
       ]
     },
     {
@@ -224,6 +240,14 @@
           "titulo": "Observación, triptasa, criterios de alta y remisión a alergología",
           "texto": "NICE NG258 (mayo de 2026, reemplaza a CG134) adoptó la observación escalonada del Resuscitation Council UK 2021, contada desde la resolución de los síntomas; los menores de 16 años que no cumplan los criterios de alta se hospitalizan a cargo de pediatría. Escalones: alta temprana a las 2 horas de la resolución si respondió rápido a una sola dosis, tiene dos autoinyectores vigentes y sabe usarlos y estará acompañado si hace falta; mínimo 6 horas si requirió dos dosis o tuvo una reacción bifásica previa; mínimo 12 horas si la reacción fue grave con más de dos dosis, hubo asma grave o compromiso respiratorio grave, el alérgeno puede seguir absorbiéndose, consulta en la noche o tiene acceso difícil a urgencias. La reacción bifásica es la reaparición de síntomas horas después sin nueva exposición. Triptasa sérica (NICE): primera muestra lo antes posible tras iniciar el tratamiento y segunda idealmente entre 1 y 2 horas (no después de 4 horas) desde el inicio de los síntomas; una muestra basal en el seguimiento ayuda a confirmar el diagnóstico. Antes del alta (NICE): explicar qué es la anafilaxia, los síntomas, el riesgo de reacción bifásica y qué hacer si recurre (aplicar adrenalina y llamar a emergencias); formular autoinyector de adrenalina como medida provisional y entrenar al paciente y a sus cuidadores en su uso; entregar un plan de acción escrito; indicar evitar el desencadenante sospechado; y remitir a un servicio especializado de alergología acorde con la edad para estudio del alérgeno, inmunoterapia con veneno cuando aplique y revisión de medicamentos como betabloqueadores o IECA."
         }
+      ],
+      "consultas": [
+        "se le cerró la garganta y se brotó todo después de una inyección",
+        "se hinchó de la cara y le pita el pecho después de comer mariscos",
+        "reacción alérgica fuerte con la presión bajita",
+        "cuánta adrenalina intramuscular le pongo a un niño",
+        "le picaron las abejas y se está ahogando",
+        "ronchas en todo el cuerpo y se desmayó tras tomar un antibiótico"
       ]
     },
     {
@@ -297,6 +321,14 @@
           "titulo": "Prevención: lactantes, niños y gestantes",
           "texto": "Lactancia materna exclusiva hasta los 6 meses; en lactantes amamantados, suplemento de hierro 1 mg/kg/día desde los 4 meses hasta introducir alimentos ricos en hierro (AAP); prematuros y de bajo peso: 2 mg/kg/día desde el primer mes hasta los 12 meses. Introducir alimentos ricos en hierro (carnes, vísceras, leguminosas, cereales fortificados) desde los 6 meses, limitar la leche de vaca a menos de 500–700 mL/día después del año y no darla antes de los 12 meses, no dar té. Tamizaje de hemoglobina a los 12 meses (AAP) y según el programa de crecimiento y desarrollo; suplementación preventiva universal con hierro en niños de 6 a 23 meses donde la prevalencia de anemia es ≥40 % (OMS). Gestantes: hierro elemental 30–60 mg/día más ácido fólico 400 µg desde el primer control prenatal y durante toda la gestación (OMS; en Colombia la Resolución 3280 de 2018 indica hierro desde la semana 14 cuando no hay anemia y desde el diagnóstico si la hay, más ácido fólico y calcio), hemograma en el primer control y en el tercer trimestre, tratar la anemia con 120 mg/día de hierro elemental y controlar a las 4 semanas; hierro intravenoso en anemia moderada-grave después de la semana 14 si no responde o no tolera. Adolescentes con menstruación abundante y donantes frecuentes: vigilar ferritina y suplementar."
         }
+      ],
+      "consultas": [
+        "está pálida, cansada y con la hemoglobina baja",
+        "falta de hierro en la niña, qué sulfato ferroso le doy",
+        "anemia por la regla abundante",
+        "la ferritina salió bajita",
+        "come tierra y está descolorido",
+        "cuándo le pongo hierro por la vena"
       ]
     },
     {
@@ -369,6 +401,14 @@
           "titulo": "Conducta según el riesgo y plan de seguridad",
           "texto": "Riesgo alto o intento reciente: no dejar sola a la persona, retirar medios letales, remitir de inmediato a urgencias o psiquiatría con acompañante y comunicación directa (no «cita cuando pueda»); hospitalizar si hay intención activa con plan, incapacidad de comprometerse con la seguridad, psicosis, intoxicación o falta de red de apoyo; notificar al SIVIGILA el intento de suicidio y activar la ruta de salud mental. Riesgo moderado (ideación sin plan ni intención, factores protectores presentes): plan de seguridad escrito en la consulta, cita de control en menos de una semana, contacto telefónico intermedio, involucrar a la familia con consentimiento, iniciar o ajustar el tratamiento del trastorno de base, prescribir cantidades pequeñas de medicamentos y evitar tricíclicos y benzodiacepinas en cantidad. Riesgo bajo (ideas pasivas sin plan): tratar la causa, plan de seguridad, control en 2–4 semanas. Plan de seguridad (Stanley y Brown): 1) señales de alerta personales; 2) estrategias de afrontamiento propias; 3) personas y lugares que distraen; 4) personas a quienes pedir ayuda; 5) profesionales y líneas de crisis (en Colombia, línea 106 y la línea de salud mental local, 123 en emergencias); 6) hacer el entorno seguro (guardar bajo llave medicamentos, armas y tóxicos). Tras un intento, el riesgo es máximo en los primeros 3 meses: seguimiento estrecho, terapia cognitivo-conductual o dialéctica conductual orientada a la autolesión (NICE NG225), tratamiento de la depresión o del consumo, contacto con la familia. El litio y la clozapina reducen el suicidio en el trastorno bipolar y la esquizofrenia, respectivamente (manejo especializado). Documentar cada contacto y la razón de la conducta elegida."
         }
+      ],
+      "consultas": [
+        "tiene ideas de quitarse la vida",
+        "vive nervioso, con el corazón acelerado, le dan ataques de pánico",
+        "se cortó las muñecas y dice que no vale la pena vivir",
+        "se preocupa por todo y no se puede calmar",
+        "se tomó un frasco de pastillas para morirse",
+        "cómo le pregunto si tiene pensamientos de muerte"
       ]
     },
     {
@@ -445,6 +485,14 @@
           "titulo": "Metronidazol y otros usos frecuentes",
           "texto": "Metronidazol adulto: vaginosis bacteriana 500 mg cada 12 h por 7 días; tricomoniasis 500 mg cada 12 h por 7 días (mujeres) o 2 g dosis única (hombres); giardiasis 250 mg cada 8 h por 5 a 7 días; amebiasis intestinal 500–750 mg cada 8 h por 7 a 10 días. Pediátrico 30–50 mg/kg/día en 3 tomas (giardiasis 15 mg/kg/día). Evitar alcohol durante el tratamiento y 48 h después. Doxiciclina 100 mg cada 12 h es alternativa en neumonía atípica, acné inflamatorio y fiebres por rickettsias; tomar con abundante agua y de pie. Antes de prescribir cualquier antibiótico: confirmar alergias documentadas, revisar embarazo (evitar quinolonas y tetraciclinas; trimetoprim/sulfametoxazol en el primer trimestre y cerca del parto), función renal (ajustar betalactámicos, quinolonas y trimetoprim/sulfametoxazol) e interacciones (anticoagulantes, metotrexato, anticonvulsivantes)."
         }
+      ],
+      "consultas": [
+        "cuánta amoxicilina le doy a un niño de 15 kilos",
+        "dosis de azitromicina en pediatría",
+        "qué antibiótico le mando por la boca y a qué dosis",
+        "cefalexina cada cuánto",
+        "dosis de amoxicilina clavulánico en jarabe",
+        "alérgico a la penicilina, qué antibiótico le doy"
       ]
     },
     {
@@ -518,6 +566,14 @@
           "titulo": "Anticoncepción en el posparto, la lactancia, después de un aborto y en adolescentes",
           "texto": "Posparto sin lactancia: métodos combinados categoría 4 antes de 21 días; entre 21 y 42 días, categoría 3 si hay otros factores de riesgo de tromboembolia (edad de 35 años o más, trombosis previa, trombofilia, inmovilidad, transfusión en el parto, IMC ≥30, hemorragia posparto, cesárea, preeclampsia, tabaquismo) y 2 sin ellos. Con lactancia: OMS, combinados categoría 4 antes de 6 semanas, 3 entre 6 semanas y 6 meses y 2 después; CDC 2024, 4 antes de 21 días, 3 entre 21 y 29 días, 3 o 2 entre 30 y 42 días según los factores de riesgo y 2 después. Métodos de solo progestágeno con lactancia antes de 6 semanas posparto (OMS, 5.ª edición): píldora e implante, categoría 2; inyectable trimestral, categoría 3; confirmar la categoría vigente en la 6.ª edición (2025). Sin lactancia pueden iniciarse en cualquier momento. DIU de cobre o de levonorgestrel: insertarlo en las primeras 48 horas posparto (incluida la inserción inmediata tras el alumbramiento o durante la cesárea) o a partir de las 4 semanas; entre las 48 horas y las 4 semanas es categoría 3, y con sepsis puerperal, 4. Método de lactancia y amenorrea: protege solo si se cumplen las tres condiciones: lactancia exclusiva o casi exclusiva, amenorrea y menos de 6 meses posparto. Después de un aborto o pérdida del primer trimestre, todos los métodos pueden iniciarse de inmediato, incluido el DIU (categoría 4 tras un aborto séptico). Adolescentes: la edad por sí sola no es razón médica para negar ningún método; el implante y los DIU son seguros y muy eficaces y deben ofrecerse junto con el condón, con confidencialidad y asesoría sin coerción. En Colombia, la actividad sexual o el embarazo en menores de 14 años obligan a activar la ruta de atención de violencia sexual."
         }
+      ],
+      "consultas": [
+        "quiere planificar, qué método le sirve",
+        "la pastilla del día después hasta cuántas horas",
+        "se le olvidaron dos pastas de planificar, qué hace",
+        "quiere ponerse el implante subdérmico o la T de cobre",
+        "puede planificar con pastillas si tiene migraña con aura",
+        "inyección mensual para no quedar embarazada"
       ]
     },
     {
@@ -604,6 +660,14 @@
           "titulo": "Remisión a ortopedia para reemplazo articular y signos de alarma",
           "texto": "NICE 2022: considerar la remisión para reemplazo articular cuando los síntomas (dolor, rigidez, pérdida de función o deformidad progresiva) afectan sustancialmente la calidad de vida y el manejo no quirúrgico (ejercicio terapéutico, pérdida de peso si aplica y analgesia) ha sido ineficaz o no es adecuado. No excluir a la persona de la remisión por edad, sexo, tabaquismo, comorbilidades, sobrepeso u obesidad: estos factores modifican el riesgo quirúrgico y deben optimizarse en paralelo (peso, tabaco, glucemia, anemia), pero no impiden la valoración. La decisión es clínica y compartida; el grado radiológico o un puntaje no deben ser por sí solos la condición para remitir. Enviar a urgencias o valorar el mismo día ante una articulación caliente, roja y tumefacta, sobre todo con fiebre (artrocentesis para descartar artritis séptica), trauma con imposibilidad de apoyar, deterioro rápido de la función o de la deformidad, dolor nocturno o de reposo con pérdida de peso (sospecha de tumor) o sospecha de osteonecrosis. Remitir a reumatología si se sospecha artritis inflamatoria, si hay artrosis erosiva de mano con brotes o si el diagnóstico es dudoso; a fisiatría o fisioterapia para el programa de ejercicio, el entrenamiento con el bastón y las ortesis. En cada control revisar adherencia al ejercicio, peso y beneficio real de cada analgésico."
         }
+      ],
+      "consultas": [
+        "le duelen las rodillas al caminar y se le traban en la mañana",
+        "desgaste de las rodillas en una señora mayor",
+        "le crujen las rodillas y tiene nudos en los dedos",
+        "qué le doy para el dolor de las coyunturas",
+        "infiltración de rodilla con corticoide",
+        "dolor de cadera por desgaste del cartílago"
       ]
     },
     {
@@ -670,6 +734,14 @@
           "titulo": "Control, seguimiento y signos de alarma",
           "texto": "Evaluar control en cada visita (últimas 4 semanas): síntomas diurnos más de 2 veces por semana, despertares nocturnos, uso de rescate más de 2 veces por semana, limitación de actividad. Factores de riesgo de exacerbación: más de un envase de salbutamol al mes, ICS no prescrito o mala adherencia, FEV1 bajo, tabaquismo, obesidad, exposición a alérgenos, comorbilidades (rinosinusitis, reflujo, ansiedad). Al alta de una crisis: plan de acción escrito, revisar técnica, iniciar o subir controlador, control en 2–7 días. Signos de alarma para acudir a urgencias: salbutamol sin alivio o que dura menos de 3 horas, dificultad para hablar o caminar, labios azulados, flujo pico <60 %, somnolencia. Vacunar contra influenza anualmente. En embarazo se mantiene el tratamiento: el riesgo de la crisis supera al de los fármacos."
         }
+      ],
+      "consultas": [
+        "el niño se ahoga y le silba el pecho cuando corre",
+        "tos de noche con pitos en el pecho",
+        "crisis de ahogo, cuántos puff de salbutamol",
+        "inhalador de beclometasona para mantenimiento",
+        "se agita con el frío y tiene alergias",
+        "le pita el pecho cada que se resfría"
       ]
     },
     {
@@ -731,6 +803,14 @@
           "titulo": "Prevención y signos de alarma para los padres",
           "texto": "Lavado de manos, evitar exposición a humo de tabaco y a contactos con infección respiratoria, lactancia materna exclusiva hasta los 6 meses. Nirsevimab (anticuerpo monoclonal de dosis única) para todos los lactantes en su primera temporada de VSR y para los de 8–19 meses con riesgo alto en su segunda temporada (AAP 2023); palivizumab mensual como alternativa en prematuros extremos, cardiopatía o enfermedad pulmonar crónica según disponibilidad; vacuna materna contra VSR entre las semanas 32 y 36 de gestación donde esté disponible. Signos de alarma para volver de inmediato: respiración muy rápida o con pausas (apneas), tiraje marcado o quejido, labios o piel azulados, no puede alimentarse o rechaza más de la mitad de las tomas, menos de 3 pañales mojados en 24 h, somnolencia excesiva o irritabilidad que no calma, empeoramiento después del día 5."
         }
+      ],
+      "consultas": [
+        "bebé de 4 meses con mocos, tos y respira rapidito",
+        "lactante que se hunde entre las costillas y le silba el pecho",
+        "le sirven las nebulizaciones al bebé con virus respiratorio",
+        "bebito que no quiere comer porque se cansa al respirar",
+        "primer episodio de sibilancias en menor de 2 años",
+        "saturación baja en un bebé con gripa"
       ]
     },
     {
@@ -801,6 +881,14 @@
           "titulo": "Cefalea tensional y cefalea en racimos",
           "texto": "Cefalea tensional (ICHD-3): episodios de 30 minutos a 7 días, bilaterales, opresivos y no pulsátiles, de intensidad leve a moderada, que no empeoran con la actividad habitual, sin náuseas ni vómito (puede haber fotofobia o fonofobia, pero no ambas); infrecuente (<1 día al mes), frecuente (1–14 días al mes) o crónica (≥15 días al mes por más de 3 meses). Tratamiento agudo: ibuprofeno 400 mg, naproxeno 500 mg, aspirina 1 000 mg o acetaminofén 1 000 mg, sin superar 15 días al mes; evitar opioides y relajantes musculares. Profilaxis en la forma frecuente o crónica: amitriptilina 10–75 mg en la noche (primera línea), mirtazapina o venlafaxina como alternativas, terapia cognitivo-conductual, manejo del estrés, ejercicio y fisioterapia cervical. Cefalea en racimos: ataques de dolor unilateral periorbitario o temporal muy intenso de 15 a 180 minutos, con al menos un síntoma autonómico ipsilateral (lagrimeo, rinorrea, ptosis, miosis, inyección conjuntival) o inquietud, de 1 a 8 veces al día, en racimos de semanas; tratamiento agudo con oxígeno al 100 % a 12–15 L/min por mascarilla 15–20 minutos o sumatriptán 6 mg subcutáneo; profilaxis con verapamilo (240–960 mg/día con control electrocardiográfico) y transición con prednisona; remitir a neurología."
         }
+      ],
+      "consultas": [
+        "dolor de cabeza que late de un lado con vómito y le molesta la luz",
+        "jaqueca que no se le quita con acetaminofén",
+        "el peor dolor de cabeza de su vida, de golpe",
+        "dolor de cabeza como una banda apretada por estrés",
+        "ve lucecitas antes del dolor de cabeza",
+        "qué le doy para prevenir las migrañas"
       ]
     },
     {
@@ -894,6 +982,14 @@
           "titulo": "Controles, códigos Z, síntomas (R) y lesiones",
           "texto": "Controles y contactos sin enfermedad: Z00.0 examen médico general; Z00.1 control de salud de rutina del niño (crecimiento y desarrollo); Z01.4 examen ginecológico de rutina (citología); Z12.- tamizaje de neoplasia (Z12.4 cuello uterino, Z12.3 mama, Z12.1 colon); Z34.9 supervisión de embarazo normal no especificado (Z34.0 primer embarazo normal; Z35.- embarazo de alto riesgo); Z30.0 consejo general sobre anticoncepción (Z30.4 supervisión del uso de anticonceptivos, Z30.1 inserción de DIU); Z39.2 control posparto de rutina; Z23–Z27 vacunación; Z71.3 consejo dietético; Z71.6 consejo sobre tabaquismo; Z76.0 repetición de receta; Z09.- examen de seguimiento tras tratamiento; Z02.- exámenes administrativos (Z02.1 preempleo, Z02.0 ingreso a institución educativa, Z02.7 certificado médico); Z13.- exámenes de tamizaje (Z13.1 diabetes, Z13.6 cardiovascular). Síntomas sin diagnóstico aún: R50.9 fiebre no especificada; R05 tos; R06.0 disnea; R53 malestar y fatiga; R55 síncope; R63.4 pérdida anormal de peso; R21 erupción cutánea; R60.0 edema localizado; R10.- dolor abdominal; R52.- dolor no clasificado en otra parte (preferir el código por sitio); R69 causas de morbilidad desconocidas (evitar). Para lesiones, el código de la lesión (S/T por sitio y tipo, p. ej. S93.4 esguince de tobillo, S52.5 fractura de radio distal, T14.- lesión de región no especificada) como principal y la causa externa como relacionada (W01 caída al mismo nivel, V89.2 accidente de tránsito no especificado, W57 mordedura de insecto, W54 mordedura de perro)."
         }
+      ],
+      "consultas": [
+        "qué código le pongo a la gripa",
+        "código del diagnóstico para la historia clínica",
+        "con qué CIE-10 codifico la hipertensión",
+        "diagnóstico principal y relacionado en los RIPS",
+        "código para el control de niño sano",
+        "cómo codifico una consulta de seguimiento"
       ]
     },
     {
@@ -976,6 +1072,14 @@
           "titulo": "Tamizaje de carcinoma hepatocelular, signos de alarma y remisión",
           "texto": "AASLD 2023: vigilar a los adultos con cirrosis con ecografía hepática cada 6 meses junto con alfafetoproteína sérica (versiones previas la consideraban opcional); la alfafetoproteína sola no sirve como tamizaje. EASL 2018: ecografía abdominal cada 6 meses realizada por personal experimentado. AASLD sugiere no hacer vigilancia en cirrosis Child-Pugh C salvo que el paciente esté en lista de trasplante, por su baja supervivencia esperada. Un nódulo nuevo, el crecimiento de una lesión, una ecografía con mala visualización o una alfafetoproteína en ascenso requieren tomografía o resonancia multifásica y remisión a hepatología. En Colombia, las hepatitis B y C son eventos de notificación obligatoria al Sivigila del Instituto Nacional de Salud. Signos de alarma que exigen urgencias u hospitalización: fiebre o dolor abdominal con ascitis, confusión o somnolencia, hematemesis o melenas (ver guía de hemorragia digestiva), oliguria o ascenso de creatinina, hiponatremia grave, ictericia progresiva y ascitis a tensión. Remitir a hepatología: primera descompensación, MELD de 15 o más, ascitis refractaria, encefalopatía recurrente, sospecha de carcinoma hepatocelular o candidato a trasplante."
         }
+      ],
+      "consultas": [
+        "toma mucho trago y tiene la barriga llena de agua y los ojos amarillos",
+        "hígado dañado por el alcohol",
+        "hígado graso que ya se volvió cirrosis, cómo lo clasifico",
+        "le sacamos líquido de la barriga, cuánta albúmina le pongo",
+        "está confuso y con temblor de manos, tiene el hígado malo",
+        "fiebre y dolor de barriga en un paciente con ascitis"
       ]
     },
     {
@@ -1062,6 +1166,14 @@
           "titulo": "Hemorragia subconjuntival, epiescleritis, escleritis, cuerpo extraño y quemadura química",
           "texto": "Hemorragia subconjuntival: mancha roja homogénea, bien delimitada, indolora, sin secreción ni baja de visión, a menudo tras tos, vómito o esfuerzo; se reabsorbe sola y no requiere tratamiento. Tomar la presión arterial y revisar anticoagulantes o antiagregantes; si recurre, estudiar coagulopatía. Tras trauma importante, con dolor o baja de visión, descartar ruptura del globo. Epiescleritis: enrojecimiento sectorial rojo brillante, molestia leve y visión normal; benigna, se maneja con lágrimas artificiales y compresas frías, y se estudia solo si recurre. Escleritis: dolor profundo y taladrante que despierta en la noche e irradia a la cara, color violáceo y dolor a la presión; se asocia a artritis reumatoide y vasculitis y amenaza la visión: remitir el mismo día. Los vasos superficiales se blanquean con fenilefrina tópica al 2,5 % en la epiescleritis y no en la escleritis. Cuerpo extraño: con anestésico tópico solo para el examen, evertir el párpado y teñir con fluoresceína; el superficial se retira con irrigación o hisopo húmedo y se da antibiótico tópico; remitir si hay anillo de óxido, cuerpo extraño central o profundo, o antecedente de martillar o esmerilar metal (posible cuerpo extraño intraocular). Quemadura química, más grave por álcalis (cal, cemento, limpiadores): irrigar de inmediato, antes incluso de medir la agudeza visual, con solución salina o lactato de Ringer, o agua del grifo si no hay otra; anestésico tópico, separar y evertir los párpados y barrer los fondos de saco; continuar con varios litros hasta que el pH, medido con papel indicador 5 a 10 minutos después de suspender, sea cercano a 7,0. Las quemaduras por álcali pueden requerir horas de irrigación. Nunca neutralizar con ácidos o bases. Luego, remisión a oftalmología el mismo día."
         }
+      ],
+      "consultas": [
+        "tiene el ojo rojo con lagañas amarillas",
+        "le pica el ojo y le lagrimea",
+        "recién nacido con pus en los ojitos",
+        "ojo rojo con dolor y ve borroso",
+        "qué gotas le mando para el ojo pegado en la mañana",
+        "puede ir al colegio con el ojo rojo"
       ]
     },
     {
@@ -1139,6 +1251,14 @@
           "titulo": "Prevención de recaídas: naltrexona, acamprosato y disulfiram",
           "texto": "NICE CG115: tras una abstinencia asistida exitosa, en dependencia moderada o grave ofrecer acamprosato o naltrexona oral junto con una intervención psicológica individual (cognitivo-conductual, conductual o de redes sociales y pareja); no usarlos sin plan psicosocial. Acamprosato: iniciar lo antes posible tras la desintoxicación; 666 mg tres veces al día (1 998 mg/día) en personas de 60 kg o más; con menos de 60 kg, 666 mg en la mañana y 333 mg al mediodía y en la noche; habitualmente hasta 6 meses o más si hay beneficio; contraindicado en insuficiencia renal (creatinina mayor de 120 µmol/L) y en insuficiencia hepática grave. Naltrexona: 50 mg al día, hasta 6 meses o más si hay beneficio; contraindicada si usa opioides (precipita abstinencia y bloquea la analgesia) y en hepatitis aguda o insuficiencia hepática; pruebas hepáticas basales y de control. Disulfiram: segunda opción cuando la meta es la abstinencia y los anteriores no son adecuados, o si la persona lo prefiere conociendo los riesgos; iniciar al menos 24 h después del último trago; 200 mg al día; la reacción con alcohol (rubor, cefalea, náuseas, taquicardia, hipotensión) puede ser grave y persiste hasta 14 días tras suspenderlo; evitar alcohol oculto en alimentos, jarabes y enjuagues; evitar en enfermedad cardiovascular, antecedente de ACV, psicosis, riesgo suicida y embarazo; idealmente con supervisión de un familiar. Con disulfiram, NICE sugiere controles cada 2 semanas los 2 primeros meses y luego mensuales. Suspender acamprosato o naltrexona si el consumo continúa 4–6 semanas después de iniciarlos. Verificar disponibilidad y registro INVIMA. Una recaída no es fracaso: reevaluar, reforzar la intervención psicosocial y mantener el seguimiento."
         }
+      ],
+      "consultas": [
+        "se emborracha cada fin de semana y no para de tomar",
+        "dejó de beber y está temblando y sudando",
+        "lleva días sin tomar y ve cosas que no hay",
+        "cuántas cervezas a la semana es mucho",
+        "toma aguardiente, guaro, todos los días, cómo lo tamizo",
+        "tiamina antes de la dextrosa en el paciente borracho"
       ]
     },
     {
@@ -1212,6 +1332,14 @@
           "titulo": "Signos de alarma y motivos de remisión urgente",
           "texto": "Explicar en cada control los signos que exigen acudir de inmediato a urgencias: sangrado vaginal, salida de líquido por la vagina, dolor abdominal intenso o contracciones regulares antes de la semana 37, cefalea intensa que no cede, visión borrosa o fosfenos, tinnitus, dolor epigástrico o en hipocondrio derecho, edema de cara y manos de aparición súbita, presión arterial ≥140/90 mmHg, disminución o ausencia de movimientos fetales después de la semana 24–28, fiebre, vómito persistente que impide la hidratación, disuria con fiebre o dolor lumbar, flujo vaginal con mal olor, convulsiones, disnea o dolor torácico, ideas de hacerse daño. Remitir a obstetricia o al nivel de mayor complejidad ante: presión arterial elevada o proteinuria (sospecha de preeclampsia), glucemia alterada, anemia grave (hemoglobina <7 g/dL o que no responde al hierro), sífilis o VIH positivos (iniciar tratamiento el mismo día y seguir la ruta), toxoplasma IgM positiva, hepatitis B positiva, isoinmunización, altura uterina discordante (±3 cm), presentación anómala después de la semana 36, embarazo múltiple, ruptura de membranas, embarazo de 41 semanas sin trabajo de parto (programar inducción entre las semanas 41 y 42). Registrar cada consulta en el carné materno y entregar el plan de parto con el sitio de atención definido."
         }
+      ],
+      "consultas": [
+        "qué laboratorios pido en el primer control del embarazo",
+        "cada cuánto controlo a la gestante de bajo riesgo",
+        "qué vitaminas le doy en el embarazo, ácido fólico y calcio",
+        "embarazada de 20 semanas, qué paraclínicos tocan",
+        "signos de peligro que le explico a la embarazada",
+        "vacunas durante el embarazo"
       ]
     },
     {
@@ -1288,6 +1416,14 @@
           "titulo": "Primera crisis no provocada en adultos: estudios, riesgo de recurrencia y cuándo tratar",
           "texto": "Primero confirmar que fue una crisis epiléptica (relato de testigos, duración, mordedura lateral de la lengua, confusión posictal) y no un síncope, una crisis psicógena, un AIT o un trastorno del sueño. Luego distinguir la crisis sintomática aguda o provocada (en la primera semana tras ACV, trauma craneoencefálico, infección del sistema nervioso central o cirugía intracraneal, o por hipoglucemia, hiponatremia, hipocalcemia, tóxicos o abstinencia), que se maneja tratando la causa, de la crisis no provocada. Estudio (AAN 2007): EEG, que muestra anomalías epileptiformes en cerca de una cuarta parte de los casos y orienta el riesgo de recurrencia; neuroimagen (resonancia preferida; TAC en urgencias), con lesiones relevantes en alrededor del 10 %; laboratorio (glucosa, electrolitos, calcio, magnesio, función renal), tóxicos y punción lumbar según la situación clínica (fiebre, inmunosupresión, signos meníngeos); ECG si hay duda con un síncope. Riesgo de recurrencia (AAN/AES 2015): es mayor en los primeros 2 años (21 a 45 %) y aumenta con lesión cerebral previa, EEG con anomalías epileptiformes, lesión significativa en la neuroimagen y crisis nocturna. El tratamiento anticonvulsivante inmediato reduce el riesgo de recurrencia en cerca de 35 % en los 2 años siguientes, pero no mejora el pronóstico a largo plazo (remisión sostenida); los efectos adversos aparecen en 7 a 31 %, en su mayoría leves y reversibles. La decisión es individual y compartida con el paciente. Definición de epilepsia (ILAE 2014): dos crisis no provocadas separadas por más de 24 horas; una crisis no provocada con probabilidad de recurrencia de al menos 60 % en los 10 años siguientes (por ejemplo, con una lesión cerebral remota); o el diagnóstico de un síndrome epiléptico. Recomendar no conducir según la normativa vigente, evitar nadar solo, alturas y maquinaria peligrosa, y remitir a neurología."
         }
+      ],
+      "consultas": [
+        "le dio un ataque y se sacudía todo el cuerpo",
+        "echa espuma por la boca, se pone morado y no responde",
+        "el niño con fiebre se privó y se sacudió",
+        "lleva 10 minutos convulsionando, qué le pongo",
+        "midazolam intranasal o diazepam rectal, dosis",
+        "le dio un ataque, se mordió la lengua y se orinó"
       ]
     },
     {
@@ -1370,6 +1506,14 @@
           "titulo": "Cuándo remitir o activar otras rutas",
           "texto": "Peso para la talla menor de −2 DE, edema bilateral de origen nutricional o perímetro braquial bajo: activar la ruta de atención de la desnutrición aguda (Resolución 2350 de 2020 y sus modificaciones), con prueba de apetito, decisión de manejo en el hogar u hospitalario y notificación al Sivigila. Riesgo de desnutrición aguda o de talla baja: consejería alimentaria, búsqueda de causas (infecciones recurrentes, parasitosis, inseguridad alimentaria, problemas de lactancia) y control más cercano. Talla baja o desaceleración de la curva de talla: pediatría, para estudio de causas familiares, sistémicas y endocrinas. Perímetro cefálico fuera de −2 a +2 DE o con crecimiento acelerado o detenido: pediatría y, según hallazgos, neuropediatría e imágenes. EAD-3 en amarillo o rojo, probable retraso según AIEPI o pérdida de habilidades: pediatría y evaluación del desarrollo, con prioridad ante regresión o sospecha de autismo, sin aplazar la estimulación. Sobrepeso u obesidad: intervención familiar en alimentación y actividad física, y pediatría o nutrición si persiste o hay comorbilidad. Signos generales de peligro de AIEPI (no puede beber ni tomar el pecho, vomita todo, convulsiones, letargia): urgencias. Maltrato o negligencia: activar la ruta de atención a víctimas de violencia."
         }
+      ],
+      "consultas": [
+        "el niño está bajito para la edad",
+        "a qué edad debe caminar y hablar",
+        "control de niño sano, cada cuánto",
+        "curvas de peso y talla de la OMS",
+        "no gatea a los 10 meses, me preocupa",
+        "escala de desarrollo en la consulta de primera infancia"
       ]
     },
     {
@@ -1446,6 +1590,14 @@
           "titulo": "Hipoglucemia: niveles, regla de 15 a 20 g y glucagón (ADA 2025)",
           "texto": "Síntomas (ADA): temblor, irritabilidad, confusión, taquicardia y hambre; también sudoración y palpitaciones (síntomas autonómicos), y en la grave, convulsiones o pérdida de la conciencia. Clasificación ADA: nivel 1, glucosa menor de 70 mg/dL (3,9 mmol/L) y de 54 mg/dL (3,0 mmol/L) o más; nivel 2, glucosa menor de 54 mg/dL; nivel 3, evento grave con alteración del estado mental o físico que requiere ayuda de otra persona, sin importar la cifra. Tratamiento de la persona consciente con glucosa menor de 70 mg/dL: 15 a 20 g de glucosa (opción preferida; sirve cualquier carbohidrato que contenga glucosa, como tabletas, jugo o bebida azucarada); repetir la medición a los 15 minutos y repetir el tratamiento si persiste la hipoglucemia; cuando la glucosa se normalice, consumir una comida o refrigerio para evitar la recurrencia. La grasa añadida retarda y prolonga la respuesta, y la proteína no sirve para corregir la hipoglucemia. Si no puede tragar o está inconsciente: glucagón, que debe formularse a toda persona que usa insulina o tiene alto riesgo de hipoglucemia, preferiblemente en presentaciones listas para usar que no requieren reconstitución; familiares, cuidadores y personal escolar deben saber dónde está y cómo aplicarlo. Dosis según ficha técnica: glucagón 1 mg IM o SC (0,5 mg en niños de menos de 25 kg) o glucagón intranasal 3 mg. En el hospital o con acceso venoso, dextrosa intravenosa según protocolo institucional, que debe existir en todo servicio. Hipoglucemia por sulfonilureas o insulinas de acción prolongada: puede recurrir durante horas, por lo que requiere observación prolongada. Tras un evento de nivel 3, ante hipoglucemias de nivel 2 repetidas o hipoglucemia inadvertida, reevaluar el esquema de tratamiento; en la hipoglucemia inadvertida, subir las metas glucémicas durante algunas semanas ayuda a recuperar la percepción, y el monitoreo continuo de glucosa es útil."
         }
+      ],
+      "consultas": [
+        "diabético con la glucometría altísima, vomitando y respira profundo",
+        "le bajó el azúcar y está sudando frío",
+        "la glucometría marca HI y le huele el aliento a frutas",
+        "cetoacidosis, cuánta insulina en infusión",
+        "se desmayó con el azúcar en 40",
+        "abuelo diabético deshidratado y confuso con glucosa en 800"
       ]
     },
     {
@@ -1523,6 +1675,14 @@
           "titulo": "Demencia: inhibidores de colinesterasa, memantina, síntomas conductuales y cuidador",
           "texto": "NICE NG97: donepezilo, galantamina o rivastigmina en monoterapia para enfermedad de Alzheimer leve a moderada; memantina en monoterapia en Alzheimer moderado si no se toleran o están contraindicados esos inhibidores, y en Alzheimer grave; en quien ya recibe un inhibidor, considerar añadir memantina en la fase moderada y ofrecerla en la grave. Demencia por cuerpos de Lewy: donepezilo o rivastigmina; galantamina si no se toleran; memantina si no se toleran los inhibidores. Demencia vascular: solo si coexiste Alzheimer, demencia de Parkinson o por cuerpos de Lewy. Frontotemporal: no usar inhibidores ni memantina. No suspender el inhibidor solo por la gravedad de la demencia. Dosis según ficha técnica: donepezilo 5 mg en la noche y 10 mg tras 4–6 semanas; rivastigmina en parche 4,6 mg/24 h y 9,5 mg/24 h tras al menos 4 semanas; memantina 5 mg/día con aumentos semanales de 5 mg hasta 20 mg/día. Efectos de los inhibidores: náuseas, vómito, diarrea, pérdida de peso, bradicardia y síncope (precaución con bradicardia, bloqueos y betabloqueadores). Síntomas conductuales y psicológicos: primero buscar causas (dolor, delirium, infección, estreñimiento, fármacos, entorno o cuidado inadecuados) y ofrecer intervenciones psicosociales y ambientales. Antipsicóticos solo si hay riesgo de daño a sí mismo o a otros, o agitación, alucinaciones o delirios con angustia grave; advertir el mayor riesgo de ACV y muerte, usar la menor dosis por el menor tiempo y reevaluar al menos cada 6 semanas. NICE no recomienda valproato para la agitación; Beers 2023 aconseja evitar antipsicóticos, benzodiacepinas, hipnóticos Z y anticolinérgicos en demencia. Ofrecer estimulación cognitiva grupal en demencia leve a moderada. Cuidador: evaluar su carga, ofrecer psicoeducación, entrenamiento en habilidades, apoyo emocional y respiro; planear decisiones anticipadas, seguridad al conducir, manejo de medicamentos y finanzas."
         }
+      ],
+      "consultas": [
+        "el abuelo amaneció confundido y agitado de noche",
+        "la abuela se pierde y olvida todo",
+        "adulto mayor que desvaría desde que lo hospitalizaron",
+        "de un día para otro ve cosas y no reconoce a la familia",
+        "qué le doy al viejito agitado de noche",
+        "se le olvidan las cosas cada vez más"
       ]
     },
     {
@@ -1595,6 +1755,14 @@
           "titulo": "Alta, seguimiento y prevención",
           "texto": "Criterios de alta: sin fiebre 48 h, mejoría clínica, hematocrito estable sin líquidos intravenosos, diuresis adecuada, plaquetas en ascenso (>50 000/µL) y tolerancia oral. Control a las 48–72 h del alta. Prevención comunitaria: eliminar criaderos de Aedes aegypti (recipientes con agua estancada, tanques sin tapa, llantas), toldillos y repelentes, protección especial de gestantes; la vacuna TAK-003 está autorizada en Colombia para personas de 4 a 60 años según lineamientos vigentes; CYD-TDV solo en seropositivos. Signos de alarma que el paciente debe conocer: dolor abdominal intenso, vómito persistente, sangrado de encías o nariz, sangre en vómito o heces, somnolencia o irritabilidad, dificultad para respirar, manos y pies fríos, orina escasa, especialmente cuando baja la fiebre."
         }
+      ],
+      "consultas": [
+        "fiebre alta con dolor detrás de los ojos y en los huesos",
+        "le salieron petequias y le bajaron las plaquetas",
+        "fiebre quebrantahuesos",
+        "dolor de barriga y vómito después de que se le quitó la fiebre",
+        "líquidos para el paciente con fiebre y plaquetas bajas",
+        "picadura de zancudo, fiebre de tres días y brote"
       ]
     },
     {
@@ -1668,6 +1836,14 @@
           "titulo": "Duración, suspensión y prevención de recaídas",
           "texto": "Tras la remisión (PHQ-9 <5 y recuperación funcional), continuar el antidepresivo a la misma dosis al menos 6 meses en un primer episodio (NICE), 12 meses si hubo síntomas residuales o episodio grave, y 2 años o indefinido con dos o más episodios recurrentes, episodios graves o con intento suicida, inicio temprano o comorbilidad. Mantener la psicoterapia o un plan de prevención de recaídas (reconocer señales tempranas, rutina de sueño y ejercicio, red de apoyo). Para suspender: reducir gradualmente a lo largo de 4 semanas o más (más lento en paroxetina y venlafaxina; la fluoxetina puede retirarse más rápido), vigilando el síndrome de discontinuación (mareo, parestesias «eléctricas», irritabilidad, insomnio, síntomas gripales) que se distingue de la recaída por su inicio en días y su resolución rápida al reiniciar. Volver a evaluar al mes de la suspensión. En cada control preguntar por ideación suicida, consumo de alcohol, adherencia y función (trabajo, relaciones, autocuidado); registrar el PHQ-9. Signos que exigen atención inmediata: ideas suicidas con plan o medios, intento reciente, síntomas psicóticos, incapacidad para alimentarse o cuidarse, conductas de riesgo para otros."
         }
+      ],
+      "consultas": [
+        "está triste todo el tiempo y nada le provoca",
+        "llora todo el día y no quiere salir de la cama",
+        "perdió las ganas de todo hace un mes",
+        "qué antidepresivo le doy, fluoxetina o sertralina",
+        "está decaído, no duerme y bajó de peso",
+        "PHQ-9 alto, qué hago"
       ]
     },
     {
@@ -1745,6 +1921,14 @@
           "titulo": "Fototerapia y terapia sistémica: opciones, límites de edad y poblaciones especiales",
           "texto": "Las indica dermatología en enfermedad moderada a grave no controlada con tópicos bien usados. AAD 2024 (adultos): fuerte a favor de dupilumab, tralokinumab, abrocitinib, baricitinib y upadacitinib; condicional para fototerapia, azatioprina, ciclosporina, metotrexato y micofenolato; y condicional en contra de los corticoides sistémicos. AAAAI/ACAAI 2023 difiere: sugiere no usar azatioprina, metotrexato, micofenolato ni corticoides sistémicos, y reserva la ciclosporina para adolescentes y adultos refractarios. La guía pediátrica de la AAD 2026 recomienda con fuerza biológicos e inhibidores JAK orales en la enfermedad moderada a grave y evitar los corticoides sistémicos. Límites de edad según la FDA: dupilumab desde los 6 meses (en adultos, 600 mg subcutáneos de carga y luego 300 mg cada 2 semanas; en niños, dosis según peso); tralokinumab y nemolizumab desde los 12 años; lebrikizumab desde los 12 años con peso de al menos 40 kg; upadacitinib y abrocitinib desde los 12 años, cuando otros sistémicos, incluidos los biológicos, no controlan o no son aconsejables. Dupilumab produce con frecuencia conjuntivitis y blefaritis. Los inhibidores JAK orales tienen advertencia en recuadro de la FDA por infecciones graves, mortalidad, neoplasias, eventos cardiovasculares mayores y trombosis, derivada de un estudio en personas de 50 años o más con al menos un factor de riesgo cardiovascular: tamizar tuberculosis y sopesar ese riesgo en el adulto mayor. Gestantes: los emolientes y corticoides tópicos siguen siendo la base; si se necesita terapia sistémica, EuroGuiDerm sugiere ciclosporina y desaconseja el corticoide sistémico prolongado (prednisolona solo como rescate corto); el metotrexato está contraindicado. En Colombia, la actualización 2024 de la guía de AsoColDerma destaca la evidencia de crisaborol, dupilumab, abrocitinib y upadacitinib."
         }
+      ],
+      "consultas": [
+        "el niño tiene la piel reseca y se rasca en los pliegues",
+        "eccema en los cachetes del bebé",
+        "piel áspera con picazón en codos y rodillas",
+        "qué crema con corticoide le pongo",
+        "brotes de rasquiña en la piel desde chiquito",
+        "hidratación de la piel en niño alérgico"
       ]
     },
     {
@@ -1816,6 +2000,14 @@
           "titulo": "Rehabilitación con F-100 o FTLC, egreso, seguimiento y notificación al INS",
           "texto": "Transición y rehabilitación: cuando vuelve el apetito y el edema disminuye, pasar de F-75 a F-100 (100 kcal/100 mL) o a FTLC, aumentando la cantidad de forma progresiva según tolerancia. La Resolución 115 de 2026 hace obligatorio el uso de F-100 en el tratamiento intrahospitalario y ambulatorio, y exige a las EPS garantizar la disponibilidad de F-75, F-100 y FTLC en su red. En el hogar, la FTLC se dosifica por peso según la tabla del lineamiento, junto con la lactancia materna y la alimentación complementaria, y no debe compartirse con otros miembros de la familia. Seguimiento ambulatorio periódico: peso, perímetro braquial, edema, apetito, adherencia, enfermedades intercurrentes y entrega de FTLC, con búsqueda activa del niño que no asiste. Falla del tratamiento (no recupera el apetito, pierde o estanca el peso, aparece o persiste el edema, surgen complicaciones): remitir para manejo hospitalario. Egreso: la Resolución 2350 de 2020 lo definía con puntaje Z de peso para la talla de −2 DE o más; la Resolución 115 de 2026 lo consideró insuficiente y prolonga el tratamiento hasta que el niño alcance un peso adecuado para su talla o longitud (el umbral exacto está en el anexo técnico), con estabilidad clínica y resolución de las enfermedades asociadas. Completar vacunación, desparasitación y suplementación según el lineamiento, educar al cuidador y articular con los programas sociales del ICBF. La OMS (2023) indica que en la emaciación moderada se priorice la consejería y los alimentos nutritivos disponibles en el hogar, reservando los alimentos especialmente formulados para los niños de mayor riesgo. Notificación: la desnutrición aguda moderada y severa en menores de 5 años es un evento de notificación obligatoria al Sivigila (INS, evento 113); las muertes por desnutrición o asociadas a ella también se notifican y se analizan."
         }
+      ],
+      "consultas": [
+        "el niño está muy flaquito y se le ven las costillas",
+        "perímetro braquial en rojo",
+        "niño con los pies hinchados y el pelo descolorido",
+        "prueba de apetito con fórmula terapéutica",
+        "bajo peso para la talla en menor de 5 años",
+        "no ha ganado peso y está desganado"
       ]
     },
     {
@@ -1893,6 +2085,14 @@
           "titulo": "Posparto: PTOG a las 4–12 semanas y seguimiento a largo plazo",
           "texto": "Tras el parto la hiperglucemia suele resolverse: suspender la insulina o la metformina y verificar las glucemias antes del egreso. ADA 2025 y ACOG: PTOG de 75 g (con glucemia en ayunas y a las 2 horas) a las 4–12 semanas posparto, interpretada con los criterios de la población no gestante, para detectar diabetes persistente o prediabetes; ACOG acepta también la glucemia en ayunas, aunque la PTOG con valor en ayunas es más sensible. NICE NG3: glucemia en ayunas entre las 6 y 13 semanas posparto, o HbA1c a partir de las 13 semanas si no se hizo antes, y luego HbA1c anual. ADA: el antecedente de DMG aumenta el riesgo de diabetes tipo 2 durante toda la vida, por lo que el tamizaje debe continuar de por vida, cada 1–3 años si la prueba posparto es normal. Si hay prediabetes, ofrecer intervención intensiva en estilo de vida y considerar metformina: en el Programa de Prevención de Diabetes, en mujeres con antecedente de DMG, la metformina y el estilo de vida redujeron la progresión a diabetes en 40 % y 35 % a 10 años, respectivamente. Promover lactancia materna, control del peso y actividad física; ofrecer anticoncepción y planificar el siguiente embarazo con glucemia previa y tamizaje temprano, porque la DMG tiende a repetirse. Vigilar presión arterial y lípidos por el mayor riesgo cardiometabólico."
         }
+      ],
+      "consultas": [
+        "embarazada con el azúcar alto en la curva",
+        "prueba de tolerancia a la glucosa a las 24 semanas",
+        "glucosa en ayunas de 95 en el embarazo",
+        "puede tomar metformina la embarazada",
+        "embarazada con mucha sed y bebé grande en la eco",
+        "control de glucosa después del parto si tuvo diabetes en el embarazo"
       ]
     },
     {
@@ -1965,6 +2165,14 @@
           "titulo": "Hipoglucemia y signos de alarma",
           "texto": "Hipoglucemia nivel 1: glucosa <70 mg/dL; nivel 2: <54 mg/dL; nivel 3: evento grave con alteración del estado mental que requiere ayuda. Regla 15–15 en paciente consciente: 15 g de carbohidrato de absorción rápida, repetir glucometría a los 15 minutos y repetir si sigue <70; glucagón si no puede tragar. Revisar dosis de insulina o sulfonilurea tras cualquier hipoglucemia grave. Signos de alarma que exigen atención inmediata: glucosa >300 mg/dL con vómito, dolor abdominal, respiración acidótica o deterioro de conciencia (cetoacidosis o estado hiperosmolar), hipoglucemia grave recurrente, úlcera en pie con signos de infección o isquemia, pérdida visual súbita y síntomas de síndrome coronario agudo, que en diabéticos puede cursar con poca o ninguna angina."
         }
+      ],
+      "consultas": [
+        "tiene el azúcar alto en la sangre y toma metformina",
+        "hemoglobina glicosilada en 9",
+        "orina mucho, tiene sed y bajó de peso",
+        "señor con azúcar en la sangre que no se controla con pastillas",
+        "cuándo le agrego insulina",
+        "pie del diabético, cada cuánto lo reviso"
       ]
     },
     {
@@ -2032,6 +2240,14 @@
           "titulo": "Antibióticos, disentería y signos de alarma",
           "texto": "No usar antibióticos en la diarrea acuosa habitual ni antidiarreicos (loperamida contraindicada en menores de 12 años). Antibiótico indicado en: disentería (sangre en heces) con fiebre o aspecto tóxico, sospecha de cólera en brote, shigelosis confirmada, lactantes menores de 3 meses con bacteriemia, inmunodeprimidos, sepsis o infección extraintestinal. Shigella: azitromicina 10–12 mg/kg/día por 3 días o ciprofloxacina 15 mg/kg cada 12 h por 3 días (o ceftriaxona 50–75 mg/kg/día si hay aspecto tóxico) según resistencia local; Campylobacter sintomático grave: azitromicina; sospecha de Salmonella no tifoidea solo en los grupos de riesgo; cólera: azitromicina dosis única o doxiciclina en mayores de 8 años. Giardiasis o amebiasis confirmadas: metronidazol. Diarrea persistente (más de 14 días): evaluar desnutrición, intolerancia a la lactosa, parásitos, infección por VIH y remitir. Signos de alarma que exigen atención inmediata: letargia, no puede beber, vómito persistente, ojos hundidos con sed intensa, pliegue lento, oliguria por más de 6 h, sangre en heces con fiebre alta, distensión abdominal dolorosa, convulsiones, desnutrición grave."
         }
+      ],
+      "consultas": [
+        "el niño tiene churrias y vómito",
+        "bebé con popó líquido y los ojos hundidos",
+        "cuánto suero oral le doy al niño con diarrea",
+        "está con soltura desde ayer y no orina",
+        "plan B de hidratación",
+        "deposiciones aguadas muchas veces al día en un niño de 2 años"
       ]
     },
     {
@@ -2098,6 +2314,14 @@
           "titulo": "Estilo de vida y seguimiento",
           "texto": "Dieta tipo mediterránea o DASH, reemplazar grasas saturadas y trans por insaturadas, fibra soluble, esteroles vegetales; actividad física aeróbica 150 minutos por semana; cesación de tabaco; peso saludable; limitar el alcohol. En cada control: adherencia (la mitad de los pacientes abandona la estatina en el primer año), efectos adversos musculares, glucosa (las estatinas aumentan levemente el riesgo de diabetes, con beneficio neto favorable) y revaluar la categoría de riesgo. Remitir a especialista ante hipercolesterolemia familiar, LDL que no se controla con estatina más ezetimiba, triglicéridos >1 000 mg/dL o intolerancia a dos estatinas. Signos de alarma: dolor muscular intenso con orina oscura (rabdomiólisis), ictericia o dolor abdominal intenso con triglicéridos muy altos (pancreatitis)."
         }
+      ],
+      "consultas": [
+        "tiene el colesterol alto, le doy atorvastatina",
+        "triglicéridos en 400",
+        "LDL de 190 en un joven",
+        "grasa en la sangre, qué estatina le doy",
+        "calcular el riesgo cardiovascular",
+        "le duelen los músculos con la estatina"
       ]
     },
     {
@@ -2167,6 +2391,14 @@
           "titulo": "Confirmar la erradicación y úlcera péptica",
           "texto": "Confirmar la erradicación siempre, al menos 4 semanas después de terminar los antibióticos y 2 semanas sin IBP, con prueba de aliento con urea o antígeno fecal monoclonal (no serología). Úlcera duodenal no complicada con H. pylori positivo: la erradicación es suficiente, con IBP solo durante el esquema; úlcera gástrica o úlcera complicada (sangrado, perforación, de más de 1–2 cm): IBP durante 8 semanas, erradicar, suspender AINE y repetir la endoscopia a las 8–12 semanas con biopsias para descartar malignidad. Úlcera por AINE: suspender el AINE, IBP 8 semanas; si el AINE es indispensable, cambiar a un inhibidor selectivo de COX-2 o mantener el AINE con IBP a dosis estándar de forma continua. Profilaxis gastroprotectora con IBP en usuarios de AINE o aspirina con riesgo (mayores de 65 años, úlcera previa, anticoagulantes o corticoides concomitantes, dosis altas). Uso prolongado de IBP: revisar la indicación periódicamente, usar la menor dosis eficaz; los riesgos descritos (fracturas, déficit de B12 o magnesio, infecciones entéricas, enfermedad renal) son de asociación débil y no justifican retirarlo cuando está indicado."
         }
+      ],
+      "consultas": [
+        "le arde la boca del estómago después de comer",
+        "agrieras y le sube ácido a la garganta",
+        "gastritis que no mejora con omeprazol",
+        "tratamiento para la bacteria del estómago",
+        "llenura y ardor en el estómago",
+        "cuándo le pido endoscopia por gastritis"
       ]
     },
     {
@@ -2248,6 +2480,14 @@
           "titulo": "Cólico renal: AINE como primera línea, imágenes y criterios de remisión (EAU)",
           "texto": "Dolor lumbar tipo cólico, intenso, que se irradia a la ingle o los genitales, con hematuria, náuseas e inquietud. Imágenes (EAU): tras la ecografía inicial, la tomografía sin contraste confirma el diagnóstico en el adulto con dolor lumbar agudo; en gestantes la ecografía es el método preferido, la resonancia magnética la segunda línea y la tomografía de baja dosis la última opción; en niños, ecografía como primera línea. Analgesia (EAU): ofrecer un antiinflamatorio no esteroideo como primera elección, por ejemplo metamizol (dipirona), o como alternativas paracetamol o, según el riesgo cardiovascular, diclofenaco, indometacina o ibuprofeno; los opioides (hidromorfona, pentazocina o tramadol) son la segunda opción. Evitar AINE en insuficiencia renal y valorar su riesgo cardiovascular y gastrointestinal. Terapia expulsiva: los alfabloqueadores (tamsulosina) son una opción para cálculos ureterales distales mayores de 5 mm. Urgencia: si hay fiebre, signos de sepsis o infección con obstrucción por cálculo, iniciar antibióticos y descomprimir de forma urgente la vía urinaria con nefrostomía percutánea o catéter ureteral, difiriendo el tratamiento definitivo del cálculo hasta resolver la sepsis. Indicaciones de remoción activa o remisión a urología: cálculo con baja probabilidad de expulsión espontánea; dolor persistente pese a analgesia adecuada; obstrucción persistente; insuficiencia renal, obstrucción bilateral o riñón único. En adultos mayores con un primer episodio de supuesto cólico renal, descartar aneurisma de aorta abdominal."
         }
+      ],
+      "consultas": [
+        "dolor de barriga que empezó en el ombligo y se fue para abajo a la derecha",
+        "dolor en la fosa ilíaca derecha con fiebre",
+        "cólico de riñón que le baja a la ingle",
+        "piedra en el riñón, qué le doy para el dolor",
+        "dolor de barriga muy fuerte con la barriga dura",
+        "escala de Alvarado"
       ]
     },
     {
@@ -2329,6 +2569,14 @@
           "titulo": "Dolor por cáncer: escalera analgésica de la OMS y principios de manejo",
           "texto": "OMS 2018 (adultos y adolescentes): la meta es aliviar el dolor a un nivel que permita una calidad de vida aceptable, con evaluación integral de la persona y del dolor (nociceptivo somático o visceral, neuropático, irruptivo). Principios: vía oral cuando sea posible, dosis a horario fijo y no solo a demanda, dosis de rescate para el dolor irruptivo, individualización y reevaluación frecuente. La escalera analgésica de tres peldaños de 1986 ya no es una recomendación formal: se conserva como herramienta educativa y guía general, y el analgésico se escoge según la evaluación clínica y la intensidad del dolor; ya no es obligatorio pasar por un opioide débil, y en dolor moderado a intenso puede iniciarse un opioide potente en dosis bajas. AINE, acetaminofén y opioides pueden usarse solos o combinados según la intensidad; cualquier opioide puede usarse para el mantenimiento según disponibilidad y respuesta, y la morfina de liberación inmediata sirve como rescate; al suspender, retirar de forma gradual. Coadyuvantes: corticoides cuando estén indicados, bisfosfonatos para el dolor por metástasis óseas y radioterapia en fracción única para metástasis óseas dolorosas. Prevenir el estreñimiento con laxantes desde el inicio y vigilar náuseas, sedación y neurotoxicidad. Los umbrales de MME de la guía CDC no aplican al dolor oncológico ni a los cuidados paliativos. En Colombia la Ley 1733 de 2014 garantiza el acceso a cuidados paliativos, y la morfina, la hidromorfona y la metadona se dispensan bajo control del Fondo Nacional de Estupefacientes."
         }
+      ],
+      "consultas": [
+        "lleva años con un dolor que no se le quita",
+        "dolor quemante en los pies, como corrientazos",
+        "cuánta morfina o tramadol le puedo formular",
+        "dolor neuropático, pregabalina",
+        "paciente que pide cada vez más analgésico fuerte",
+        "dolor crónico de espalda que no mejora"
       ]
     },
     {
@@ -2401,6 +2649,14 @@
           "titulo": "Alta, prevención secundaria y signos de alarma",
           "texto": "Al alta: aspirina indefinida, segundo antiagregante según plan, estatina de alta intensidad (meta de LDL <55 mg/dL), betabloqueador (al menos un año; indefinido si FEVI ≤40 %), IECA o ARA II (indefinido si FEVI ≤40 %, diabetes, hipertensión o enfermedad renal), antagonista mineralocorticoide si FEVI ≤40 % con insuficiencia cardiaca o diabetes, inhibidor SGLT2 si FEVI ≤40 %; nitroglicerina sublingual de rescate; cesación de tabaco; rehabilitación cardiaca; control de presión, diabetes y peso; vacuna contra influenza. Ecocardiograma antes del alta para FEVI. Cita de control en 1–2 semanas y luego a 1–3 meses. Signos de alarma para el paciente: dolor torácico que no cede con una dosis de nitroglicerina en 5 minutos, disnea súbita, síncope, palpitaciones sostenidas, sangrado mayor con los antiagregantes. En consulta externa, un dolor torácico de reposo o progresivo en las últimas 48 h se remite a urgencias de inmediato, con aspirina 300 mg si no hay alergia ni sospecha de disección."
         }
+      ],
+      "consultas": [
+        "le duele el pecho como un peso y le baja al brazo izquierdo",
+        "dolor en el pecho con sudor frío y náuseas",
+        "señor con opresión en el pecho al subir escaleras",
+        "infarto, cuándo pido troponina",
+        "le apretó el pecho y se le fue al cuello y a la mandíbula",
+        "dolor precordial de 30 minutos"
       ]
     },
     {
@@ -2483,6 +2739,14 @@
           "titulo": "Efectos adversos, signos de alarma, remisión y notificación",
           "texto": "Benznidazol: la dermatitis alérgica es el efecto más frecuente y puede ser grave; le siguen molestias gastrointestinales, síntomas neuropsiquiátricos, neuropatía periférica, pérdida de peso, insomnio y leucopenia; vigilar con hemograma durante el tratamiento y valorar la suspensión ante reacción cutánea grave, neuropatía o leucopenia. Nifurtimox: anorexia, náuseas, cefalea, pérdida de peso, mareo y polineuropatía; la mayoría son leves. Los efectos adversos son más frecuentes en adultos que en niños. Signos de alarma y criterios de hospitalización: caso agudo con miocarditis, insuficiencia cardiaca, derrame pericárdico, arritmias o síncope; meningoencefalitis, sobre todo en lactantes e inmunosuprimidos; recién nacido sintomático de madre positiva; reactivación en VIH o trasplante; toxicidad grave por el antiparasitario. Remitir a cardiología a todo paciente con electrocardiograma anormal o síntomas cardiovasculares, y a gastroenterología si hay disfagia o estreñimiento crónico progresivo. Notificación en Colombia (INS, protocolo código 205, 2022): son de notificación obligatoria al Sivigila los casos agudos, crónicos y congénitos, y ante casos agudos o brotes, incluidos los de transmisión oral, se hace investigación epidemiológica de campo; el protocolo anterior del Ministerio establecía notificación inmediata de casos agudos confirmados y brotes y notificación semanal rutinaria del resto (verificar los plazos en el protocolo vigente). La vigilancia de casos agudos se analiza por la entidad territorial de procedencia, donde se infiere la transmisión activa, y la de crónicos por la entidad que notifica. La transmisión transfusional se previene con el tamizaje serológico de los donantes en los bancos de sangre."
         }
+      ],
+      "consultas": [
+        "lo picó el pito en la casa de bahareque",
+        "chinche que pica de noche y tiene el corazón grande",
+        "embarazada de zona rural con serología para Chagas",
+        "corazón grande y vive en el campo",
+        "benznidazol, dosis",
+        "tamizaje del recién nacido de mamá con Chagas"
       ]
     },
     {
@@ -2556,6 +2820,14 @@
           "titulo": "Remisión a nefrología y signos de alarma",
           "texto": "Remitir cuando: TFGe <30 (G4–G5), albuminuria ≥300 mg/g persistente, caída de TFGe ≥25 % en un año o >5 mL/min/1,73 m² por año, hematuria con proteinuria o cilindros hemáticos (sospecha de glomerulonefritis), hipertensión resistente con 4 fármacos, hiperpotasemia persistente, litiasis recurrente, enfermedad hereditaria o riesgo a 5 años de falla renal >3–5 % (ecuación KFRE). Preparar acceso vascular y educación sobre terapia de reemplazo cuando el riesgo de falla renal a 2 años supera el 10–20 %. Signos de alarma que exigen atención inmediata: anuria u oliguria, potasio ≥6 mmol/L o cambios en el ECG, edema pulmonar, pericarditis urémica, encefalopatía, creatinina que se duplica en días (lesión renal aguda sobre ERC), hematuria macroscópica con dolor lumbar."
         }
+      ],
+      "consultas": [
+        "creatinina alta y le sale proteína en la orina",
+        "los riñones le funcionan poco, tasa de filtración de 40",
+        "diabético con los riñones dañados",
+        "cuándo lo mando al nefrólogo",
+        "microalbuminuria positiva",
+        "dosis de medicamentos con el riñón malo"
       ]
     },
     {
@@ -2624,6 +2896,14 @@
           "titulo": "Seguimiento tras exacerbación y signos de alarma",
           "texto": "Control en 1–4 semanas tras el alta: revisar técnica inhalatoria, adherencia, necesidad de oxígeno, comorbilidades y plan de acción; control adicional a las 12–16 semanas con espirometría y síntomas. Rehabilitación pulmonar dentro de las 4 semanas siguientes al alta reduce reingresos. Signos de alarma que exigen atención inmediata: disnea en reposo que no cede con el rescate, cianosis, confusión o somnolencia, SpO2 <88 % con el oxígeno habitual, dolor torácico o hemoptisis, edema de miembros inferiores de aparición rápida. Vigilar comorbilidades frecuentes: enfermedad cardiovascular, osteoporosis, ansiedad y depresión, cáncer de pulmón (tamizaje anual con TAC de baja dosis en fumadores de 50–80 años con 20 paquetes-año que fuman o dejaron hace menos de 15 años)."
         }
+      ],
+      "consultas": [
+        "fumador viejo que se ahoga al caminar",
+        "tos con flema todas las mañanas y se cansa",
+        "enfisema, qué inhalador le dejo",
+        "se le empeoró la ahogadera y la flema está verde",
+        "espirometría con obstrucción que no revierte",
+        "oxígeno en casa para el fumador"
       ]
     },
     {
@@ -2705,6 +2985,14 @@
           "titulo": "Pediculosis: peinado en húmedo, entorno, gestantes y colegio",
           "texto": "Peinado en húmedo (NHS): lavar con champú corriente, aplicar abundante acondicionador y pasar un peine de detección desde la raíz hasta las puntas por toda la cabeza, dos veces; repetir los días 1, 5, 9 y 13 para atrapar a los piojos recién nacidos y revisar de nuevo el día 17. Es la opción sin medicamento para lactantes pequeños y para quien prefiera evitar pediculicidas; en gestantes y mujeres que amamantan los formularios del NHS proponen como primera línea el peinado en húmedo o la dimeticona. Revisar a todos los convivientes y tratar a quienes tengan piojos vivos. Entorno (CDC): el piojo sobrevive menos de 1 a 2 días fuera de la cabeza, así que basta lavar en agua caliente, a 130 °F (unos 54 °C), y secar con calor la ropa y la ropa de cama usadas en los 2 días previos al tratamiento; lo que no se pueda lavar se lava en seco o se guarda en bolsa plástica cerrada 2 semanas; peines y cepillos se sumergen en agua caliente de 5 a 10 minutos. No usar fumigantes. Colegio (AAP 2022): ningún niño sano debe ser excluido ni perder clases por piojos, y las políticas de cero liendres para volver al colegio deben abandonarse; el tamizaje masivo de salones no ha mostrado efecto y estigmatiza, por lo que se prefiere educar a las familias. Ante persistencia de piojos vivos tras dos aplicaciones correctas, descartar reinfestación por contactos no tratados antes de cambiar de producto. Consultar si hay sobreinfección del cuero cabelludo o si el niño es menor de 2 meses."
         }
+      ],
+      "consultas": [
+        "le pica todo el cuerpo de noche y a la familia también",
+        "piojos en el colegio, qué champú",
+        "rasquiña entre los dedos con granitos",
+        "sarna en el niño, cómo uso la permetrina",
+        "liendres en el pelo",
+        "toda la casa con picazón"
       ]
     },
     {
@@ -2767,6 +3055,14 @@
           "titulo": "Complicaciones y diferenciales que no se pueden pasar",
           "texto": "Absceso periamigdalino: trismus, voz de papa caliente, desviación de la úvula, abombamiento unilateral; requiere drenaje y antibiótico. Absceso retrofaríngeo o epiglotitis: estridor, babeo, posición en trípode, dificultad respiratoria; emergencia de vía aérea. Síndrome de Lemierre: fiebre persistente con dolor cervical lateral tras faringitis (tromboflebitis yugular). Mononucleosis infecciosa (Epstein-Barr): adenopatías posteriores, esplenomegalia, fatiga, linfocitos atípicos; la amoxicilina produce exantema y se evita; restringir deportes de contacto 3–4 semanas por riesgo de rotura esplénica. Fiebre escarlatina: exantema en lija con líneas de Pastia, se trata igual que la faringitis estreptocócica. Signos de alarma que obligan a reevaluar o remitir: dificultad para respirar o tragar saliva, estridor, trismus, rigidez de nuca, fiebre que persiste más de 72 h con antibiótico, deshidratación, dolor unilateral intenso o tumefacción cervical."
         }
+      ],
+      "consultas": [
+        "le duele la garganta y tiene las amígdalas con pus",
+        "fiebre y placas blancas en la garganta",
+        "dolor de garganta, cuándo doy penicilina",
+        "amigdalitis en el niño de 8 años",
+        "garganta roja sin tos y ganglios en el cuello",
+        "criterios de Centor"
       ]
     },
     {
@@ -2839,6 +3135,14 @@
           "titulo": "Seguimiento y signos de alarma",
           "texto": "Reevaluar cada 6–12 meses: adherencia al anticoagulante, sangrados, función renal y hepática, hemoglobina, frecuencia cardiaca, síntomas, interacciones (antiinflamatorios, antiagregantes, antifúngicos azólicos, rifampicina, anticonvulsivantes) y control de comorbilidades: presión arterial, peso (pérdida ≥10 % reduce la recurrencia), apnea del sueño, alcohol (abstinencia), ejercicio moderado. Interrupción periprocedimiento según riesgo de sangrado y función renal, sin puentes con heparina en ACOD. Signos de alarma que exigen atención inmediata: déficit neurológico focal súbito (ictus, aun anticoagulado), sangrado mayor (melenas, hematemesis, hematuria franca, cefalea intensa tras traumatismo), síncope, palpitaciones con hipotensión, dolor torácico o disnea de reposo, frecuencia sostenida >150 latidos por minuto."
         }
+      ],
+      "consultas": [
+        "tiene el pulso irregular y se fatiga",
+        "le palpita el corazón rápido y desordenado",
+        "arritmia, debe tomar warfarina o apixabán",
+        "CHA2DS2-VASc",
+        "palpitaciones y el electro sin ondas P",
+        "anticoagular al anciano con arritmia"
       ]
     },
     {
@@ -2904,6 +3208,14 @@
           "titulo": "Manejo sintomático y signos de alarma para los padres",
           "texto": "Antipiréticos solo para el malestar, no para «bajar la fiebre» por sí misma: acetaminofén 10–15 mg/kg cada 4–6 h (máximo 5 dosis al día) o ibuprofeno 10 mg/kg cada 6–8 h en mayores de 6 meses; no alternarlos de rutina ni usar baños fríos ni alcohol; no aspirina. Mantener líquidos y lactancia, ropa ligera. La fiebre alta por sí sola no predice gravedad; sí lo hacen el aspecto, la actividad y la perfusión. Signos de alarma para consultar de inmediato: menor de 3 meses con fiebre, manchas en la piel que no desaparecen al presionar, rigidez de nuca o abombamiento de la fontanela, dificultad para respirar, somnolencia que no despierta o llanto inconsolable, convulsión, no orina en 12 h, vómitos persistentes, fiebre que dura más de 5 días o reaparece tras mejorar."
         }
+      ],
+      "consultas": [
+        "bebé de un mes con fiebre y no se le encuentra nada",
+        "lactante con calentura sin tos ni diarrea",
+        "recién nacido calenturiento, lo hospitalizo",
+        "fiebre de 39 en un bebé de 2 meses",
+        "qué exámenes le pido al lactante con fiebre",
+        "acetaminofén en bebé con fiebre"
       ]
     },
     {
@@ -2975,6 +3287,14 @@
           "titulo": "Profilaxis de crisis, estilo de vida y fármacos asociados",
           "texto": "Profilaxis al iniciar la terapia hipouricemiante (ACR, recomendación fuerte): colchicina, AINE o prednisona/prednisolona en dosis bajas, durante 3–6 meses en lugar de menos de 3 meses, y prolongarla si las crisis continúan. EULAR: profilaxis durante los primeros 6 meses con colchicina 0,5–1 mg al día, reduciendo la dosis en insuficiencia renal; si la colchicina no se tolera o está contraindicada, AINE en dosis baja si no hay contraindicación. Estilo de vida (ACR, recomendaciones condicionales, independientemente de la actividad de la enfermedad): limitar el alcohol, la ingesta de purinas y el jarabe de maíz alto en fructosa (bebidas azucaradas), y bajar de peso en sobrepeso u obesidad; no se recomienda suplementar vitamina C. EULAR: evitar el exceso de alcohol (en especial cerveza y destilados), bebidas azucaradas, comidas copiosas y exceso de carnes y mariscos; estimular lácteos bajos en grasa y ejercicio regular; dejar de fumar. Fármacos asociados (ACR): cambiar la hidroclorotiazida por otro antihipertensivo cuando sea factible; preferir losartán como antihipertensivo cuando sea factible; no suspender la aspirina en dosis baja si tiene indicación cardiovascular; no añadir ni cambiar a fenofibrato para la dislipidemia. EULAR, en cambio, sugiere considerar estatina o fenofibrato en el paciente con gota y dislipidemia, y sustituir diuréticos de asa o tiazídicos cuando sea posible, prefiriendo losartán o calcioantagonistas para la hipertensión. Remitir a reumatología: diagnóstico dudoso, gota tofácea o refractaria, intolerancia o falla a alopurinol y febuxostat, enfermedad renal avanzada o necesidad de terapia biológica."
         }
+      ],
+      "consultas": [
+        "se le hinchó el dedo gordo del pie y está rojo y caliente",
+        "ácido úrico alto con dolor en el pie",
+        "ataque de gota, colchicina",
+        "no aguanta ni la sábana sobre el pie por el dolor",
+        "cuándo le doy alopurinol",
+        "bolitas en las orejas y en las articulaciones"
       ]
     },
     {
@@ -3053,6 +3373,14 @@
           "titulo": "Hemorragia digestiva baja (hematoquecia): estratificación, angio-TC y colonoscopia",
           "texto": "La guía ACG 2023 de hemorragia digestiva baja recomienda estratificar el riesgo con escalas clínicas, como la de Oakland (edad, sexo, hospitalización previa por sangrado bajo, sangre en el tacto rectal, frecuencia cardiaca, presión sistólica y hemoglobina), para identificar a los pacientes de bajo riesgo que pueden darse de alta con estudio ambulatorio, y usar una estrategia transfusional restrictiva como en la hemorragia alta. Ante hematoquecia con inestabilidad hemodinámica, considerar una fuente alta y descartarla con endoscopia digestiva alta cuando se sospeche. En sangrado activo con repercusión hemodinámica, la angiotomografía puede ser el estudio inicial para localizar el sangrado y guiar la embolización. La colonoscopia urgente (en menos de 24 horas) no se recomienda de rutina; se realiza durante la hospitalización tras una preparación adecuada del colon. Causas frecuentes: enfermedad diverticular, angiodisplasias, hemorroides, colitis isquémica o infecciosa y neoplasias. Antitrombóticos: suspender la aspirina usada en prevención primaria; no suspender la de prevención secundaria; evitar AINE. Remitir a un centro con endoscopia, radiología intervencionista y cirugía cuando persiste el sangrado o hay inestabilidad."
         }
+      ],
+      "consultas": [
+        "vomitó sangre",
+        "heces negras como alquitrán",
+        "vómito como cuncho de café",
+        "sangrado por el recto y está pálido",
+        "cirrótico vomitando sangre por várices",
+        "cuándo transfundo en sangrado digestivo"
       ]
     },
     {
@@ -3127,6 +3455,14 @@
           "titulo": "Código rojo en Colombia: tiempos, clasificación del choque y transfusión",
           "texto": "El código rojo organiza al equipo con funciones asignadas (coordinador, asistentes y circulante) y por tiempos. Activación (tiempo cero): la hace el primer profesional que atiende a la mujer que sangra, ante signos de choque o pérdida estimada mayor de 1 000 mL; alertar al laboratorio y al banco de sangre e iniciar el calentamiento de líquidos. Clasificación del choque por el peor parámetro encontrado (GPC MinSalud 2013): compensado, con conciencia, perfusión y signos vitales normales; leve, 1 000–1 500 mL (16–25 %), sensorio normal o agitación, palidez y frialdad, pulso 91–100, sistólica 80–90 mmHg; moderado, 1 500–2 000 mL (26–35 %), agitación, palidez, frialdad y sudoración, pulso 101–120, sistólica 70–79 mmHg; severo, más del 35 % (más de 2 000 mL), letargia o inconsciencia, llenado capilar mayor de 3 segundos, pulso mayor de 120 y sistólica menor de 70 mmHg. Minutos 1 a 20 (reanimación y diagnóstico): oxígeno, dos accesos venosos de gran calibre, muestras, bolos de 500 mL de cristaloide tibio reevaluando la respuesta (presión sistólica, diuresis, sensorio, llenado capilar), sonda vesical, masaje y uterotónicos, ácido tranexámico e identificación de la causa. Minutos 20 a 60 (estabilización): conservar el volumen circulante, transfundir y tratar la causa específica; en el choque severo, iniciar glóbulos rojos grupo O sin esperar pruebas cruzadas. Más de 60 minutos (manejo avanzado): asumir coagulopatía de consumo y transfundir plasma y plaquetas además de glóbulos rojos (protocolo de transfusión masiva), con control quirúrgico definitivo en el nivel de complejidad adecuado y traslado a cuidado intensivo."
         }
+      ],
+      "consultas": [
+        "después de parir sangró mucho",
+        "la mujer recién parida está empapando las toallas",
+        "útero blandito después del parto y no deja de sangrar",
+        "código rojo obstétrico",
+        "oxitocina después del parto, cuánto",
+        "se le fue mucha sangre en el parto y está pálida y fría"
       ]
     },
     {
@@ -3208,6 +3544,14 @@
           "titulo": "Hepatitis C: tratamiento pangenotípico, remisión y lo propio de Colombia",
           "texto": "OMS 2022: antivirales de acción directa pangenotípicos para todo adulto, adolescente y niño desde los 3 años con infección crónica, sin importar el estadio. Esquemas en adultos: sofosbuvir/velpatasvir 12 semanas, sofosbuvir/daclatasvir 12 semanas o glecaprevir/pibrentasvir 8 semanas. AASLD-IDSA, tratamiento simplificado en adultos sin tratamiento previo y sin cirrosis: glecaprevir 300 mg/pibrentasvir 120 mg con comida por 8 semanas, o sofosbuvir 400 mg/velpatasvir 100 mg por 12 semanas. Se presume cirrosis con FIB-4 mayor de 3,25, elastografía mayor de 12,5 kPa, plaquetas menores de 150 000/mm³, signos clínicos o biopsia; la cirrosis compensada tiene su propio algoritmo simplificado (en genotipo 3 se exige estudio de resistencia en NS5A antes de sofosbuvir/velpatasvir) y vigilancia con ecografía cada 6 meses. No aplica el esquema simplificado (remitir): tratamiento previo, HBsAg positivo, embarazo, carcinoma hepatocelular conocido o sospechado o trasplante hepático. Durante el tratamiento advertir hipoglucemia en diabéticos y vigilar el INR con warfarina. Curación: ARN del VHC y perfil hepático 12 semanas o más después de terminar; si las transaminasas siguen altas, buscar otra causa. La curación no protege de reinfección. Colombia: GPC MinSalud-IETS de hepatitis C (2016, segunda edición 2018); la Resolución 1692 de 2017 fija la compra centralizada de antivirales de acción directa por el Fondo Estratégico de la OPS, con seguimiento de la Cuenta de Alto Costo; hepatitis B, C y coinfección B-Delta se notifican al Sivigila (evento 340). Urgencias u hospitalización: ictericia con alteración de la coagulación, encefalopatía, ascitis o hemorragia digestiva. Remitir a hepatología, gastroenterología o infectología: cirrosis, sospecha de carcinoma, coinfección por VIH o delta, falla a antivirales, enfermedad renal avanzada, niños, gestantes y HBsAg positivo que iniciará inmunosupresión."
         }
+      ],
+      "consultas": [
+        "prueba de hepatitis B positiva en la embarazada",
+        "antígeno de superficie positivo, qué hago",
+        "tamizaje de hepatitis C",
+        "el bebé de mamá con hepatitis B, qué vacuna",
+        "transaminasas altas crónicas",
+        "tratamiento para la hepatitis C"
       ]
     },
     {
@@ -3280,6 +3624,14 @@
           "titulo": "Situaciones especiales y remisión",
           "texto": "Embarazo: no usar IECA, ARA II ni inhibidores directos de renina; de elección labetalol, nifedipino de liberación prolongada o metildopa. Adultos mayores: iniciar a dosis bajas, vigilar ortostatismo y caídas. Enfermedad renal crónica con albuminuria: preferir IECA o ARA II. Remitir a segundo nivel ante sospecha de hipertensión secundaria, hipertensión resistente verdadera, daño de órgano progresivo, emergencia hipertensiva o hipertensión en embarazo. Signos de alarma que exigen atención inmediata: cefalea intensa con alteración neurológica, dolor torácico, disnea súbita, déficit focal, visión borrosa aguda o convulsiones con PA elevada."
         }
+      ],
+      "consultas": [
+        "tiene la presión alta, qué le doy",
+        "tensión en 160/100",
+        "losartán o enalapril para empezar",
+        "le duele la nuca y tiene la presión subida",
+        "meta de presión en el diabético",
+        "se toma la presión en la casa y le sale alta"
       ]
     },
     {
@@ -3351,6 +3703,14 @@
           "titulo": "Hiperpotasemia: desplazamiento y eliminación del potasio, ERC y remisión",
           "texto": "Desplazamiento intracelular (UKKA 2023): 10 unidades de insulina regular con 25 g de glucosa (50 mL de dextrosa al 50 %) intravenosas en 15 minutos. El principal riesgo es la hipoglucemia, a veces tardía: si la glucemia previa al tratamiento es menor de 7,0 mmol/L (unos 126 mg/dL), la UKKA indica continuar con dextrosa al 10 % durante 5 horas, que aporta otros 25 g de glucosa, y vigilar la glucemia capilar de forma seriada durante varias horas. El salbutamol nebulizado en dosis altas es coadyuvante de la insulina con glucosa, no monoterapia; usarlo con precaución en cardiopatía isquémica o taquiarritmias y ajustar la dosis según el protocolo institucional. El bicarbonato de sodio se considera cuando hay acidosis metabólica, no como tratamiento aislado. Eliminación: la actualización UKKA 2023 amplió el uso de los quelantes nuevos (ciclosilicato de sodio y zirconio, patirómero) a la hiperpotasemia moderada y grave, en las dosis de la ficha técnica, y dejó sin papel en el manejo agudo al poliestireno sulfonato de calcio. Los diuréticos de asa ayudan si hay volemia adecuada y diuresis conservada. La hemodiálisis está indicada en hiperpotasemia refractaria, sobre todo con lesión renal aguda oligúrica o enfermedad renal crónica terminal. Medir el potasio de forma seriada tras el tratamiento, porque el efecto de la insulina y del salbutamol es transitorio y hay rebote. En la fase aguda se suspenden los fármacos causantes; KDIGO 2020 aconseja, una vez controlado el episodio, mantener o reintroducir el bloqueo del sistema renina-angiotensina-aldosterona cuando está indicado, apoyándose en quelantes, corrección de la acidosis, diuréticos y revisión de dieta y medicamentos, en lugar de suspenderlo indefinidamente. Remisión: en atención primaria, un potasio de 6,5 mmol/L o más requiere remisión urgente al hospital en la mayoría de los casos; entre 6,0 y 6,4 mmol/L puede valorarse sin hospitalizar si el paciente no está agudamente enfermo ni tiene lesión renal aguda. Hospitalizar siempre ante cambios en el ECG, debilidad muscular, palpitaciones o lesión renal aguda. Las guías citadas son de adultos; en niños usar protocolos pediátricos."
         }
+      ],
+      "consultas": [
+        "sodio en 120 y está confundido",
+        "potasio en 7 con cambios en el electro",
+        "corrección del sodio, cuánto por día",
+        "solución salina al 3 por ciento",
+        "gluconato de calcio por potasio alto",
+        "sodio bajito en el abuelo que toma diurético"
       ]
     },
     {
@@ -3422,6 +3782,14 @@
           "titulo": "Nódulo tiroideo: evaluación",
           "texto": "Ante un nódulo palpable o incidental: TSH y ecografía tiroidea de alta resolución (no TAC ni gammagrafía de inicio; gammagrafía solo si la TSH está baja, para identificar nódulo caliente, que no requiere biopsia). Clasificar el riesgo ecográfico (ATA 2015 o TI-RADS): patrón de alta sospecha (hipoecoico sólido con márgenes irregulares, microcalcificaciones, más alto que ancho, extensión extratiroidea) → biopsia por aspiración con aguja fina si mide ≥1 cm; sospecha intermedia → biopsia si ≥1 cm; baja sospecha → biopsia si ≥1,5 cm; muy baja sospecha (espongiforme) → biopsia si ≥2 cm o vigilancia; quistes puros no requieren biopsia. Citología según Bethesda: benigno (II) → control ecográfico a los 12–24 meses; indeterminado (III/IV) → repetir, pruebas moleculares o lobectomía; sospechoso o maligno (V/VI) → cirugía. Remitir con urgencia si hay crecimiento rápido, disfonía, adenopatías cervicales sospechosas, antecedente de radiación o de cáncer tiroideo familiar. No está indicada la levotiroxina para «suprimir» nódulos benignos."
         }
+      ],
+      "consultas": [
+        "está cansada, engordando y con frío, la TSH alta",
+        "levotiroxina, cuántos microgramos",
+        "TSH en 8 con T4 normal",
+        "tiroides lenta en la embarazada",
+        "nódulo en el cuello, en la tiroides",
+        "se le está cayendo el pelo y está estreñida"
       ]
     },
     {
@@ -3495,6 +3863,14 @@
           "titulo": "Seguimiento después del alta, ictericia prolongada y signos de alarma",
           "texto": "El momento del control tras el alta depende de la diferencia entre la última bilirrubina y el umbral de fototerapia y de la edad al alta: los cercanos al umbral se reevalúan en horas o al día siguiente y los muy alejados en el control habitual del recién nacido; quienes recibieron fototerapia necesitan control de rebote. En cada control valorar ictericia, alimentación, pérdida de peso, diuresis y deposiciones. Ictericia prolongada (AAP 2022): en lactados con leche materna que siguen ictéricos a las 3–4 semanas de vida, y en alimentados con fórmula que siguen ictéricos a las 2 semanas, medir bilirrubina total y directa (o conjugada) para descartar colestasis; la hiperbilirrubinemia directa o conjugada obliga a remisión prioritaria a gastroenterología o hepatología pediátrica, porque la atresia de vías biliares requiere diagnóstico y cirugía tempranos. La ictericia por leche materna, con bilirrubina directa normal, es benigna y no obliga a suspender la lactancia. Revisar además el resultado del tamizaje neonatal de hipotiroidismo. Signos de alarma para los padres y el clínico: ictericia en las primeras 24 horas de vida; ictericia que se intensifica o se extiende a abdomen, piernas o plantas; bebé muy dormido, que no despierta para comer o succiona débil; llanto agudo, rigidez o arqueamiento; deposiciones pálidas o blanquecinas (acolia) u orina oscura que mancha el pañal; pocos pañales mojados o pérdida excesiva de peso; fiebre o mal aspecto. Cualquiera de ellos obliga a consulta inmediata."
         }
+      ],
+      "consultas": [
+        "el bebé está amarillito",
+        "recién nacido amarillo hasta el pecho",
+        "bilirrubina en 15 en bebé de 3 días",
+        "cuándo pongo fototerapia",
+        "ojos amarillos en el neonato",
+        "piel amarilla en el bebé que toma seno"
       ]
     },
     {
@@ -3565,6 +3941,14 @@
           "titulo": "Prevención y signos de alarma para el cuidador",
           "texto": "Vacunación completa (neumococo conjugada, Haemophilus influenzae tipo b, tosferina, sarampión, influenza anual desde los 6 meses), lactancia materna exclusiva 6 meses, lavado de manos, evitar humo de tabaco y de leña en la casa, zinc y vitamina A según programa en desnutrición. Signos de alarma para volver de inmediato (AIEPI): respiración rápida o difícil, se le hunden las costillas, no puede beber o tomar el pecho, vomita todo, convulsiona, está anormalmente somnoliento o no despierta, fiebre que persiste más de 2–3 días o reaparece, empeora. Un lactante menor de 2 meses con fiebre, hipotermia, dificultad para alimentarse o cambios en el estado general se evalúa de urgencia en todos los casos."
         }
+      ],
+      "consultas": [
+        "el niño tiene tos y respira rápido con tiraje",
+        "neumonía en el niño, cuánta amoxicilina",
+        "niño con gripa y fiebre que se hunde al respirar",
+        "respiración rápida en el niño de 1 año",
+        "AIEPI tos o dificultad para respirar",
+        "niño con fiebre y le suena el pecho"
       ]
     },
     {
@@ -3636,6 +4020,14 @@
           "titulo": "Recurrencias, hombres y signos de alarma",
           "texto": "Cistitis recurrente (2 o más en 6 meses o 3 en un año): descartar factores (relaciones sexuales, espermicidas, retención, atrofia vaginal, litiasis); profilaxis poscoital o continua con nitrofurantoína 50–100 mg o trimetoprim/sulfametoxazol dosis baja por 6 meses tras evaluar riesgos; la metenamina es alternativa no antibiótica; el arándano tiene evidencia modesta. En hombres toda infección urinaria se considera complicada: urocultivo, descartar prostatitis (tacto rectal doloroso, retención) y tratar 7–14 días con un agente que penetre la próstata (fluoroquinolona o trimetoprim/sulfametoxazol según sensibilidad); estudiar si recurre. Signos de alarma que exigen atención inmediata: fiebre con escalofríos y dolor lumbar en gestante, hipotensión, taquicardia, confusión, vómito incoercible, anuria, dolor cólico con fiebre (obstrucción infectada) o falta de mejoría a las 48–72 h de tratamiento."
         }
+      ],
+      "consultas": [
+        "le arde al orinar y va al baño a cada rato",
+        "dolor en la espalda baja con fiebre, escalofrío y ardor al orinar",
+        "cistitis en la mujer, nitrofurantoína",
+        "el parcial de orina salió con bacterias pero no tiene síntomas",
+        "orina turbia y con mal olor",
+        "pielonefritis, qué antibiótico"
       ]
     },
     {
@@ -3708,6 +4100,14 @@
           "titulo": "Seguimiento, profilaxis y relación con el lactante febril",
           "texto": "AAP: tras una IVU febril, indicar a los padres que consulten pronto (idealmente en 48 horas) ante cualquier fiebre futura, para detectar y tratar a tiempo las recurrencias, que aumentan el riesgo de cicatrices renales. La AAP 2011 no recomienda profilaxis antibiótica de rutina tras la primera IVU febril, tampoco con reflujo de grado I a IV, porque no demostró reducir las recurrencias febriles; NICE tampoco la recomienda tras la primera infección y solo la considera en IVU recurrente. Prevención: tratar el estreñimiento y la disfunción vesical e intestinal, con micciones regulares sin posponerlas y buena ingesta de líquidos. Seguimiento a largo plazo (NICE): los niños con anomalías renales bilaterales, función renal alterada, presión arterial elevada o proteinuria requieren control de presión arterial, función renal y proteinuria, con valoración por nefrología pediátrica; los que tuvieron una IVU sin complicaciones con imágenes normales, o con defectos unilaterales menores, no necesitan seguimiento rutinario salvo recurrencias. No buscar ni tratar la bacteriuria asintomática con urocultivos de control. Relación con el lactante febril: en lactantes de 8 a 60 días aplica la guía AAP 2021 (ver la guía de fiebre sin foco): entre 29 y 60 días, con uroanálisis positivo, buen aspecto y marcadores inflamatorios normales, puede darse antibiótico oral ambulatorio con control en 24 horas; entre 8 y 21 días y en todo lactante con mal aspecto, hospitalización con estudio completo y antibiótico parenteral. Signos de alarma para reconsultar: fiebre que persiste más de 48 horas con tratamiento, vómito que impide tomar el antibiótico, decaimiento, poca orina o dolor lumbar intenso."
         }
+      ],
+      "consultas": [
+        "niña con fiebre y le duele al orinar",
+        "bebé con fiebre y el parcial de orina con leucocitos",
+        "urocultivo en el niño, cómo recojo la muestra",
+        "el niño llora al hacer chichí",
+        "ecografía renal después de la primera infección urinaria en el niño",
+        "antibiótico para la infección de orina en la niña"
       ]
     },
     {
@@ -3785,6 +4185,14 @@
           "titulo": "Mordeduras de perro, gato y humanas: profilaxis antibiótica, cierre, tétanos y rabia",
           "texto": "Lavar e irrigar abundantemente la herida y desbridar con cautela el tejido desvitalizado. No se recomienda el cierre primario, salvo en la cara, donde se maneja con irrigación copiosa, desbridamiento cauteloso y antibiótico preventivo; otras heridas pueden aproximarse. Antibiótico preventivo temprano por 3 a 5 días si el paciente es inmunosuprimido, asplénico o tiene hepatopatía avanzada; si hay edema previo o resultante en la zona; si la lesión es moderada a grave, sobre todo en mano o cara; o si pudo penetrar periostio o cápsula articular (incluidas las lesiones de puño cerrado contra dientes). El antibiótico de elección por cubrir aerobios y anaerobios de la boca (Pasteurella, Capnocytophaga, Eikenella, estreptococos, S. aureus y anaerobios) es amoxicilina-clavulanato 875/125 mg cada 12 h; en niños, dosis por peso del componente amoxicilina. Opciones intravenosas para heridas infectadas: ampicilina-sulbactam, piperacilina/tazobactam, cefoxitina o un carbapenémico. En alergia a penicilina se combina un agente activo contra Pasteurella, como doxiciclina o trimetoprim-sulfametoxazol, con cobertura anaerobia (metronidazol o clindamicina). Herida ya infectada: tratar con los mismos agentes por más tiempo y hospitalizar si hay signos sistémicos, compromiso de tendón, articulación o hueso, o infección profunda de la mano. Tétanos: aplicar toxoide si no se ha vacunado en los últimos 10 años, preferiblemente Tdap si nunca la recibió, y valorar inmunoglobulina antitetánica si el esquema es incompleto o desconocido. Rabia: clasificar la exposición y decidir vacuna e inmunoglobulina antirrábica según la guía nacional de atención de personas agredidas por animal potencialmente transmisor de rabia (MinSalud/INS), observar al perro o gato agresor durante 10 días cuando sea posible y notificar la agresión al SIVIGILA."
         }
+      ],
+      "consultas": [
+        "tiene la pierna roja, caliente e hinchada",
+        "forúnculo con pus en la nalga",
+        "costras color miel en la cara del niño",
+        "absceso, lo drené, le doy antibiótico",
+        "la piel se le está poniendo morada y le duele muchísimo",
+        "celulitis, cefalexina"
       ]
     },
     {
@@ -3868,6 +4276,14 @@
           "titulo": "Tratamiento de la pareja, pruebas complementarias y prevención",
           "texto": "Pruebas a toda persona con ITS: VIH, sífilis, hepatitis B (antígeno de superficie) y, según riesgo, hepatitis C; vacunar contra hepatitis B y VPH según el esquema nacional; ofrecer profilaxis preexposición al VIH si hay riesgo continuo. Parejas (CDC 2021): evaluar, probar y tratar a las parejas sexuales de los 60 días previos al inicio de síntomas o al diagnóstico de gonorrea, clamidia, tricomoniasis o enfermedad pélvica; si el último contacto fue antes, tratar a la pareja más reciente. Cuando la pareja no consultará, la terapia expedita (entregar a la paciente el tratamiento para su pareja) usa cefixima 800 mg VO dosis única para gonorrea y doxiciclina 100 mg cada 12 h por 7 días para clamidia; verificar que la normativa local lo permita. Abstinencia sexual hasta 7 días después de un tratamiento de dosis única o hasta completar el esquema, resolver los síntomas y que la pareja esté tratada. Repetir la prueba de gonorrea, clamidia y tricomonas a los 3 meses. Profilaxis posexposición con doxiciclina (CDC 2024): doxiciclina 200 mg VO dosis única dentro de las 72 h siguientes a sexo oral, anal o vaginal sin condón, en hombres que tienen sexo con hombres y mujeres transgénero con al menos una ITS bacteriana (sífilis, gonorrea o clamidia) en los últimos 12 meses; máximo 200 mg cada 24 h y control con pruebas de ITS cada 3 a 6 meses; verificar su adopción en la normativa colombiana. Una ITS en un niño o niña obliga a descartar abuso sexual y a activar la ruta de atención integral a víctimas de violencia sexual. En la gestante, el tamizaje de sífilis, VIH y hepatitis B hace parte del control prenatal y de la estrategia de eliminación de la transmisión materno-infantil (ETMI Plus)."
         }
+      ],
+      "consultas": [
+        "le sale pus por el pene",
+        "flujo vaginal con mal olor",
+        "ardor y secreción después de una relación",
+        "tratamiento para la gonorrea",
+        "dolor bajito en la barriga y flujo en la mujer",
+        "verrugas en los genitales"
       ]
     },
     {
@@ -3937,6 +4353,14 @@
           "titulo": "Precauciones, adultos mayores (Beers), duración y retiro de hipnóticos",
           "texto": "Advertencias: zolpidem, eszopiclona y zaleplón pueden causar conductas complejas del sueño (sonambulismo, conducir o cocinar dormido); suspenderlos si ocurren. Todos los hipnóticos producen somnolencia residual y riesgo al conducir, caídas, tolerancia, dependencia e insomnio de rebote, y se potencian con alcohol, opioides y otros depresores. Evitarlos o usarlos con gran cautela en apnea del sueño no tratada, insuficiencia respiratoria, miastenia, hepatopatía grave, embarazo y antecedente de trastorno por uso de sustancias. Criterios de Beers 2023 de la AGS para adultos mayores: evitar benzodiacepinas (deterioro cognitivo, delirium, caídas, fracturas, accidentes de tránsito), salvo indicaciones como epilepsia, abstinencia alcohólica o de benzodiacepinas, ansiedad generalizada grave o anestesia; evitar hipnóticos Z por eventos adversos similares con mejoría mínima de la latencia y la duración del sueño; evitar antihistamínicos de primera generación (difenhidramina, hidroxicina, clorfeniramina) por efecto anticolinérgico; evitar doxepina en dosis mayores de 6 mg al día (en 6 mg o menos su seguridad es comparable a placebo). En la práctica colombiana es frecuente el uso crónico de clonazepam o alprazolam para dormir: no iniciarlo a largo plazo y revisar su necesidad en cada control. Duración: ESRS limita benzodiacepinas e hipnóticos Z a 4 semanas o menos; uso más prolongado solo en casos seleccionados y preferiblemente intermitente. Retiro en uso crónico: no suspender bruscamente; reducción gradual pactada con el paciente y acompañada de TCC-I. Si el insomnio persiste pese al tratamiento, reconsiderar el diagnóstico (apnea, ritmo circadiano, depresión, bipolaridad, sustancias) y remitir a medicina del sueño o psiquiatría. Signos de alarma: somnolencia diurna excesiva con riesgo al conducir, ideación suicida, disminución de la necesidad de dormir sin cansancio (posible manía) y apneas presenciadas."
         }
+      ],
+      "consultas": [
+        "no puede dormir de noche",
+        "se despierta a las 3 de la mañana y no vuelve a dormir",
+        "le doy zolpidem o clonazepam para dormir",
+        "higiene del sueño",
+        "lleva meses durmiendo mal",
+        "pastillas para dormir en el abuelo"
       ]
     },
     {
@@ -4010,6 +4434,14 @@
           "titulo": "Seguimiento, dispositivos y signos de alarma",
           "texto": "Seguimiento cada 3–6 meses en pacientes estables: síntomas, peso, presión, frecuencia, electrolitos y creatinina a los 1–2 semanas de cada cambio y cada 6 meses; NT-proBNP seriado como apoyo. Repetir ecocardiograma a los 3–6 meses de tratamiento óptimo para decidir dispositivos: desfibrilador implantable si FEVI ≤35 % persiste con NYHA II–III (y expectativa >1 año), resincronización si además QRS ≥150 ms con bloqueo de rama izquierda. Remitir a cardiología avanzada ante NYHA III–IV persistente, hospitalizaciones repetidas, intolerancia a los pilares por hipotensión o falla renal, inotrópicos previos, FEVI <20 % o deterioro progresivo. Autocuidado: pesarse a diario (aumento >2 kg en 3 días obliga a consultar), sodio <2–3 g/día, actividad física supervisada, vacunación anual contra influenza y neumococo, no automedicarse con AINE. Signos de alarma: disnea en reposo u ortopnea nueva, aumento rápido de peso o edema, síncope, palpitaciones sostenidas, dolor torácico, confusión, oliguria, hipotensión sintomática."
         }
+      ],
+      "consultas": [
+        "se ahoga acostado y tiene los pies hinchados",
+        "se despierta ahogado en la noche",
+        "corazón grande y débil, fracción de eyección baja",
+        "le doy furosemida por la hinchazón",
+        "se cansa al caminar una cuadra y tiene las piernas hinchadas",
+        "los cuatro medicamentos para el corazón débil"
       ]
     },
     {
@@ -4087,6 +4519,14 @@
           "titulo": "Síndrome intermedio, hospitalización y notificación al INS",
           "texto": "Síndrome intermedio: debilidad de los flexores del cuello, de la musculatura proximal de las extremidades, de los pares craneales motores y de los músculos respiratorios, que aparece habitualmente entre 24 y 96 horas después de la intoxicación, a menudo tras la aparente resolución de la crisis colinérgica (algunas revisiones lo sitúan entre 12 y 72 horas). Suele respetar la fuerza distal y es una causa importante de muerte por insuficiencia respiratoria: vigilar varias veces al día la flexión del cuello, la deglución y la mecánica respiratoria para intubar a tiempo. Algunos compuestos muy liposolubles, como el fentión, producen crisis colinérgicas tardías o recurrentes después de días de aparente mejoría. La polineuropatía tardía aparece semanas después, con calambres, parestesias y debilidad distal de miembros inferiores, por inhibición de la esterasa diana de neuropatía. Hospitalización y remisión: todo paciente sintomático requiere observación hospitalaria con monitoreo; remitir a un nivel con cuidado intensivo, ventilación mecánica y antídotos ante necesidad de intubación o de infusión de atropina, convulsiones, debilidad progresiva o compromiso de conciencia. Signos de alarma: reaparición de broncorrea, hipoxemia, debilidad para flexionar el cuello, disfagia, convulsiones, bradicardia o hipotensión refractarias. Colombia: las intoxicaciones por plaguicidas se notifican al Sivigila en el evento 365 del INS (intoxicaciones por sustancias químicas, grupo plaguicidas), que también recoge las exposiciones ocupacionales, accidentales y el suicidio consumado. Cuando la exposición es intencional suicida y el paciente sobrevive, el INS la vigila a través del evento 356 (intento de suicidio). Todo intento de suicidio requiere valoración por salud mental antes del egreso, plan de seguridad con la familia y restricción del acceso a plaguicidas en el hogar. En la exposición laboral, la guía de atención integral de salud ocupacional para plaguicidas del Ministerio orienta la vigilancia médica y de colinesterasa de los trabajadores expuestos."
         }
+      ],
+      "consultas": [
+        "se tomó un veneno para fumigar",
+        "babeo, pupilas chiquitas y diarrea después de fumigar",
+        "campesino intoxicado con insecticida",
+        "cuánta atropina le pongo",
+        "huele a ajo y está sudando mucho",
+        "se intentó envenenar con un plaguicida"
       ]
     },
     {
@@ -4171,6 +4611,14 @@
           "titulo": "Medicamentos y regreso al trabajo",
           "texto": "La gran mayoría de los medicamentos es compatible; antes de suspender la lactancia, consultar LactMed (NIH) o e-lactancia, que clasifican el riesgo de cada fármaco. Preferir fármacos de vida media corta, con experiencia de uso en lactantes y la menor dosis eficaz; el acetaminofén y el ibuprofeno son de elección para el dolor. FDA 2017: desaconseja la codeína y el tramadol en mujeres lactantes, porque las metabolizadoras ultrarrápidas por CYP2D6 producen niveles altos de morfina que pueden causar depresión respiratoria grave en el bebé; vigilar somnolencia excesiva, dificultad para respirar o para mamar. Alcohol: lo más seguro es no beber; si se bebe ocasionalmente, CDC propone amamantar 2 horas o más después de una bebida. Regreso al trabajo en Colombia: la Ley 1822 de 2017 fija la licencia de maternidad remunerada en 18 semanas; la Ley 2306 de 2023 mantiene 2 descansos remunerados de 30 minutos al día durante los primeros 6 meses y añade un descanso de 30 minutos al día desde los 6 meses hasta los 2 años, siempre que se mantenga la lactancia. El fuero de maternidad y lactancia prohíbe el despido sin autorización del Ministerio del Trabajo, y la Ley 1823 de 2017 creó las Salas Amigas de la Familia Lactante en el entorno laboral para extraer y conservar la leche. Planear con la madre antes del reintegro: practicar la extracción, crear una reserva congelada, que el cuidador ofrezca la leche en vaso y mantener las tomas directas en la noche y los días de descanso."
         }
+      ],
+      "consultas": [
+        "le duele el seno al dar teta",
+        "pezones agrietados",
+        "seno rojo y caliente con fiebre en la mamá que lacta",
+        "cómo guardo la leche materna en la nevera",
+        "el bebé no se pega bien al pecho",
+        "puede lactar si toma este medicamento"
       ]
     },
     {
@@ -4247,6 +4695,14 @@
           "titulo": "Gestantes, niños, curación, seguimiento y notificación",
           "texto": "Gestantes (MinSalud): no administrar antimoniato de meglumina, estibogluconato ni ninguna forma de antimonio. En la forma cutánea, aplicar calor local con compresas calientes, sin sensación de quemadura, durante 5 minutos 3 veces al día, y esperar hasta después del parto para iniciar el tratamiento; remitir al nivel de referencia los casos severos o extensos y toda forma mucosa o visceral. La miltefosina también está contraindicada. Niños: en un ensayo colombiano la eficacia del antimoniato fue menor en niños, y la forma visceral, que afecta sobre todo a menores de 5 años, se maneja hospitalizada en el nivel de referencia. Adultos mayores y pacientes con cardiopatía, nefropatía o hepatopatía: electrocardiograma y laboratorios previos y considerar alternativas locales o de menor toxicidad. Criterios de curación en la forma cutánea: reepitelización completa de la úlcera, o aplanamiento de las lesiones no ulceradas, sin induración, eritema ni bordes activos; en los ensayos de la región la respuesta se evalúa hacia los 90 días y la curación final se confirma sin recaída hacia los 180 días. La epitelización temprana aislada no garantiza el éxito terapéutico, por lo que se requieren controles posteriores. La forma mucosa responde bien al inicio pero tiende a recaer y requiere seguimiento prolongado con examen otorrinolaringológico; en la visceral se vigila la desaparición de la fiebre, la regresión de la esplenomegalia, la recuperación del hemograma y la recaída. Remitir u hospitalizar: toda forma visceral o mucosa, lesiones cutáneas extensas o diseminadas, gestantes, inmunosuprimidos, comorbilidad cardiaca, renal o hepática, toxicidad o falla terapéutica; en la visceral son signos de alarma el sangrado, la ictericia, la desnutrición grave y la infección sobreagregada. Notificación (INS): evento de notificación obligatoria al Sivigila con las fichas 420 (cutánea), 430 (mucosa) y 440 (visceral); los casos confirmados de todas las formas se notifican de forma individual y semanal, y la sospecha de leishmaniasis visceral se notifica de inmediato."
         }
+      ],
+      "consultas": [
+        "úlcera en la pierna que no sana, estuvo en el monte",
+        "llaga con bordes levantados después de ir a la selva",
+        "glucantime, dosis",
+        "soldado con una herida que no cierra",
+        "úlcera de la montaña",
+        "lesión en la nariz que le destruyó el tabique"
       ]
     },
     {
@@ -4328,6 +4784,14 @@
           "titulo": "Poblaciones especiales, quimioprofilaxis y notificación",
           "texto": "Niños (MinSalud, herramienta clínica de primera infancia): en forma leve, amoxicilina 25 a 50 mg/kg/día dividida cada 8 horas durante 7 días, o azitromicina 10 mg/kg (máximo 500 mg) el primer día y luego 5 mg/kg/día (máximo 250 mg); evitar la doxiciclina en menores de 8 años salvo que sea absolutamente necesaria. En la forma grave, penicilina G cristalina 250 000 a 400 000 U/kg/día intravenosa repartida en 4 dosis durante 7 días; el protocolo MinSalud 2009 indica 250 000 U/kg/día cada 6 horas durante 7 a 10 días. Gestantes: las penicilinas son las más usadas; por vía oral se prefieren amoxicilina o azitromicina, y no se recomienda la doxiciclina en el embarazo ni en la lactancia. Adultos mayores y enfermedad renal: ajustar los betalactámicos a la función renal según la ficha técnica y vigilar estrechamente potasio, volemia y creatinina. Quimioprofilaxis: la evidencia es de muy baja certeza y la doxiciclina semanal aumenta náusea y vómito (Cochrane); la nota técnica brasileña de 2024 la reserva para rescatistas, voluntarios y personas con exposición prolongada a aguas de inundación en quienes el equipo de protección no evita el contacto, con doxiciclina 200 mg por vía oral una vez por semana mientras dure la exposición o una dosis única de 200 mg tras una exposición de alto riesgo; no se recomienda en gestantes ni en lactancia. La profilaxis no reemplaza las botas, los guantes y el control de roedores, y quien presente fiebre debe consultar aunque la haya recibido. Notificación: todo caso probable se notifica al Sivigila como evento 455 con su ficha, se toman las muestras indicadas para enviarlas al laboratorio de salud pública y los casos deben investigarse y ajustarse en el sistema según su clasificación final."
         }
+      ],
+      "consultas": [
+        "fiebre y dolor en las pantorrillas después de una inundación",
+        "trabaja en el arrozal con ratas y tiene fiebre y ojos rojos",
+        "fiebre, ojos amarillos y no orina después de meterse al río",
+        "doxiciclina para la enfermedad de las ratas",
+        "orina de ratón y fiebre",
+        "síndrome de Weil"
       ]
     },
     {
@@ -4408,6 +4872,14 @@
           "titulo": "Indicaciones de diálisis, remisión y seguimiento",
           "texto": "NICE 2019: remitir de inmediato a nefrología o cuidado intensivo para terapia de reemplazo renal cuando no responden al tratamiento médico la hiperpotasemia, la acidosis metabólica, los síntomas o complicaciones de la uremia (pericarditis, encefalopatía), la sobrecarga de volumen o el edema pulmonar; la decisión se basa en la condición global y no en un valor aislado de urea, creatinina o potasio. KDIGO 2012: iniciar la terapia de reemplazo renal de urgencia ante alteraciones de líquidos, electrolitos o equilibrio ácido-base que amenazan la vida. La terapia continua y la intermitente son complementarias; KDIGO sugiere la continua en el paciente hemodinámicamente inestable (2B) y en lesión cerebral aguda o hipertensión intracraneal, con volumen de efluente de 20 a 25 mL/kg/h (1A). Catéter no tunelizado colocado con guía ecográfica, preferiblemente en yugular interna derecha (KDIGO). Comentar con nefrología lo antes posible y dentro de las 24 horas (NICE 2019) ante posible vasculitis, glomerulonefritis, nefritis tubulointersticial o mieloma; LRA sin causa clara; respuesta inadecuada al tratamiento; complicaciones; estadio 3; trasplante renal; o enfermedad renal crónica estadio 4 o 5. Signos de alarma para manejo hospitalario urgente: anuria u oliguria persistente, hiperpotasemia grave o con cambios electrocardiográficos, edema pulmonar, acidosis grave, encefalopatía, pericarditis u obstrucción infectada. Seguimiento (KDIGO 2012): evaluar a los 3 meses la recuperación, la aparición de enfermedad renal crónica o su empeoramiento, y considerar a quien no tenía enfermedad renal crónica como de riesgo aumentado; al alta, revisar el reinicio de los fármacos suspendidos."
         }
+      ],
+      "consultas": [
+        "dejó de orinar y le subió la creatinina",
+        "orina muy poquito después de la diarrea",
+        "falla renal aguda por medio de contraste",
+        "la creatinina se duplicó en dos días",
+        "cuándo dializar",
+        "el riñón se le paró de repente"
       ]
     },
     {
@@ -4478,6 +4950,14 @@
           "titulo": "Seguimiento, incapacidad y prevención de la cronicidad",
           "texto": "Reevaluar a las 2–4 semanas; si a las 6 semanas no hay mejoría o hay riesgo medio-alto en STarT Back, intensificar con fisioterapia basada en ejercicio y abordaje psicosocial, y considerar un programa multidisciplinario a las 12 semanas. Incapacidad laboral: breve (días, no semanas), con reintegro temprano y tareas modificadas; la inactividad prolongada aumenta la cronicidad. Educar para prevenir recurrencias (ejercicio regular, fuerza del tronco, actividad física, control del peso, dejar de fumar, manejo del estrés); los cinturones lumbares y las plantillas no previenen la lumbalgia. Volver antes ante: pérdida de fuerza en las piernas, dificultad para orinar o controlar el intestino, adormecimiento en la zona genital o perineal, fiebre, dolor que no cede ni de noche o empeoramiento progresivo."
         }
+      ],
+      "consultas": [
+        "le duele la espalda baja después de cargar algo pesado",
+        "dolor de cintura que no lo deja agacharse",
+        "lumbago, qué le doy",
+        "le pido radiografía de columna por dolor de espalda",
+        "dolor de espalda que baja por la pierna",
+        "se le torció la espalda en el trabajo"
       ]
     },
     {
@@ -4554,6 +5034,14 @@
           "titulo": "Malaria en el embarazo, en niños y notificación",
           "texto": "Toda gestante con malaria tiene mayor riesgo de malaria grave, hipoglucemia, anemia, aborto, parto pretérmino y bajo peso al nacer; hospitalizar ante cualquier signo de peligro. P. falciparum no complicada: la OMS (2022) recomienda artemeter-lumefantrina también en el primer trimestre y terapias combinadas con artemisinina en el segundo y tercero; la guía colombiana trata el uso en el primer trimestre en un anexo específico. P. vivax en el embarazo: solo cloroquina, con las mismas dosis de la población general; la primaquina está contraindicada en el embarazo y en la lactancia de menores de 6 meses, por lo que se difiere la cura radical y se considera quimioprofilaxis semanal con cloroquina hasta el final del embarazo y la lactancia, cuando se completa la primaquina. Malaria grave en gestantes: artesunato parenteral en cualquier trimestre, con vigilancia fetal y de glucemia. Niños: las mismas dosis por kilogramo; artemeter-lumefantrina desde 5 kg; artesunato 3 mg/kg por dosis si pesan menos de 20 kg; primaquina no en menores de 6 meses. Prevención: toldillos impregnados con insecticida, repelentes, ropa de manga larga y eliminación de criaderos; consulta inmediata ante fiebre durante o después de visitar zonas endémicas. Notificación: todo caso confirmado se notifica al SIVIGILA con la especie y la parasitemia; la malaria complicada y las muertes por malaria se notifican y analizan según el protocolo del INS, que también orienta la búsqueda activa de casos en brotes."
         }
+      ],
+      "consultas": [
+        "fiebre con escalofríos cada tercer día y vive en el Chocó",
+        "gota gruesa positiva para vivax",
+        "paludismo, qué le doy",
+        "cloroquina y primaquina, dosis",
+        "fiebre después de viajar a una zona minera",
+        "falciparum complicada"
       ]
     },
     {
@@ -4636,6 +5124,14 @@
           "titulo": "Quimioprofilaxis de contactos y notificación en Colombia",
           "texto": "La quimioprofilaxis se indica a los contactos estrechos de enfermedad meningocócica, no a todos los expuestos. CDC: convivientes, contactos de jardín infantil y cualquier persona expuesta directamente a secreciones orales del caso en los 7 días previos al inicio de síntomas; personal de salud que manejó la vía aérea o se expuso a secreciones respiratorias sin protección; en vuelos de 8 horas o más, el pasajero sentado al lado del caso. Administrarla lo antes posible: el protocolo del INS indica idealmente en las primeras 48 horas de identificado el caso probable; después de 14 días del inicio de síntomas del caso tiene poco o ningún valor. Esquemas: ciprofloxacino 500 mg VO en dosis única en adultos; rifampicina 600 mg VO cada 12 horas por 2 días en adultos, 10 mg/kg (máximo 600 mg) cada 12 horas por 2 días en niños desde 1 mes y 5 mg/kg en menores de 1 mes; ceftriaxona IM en dosis única, 250 mg en adultos y 125 mg en niños (el corte de edad es 12 o 15 años según la guía). En gestantes se evitan rifampicina y ciprofloxacino, por lo que se usa ceftriaxona. CDC 2024: donde circulan cepas resistentes a ciprofloxacino, preferir rifampicina, ceftriaxona o azitromicina. MinSalud: antes del egreso, el paciente debe recibir rifampicina en dosis de quimioprofilaxis para eliminar el estado de portador. En Colombia, el INS vigila la meningitis por Neisseria meningitidis, Streptococcus pneumoniae y Haemophilus influenzae mediante notificación al Sivigila; la Circular conjunta 033 de 2016 de MinSalud e INS exige notificar de inmediato todo caso probable de enfermedad meningocócica, definido como enfermedad de inicio súbito con fiebre mayor de 38 °C y al menos uno de varios signos, entre ellos cefalea, rigidez de nuca o alteración de la conciencia. Enviar muestras de LCR y hemocultivo para la vigilancia por laboratorio de serogrupos, avisar a la secretaría de salud para la investigación de campo y la quimioprofilaxis de contactos, y verificar el esquema de vacunación del paciente y de sus contactos."
         }
+      ],
+      "consultas": [
+        "fiebre, dolor de cabeza fuerte y no puede doblar el cuello",
+        "nuca rígida y manchas moradas en la piel",
+        "ceftriaxona antes de la punción lumbar",
+        "el niño con fiebre está muy dormido y vomita en proyectil",
+        "dexametasona en meningitis",
+        "infección en las meninges"
       ]
     },
     {
@@ -4713,6 +5209,14 @@
           "titulo": "Salud ósea y cardiovascular, seguimiento y remisión",
           "texto": "La caída del estrógeno acelera la pérdida ósea: evaluar el riesgo de fractura y tamizar osteoporosis según la guía correspondiente; NAMS 2022 reconoce que la terapia hormonal previene la pérdida ósea y las fracturas. Aprovechar la consulta para estimar el riesgo cardiovascular (presión arterial, lípidos, glucemia, peso, tabaquismo); la terapia hormonal no se indica para prevención cardiovascular. Seguimiento, NICE: revisar a los 3 meses de iniciar o cambiar el tratamiento y luego una vez al año, salvo que se requiera antes; explicar que el sangrado no programado es frecuente en los primeros 3 meses y debe informarse en esa revisión, o de inmediato si aparece después. Duración: NAMS 2022 indica que el uso prolongado debe responder a una indicación documentada, como síntomas persistentes, con decisión compartida y reevaluación periódica; The Menopause Society 2026 afirma que no existe una edad universal para suspenderla y que continuarla después de los 65 años puede ser razonable en mujeres sanas con síntomas persistentes; ACOG desaconseja la suspensión rutinaria a los 65 años. Sangrado posmenopáusico, ACOG 2018: la ecografía transvaginal basta como evaluación inicial si el endometrio mide 4 mm o menos, con valor predictivo negativo mayor de 99 % para cáncer; si el sangrado persiste o recurre, se requiere muestreo endometrial, y el umbral está menos validado en usuarias de terapia hormonal. Remitir a ginecología ante sangrado posmenopáusico, sangrado no programado persistente, sospecha de IOP, antecedente de cáncer hormonodependiente o síntomas intensos con contraindicaciones."
         }
+      ],
+      "consultas": [
+        "calores y sudores en la noche, ya no le viene la regla",
+        "bochornos a los 50 años",
+        "terapia de reemplazo hormonal",
+        "sequedad vaginal en la mujer mayor",
+        "cuándo pido FSH para menopausia",
+        "cambios de genio y calores a los cincuenta"
       ]
     },
     {
@@ -4794,6 +5298,14 @@
           "titulo": "Poblaciones especiales, signos de alarma y notificación al Sivigila",
           "texto": "Gestantes: el embarazo no contraindica la vacuna ni la inmunoglobulina antirrábica, porque la rabia es mortal; cohortes de gestantes que recibieron profilaxis posexposición no mostraron malformaciones ni abortos atribuibles. Niños: igual dosis de vacuna que el adulto, en el muslo si son menores de 2 años; el suero se calcula por peso. Adultos mayores, diabetes, hepatopatía, asplenia o inmunosupresión: menor umbral para antibiótico preventivo y control temprano de la herida. Insuficiencia renal: ajustar la amoxicilina-clavulanato a la función renal según la ficha técnica. Hospitalizar o remitir (IDSA 2014): herida infectada con signos sistémicos, compromiso de tendón, articulación o hueso, o infección profunda de la mano; también heridas extensas de cara o con pérdida de tejido que requieran manejo quirúrgico, reacción alérgica grave al suero o falta de suero o vacuna en la institución, para no retrasar la profilaxis. Ante dolor o parestesias en el sitio de una mordedura antigua, fiebre, agitación, hidrofobia, aerofobia, espasmos o parálisis, sospechar rabia humana: hospitalizar y notificar como caso probable. Notificación (MinSalud, INS): toda agresión o contacto con un animal potencialmente transmisor de rabia se registra en la ficha del evento 300 del Sivigila, diligenciada de inmediato para que la autoridad sanitaria garantice la observación del animal; la clasificación de la exposición en la ficha debe coincidir con la conducta indicada. Educar al paciente para completar las dosis y avisar si el animal enferma, muere o desaparece."
         }
+      ],
+      "consultas": [
+        "lo mordió un perro callejero",
+        "mordedura de gato en la mano",
+        "le pongo vacuna antirrábica",
+        "un murciélago le mordió el dedo en la finca",
+        "suero antirrábico, cuándo",
+        "el perro que lo mordió se perdió"
       ]
     },
     {
@@ -4863,6 +5375,14 @@
           "titulo": "Duración, seguimiento y signos de alarma",
           "texto": "Duración mínima de 5 días, prolongable hasta alcanzar estabilidad clínica (afebril 48–72 h, frecuencia cardiaca ≤100, frecuencia respiratoria ≤24, PA sistólica ≥90, SpO2 ≥90 % y capacidad de ingesta oral); 7 días si se trata SARM o Pseudomonas. No es necesaria radiografía de control de rutina si los síntomas resuelven en 5–7 días; considerarla en mayores de 50 años, fumadores o si persisten síntomas, para descartar neoplasia o complicación. Signos de alarma que obligan a reevaluar u hospitalizar: SpO2 <90 %, frecuencia respiratoria ≥30, hipotensión, confusión, fiebre persistente a las 72 h de antibiótico, dolor pleurítico creciente (derrame o empiema), hemoptisis o incapacidad para la vía oral. Vacunación antineumocócica y antigripal según esquema al recuperarse."
         }
+      ],
+      "consultas": [
+        "fiebre, tos con flema y le duele el costado al respirar",
+        "neumonía en el adulto, qué antibiótico",
+        "CURB-65",
+        "abuelo con fiebre que respira rápido y tiene crépitos en la base",
+        "infección del pulmón, lo hospitalizo",
+        "consolidación en la placa de tórax"
       ]
     },
     {
@@ -4946,6 +5466,14 @@
           "titulo": "Tabaquismo: farmacoterapia y seguimiento",
           "texto": "Primera línea (OMS 2024, USPSTF 2021): vareniclina 0,5 mg al día por 3 días, 0,5 mg cada 12 h por 4 días y luego 1 mg cada 12 h durante 12 semanas (iniciar 1–2 semanas antes de la fecha de abandono o con reducción progresiva; puede extenderse 12 semanas más para prevenir recaída; náuseas y sueños vívidos frecuentes; sin aumento de eventos neuropsiquiátricos graves en el ensayo EAGLES); terapia de reemplazo de nicotina en combinación (parche de liberación lenta más una forma de acción rápida a demanda): parche de 21 mg/24 h si fuma >10 cigarrillos al día (14 mg si fuma 10 o menos), reducir a 14 y 7 mg cada 2–6 semanas durante 8–12 semanas, más goma o pastilla de 2–4 mg (4 mg si fuma en los primeros 30 minutos tras despertar) cada 1–2 h las primeras 6 semanas, hasta 20 al día; bupropión de liberación sostenida 150 mg al día por 3 días y luego 150 mg cada 12 h durante 7–12 semanas, iniciando 1–2 semanas antes (contraindicado en epilepsia, trastornos alimentarios, abstinencia de alcohol o benzodiacepinas e inhibidores de la MAO; útil si hay depresión o preocupación por el peso); citisina (citisiniclina) donde esté disponible, 25 días. Combinar vareniclina con parche de nicotina o bupropión con nicotina en dependencia alta o fracasos previos. No hay evidencia suficiente para recomendar cigarrillos electrónicos como tratamiento de primera línea (USPSTF 2021); si una persona los usa para dejar de fumar, aconsejar que abandone por completo el cigarrillo convencional y planear la retirada del vapeador. Seguimiento: en cada contacto revisar abstinencia (autorreporte, monóxido de carbono exhalado si disponible), síntomas de abstinencia (irritabilidad, ansiedad, insomnio, aumento de apetito, pico en la primera semana y mejoría a las 2–4 semanas), efectos adversos, aumento de peso (promedio 4–5 kg; anticiparlo con actividad física y alimentación), y manejar la recaída como parte del proceso (la mayoría requiere varios intentos). Beneficios para transmitir: a las 24 h baja el riesgo de infarto, al año el riesgo coronario se reduce a la mitad, a los 10 años el de cáncer de pulmón a la mitad; dejar de fumar antes de los 40 años recupera casi toda la expectativa de vida perdida. Tamizaje de cáncer de pulmón con tomografía de baja dosis anual en fumadores o exfumadores (<15 años) de 50–80 años con ≥20 paquetes-año, donde esté disponible."
         }
+      ],
+      "consultas": [
+        "quiere dejar de fumar",
+        "está muy gordo, IMC de 35",
+        "parches de nicotina o vareniclina",
+        "quiere bajar de peso, qué le doy",
+        "cirugía bariátrica, a quién",
+        "se fuma una cajetilla al día"
       ]
     },
     {
@@ -5021,6 +5549,14 @@
           "titulo": "Vacaciones del bifosfonato, suspensión de denosumab, seguimiento y caídas",
           "texto": "Vacaciones terapéuticas: los bifosfonatos se fijan al hueso y su efecto persiste tras suspenderlos, por lo que se reevalúa el riesgo a los 5 años de vía oral o a los 3 años de ácido zoledrónico. AACE 2020: en riesgo moderado y estable, considerar pausa tras 5 años de bifosfonato oral o 3 dosis anuales de zoledrónico; en alto riesgo, continuar hasta 6–10 años de vía oral o 6 dosis anuales de zoledrónico antes de considerar la pausa, durante la cual puede usarse teriparatida o raloxifeno. Terminar la pausa si aparece una fractura, disminuye de forma significativa la densidad mineral ósea o suben los marcadores de recambio. Denosumab: no admite vacaciones; al suspenderlo o retrasar dosis se pierde rápidamente la densidad ganada y aumenta el riesgo de fracturas vertebrales múltiples por rebote; si se decide suspender, hacer transición a un bifosfonato y no omitir ni retrasar las aplicaciones semestrales. Seguimiento (BHOF): repetir DXA 1–2 años después de iniciar el tratamiento y luego cada 2 años, en el mismo equipo; medir talla cada año; verificar adherencia y técnica de toma. Una fractura durante el tratamiento obliga a revisar adherencia, causas secundarias y escalar la terapia. Prevención de caídas: preguntar cada año por caídas y evaluar marcha y equilibrio; revisar medicamentos que causan sedación u ortostatismo (benzodiacepinas, hipnóticos, antihipertensivos); corregir visión y calzado; eliminar riesgos en casa (tapetes, iluminación, barras de apoyo); ejercicio con carga, fortalecimiento muscular y equilibrio (por ejemplo tai chi); ingesta adecuada de proteína; dejar de fumar y evitar el exceso de alcohol. Tras una fractura de cadera o vertebral, iniciar tratamiento y no limitarse a la reparación ortopédica."
         }
+      ],
+      "consultas": [
+        "huesos frágiles en la señora mayor",
+        "se fracturó la cadera con una caída leve",
+        "densitometría con T-score de -3",
+        "alendronato, cómo se toma",
+        "pérdida de estatura y joroba",
+        "calcio y vitamina D para los huesos"
       ]
     },
     {
@@ -5093,6 +5629,14 @@
           "titulo": "Prevención en nadadores, signos de alarma y remisión",
           "texto": "Prevención (CDC): usar gorro, tapones o moldes a la medida al nadar; secar bien los oídos con toalla e inclinar la cabeza hacia cada lado para que salga el agua; si queda agua, usar secador de pelo en la temperatura y velocidad más bajas, a cierta distancia del oído; no introducir hisopos, dedos ni otros objetos en el conducto y no retirar el cerumen, que protege la piel. Las gotas secantes después de nadar se usan solo con indicación profesional y nunca con tubos de timpanostomía, perforación timpánica, otitis externa activa o supuración. Controlar la dermatitis del conducto y revisar audífonos o tapones que lastimen la piel. Signos de alarma y criterios de remisión a otorrinolaringología: dolor intenso o persistente pese al tratamiento, sobre todo en diabético, inmunosuprimido o adulto mayor; tejido de granulación en el conducto; parálisis facial u otro par craneal; fiebre o compromiso del estado general; celulitis que se extiende al pabellón o la cara; edema retroauricular con desplazamiento del pabellón (orienta a mastoiditis por otitis media); vértigo o hipoacusia súbita; conducto ocluido que requiere limpieza o mecha no disponible en el primer nivel; falta de respuesta a las 48 a 72 horas sin causa corregible; síntomas por más de 2 semanas; otomicosis con perforación; episodios recurrentes o crónicos, y sospecha de tumor del conducto. En niños con otalgia, fiebre y otorrea hay que visualizar la membrana para no confundir una otitis media perforada con una otitis externa y elegir siempre gotas no ototóxicas si hay duda. En Colombia no se encontró una guía específica del Ministerio de Salud; la Asociación Colombiana de Otorrinolaringología publicó en 2024 una guía de diagnóstico y tratamiento de la otitis externa aguda que conviene consultar para las presentaciones disponibles en el país."
         }
+      ],
+      "consultas": [
+        "le duele el oído al jalarle la oreja",
+        "se metió a la piscina y le duele el oído",
+        "oído tapado con secreción y hongos",
+        "gotas para el oído con antibiótico",
+        "diabético con dolor de oído muy fuerte y supuración",
+        "oído del nadador"
       ]
     },
     {
@@ -5161,6 +5705,14 @@
           "titulo": "Rinosinusitis aguda: tratamiento",
           "texto": "En rinosinusitis bacteriana no complicada de adultos, AAO-HNS permite la espera vigilante hasta 7 días con analgesia, lavados nasales con solución salina y corticoide intranasal, con antibiótico si no mejora o empeora; IDSA recomienda iniciar antibiótico al diagnóstico clínico. Primera línea: amoxicilina/clavulanato 500/125 mg cada 8 h o 875/125 mg cada 12 h por 5–7 días en adultos (dosis alta 2 000/125 mg cada 12 h ante riesgo de resistencia: antibiótico reciente, hospitalización, inmunosupresión, alta resistencia local); en niños 45 mg/kg/día de amoxicilina en dos tomas (90 mg/kg/día con factores de riesgo) por 10–14 días. Alergia a penicilina: doxiciclina 100 mg cada 12 h (adultos) o levofloxacina/moxifloxacina (reservadas); en niños, cefixima más clindamicina o levofloxacina si hay anafilaxia. No usar macrólidos ni trimetoprim/sulfametoxazol de forma empírica por resistencia. Los descongestionantes y antihistamínicos no se recomiendan de rutina. Signos de alarma que exigen atención urgente: edema o eritema periorbitario, limitación de la movilidad ocular, diplopía o pérdida visual (celulitis orbitaria), cefalea intensa con rigidez de nuca o alteración de conciencia (meningitis, absceso intracraneal), edema frontal (tumor de Pott), fiebre alta persistente."
         }
+      ],
+      "consultas": [
+        "niño con dolor de oído y fiebre después de una gripa",
+        "el tímpano rojo y abombado",
+        "sinusitis, cuándo le doy antibiótico",
+        "dolor en la cara y moco verde por más de 10 días",
+        "le supura el oído al niño",
+        "amoxicilina para la otitis, dosis"
       ]
     },
     {
@@ -5244,6 +5796,14 @@
           "titulo": "Colangitis aguda como signo de alarma, antibióticos y poblaciones especiales",
           "texto": "Sospecharla ante fiebre, ictericia y dolor en el hipocondrio derecho (tríada de Charcot) en un paciente con litiasis, pancreatitis biliar o prótesis biliar; confusión o hipotensión indican gravedad. TG18: A, inflamación sistémica (fiebre mayor de 38 °C o escalofríos; leucocitos menores de 4 000 o mayores de 10 000/mm³, o proteína C reactiva de 1 mg/dL o más); B, colestasis (bilirrubina total de 2 mg/dL o más, o fosfatasa alcalina, GGT, AST o ALT mayores de 1,5 veces el límite superior); C, imagen con dilatación biliar o causa visible (cálculo, estenosis, prótesis). Sospecha: A más B o C; definitivo: A, B y C. Grado III: disfunción orgánica con los mismos criterios de la colecistitis. Grado II: 2 o más de leucocitos mayores de 12 000 o menores de 4 000/mm³, fiebre de 39 °C o más, edad de 75 años o más, bilirrubina total de 5 mg/dL o más e hipoalbuminemia. Grado I: ninguno de los anteriores. Conducta TG18: líquidos, analgesia, antibióticos y cultivos; grado I, drenaje biliar si no responde en 24 horas; grado II, drenaje temprano (asociado a menor mortalidad a 30 días); grado III, drenaje urgente endoscópico o percutáneo con soporte orgánico. Antibióticos (TG18): elegir según grado, origen comunitario o asociado a la atención en salud y antibiograma local; en grado III comunitario, cobertura antipseudomónica hasta identificar el germen; desescalonar o suspender pronto; en colangitis, 4 a 7 días después de controlar el foco. Ajustar dosis a la función renal. Adultos mayores: la edad ya suma para el grado II de colangitis y la comorbilidad decide entre cirugía temprana y drenaje vesicular. Gestantes: preferir la ecografía, que no irradia, y decidir CPRE o cirugía con obstetricia. Niños: no extrapolar umbrales ni dosis de adultos. En Colombia existen una guía de la Asociación Colombiana de Cirugía (2010) y un estándar clínico de la Universidad Nacional (2025) para adultos con pancreatitis aguda."
         }
+      ],
+      "consultas": [
+        "dolor arriba en la barriga que se le va a la espalda como un cinturón",
+        "dolor debajo de las costillas derechas después de comer grasa",
+        "piedras en la vesícula con fiebre y ojos amarillos",
+        "amilasa y lipasa altas",
+        "vómito y dolor de barriga después de una borrachera",
+        "colangitis, qué antibiótico"
       ]
     },
     {
@@ -5333,6 +5893,14 @@
           "titulo": "Gestantes, inmunosupresión, signos de alarma y remisión",
           "texto": "Gestantes: CDC advierte que los datos de seguridad de albendazol, mebendazol e ivermectina en el embarazo son limitados; la OMS indica la desparasitación con albendazol o mebendazol después del primer trimestre, excluye a las gestantes de las campañas masivas con ivermectina y permite el pamoato de pirantel en el segundo y tercer trimestre en campañas masivas cuando el beneficio supera el riesgo. Enterobiasis en el embarazo (CDC): tratar solo si compromete la gestación y diferir el tratamiento hasta el tercer trimestre. Giardiasis sintomática en el segundo o tercer trimestre: el Departamento de Salud de Minnesota recomienda paromomicina. Inmunosupresión: Strongyloides puede producir hiperinfección y diseminación mortales con corticoides u otros inmunosupresores, infección por HTLV-1 o cánceres hematológicos. CMAJ 2022: estudiar Strongyloides en toda persona con riesgo epidemiológico antes de iniciar inmunosupresores y dar ivermectina empírica si la inmunosupresión no puede esperar el resultado. Signos de alarma que exigen hospitalización o remisión urgente: dolor abdominal con distensión, vómito o ausencia de deposiciones (obstrucción por Ascaris); ictericia o dolor en hipocondrio derecho (ascariasis biliar o absceso hepático amebiano); disentería con fiebre y compromiso del estado general; prolapso rectal; anemia grave; deshidratación o desnutrición aguda; y, en el inmunosuprimido, fiebre, dificultad respiratoria, sepsis por gramnegativos o meningitis (sospecha de hiperinfección). Remitir a especialista ante diarrea persistente sin causa clara, falla terapéutica repetida o sospecha de enfermedad invasiva."
         }
+      ],
+      "consultas": [
+        "le salieron parásitos al niño en el examen de materia fecal",
+        "picazón en el ano de noche",
+        "albendazol para desparasitar",
+        "gusanitos en el popó",
+        "barriga grande y come tierra",
+        "amebas en el coprológico"
       ]
     },
     {
@@ -5411,6 +5979,14 @@
           "titulo": "Cuidados posparo tras el RCE: metas de oxigenación, presión arterial y temperatura",
           "texto": "Adultos (AHA 2025): asegurar la vía aérea y usar oxígeno al 100 % hasta poder medir la saturación de forma fiable; luego titular a SpO2 de 90 a 98 % (PaO2 de 60 a 105 mmHg), evitando hipoxemia e hiperoxemia (la oximetría puede sobrestimar la oxigenación en piel oscura); ventilar buscando normocapnia (la guía ESICM 2021 la define como PaCO2 de 35 a 45 mmHg); mantener presión arterial media de al menos 65 mmHg con líquidos y vasopresores. Tomar ECG de 12 derivaciones temprano y llevar a coronariografía urgente si hay elevación del ST. Control de temperatura en quien no obedece órdenes tras el RCE: mantener deliberadamente una temperatura entre 32 y 37,5 °C durante al menos 36 horas y prevenir activamente la fiebre. Buscar y tratar convulsiones con electroencefalograma, controlar la glucemia y tratar la causa del paro. El pronóstico neurológico debe ser multimodal y nunca basarse en un solo hallazgo; las guías AHA 2020 y ERC 2021 indicaban no establecerlo antes de 72 horas (AHA: tras recuperar la normotermia; ERC: desde el RCE). Niños (AHA/AAP 2025): SpO2 de 94 a 98 % o la apropiada para el niño; PaCO2 adecuada a su condición, evitando hipercapnia o hipocapnia graves; presión arterial sistólica y media por encima del percentil 10 para edad y sexo, con bolos de líquidos e inotrópicos o vasopresores; medición continua de la temperatura central con prevención y tratamiento de la fiebre; en el niño comatoso, control de temperatura a 32 a 34 °C seguido de 36 a 37,5 °C, o directamente 36 a 37,5 °C; monitorización con electroencefalograma y de la glucemia. Todo paciente con RCE debe trasladarse a cuidado intensivo con capacidad de cateterismo cardiaco cuando esté indicado."
         }
+      ],
+      "consultas": [
+        "lo encontré sin pulso y no respira",
+        "se desplomó y no responde",
+        "cuántas compresiones por minuto",
+        "adrenalina en el paro, cada cuánto",
+        "el niño se atoró con un pedazo de comida",
+        "desfibrilar, cuántos joules"
       ]
     },
     {
@@ -5490,6 +6066,14 @@
           "titulo": "Signos de alarma, remisión y contexto colombiano",
           "texto": "Signos de alarma para consultar de inmediato: contracciones regulares o dolor tipo cólico, presión pélvica o dolor lumbar persistente, salida de líquido o sangrado por la vagina, fiebre, flujo fétido o disminución de los movimientos fetales. Remisión: la gestante con trabajo de parto pretérmino, amenaza con cambios cervicales o ruptura prematura de membranas se remite, por la red materno perinatal, a una institución con servicio obstétrico y con el nivel de cuidado neonatal que exija la edad gestacional, y también, a cualquier edad pretérmino, si hay corioamnionitis, desprendimiento de placenta, preeclampsia con criterios de severidad o estado fetal no tranquilizador. La propuesta de actualización del Programa Madre Canguro del MinSalud prioriza la remisión materna in útero, más segura que trasladar al recién nacido, hacia la institución con el nivel de cuidado neonatal que exijan la edad gestacional y las condiciones previstas del recién nacido. Antes del traslado: primera dosis de corticoide, tocólisis si no hay contraindicación, sulfato de magnesio si la gestación es menor de 32 semanas y profilaxis para estreptococo del grupo B, documentando dosis y horas. Si el parto es inminente, no trasladar: atenderlo con personal entrenado en reanimación neonatal y solicitar transporte neonatal. En Colombia orientan el manejo la GPC de embarazo y parto del MinSalud y Colciencias (2013), con su sección de ruptura prematura de membranas, y la ruta integral de atención materno perinatal; la morbilidad materna extrema y la mortalidad perinatal y neonatal son de notificación obligatoria al Sivigila del INS."
         }
+      ],
+      "consultas": [
+        "embarazada de 30 semanas con contracciones",
+        "se le está viniendo el bebé antes de tiempo",
+        "betametasona para maduración pulmonar",
+        "nifedipino para frenar las contracciones",
+        "rompió fuente a las 32 semanas",
+        "sulfato de magnesio para neuroprotección"
       ]
     },
     {
@@ -5560,6 +6144,14 @@
           "titulo": "Prevención, puerperio y seguimiento a largo plazo",
           "texto": "Prevención: aspirina 81–150 mg/día (ACOG: 81 mg; ISSHP/FIGO: 150 mg en la noche) desde las semanas 12–16 hasta la 36 en gestantes con un factor de riesgo alto (preeclampsia previa, embarazo múltiple, hipertensión crónica, diabetes pregestacional, enfermedad renal, enfermedad autoinmune) o dos moderados (nuliparidad, obesidad, edad ≥35 años, antecedente familiar, intervalo intergenésico >10 años, bajo nivel socioeconómico, afrodescendencia); calcio 1,2–2 g/día en poblaciones con baja ingesta; no se recomiendan reposo, restricción de sal, vitaminas C y E ni heparina para prevenir preeclampsia. Puerperio: medir la presión arterial a las 72 h y entre los 7 y 10 días posparto (riesgo de eclampsia y crisis tardías); continuar antihipertensivos y ajustarlos (nifedipino, enalapril o labetalol son compatibles con la lactancia), evitar AINE si hay hipertensión grave o lesión renal; consultar de inmediato con cefalea intensa, alteraciones visuales, epigastralgia, disnea o presión ≥150/100. A largo plazo la preeclampsia duplica el riesgo cardiovascular y renal: control de presión arterial, glucemia y lípidos al año y luego periódico, estilo de vida, planificar embarazos con intervalo ≥18 meses y aspirina preventiva en el siguiente."
         }
+      ],
+      "consultas": [
+        "embarazada con la presión alta y dolor de cabeza",
+        "gestante de 34 semanas con hinchazón y ve lucecitas",
+        "proteínas en la orina en el embarazo",
+        "sulfato de magnesio en la embarazada que convulsionó",
+        "aspirina para prevenir la preeclampsia",
+        "plaquetas bajas y transaminasas altas en el embarazo"
       ]
     },
     {
@@ -5647,6 +6239,14 @@
           "titulo": "Criterios de remisión, sospecha de maltrato infantil y vigilancia en Colombia",
           "texto": "Criterios de remisión a unidad de quemados (ABA): quemaduras de espesor parcial mayores del 10 % de la SCQ; quemaduras de cara, manos, pies, genitales, periné o grandes articulaciones; quemaduras de espesor total a cualquier edad; quemaduras eléctricas (incluido el rayo); quemaduras químicas; lesión por inhalación; enfermedades previas que compliquen el manejo o la recuperación; trauma asociado cuando la quemadura es el mayor riesgo; niños en hospitales sin personal ni equipos pediátricos calificados, y necesidad de apoyo social, emocional o de rehabilitación prolongada. Maltrato infantil (NICE CG89): sospecharlo cuando la explicación está ausente o no es compatible con la lesión; cuando el niño quemado aún no se desplaza por sí mismo; cuando la quemadura está en sitios que no suelen tocar objetos calientes por accidente (dorso de las manos, plantas, glúteos, espalda); cuando reproduce la forma de un objeto (cigarrillo, plancha), y ante escaldaduras por inmersión: glúteos, periné y miembros inferiores, distribución en guante o en calcetín, compromiso simétrico de extremidades y bordes nítidos. El niño que entra solo a una tina caliente suele quemarse un solo pie o pierna. Ante sospecha, documentar y activar la ruta institucional de protección de niños, niñas y adolescentes. Colombia: las lesiones por pólvora pirotécnica se notifican al Sivigila como evento 452 (lesiones por artefactos explosivos); entre el 1 de diciembre y la segunda semana de enero hay vigilancia intensificada con notificación inmediata. La violencia intrafamiliar, incluido el maltrato infantil, se notifica en el evento 875."
         }
+      ],
+      "consultas": [
+        "se quemó con agua hirviendo",
+        "quemadura con ampollas en el brazo",
+        "cuánto líquido le paso al quemado",
+        "regla de los nueves",
+        "el niño se echó encima la olla de sopa",
+        "quemadura con pólvora"
       ]
     },
     {
@@ -5723,6 +6323,14 @@
           "titulo": "Conjuntivitis alérgica: tratamiento y signos de alarma",
           "texto": "Cuadro: prurito ocular bilateral (síntoma cardinal), enrojecimiento, lagrimeo, secreción acuosa o mucosa, quemosis y edema palpebral, con frecuencia junto con rinitis (rinoconjuntivitis), estacional o perenne (en Colombia, sobre todo por ácaros). Manejo (AAO, ARIA): evitar frotarse los ojos, compresas frías y lágrimas artificiales sin conservantes para diluir y lavar alérgenos; primera línea, colirio antihistamínico con efecto estabilizador de mastocitos (olopatadina, ketotifeno, azelastina, epinastina), por ejemplo olopatadina al 0,1 % una gota cada 12 horas o al 0,2 % una gota al día. Los antihistamínicos orales y el corticoide intranasal también alivian los síntomas oculares, aunque los orales pueden resecar el ojo. Evitar el uso prolongado de vasoconstrictores tópicos (nafazolina, tetrahidrozolina) por efecto rebote. Los colirios de corticoide solo deben usarse en ciclos cortos y bajo control de oftalmología, por el riesgo de glaucoma, catarata e infección herpética. Signos de alarma para remitir a oftalmología: dolor ocular, fotofobia, disminución de la agudeza visual, ojo rojo unilateral, secreción purulenta, compromiso corneal, usuario de lentes de contacto o falta de respuesta. Sospechar queratoconjuntivitis vernal en niños, más en varones y en climas cálidos, con prurito intenso, fotofobia, papilas gigantes en el tarso superior o nódulos en el limbo; y queratoconjuntivitis atópica en adultos con dermatitis atópica: ambas pueden dañar la córnea y requieren manejo especializado."
         }
+      ],
+      "consultas": [
+        "estornuda todas las mañanas y le moquea la nariz",
+        "nariz tapada y le pica, alergia al polvo",
+        "spray nasal de corticoide",
+        "loratadina o cetirizina",
+        "rinitis que no lo deja dormir",
+        "ojos llorosos y estornudos con el polvo"
       ]
     },
     {
@@ -5805,6 +6413,14 @@
           "titulo": "Colombia: interrupción voluntaria del embarazo (IVE)",
           "texto": "La sentencia C-055 de 2022 de la Corte Constitucional despenalizó el aborto consentido hasta la semana 24 de gestación; después de esa semana sigue siendo legal cuando se configura alguna de las tres causales de la sentencia C-355 de 2006: riesgo para la vida o la salud física o mental de la gestante, malformación fetal incompatible con la vida extrauterina, o embarazo producto de violación, incesto o inseminación o transferencia de óvulo no consentidas. La Resolución 051 de 2023 de MinSalud adoptó una regulación única para la atención integral en salud de la IVE: el servicio se presta a partir de la manifestación de voluntad de la niña, adolescente, mujer o persona gestante y está exento de copagos y cuotas moderadoras. La objeción de conciencia es individual, se presenta por escrito e implica remitir a un profesional que preste el servicio. La niña menor de 14 años puede decidir de forma autónoma. Todo embarazo en menor de 14 años implica un delito sexual según el Código Penal (acceso carnal abusivo con menor de catorce años): además de ofrecer la IVE, activar la ruta de atención integral a víctimas de violencia sexual, notificar al Sivigila y dar aviso a las autoridades. Métodos (OMS 2022): antes de las 12 semanas, mifepristona 200 mg oral seguida 1 a 2 días después de misoprostol 800 µg bucal, sublingual o vaginal, con dosis adicionales si es necesario. Ofrecer anticoncepción en la misma atención. Verificar la vigencia de la norma."
         }
+      ],
+      "consultas": [
+        "embarazada de 8 semanas manchando",
+        "tiene un atraso y le duele un lado de la barriga",
+        "se le vino sangre con cólicos a las 10 semanas",
+        "embarazo ectópico, metotrexato",
+        "amenaza de aborto",
+        "beta hCG positiva y la eco no muestra el saco"
       ]
     },
     {
@@ -5885,6 +6501,14 @@
           "titulo": "Sangrado posmenopáusico y criterios de remisión",
           "texto": "NICE define el sangrado posmenopáusico como sangrado vaginal inexplicado más de 12 meses después de la última menstruación por menopausia; es signo de alarma de cáncer de endometrio. Un metaanálisis de 2018 estimó un riesgo de cáncer de endometrio cercano al 9 % en mujeres con sangrado posmenopáusico, y que el 91 % de las mujeres con ese cáncer lo presentaron. NICE: remitir por ruta de sospecha de cáncer, con cita en 2 semanas, a mujeres de 55 años o más con sangrado posmenopáusico y considerarlo en menores de 55. ACOG 2018: la ecografía transvaginal basta como evaluación inicial si el endometrio mide 4 mm o menos (valor predictivo negativo mayor del 99 % para cáncer); si mide más o no se visualiza bien, biopsia; si el sangrado persiste o recurre con biopsia no diagnóstica o benigna, histeroscopia. El punto de corte está menos establecido en usuarias de terapia hormonal de la menopausia. No se identificó una guía nacional del Ministerio de Salud de Colombia específica para este tema. Remitir a urgencias u hospitalizar: inestabilidad hemodinámica, sangrado agudo que no cede, anemia sintomática o con necesidad de transfusión. Remitir a ginecología: sangrado posmenopáusico, necesidad de biopsia o histeroscopia no disponible, sangrado intermenstrual persistente o poscoital, masa pélvica o útero palpable, miomas que deforman la cavidad, hiperplasia en la biopsia y falla del tratamiento médico. Remitir a hematología: sospecha de coagulopatía."
         }
+      ],
+      "consultas": [
+        "la regla le dura 15 días y viene abundante",
+        "sangra entre reglas",
+        "le viene la menstruación dos veces al mes",
+        "mioma y sangrado abundante",
+        "ácido tranexámico para la regla abundante",
+        "sangrado después de la menopausia"
       ]
     },
     {
@@ -5959,6 +6583,14 @@
           "titulo": "Soporte hemodinámico y medidas en cuidado intensivo",
           "texto": "Meta inicial de presión arterial media de 65 mmHg (no más alta de rutina, incluso en hipertensos crónicos) y normalización progresiva del lactato, llenado capilar y diuresis ≥0,5 mL/kg/h. Vasopresor de primera línea: norepinefrina (iniciar 0,05–0,1 µg/kg/min, titular); si se requieren dosis de 0,25–0,5 µg/kg/min, añadir vasopresina 0,03 U/min; adrenalina como tercer agente o si hay disfunción miocárdica con bajo gasto (o dobutamina añadida a norepinefrina); no usar dopamina de rutina. Hidrocortisona 200 mg/día IV (50 mg cada 6 h o infusión) en choque séptico que requiere norepinefrina ≥0,25 µg/kg/min por más de 4 h. Evitar el balance positivo excesivo: tras la reanimación inicial usar estrategia restrictiva o guiada por respuesta; la albúmina puede añadirse cuando se han infundido grandes volúmenes de cristaloides; no usar almidones ni gelatinas. Transfundir glóbulos rojos solo con hemoglobina <7 g/dL salvo isquemia miocárdica, hipoxemia grave o sangrado activo. Ventilación protectora (volumen corriente 6 mL/kg de peso predicho, presión meseta <30 cmH2O) en síndrome de dificultad respiratoria aguda; oxígeno nasal de alto flujo en insuficiencia respiratoria hipoxémica; posición prona en hipoxemia grave. Glucemia entre 144 y 180 mg/dL con insulina cuando supera 180. Profilaxis de trombosis venosa con heparina de bajo peso molecular y de úlcera de estrés en pacientes con riesgo de sangrado; nutrición enteral temprana (72 h); bicarbonato solo en acidosis metabólica grave (pH ≤7,2) con lesión renal aguda; terapia de reemplazo renal con indicaciones clásicas, no por la creatinina sola. Monitorizar lactato, diuresis, estado mental y perfusión; remitir o trasladar a cuidado intensivo cuando se requieren vasopresores, soporte ventilatorio o hay fallo de dos o más órganos. Al alta, informar sobre el síndrome pos-sepsis (debilidad, deterioro cognitivo, ansiedad) y planear seguimiento."
         }
+      ],
+      "consultas": [
+        "fiebre, presión bajita y está confundido",
+        "infección con presión baja que no sube con líquidos",
+        "qSOFA",
+        "lactato alto con infección",
+        "antibiótico en la primera hora",
+        "frío, sudoroso y con el pulso rápido por una infección"
       ]
     },
     {
@@ -6036,6 +6668,14 @@
           "titulo": "Seguimiento serológico, falla terapéutica y retratamiento",
           "texto": "Seguimiento (CDC 2021): en sífilis primaria y secundaria, evaluación clínica y serológica a los 6 y 12 meses (más frecuente en personas con VIH); en sífilis latente, a los 6, 12 y 24 meses. Respuesta adecuada: descenso de 4 veces (2 diluciones) del título no treponémico, en general en 6 a 12 meses en la sífilis temprana y en 12 a 24 meses en la latente. Algunos pacientes quedan con títulos bajos persistentes sin aumento (respuesta serológica estable o serofast) y no necesariamente requieren retratamiento, pero sí seguimiento y prueba de VIH. Falla o reinfección: síntomas que persisten o reaparecen, o aumento sostenido del título de 4 veces o más; en ese caso descartar reinfección y VIH, estudiar líquido cefalorraquídeo y, si es normal, retratar con penicilina benzatínica 2,4 millones UI IM semanal por 3 semanas. Si el título no desciende 4 veces en el plazo esperado, la conducta óptima no está definida: como mínimo, seguimiento clínico y serológico adicional y prueba de VIH; retratar si no se puede asegurar el seguimiento y considerar el estudio del líquido cefalorraquídeo. En la gestante, seguir los títulos durante todo el embarazo y en el parto para detectar reinfección; tratar siempre a la pareja. En la neurosífilis, el seguimiento se hace con líquido cefalorraquídeo según la evolución clínica y serológica. Cada caso de sífilis es oportunidad para tamizar VIH, hepatitis B y otras ITS, notificar al SIVIGILA y buscar a los contactos sexuales."
         }
+      ],
+      "consultas": [
+        "VDRL positivo en la embarazada",
+        "chancro que no duele en los genitales",
+        "penicilina benzatínica, cuántas dosis",
+        "manchas en las palmas de las manos y en las plantas",
+        "prueba rápida de sífilis reactiva",
+        "bebé de mamá con sífilis"
       ]
     },
     {
@@ -6112,6 +6752,14 @@
           "titulo": "Tratamiento del síncope reflejo y de la hipotensión ortostática; conducción",
           "texto": "Síncope reflejo (ESC 2018): explicar su naturaleza benigna y el riesgo de recurrencia; evitar desencadenantes (deshidratación, bipedestación prolongada, lugares calurosos y concurridos); ante el pródromo, acostarse o sentarse de inmediato; maniobras de contrapresión (cruzar las piernas tensando los músculos, apretar las manos, tensar los brazos, ponerse en cuclillas) en menores de 60 años con pródromo; suspender o reducir fármacos hipotensores cuando sea posible; aumentar agua y sal si no hay hipertensión. Pueden considerarse fludrocortisona en jóvenes con síncope ortostático y presión arterial baja-normal, y midodrina en el síncope vasovagal ortostático; los betabloqueadores no están indicados. Estimulación cardiaca (marcapasos): considerarla en mayores de 40 años con síncope reflejo grave, recurrente e impredecible y pausas asistólicas documentadas sintomáticas de más de 3 segundos o asintomáticas de más de 6 segundos, y en el síndrome del seno carotídeo cardioinhibitorio. Hipotensión ortostática (ESC 2018): educación; más agua y más sal en la dieta si no hay contraindicación (las guías difieren en la cantidad de sal); suspender o reducir vasodilatadores, diuréticos y otros fármacos implicados; levantarse lentamente; maniobras de contrapresión; medias de compresión o faja abdominal; dormir con la cabecera elevada más de 10°; midodrina o fludrocortisona si persisten los síntomas, vigilando la hipertensión en decúbito. Conducción de vehículos: la ESC 2018 trae una tabla que diferencia conductores particulares y profesionales y el tipo de síncope (reflejo, arrítmico o inexplicado); antes de dar una indicación, contrastarla con esa tabla y con la normativa de tránsito vigente en Colombia, y preguntar siempre si el paciente conduce por oficio. Seguimiento: el síncope cardiaco se trata según la causa (marcapasos, ablación, desfibrilador, corrección valvular) por cardiología."
         }
+      ],
+      "consultas": [
+        "se desmayó de repente",
+        "se privó estando de pie mucho rato",
+        "perdió el conocimiento haciendo ejercicio",
+        "se desmaya cada que se para rápido",
+        "electro en el paciente que se desmayó",
+        "le dio un patatús"
       ]
     },
     {
@@ -6186,6 +6834,14 @@
           "titulo": "Tamizaje de cáncer de próstata con PSA y de pulmón con tomografía de baja dosis",
           "texto": "Próstata, Colombia (Resolución 3280 de 2018): la ruta de promoción y mantenimiento incluye la detección temprana con antígeno prostático específico (PSA) y tacto rectal, previa información sobre beneficios y riesgos para una decisión informada; confirmar edades y periodicidad en el texto vigente de la resolución. USPSTF 2018: de 55 a 69 años, decisión individual tras discutir el posible beneficio (pequeña reducción de la mortalidad por cáncer de próstata) y los daños (falsos positivos, biopsias y sus complicaciones, sobrediagnóstico, incontinencia y disfunción eréctil por el tratamiento) (recomendación C); desde los 70 años, no tamizar (D); no incluye el tacto rectal como prueba de tamizaje por falta de evidencia de beneficio. Diferencias: la norma colombiana incluye el tacto rectal, mientras la USPSTF limita el tamizaje a 55–69 años con decisión compartida y sin tacto rectal. Considerar el mayor riesgo en hombres afrodescendientes y con antecedente familiar. Pulmón: la Resolución 3280 no incluye tamizaje de cáncer de pulmón y en Colombia no hay un programa poblacional; la decisión es individual, con neumología y según disponibilidad. USPSTF 2021: tomografía de tórax de baja dosis anual en personas de 50 a 80 años con 20 o más paquetes-año (paquetes al día por años fumados) que fuman actualmente o dejaron de fumar en los últimos 15 años (recomendación B); suspender cuando la persona complete 15 años sin fumar o tenga un problema de salud que limite su expectativa de vida o su capacidad o disposición para una cirugía curativa. Debe acompañarse de decisión compartida (falsos positivos, radiación, sobrediagnóstico) y de consejería para dejar de fumar; la radiografía de tórax no sirve como tamizaje. La cesación del tabaquismo sí forma parte de la ruta colombiana de promoción y mantenimiento."
         }
+      ],
+      "consultas": [
+        "cada cuánto la citología",
+        "mamografía a qué edad",
+        "antígeno prostático en el señor de 55",
+        "sangre oculta en heces para colon",
+        "prueba de VPH",
+        "fumador, tomografía de pulmón"
       ]
     },
     {
@@ -6265,6 +6921,14 @@
           "titulo": "Vacunación: esquema PAI y Tdap en cada embarazo",
           "texto": "MinSalud (PAI): la tos ferina se cubre con la pentavalente (difteria, tétanos, tos ferina, Haemophilus influenzae tipo b y hepatitis B), o con la hexavalente acelular en los grupos que defina el lineamiento, con refuerzos a los 18 meses y a los 5 años; la Circular 011 de 2025 menciona pentavalente a los 2, 4, 6 y 18 meses y DPT a los 5 años. Ajuste por tosferina (MinSalud, noviembre de 2025): la serie primaria inicia a las 6 semanas y sigue con intervalos de 6 semanas, es decir a los 3 y a los 4,5 meses, sin cambios en los refuerzos; confirmar cuál calendario rige. Gestantes: la Circular 011 de 2025 indicó Tdap desde la semana 26, o desde la semana 20 en zona rural dispersa; con el ajuste de 2025, MinSalud la adelantó a la semana 20 para todas las gestantes del país, para que los anticuerpos maternos pasen al recién nacido antes de que pueda vacunarse. CDC/ACIP: una dosis de Tdap en cada embarazo, sin importar la vacunación previa, entre las semanas 27 y 36 y preferiblemente al inicio de esa ventana; la madre que nunca recibió Tdap y no se vacunó en el embarazo la recibe inmediatamente después del parto. OMS (documento de posición de 2015, que reemplaza al de 2010): revisa la elección entre vacunas de células enteras y acelulares e incorpora la vacunación en el embarazo como estrategia adicional para prevenir la mortalidad temprana del lactante. Completar la vacunación de convivientes y cuidadores del recién nacido según el lineamiento vigente. Haber recibido la vacuna no descarta el diagnóstico: el niño o el adulto vacunado puede tener una tos ferina leve y contagiar."
         }
+      ],
+      "consultas": [
+        "el bebé tose y tose hasta ponerse morado y vomitar",
+        "tos con gallo al final",
+        "tos en accesos que termina en vómito",
+        "azitromicina para tos ferina en el lactante",
+        "contactos de un caso de tosferina",
+        "vacuna Tdap en el embarazo"
       ]
     },
     {
@@ -6340,6 +7004,14 @@
           "titulo": "Reglas de Ottawa para tobillo, pie y rodilla: cuándo pedir radiografía",
           "texto": "Tobillo: radiografía solo si hay dolor en la zona maleolar y cualquiera de: dolor óseo a la palpación en el borde posterior o la punta del maléolo lateral (6 cm distales); dolor óseo a la palpación en el borde posterior o la punta del maléolo medial (6 cm distales); o incapacidad para apoyar el peso tanto inmediatamente después del trauma como en urgencias (dar 4 pasos, aunque cojee). Pie: radiografía solo si hay dolor en la zona del mediopié y cualquiera de: dolor óseo a la palpación en la base del quinto metatarsiano; dolor óseo a la palpación en el hueso navicular; o incapacidad para apoyar el peso inmediatamente y en urgencias (4 pasos). Rodilla (trauma agudo): radiografía si hay cualquiera de: edad de 55 años o más; dolor aislado a la palpación de la rótula (sin otro dolor óseo en la rodilla); dolor a la palpación de la cabeza del peroné; incapacidad para flexionar la rodilla a 90 grados; o incapacidad para apoyar el peso inmediatamente y en urgencias (4 pasos, aunque cojee). Las reglas originales se derivaron y validaron en adultos y excluyen, entre otros, embarazo, lesiones solo de piel, alteración de la conciencia o intoxicación, lesiones múltiples y consultas varios días después del trauma; aplicarlas fuera de esos criterios exige más cautela, aunque hay estudios de validación de las reglas de tobillo en niños. Su alta sensibilidad permite evitar radiografías innecesarias sin pasar por alto fracturas clínicamente importantes. Si no se pide radiografía, indicar reconsulta si el dolor o la incapacidad para caminar persisten o empeoran."
         }
+      ],
+      "consultas": [
+        "se pegó en la cabeza, le pido TAC",
+        "el niño se cayó de la cama y se golpeó la cabeza",
+        "se torció el tobillo, radiografía",
+        "golpe en el cuello en un accidente de moto",
+        "reglas de Ottawa",
+        "se cayó y se golpeó la rodilla"
       ]
     },
     {
@@ -6425,6 +7097,14 @@
           "titulo": "Duración, situaciones especiales y seguimiento",
           "texto": "Duración mínima 3 meses para todo TEV. Luego: provocado por un factor de riesgo mayor transitorio (cirugía, trauma, inmovilización) → suspender a los 3 meses; no provocado o con factor persistente (cáncer activo, síndrome antifosfolípido, TEV recurrente) → anticoagulación extendida sin fecha de fin con reevaluación anual del riesgo de sangrado (puntaje HAS-BLED o VTE-BLEED), con dosis reducida de apixabán 2,5 mg cada 12 h o rivaroxabán 10 mg al día después de los 6 meses si no hay riesgo alto de recurrencia; factor menor transitorio (estrógenos, viaje, embarazo) → individualizar, el riesgo de recurrencia es intermedio. Cáncer activo: anticoagulante directo (apixabán, edoxabán, rivaroxabán) salvo tumores gastrointestinales o urogenitales no resecados con alto riesgo de sangrado, donde se prefiere heparina de bajo peso; duración mientras el cáncer esté activo. Embarazo: heparina de bajo peso molecular a dosis terapéutica ajustada al peso durante toda la gestación y al menos 6 semanas posparto (mínimo 3 meses en total); contraindicados warfarina (teratógena) y anticoagulantes directos; suspender la dosis 24 h antes del parto programado. Síndrome antifosfolípido triple positivo: warfarina, no directos. Trombofilia hereditaria: no estudiar de rutina; no cambia el tratamiento agudo. Seguimiento a los 3–6 meses: síntomas de disnea persistente → descartar hipertensión pulmonar tromboembólica crónica (ecocardiograma, gammagrafía); síndrome postrombótico; sangrado; adherencia; función renal y hemograma periódicos con anticoagulantes directos; interacciones (azoles, rifampicina, antiepilépticos, inhibidores de proteasa). Tromboprofilaxis en hospitalizados médicos con riesgo (puntaje Padua ≥4) y quirúrgicos (Caprini): enoxaparina 40 mg/día o heparina 5 000 U cada 8–12 h, o compresión neumática si hay riesgo de sangrado; en viajes largos, movilidad y medias en personas de riesgo. Signos de alarma: disnea o dolor torácico nuevos, síncope, sangrado mayor, edema progresivo de la extremidad."
         }
+      ],
+      "consultas": [
+        "le duele y se le hinchó una sola pantorrilla",
+        "se ahoga de repente después de una cirugía",
+        "dímero D alto",
+        "Wells para trombosis",
+        "anticoagulación por un coágulo en la pierna",
+        "embolia en el pulmón"
       ]
     },
     {
@@ -6503,6 +7183,14 @@
           "titulo": "TB y VIH, seguimiento, abandono y notificación",
           "texto": "Coinfección: a toda persona con tuberculosis ofrecer prueba de VIH y a toda persona con VIH buscar tuberculosis en cada visita. OMS: iniciar TAR dentro de las 2 semanas siguientes al comienzo del tratamiento antituberculoso, cualquiera sea el CD4; en meningitis tuberculosa, diferir el TAR al menos 4 semanas e iniciarlo dentro de las primeras 8. Con rifampicina, el dolutegravir se da 50 mg cada 12 h. Dar profilaxis con trimetoprim-sulfametoxazol a las personas con VIH y tuberculosis. Vigilar el síndrome inflamatorio de reconstitución inmune (empeoramiento paradójico tras iniciar TAR). Seguimiento: control clínico, adherencia, peso (ajustar dosis), efectos adversos y control bacteriológico según el programa; vincular a la familia y ofrecer apoyo social y nutricional. Resultados del tratamiento (OMS): curado, tratamiento terminado, fracaso, pérdida en el seguimiento (interrupción de 2 meses consecutivos o más) y fallecido. Ante interrupción, rastrear de inmediato al paciente y reevaluar con pruebas bacteriológicas y de sensibilidad antes de reiniciar. Remitir a segundo o tercer nivel: tuberculosis resistente, meníngea, miliar o grave, niños pequeños, coinfección con VIH complicada, hepatotoxicidad, falla del tratamiento y gestantes con complicaciones. Notificar todo caso al SIVIGILA, hacer la visita e investigación epidemiológica de campo con el estudio de contactos y registrar el caso en el programa de la entidad territorial."
         }
+      ],
+      "consultas": [
+        "tos con flema por más de 15 días",
+        "suda de noche y está bajando de peso con tos",
+        "baciloscopia, cuántas muestras",
+        "tuberculosis en el preso",
+        "tratamiento acortado con cuatro medicamentos",
+        "tose sangre y está flaco"
       ]
     },
     {
@@ -6592,6 +7280,14 @@
           "titulo": "Esquemas atrasados y oportunidades perdidas",
           "texto": "CDC (esquema de puesta al día 2025): un esquema no se reinicia sin importar el tiempo transcurrido entre dosis; las dosis previas válidas cuentan y se continúa con la siguiente, respetando edades e intervalos mínimos. ACIP: las vacunas vivas parenterales (triple viral, varicela, fiebre amarilla) que no se aplican el mismo día se separan al menos 4 semanas; si se aplican el mismo día no hay que esperar. Rotavirus: no iniciar después de los 3 meses y 21 días ni aplicar la segunda dosis después de los 11 meses y 29 días; el niño que perdió esa ventana no recupera la vacuna. Para las edades máximas de pentavalente, neumococo, polio y DPT en niños mayores, usar la tabla de recuperación del lineamiento vigente del PAI y no extrapolar de otros países. Revisar el carné en toda consulta, urgencia u hospitalización y vacunar en ese momento si no hay contraindicación verdadera; las vacunas del PAI son gratuitas, también para extranjeros y personas sin afiliación. Prioridades de puesta al día: refuerzo de triple viral en niños de 2 a 5 años, tosferina en lactantes y gestantes, fiebre amarilla en zonas de riesgo y VPH hasta los 17 años. Consultar con el PAI territorial o con infectología los casos de inmunocompromiso, trasplante, asplenia o esquemas sin documentar."
         }
+      ],
+      "consultas": [
+        "qué vacunas le tocan al bebé de 2 meses",
+        "esquema de vacunas atrasado",
+        "vacuna de la influenza en el adulto mayor",
+        "vacuna del VPH en niñas",
+        "vacunas a los 18 meses",
+        "neumococo en el adulto"
       ]
     },
     {
@@ -6673,6 +7369,14 @@
           "titulo": "Vacunación: triple viral y varicela en el PAI",
           "texto": "PAI de Colombia (MinSalud): triple viral (sarampión, rubéola y paperas) a los 12 meses con refuerzo a los 18 meses desde 2023 (antes el refuerzo era a los 5 años), con puesta al día de todo niño que no lo recibió; varicela a los 12 meses (circular 0027 de 2015) con refuerzo a los 5 años, incluido desde julio de 2019. Son gratuitas. OMS 2017: dos dosis contra el sarampión para todo niño, la segunda entre los 15 y 18 meses, sin condicionarla a la cobertura de la primera; la dosis desde los 6 meses se reserva para alto riesgo, como brotes, y no reemplaza las del esquema. Ambas son vacunas de virus vivos: contraindicadas en el embarazo y en la inmunodeficiencia grave; la mujer susceptible se vacuna antes de la gestación o en el posparto, compatible con la lactancia. Consultar con infectología o pediatría: inmunosuprimidos, gestantes y recién nacidos expuestos o enfermos, y casos complicados."
         }
+      ],
+      "consultas": [
+        "le salieron ampollitas que pican por todo el cuerpo",
+        "viruela loca",
+        "brote rojo con fiebre, tos y ojos rojos",
+        "aciclovir para la varicela",
+        "embarazada que estuvo en contacto con un niño con varicela",
+        "manchas rojas que empezaron en la cara"
       ]
     },
     {
@@ -6748,6 +7452,14 @@
           "titulo": "Enfermedad de Ménière y otros vértigos episódicos espontáneos",
           "texto": "AAO-HNS 2020. Ménière definida: 2 o más episodios espontáneos de vértigo de 20 minutos a 12 horas cada uno; hipoacusia neurosensorial de frecuencias bajas a medias documentada con audiometría en el oído afectado en al menos una ocasión antes, durante o después de un episodio; síntomas auditivos fluctuantes en ese oído (audición, tinnitus o plenitud); y que no se explique mejor por otro diagnóstico. Ménière probable: 2 o más episodios de vértigo o mareo de 20 minutos a 24 horas, con síntomas auditivos fluctuantes, sin otra explicación. Recomendaciones: obtener audiometría; evaluar migraña vestibular, que es diagnóstico diferencial frecuente; la resonancia de conductos auditivos internos y fosa posterior es una opción, sobre todo con hipoacusia asimétrica, para descartar schwannoma vestibular; no pedir de rutina pruebas de función vestibular ni electrococleografía para hacer el diagnóstico. Tratamiento: educar sobre la evolución natural; en las crisis, un curso limitado de supresores vestibulares y antieméticos; modificar dieta y estilo de vida (reducir sal, cafeína y alcohol) puede disminuir los síntomas; como mantenimiento, diuréticos o betahistina son una opción; en enfermedad activa que no responde, corticoide intratimpánico; no se recomienda la terapia de presión positiva; en casos refractarios, gentamicina intratimpánica y, si la audición ya no es útil, laberintectomía, por otorrinolaringología. Ofrecer rehabilitación vestibular para el desequilibrio crónico y orientar sobre audífonos. Otros vértigos espontáneos: la isquemia transitoria vertebrobasilar puede presentarse solo con vértigo; GRACE-3 sugiere buscar signos de isquemia, no usar tomografía simple y considerar angiografía por tomografía o resonancia cuando se sospecha. La hipoacusia neurosensorial súbita requiere valoración urgente por otorrinolaringología. Remitir a otorrinolaringología el Ménière, el VPPB persistente y la hipoacusia o tinnitus unilateral; a neurología, los hallazgos centrales y la migraña vestibular de difícil manejo."
         }
+      ],
+      "consultas": [
+        "siente que el cuarto le da vueltas al acostarse o al girar",
+        "mareo con náuseas al mover la cabeza",
+        "maniobra de Epley",
+        "vértigo que no se le pasa y camina como borracho",
+        "se marea al levantarse",
+        "zumbido de oído y mareo"
       ]
     },
     {
@@ -6824,6 +7536,14 @@
           "titulo": "Prevención de la transmisión materno-infantil del VIH",
           "texto": "Hace parte de la estrategia de eliminación de la transmisión materno-infantil del VIH, la sífilis, la hepatitis B y la enfermedad de Chagas (ETMI Plus). Tamizar con prueba rápida a toda gestante en el primer control y repetir según la ruta materno-perinatal; en el trabajo de parto sin resultado previo, prueba rápida inmediata. Gestante con VIH: iniciar TAR lo antes posible, el mismo día si es factible, con un esquema basado en dolutegravir (OMS: TLD; GPC colombiana 2021: dolutegravir con tenofovir disoproxilo en gestantes sin tratamiento previo) y medir la carga viral cerca del parto. HHS: cesárea programada a las 38 semanas si la carga viral es >1 000 copias/mL o desconocida cerca del parto, y zidovudina intravenosa intraparto en esas mismas situaciones; no es necesaria con carga viral suprimida en tratamiento. Recién nacido expuesto (OMS): si es de alto riesgo (madre sin TAR o con menos de 4 semanas de TAR antes del parto, carga viral >1 000 copias/mL en las 4 semanas previas al parto, o infección materna diagnosticada en el embarazo, la lactancia o el posparto), doble profilaxis con zidovudina y nevirapina por 6 semanas, prolongada 6 semanas más si recibe lactancia materna; si es de bajo riesgo, nevirapina por 6 semanas si recibe lactancia materna, o nevirapina (o zidovudina) por 4 a 6 semanas si recibe fórmula, iniciada lo antes posible tras el nacimiento. En Colombia se suspende la lactancia materna y se suministra fórmula láctea; la OMS acepta la lactancia con la madre en TAR donde la alimentación de reemplazo no es segura. Diagnóstico del lactante con pruebas virológicas (carga viral o PCR), no con serología, porque los anticuerpos maternos pueden persistir hasta los 18 meses. Seguir a la madre con carga viral, adherencia y apoyo psicosocial, y notificar al SIVIGILA a la gestante con VIH y al niño expuesto."
         }
+      ],
+      "consultas": [
+        "prueba de VIH positiva",
+        "tuvo relaciones sin condón con alguien positivo, qué le doy",
+        "profilaxis después de una relación de riesgo",
+        "pastilla para prevenir el VIH",
+        "pinchazo con aguja en el hospital",
+        "embarazada con VIH"
       ]
     }
   ]
