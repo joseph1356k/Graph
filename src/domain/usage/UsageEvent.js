@@ -82,6 +82,8 @@ const METADATA_ALLOWLIST = Object.freeze(new Set([
   // Cómo se eligieron las guías del chat: lexico | veto | cupo | apagado | error,
   // y en modo sombra qué habría hecho la cabeza léxica. Nunca texto.
   'retrievalMode',
+  // directo | razonado (más salida y razonamiento previo en preguntas de caso o sin guía).
+  'answerDepth',
   'retrievalShadow',
   'drugLabelHits',
   'noteSource',
