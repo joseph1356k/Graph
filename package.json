@@ -10,6 +10,7 @@
     "build:corpus": "node scripts/build-guideline-corpus.js",
     "build:head": "node scripts/build-guideline-head.js",
     "eval:prompt": "node scripts/eval-guideline-prompt.js --verbose",
+    "eval:abstencion": "node scripts/eval-assistant-abstention.js --verbose",
     "eval:rag": "node scripts/eval-guideline-retrieval.js --verbose",
     "eval:answers": "node scripts/eval-assistant-answers.js --verbose",
     "measure:tokens": "node scripts/measure-chat-tokens.js --verbose",

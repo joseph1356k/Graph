@@ -332,6 +332,17 @@ contexto largo. El detalle, los rivales y las métricas: `docs/asistente/RAG-LEX
 - **Evaluación.** `npm run eval:prompt` mide lo que llega al prompt (la misma `retrieveForPrompt` del chat) sobre el
   repo y sobre los conjuntos ciegos de `scripts/fixtures/rag-ciego/`, contra los que no se ajusta nada.
 
+### Chat v7 (2026-10-16, spec 008): responde aunque no haya guía
+
+- **Sin guía también se responde.** El modelo usa la consulta y el conocimiento médico general, marcado como tal. Una cifra que no puede respaldar no se inventa: explica cómo se decide y la deja en `faltantes`. «insuficiente» queda solo para cuando no hay nada clínico que aportar.
+- **Modo razonado** (`answerDepth` en `ClinicalAssistantService`). Se activa en preguntas de caso («¿qué hago con este paciente?», «¿cómo lo manejo?») y en preguntas clínicas sin guía. Cambia tres cosas:
+  - El prompt suma el protocolo de caso: caso en una línea → impresión y diferenciales → qué completar → manejo → alarma y remisión → seguimiento.
+  - El contrato empieza por `"razonamiento"`: el modelo piensa antes de responder y el parser lo descarta, así que nunca llega al médico.
+  - La salida sube de 1 800 a 3 500 tokens, con `reasoningEffort: medium` en los modelos que razonan.
+- **Lo demás va en modo directo** (preguntas con guía, charla, preguntas de la app), con el mismo prompt de antes, para que los tokens de entrada no crezcan.
+- **Auditoría:** `used_context.answer_depth` y `answerDepth` en el ledger.
+- **Medición:** `node scripts/eval-assistant-abstention.js` (y `--live` con la clave del modelo) mide el % de «no sé» sobre 48 preguntas reales, con un umbral de 5 %.
+
 ### Fichas técnicas oficiales (`src/application/knowledge/DrugLabelService.js`)
 
 - Para preguntas de dosis, contraindicaciones (4.3), interacciones (4.5), embarazo y lactancia (4.6) o reacciones

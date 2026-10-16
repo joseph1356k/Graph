@@ -4,7 +4,7 @@ const ClinicalAssistantValidationService = require('./ClinicalAssistantValidatio
 const ClinicalAssistantPromptBuilder = require('./ClinicalAssistantPromptBuilder');
 const { parseAssistantReply } = require('./ClinicalAssistantResponseParser');
 const NoteModeResolver = require('./NoteModeResolver');
-const { buildSearchQuery, retrieveForPrompt, lastUserQuestion, isRagDisabled } = require('../knowledge/ClinicalGuidelineIndex');
+const { buildSearchQuery, retrieveForPrompt, lastUserQuestion, isRagDisabled, tokenize, isGenericTerm, normalizeText } = require('../knowledge/ClinicalGuidelineIndex');
 const { verifyFigures } = require('./ClinicalAnswerVerifier');
 
 const { withFeature } = require('../../infrastructure/usage/UsageContext');
@@ -20,6 +20,29 @@ const MAX_NOTE_TEXT_LENGTH = 20000;
 // Tope de salida del chat v3 (JSON con respuesta + propuesta). Una sola
 // llamada tiene que caber en los 60 s de Vercel con el prompt completo.
 const MAX_CHAT_OUTPUT_TOKENS = 1800;
+// En modo razonado el modelo escribe primero su razonamiento (que el médico no
+// ve) y después una respuesta completa: necesita más salida. ~3 500 tokens
+// caben en el límite de Vercel con un modelo rápido.
+const MAX_CHAT_OUTPUT_TOKENS_REASONED = 3500;
+
+// «¿Qué hago con este paciente?», «¿cómo lo manejo?», «¿qué opinas del caso?».
+const CASE_QUESTION = /\b(?:que|q)\s+(?:hago|hacemos|harias|haria|hacer|me\s+recomiendas|recomiendas|opinas|le\s+(?:doy|mando|formulo|pongo|pido|hago))\b|\bcomo\s+(?:lo\s+|la\s+|le\s+)?(?:manejo|manejamos|manejar|abordo|abordar|trato|tratar|sigo|seguimos)\b|\b(?:este|esta|mi|el|la)\s+(?:caso|paciente|senor|senora|nino|nina|bebe|gestante|embarazada)\b|\b(?:conducta|plan de manejo|siguiente paso|siguientes pasos)\b/;
+
+/**
+ * Profundidad de la respuesta. «razonado» (más salida y un razonamiento previo
+ * que el médico no ve) cuando el médico pregunta por un caso, o cuando la
+ * pregunta es clínica y no hay guía en el prompt: ahí el modelo tiene que
+ * razonar con la consulta y su conocimiento general en vez de abstenerse.
+ * «directo» para lo demás (preguntas con guía, charla, preguntas de la app).
+ */
+function answerDepth({ message = '', guidelines = [], retrievalMode = '' } = {}) {
+  const plain = normalizeText(message);
+  if (CASE_QUESTION.test(plain)) return 'razonado';
+  if (Array.isArray(guidelines) && guidelines.length) return 'directo';
+  if (retrievalMode === 'veto') return 'razonado';
+  const specific = new Set(tokenize(message).filter((term) => !isGenericTerm(term)));
+  return specific.size >= 2 ? 'razonado' : 'directo';
+}
 
 // Cada tarea con su temperatura: conversar tolera variación; razonar sobre un
 // caso y editar una nota, casi ninguna. El chat v3 responde JSON con citas y
@@ -137,11 +160,16 @@ class ClinicalAssistantService {
     clinicalContext.drug_labels = drugLabels;
     usedContext.drug_labels = drugLabels.length;
 
+    const depth = answerDepth({ message: cleanMessage, guidelines, retrievalMode: retrieval.mode });
+    usedContext.answer_depth = depth;
+    const maxTokens = depth === 'razonado' ? MAX_CHAT_OUTPUT_TOKENS_REASONED : MAX_CHAT_OUTPUT_TOKENS;
+
     try {
       const messages = this.promptBuilder.buildChatMessages({
         clinicalContext,
         message: cleanMessage,
-        history: clinicalContext.history
+        history: clinicalContext.history,
+        depth
       });
       // Atado a la consulta SOLO en el modo B (con encounter). En el modo A no
       // hay consulta a la que imputarlo, y ponerle una sesión inventada haría
@@ -162,14 +190,20 @@ class ClinicalAssistantService {
           () => this.llmProvider.chatExpectingJsonWithUsage(
             messages,
             { type: 'json_object' },
-            { temperature: TEMPERATURE.chat, maxTokens: MAX_CHAT_OUTPUT_TOKENS }
+            {
+              temperature: TEMPERATURE.chat,
+              maxTokens,
+              // Solo lo usan los modelos que razonan (gpt-5, o-series); los demás lo ignoran.
+              ...(depth === 'razonado' ? { reasoningEffort: 'medium' } : {})
+            }
           ),
           {
             ...(encounter ? { sessionId: encounter.id } : {}),
             metadata: {
               promptVersion: ClinicalAssistantPromptBuilder.CHAT_PROMPT_VERSION,
               temperature: TEMPERATURE.chat,
-              maxTokens: MAX_CHAT_OUTPUT_TOKENS,
+              maxTokens,
+              answerDepth: depth,
               guidelineHits: guidelines.length,
               retrievalMode: retrieval.mode,
               ...(retrieval.shadow ? { retrievalShadow: retrieval.shadow } : {}),
@@ -586,6 +620,8 @@ class ClinicalAssistantService {
 }
 
 ClinicalAssistantService.TEMPERATURE = TEMPERATURE;
+ClinicalAssistantService.answerDepth = answerDepth;
+ClinicalAssistantService.MAX_CHAT_OUTPUT_TOKENS_REASONED = MAX_CHAT_OUTPUT_TOKENS_REASONED;
 ClinicalAssistantService.MAX_NOTE_TEXT_LENGTH = MAX_NOTE_TEXT_LENGTH;
 
 module.exports = ClinicalAssistantService;

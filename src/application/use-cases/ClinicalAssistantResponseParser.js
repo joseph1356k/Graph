@@ -28,6 +28,8 @@ const MAX_PROPOSAL_SUMMARY_LENGTH = 2000;
 const INSUFFICIENT_FALLBACK = 'No hay respaldo suficiente en la consulta ni en las guías disponibles para responder con seguridad; verifique en la fuente correspondiente.';
 // [G#] guías clínicas recuperadas; [F#] fichas técnicas de medicamentos.
 const REF_PATTERN = /\[\s*([GF])\s*(\d{1,2})\s*\]/gi;
+// Citas agrupadas que escriben algunos modelos: «[G1; G3]», «[G1, F2]».
+const GROUPED_REFS = /\[\s*([GF]\s*\d{1,2}(?:\s*[;,]\s*[GF]\s*\d{1,2})+)\s*\]/gi;
 
 function normalizeRef(value) {
   const match = `${value || ''}`.trim().toUpperCase().match(/^\[?\s*([GF])\s*(\d{1,2})\s*\]?$/);
@@ -56,6 +58,26 @@ function coerceList(value, { maxItems, maxLength }) {
 
 function stripCodeFences(text) {
   return `${text || ''}`.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+}
+
+// Si el JSON llega roto (cortado por el tope de salida), se rescata el texto de
+// "respuesta". El "razonamiento" del modo razonado NUNCA se muestra: es
+// borrador del modelo, no una respuesta revisada.
+const TRUNCATED_FALLBACK = 'La respuesta llegó incompleta. Vuelve a preguntar, idealmente más concreto.';
+
+function fallbackAnswer(raw) {
+  const text = stripCodeFences(raw);
+  if (text === '{}') return '';
+  if (!/^\s*\{/.test(text)) return text;
+  const match = text.match(/"respuesta"\s*:\s*"((?:[^"\\]|\\.)*)"?/);
+  if (match) {
+    try {
+      return JSON.parse(`"${match[1].replace(/\\$/, '')}"`).trim() || TRUNCATED_FALLBACK;
+    } catch (error) {
+      return match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"').trim() || TRUNCATED_FALLBACK;
+    }
+  }
+  return /"razonamiento"/.test(text) ? TRUNCATED_FALLBACK : text;
 }
 
 /** Metadatos de una fuente, sin el texto del fragmento (la web no lo necesita). */
@@ -122,10 +144,9 @@ function parseAssistantReply(rawContent, { guidelines = [], drugLabels = [], par
   }
 
   if (!parsed) {
-    const text = stripCodeFences(raw);
     return {
       parsed: false,
-      answer: text === '{}' ? '' : text,
+      answer: fallbackAnswer(raw),
       support: DEFAULT_SUPPORT,
       sources: [],
       missing_information: [],
@@ -142,7 +163,8 @@ function parseAssistantReply(rawContent, { guidelines = [], drugLabels = [], par
     const ref = normalizeRef(typeof item === 'string' ? item : item?.ref);
     if (ref && byRef.has(ref)) cited.add(ref);
   }
-  let answer = `${parsed.respuesta}`.trim();
+  let answer = `${parsed.respuesta}`.trim()
+    .replace(GROUPED_REFS, (match, group) => group.split(/[;,]/).map((ref) => `[${ref.replace(/\s+/g, '')}]`).join(' '));
   answer = answer.replace(REF_PATTERN, (match, kind, number) => {
     const ref = `${kind.toUpperCase()}${Number(number)}`;
     if (byRef.has(ref)) {
@@ -183,5 +205,7 @@ module.exports = {
   normalizeRef,
   SUPPORT_VALUES,
   INSUFFICIENT_FALLBACK,
+  TRUNCATED_FALLBACK,
+  fallbackAnswer,
   MAX_FOLLOW_UPS
 };

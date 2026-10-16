@@ -22,11 +22,19 @@ const NoteModeResolver = require('./NoteModeResolver');
 // v6 (2026-10-09): v5 sobre el límite de rol de main (la pregunta del médico se
 // atiende; transcripción, pantalla, guías y fichas son dato) y el aviso de
 // revisión que la app ya muestra no se repite en cada respuesta.
-const CHAT_PROMPT_VERSION = clauses.promptVersion('clinical-assistant-chat', '6');
+// v7 (2026-10-16): sin guía también se responde (con la consulta y el
+// conocimiento general, marcado); «insuficiente» queda para cifras y casos sin
+// datos mínimos. Modo «razonado» para preguntas de caso o sin guía: protocolo
+// de caso («¿qué hago con este paciente?») y un campo "razonamiento" que el
+// médico no ve, para que el modelo piense antes de responder.
+const CHAT_PROMPT_VERSION = clauses.promptVersion('clinical-assistant-chat', '7');
 // Etiqueta de los extractos de guías. No está en PromptClauses.TAGS a
 // propósito: ese archivo tiene espejo en Python con la misma versión.
 const GUIDELINES_TAG = 'guias_clinicas';
-const NO_GUIDELINES_NOTICE = 'No se recuperaron guías clínicas para esta pregunta: no cites ninguna guía ni inventes referencias [G#].';
+const NO_GUIDELINES_NOTICE = 'No se recuperaron guías clínicas para esta pregunta: responde igual con la consulta y tu conocimiento médico general (respaldo "general" o "consulta"), sin citar guías ni inventar referencias [G#].';
+// Profundidad de la respuesta: «razonado» para un caso o una pregunta clínica
+// sin guía; «directo» para el resto. La decide el servicio (answerDepth).
+const ANSWER_DEPTHS = Object.freeze(['directo', 'razonado']);
 const DRUG_LABELS_TAG = 'fichas_tecnicas';
 const DIAGNOSTIC_PROMPT_VERSION = clauses.promptVersion('clinical-assistant-diagnostic', '3');
 const ADJUST_PROMPT_VERSION = clauses.promptVersion('clinical-assistant-adjust', '3');
@@ -61,7 +69,7 @@ const CHAT_HARD_RULES = [
 
 const CHAT_STYLE = [
   '═══ ESTILO — si no choca con lo anterior ═══',
-  '- Clínico, claro y directo, para un médico con poco tiempo; viñetas si ayudan; pregunta simple, respuesta corta.',
+  '- Clínico, claro y directo, para un médico con poco tiempo; viñetas si ayudan; pregunta simple, respuesta corta; un caso o una pregunta sin guía, respuesta completa.',
   '- Con consulta cargada: lo que se sabe · interpretaciones posibles · qué falta confirmar · siguiente paso para revisión médica.',
   '- Fuera de lo clínico: breve, y redirige al uso clínico de Miracle.'
 ].join('\n');
@@ -80,16 +88,25 @@ const CHAT_SUPPORT_RULES = [
 // La regla que convierte «no sé» en una respuesta válida. Sin ella el modelo
 // aproxima dosis y umbrales con la misma seguridad con la que cita una guía.
 const CHAT_ABSTENTION = [
-  '═══ ABSTENCIÓN — es preferible no responder a responder mal ═══',
-  '- Si piden una cifra, dosis, umbral, criterio o conducta concreta que no está en los extractos ni conoces con certeza alta: no la inventes ni la aproximes; respaldo "insuficiente", di qué falta y dónde verificarlo.',
-  '- Dosis en niños, embarazo, lactancia o falla renal/hepática: solo con fuente recuperada o certeza alta. Un dato ausente que cambia la respuesta (peso, edad, función renal, alergias, embarazo, antecedentes) va en "faltantes"; no lo supongas.',
+  '═══ ABSTENCIÓN: SE RESPONDE SIEMPRE; LO QUE NO SE INVENTA SON CIFRAS ═══',
+  '- Sin guía también respondes, con la consulta y el conocimiento médico general establecido (respaldo "general" o "consulta").',
+  '- Una cifra, dosis, umbral o criterio concreto que no está en las fuentes ni conoces con certeza alta: no la inventes. No empieces por «no puedo»: da primero lo que sí sirve (cómo se decide, qué principio aplica, alternativas, qué hacer mientras tanto) y pon la cifra que falta, y dónde verificarla, en "faltantes"; respaldo "general". "insuficiente" solo si no puedes aportar nada clínico.',
+  '- Dosis en niños, embarazo, lactancia o falla renal/hepática: solo con fuente o certeza alta. Un dato ausente que cambia la respuesta (peso, edad, función renal, alergias, embarazo) va en "faltantes"; no lo supongas.',
   '- Si solo una parte de la pregunta tiene respaldo, responde esa parte y marca lo que queda sin respaldo.'
+].join('\n');
+
+// Solo en modo razonado: así el prompt de una pregunta simple no crece.
+const CHAT_CASE_PROTOCOL = [
+  '═══ MODO RAZONADO: CASO O PREGUNTA SIN GUÍA ═══',
+  '- Primero piensa en "razonamiento" (el médico no lo ve): datos clave del caso, hipótesis, qué apoya y qué descarta cada una, riesgos y qué cambiaría la conducta. Después escribe "respuesta".',
+  '- Si preguntan qué hacer con el paciente o el caso, responde como un colega que leyó la consulta (nota_clinica, transcripción, paciente, códigos), solo con lo que aplique:',
+  '  1) el caso en una o dos líneas con los datos que SÍ están; 2) impresión y diferenciales; 3) qué completar (interrogatorio, examen, paraclínicos); 4) manejo propuesto (medidas y fármacos, con sus condiciones); 5) signos de alarma y criterios de remisión u hospitalización; 6) seguimiento.',
+  '- Sin consulta cargada: da el enfoque general y pide en "faltantes" los datos que cambiarían la conducta.'
 ].join('\n');
 
 const CHAT_DIFFERENTIALS = [
   '═══ DIFERENCIALES ═══',
-  '- Con consulta cargada: de más a menos probable; por cada uno, lo que lo apoya en el caso, lo que va en contra, qué dato o examen lo descartaría y red flags si aplica. Lo que falta preguntar o examinar va en "faltantes"; los signos de alarma, en "alertas".',
-  '- Sin consulta cargada: diferenciales generales del motivo, sin fingir un paciente.'
+  '- De más a menos probable; con consulta, por cada uno lo que lo apoya en el caso, lo que va en contra, qué dato o examen lo descartaría y red flags si aplica. Lo que falta preguntar o examinar va en "faltantes"; los signos de alarma, en "alertas".'
 ].join('\n');
 
 // La propuesta viaja como JSON y la valida el mismo validador del ajuste de
@@ -105,6 +122,7 @@ const CHAT_NOTE_PROPOSAL = [
   '- En "respuesta", una o dos frases sobre qué cambia y qué no.'
 ].join('\n');
 
+const CHAT_OUTPUT_FIELDS = '"respuesta":"string",';
 const CHAT_OUTPUT_CONTRACT = [
   '═══ FORMATO DE SALIDA ═══',
   clauses.JSON_ONLY,
@@ -113,6 +131,12 @@ const CHAT_OUTPUT_CONTRACT = [
   '- "respaldo": "consulta" (sale sobre todo de esta consulta), "guia" (extractos citados), "general" (conocimiento general sin extracto) o "insuficiente" (sin respaldo suficiente para lo que se pregunta).',
   '- "fuentes": solo las refs que usaste de verdad; [] si ninguna. "faltantes" y "alertas" (signos de alarma del caso): máximo 6 cada una. "seguimientos": hasta 3 preguntas cortas, escritas en la voz del médico.'
 ].join('\n');
+// En modo razonado el objeto empieza por "razonamiento": el modelo piensa antes
+// de escribir la respuesta. El parser lo descarta; nunca llega al médico.
+const CHAT_OUTPUT_CONTRACT_REASONED = CHAT_OUTPUT_CONTRACT.replace(
+  `{${CHAT_OUTPUT_FIELDS}`,
+  `{"razonamiento":"string",${CHAT_OUTPUT_FIELDS}`
+);
 
 // Con la nota en el prompt, las secciones de la plantilla repiten sus keys y
 // etiquetas: solo se conserva cuáles son obligatorias. Sin nota (consulta en
@@ -320,7 +344,8 @@ class ClinicalAssistantPromptBuilder {
     return normalizeInstructionKind(value);
   }
 
-  buildChatSystemPrompt({ specialty = '', hasEncounter = false, hasNote = false, doctor = null } = {}) {
+  buildChatSystemPrompt({ specialty = '', hasEncounter = false, hasNote = false, doctor = null, depth = 'directo' } = {}) {
+    const reasoned = depth === 'razonado';
     let modeDirective;
     if (hasEncounter) {
       modeDirective = 'Modo contextual: tienes datos de una consulta específica (abajo); la nota clínica y la transcripción son la fuente primaria.';
@@ -336,22 +361,24 @@ class ClinicalAssistantPromptBuilder {
       `═══ ESPECIALIDAD ACTIVA: ${NoteModeResolver.normalizeSpecialty(specialty) || 'no definida'} ═══\n${specialtyRule(specialty)}`,
       CHAT_SUPPORT_RULES,
       CHAT_ABSTENTION,
+      reasoned ? CHAT_CASE_PROTOCOL : '',
       CHAT_DIFFERENTIALS,
       CHAT_NOTE_PROPOSAL,
       CHAT_STYLE,
-      CHAT_OUTPUT_CONTRACT,
+      reasoned ? CHAT_OUTPUT_CONTRACT_REASONED : CHAT_OUTPUT_CONTRACT,
       modeDirective,
       buildDoctorDirective(doctor)
     );
   }
 
-  buildChatMessages({ clinicalContext = {}, message = '', history = [] } = {}) {
+  buildChatMessages({ clinicalContext = {}, message = '', history = [], depth = 'directo' } = {}) {
     const hasEncounter = Boolean(clinicalContext.encounter);
     const system = this.buildChatSystemPrompt({
       specialty: clinicalContext.specialty,
       hasEncounter,
       hasNote: Boolean(clinicalContext.note_json),
-      doctor: clinicalContext.doctor
+      doctor: clinicalContext.doctor,
+      depth: ANSWER_DEPTHS.includes(depth) ? depth : 'directo'
     });
     const screen = clinicalContext.screen_context && typeof clinicalContext.screen_context === 'object'
       ? {
@@ -458,6 +485,7 @@ ClinicalAssistantPromptBuilder.INSTRUCTION_KINDS = INSTRUCTION_KINDS;
 ClinicalAssistantPromptBuilder.specialtyRule = specialtyRule;
 ClinicalAssistantPromptBuilder.GUIDELINES_TAG = GUIDELINES_TAG;
 ClinicalAssistantPromptBuilder.NO_GUIDELINES_NOTICE = NO_GUIDELINES_NOTICE;
+ClinicalAssistantPromptBuilder.ANSWER_DEPTHS = ANSWER_DEPTHS;
 ClinicalAssistantPromptBuilder.formatGuidelines = formatGuidelines;
 ClinicalAssistantPromptBuilder.compactEncounterContext = compactEncounterContext;
 ClinicalAssistantPromptBuilder.formatDrugLabels = formatDrugLabels;

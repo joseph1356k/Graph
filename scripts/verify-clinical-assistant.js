@@ -109,9 +109,9 @@ function createFakeLlm() {
     // El chat v3 pide JSON. El manejador de chat puede devolver un objeto (lo
     // normal) o un string (modelo que ignoró el contrato): el servicio tiene
     // que sobrevivir a los dos.
-    async chatExpectingJsonWithUsage(messages) {
+    async chatExpectingJsonWithUsage(messages, responseFormat, options = {}) {
       const chat = isChatPrompt(messages);
-      state.calls.push({ kind: chat ? 'chat' : 'json', messages });
+      state.calls.push({ kind: chat ? 'chat' : 'json', messages, options });
       const reply = chat
         ? (state.chatHandler ? state.chatHandler(messages) : DEFAULT_CHAT_REPLY)
         : (state.jsonHandler ? state.jsonHandler(messages) : {});
@@ -824,7 +824,7 @@ async function main() {
       assert.strictEqual(body.note_proposal, null);
       assert.strictEqual(body.mode, 'clinical_chat');
       const prompt = promptTextOf(llm.state.calls.at(-1));
-      assert.ok(prompt.includes('ABSTENCIÓN'), 'la regla de abstención está en el system prompt');
+      assert.ok(prompt.includes('ABSTENCIÓN: SE RESPONDE SIEMPRE'), 'la regla de abstención está en el system prompt');
       assert.ok(prompt.includes('PROPUESTA DE NOTA'));
       assert.ok(prompt.includes('FORMATO DE SALIDA'));
     });
@@ -908,6 +908,46 @@ async function main() {
       assert.deepStrictEqual(sinGuiaDelTema.body.used_context.guideline_ids, []);
       const prompt = promptTextOf(llm.state.calls.at(-1));
       assert.ok(prompt.includes('No se recuperaron guías clínicas'), 'el prompt dice que no hay guías');
+      assert.ok(prompt.includes('responde igual con la consulta y tu conocimiento médico general'), 'sin guía también se responde');
+      assert.strictEqual(sinGuiaDelTema.body.used_context.answer_depth, 'razonado', 'una pregunta clínica sin guía se razona');
+    });
+
+    // «¿Qué hago con este caso?»: modo razonado. El modelo piensa en
+    // "razonamiento" (que el médico nunca ve) y responde con el protocolo de caso.
+    llm.state.chatHandler = () => ({
+      razonamiento: 'BORRADOR INTERNO: hipertenso no controlado, revisar adherencia.',
+      respuesta: 'Caso: hipertenso con cifras en 150/95 en casa.\n- Impresión: HTA no controlada.\n- Siguiente paso: confirmar adherencia y ajustar manejo.',
+      respaldo: 'consulta',
+      fuentes: [],
+      faltantes: ['Función renal reciente'],
+      alertas: [],
+      propuesta_nota: null,
+      seguimientos: []
+    });
+    const caso = await call('POST', '/api/clinical/assistant/chat', {
+      message: '¿Qué hago con este paciente?',
+      note_json_draft: { sections: [{ key: 'analisis', label: 'Análisis', content: 'Hipertensión arterial no controlada, presión en casa 150/95.' }] }
+    });
+    await check('v7: «¿qué hago con este paciente?» va en modo razonado, con más salida, y el razonamiento no llega al médico', () => {
+      assert.strictEqual(caso.status, 200, JSON.stringify(caso.body));
+      assert.strictEqual(caso.body.used_context.answer_depth, 'razonado');
+      const call0 = llm.state.calls.at(-1);
+      const prompt = promptTextOf(call0);
+      assert.ok(prompt.includes('MODO RAZONADO'), 'el protocolo de caso está en el system prompt');
+      assert.ok(prompt.includes('{"razonamiento":"string","respuesta"'), 'el contrato pide razonar antes de responder');
+      assert.ok(prompt.includes('Hipertensión arterial no controlada'), 'el modelo recibe la nota de la consulta');
+      assert.strictEqual(call0.options.maxTokens, ClinicalAssistantService.MAX_CHAT_OUTPUT_TOKENS_REASONED);
+      assert.strictEqual(call0.options.reasoningEffort, 'medium');
+      assert.ok(!caso.body.answer.includes('BORRADOR INTERNO'), 'el razonamiento nunca se muestra');
+      assert.ok(!JSON.stringify(caso.body).includes('BORRADOR INTERNO'), 'ni en ningún otro campo');
+      assert.strictEqual(caso.body.support, 'consulta');
+    });
+    await check('v7: una pregunta con guía sigue en modo directo, sin protocolo de caso ni razonamiento', () => {
+      const directo = llm.state.calls.filter((item) => item.kind === 'chat').find((item) => promptTextOf(item).includes('[G1] Hipertensión arterial en adultos'));
+      assert.ok(directo, 'hubo una pregunta con guía');
+      assert.ok(!promptTextOf(directo).includes('MODO RAZONADO'));
+      assert.ok(!promptTextOf(directo).includes('"razonamiento"'));
+      assert.strictEqual(directo.options.maxTokens, 1800);
     });
 
     // Abstención: respaldo insuficiente nunca sale con faltantes vacíos.
@@ -1051,7 +1091,7 @@ async function main() {
       assert.ok(cifras.body.figures_checked >= 2, `figures_checked=${cifras.body.figures_checked}`);
       assert.deepStrictEqual(cifras.body.unverified_figures, ['35 mg/kg']);
       const prompt = promptTextOf(llm.state.calls.at(-1));
-      assert.ok(ClinicalAssistantPromptBuilder.CHAT_PROMPT_VERSION.startsWith('clinical-assistant-chat@6'), ClinicalAssistantPromptBuilder.CHAT_PROMPT_VERSION);
+      assert.ok(ClinicalAssistantPromptBuilder.CHAT_PROMPT_VERSION.startsWith('clinical-assistant-chat@7'), ClinicalAssistantPromptBuilder.CHAT_PROMPT_VERSION);
       assert.ok(prompt.includes('CIFRAS:'), 'la regla de cifras está en el system prompt');
       assert.ok(/Relevancia: (alta|media|baja)/.test(prompt), 'cada extracto declara su relevancia');
     });
