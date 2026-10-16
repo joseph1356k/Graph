@@ -273,16 +273,32 @@ class LLMProvider {
     return result.content;
   }
 
+  // ¿Es un modelo de razonamiento de OpenAI (gpt-5…, gpt-5.6-luna, gpt-6…, o1, o3…)?
+  // En Chat Completions rechazan `max_tokens` («use max_completion_tokens») y
+  // `temperature` distinta de 1, y cuentan su razonamiento dentro del tope. Por
+  // OpenRouter llegan como «openai/gpt-5…». Medido el 2026-10-16 contra la API:
+  // gpt-5-mini, gpt-5.6-luna y gpt-6-luna rechazan los dos parámetros.
+  usesCompletionTokens(model = this.model) {
+    if (!['openai', 'openrouter', 'azure-foundry'].includes(this.provider)) return false;
+    return /^(?:openai\/)?(?:gpt-(?:[5-9]|\d{2,})(?:[.-]|$)|o\d)/i.test(`${model || ''}`.trim());
+  }
+
   // Parámetros de generación opcionales. Sólo se envían cuando el llamador los
   // fija: un prompt que exige copiar palabra por palabra pide temperature 0; un
   // chat, 0.4. Antes todo corría a la temperatura por defecto del proveedor.
   generationParams(options = {}) {
     const params = {};
-    if (this.sendTemperature && Number.isFinite(options.temperature)) {
+    const reasoning = this.usesCompletionTokens(options.model || this.model);
+    // Un modelo de razonamiento solo acepta la temperatura por defecto: mandarla es un 400.
+    if (this.sendTemperature && !reasoning && Number.isFinite(options.temperature)) {
       params.temperature = options.temperature;
     }
     if (Number.isFinite(options.maxTokens) && options.maxTokens > 0) {
-      params.max_tokens = Math.floor(options.maxTokens);
+      params[reasoning ? 'max_completion_tokens' : 'max_tokens'] = Math.floor(options.maxTokens);
+    }
+    // Solo a quien lo entiende: un modelo que no razona lo rechaza como parámetro desconocido.
+    if (reasoning && ['minimal', 'low', 'medium', 'high'].includes(options.reasoningEffort)) {
+      params.reasoning_effort = options.reasoningEffort;
     }
     return params;
   }

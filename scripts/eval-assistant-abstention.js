@@ -131,8 +131,96 @@ async function dump(dir) {
   console.log(`[eval-assistant-abstention] ${fixture.casos.length} casos → ${dir}`);
 }
 
-async function liveContent(provider) {
-  return async (messages, options) => (await provider.chatExpectingJsonWithUsage(messages, { type: 'json_object' }, options)).content;
+// En vivo: el servicio usa el proveedor REAL (así recibe los topes y parámetros
+// de su familia de modelo) y se mide tiempo, tokens, costo y respuestas cortadas.
+async function runLive(outFile) {
+  // eslint-disable-next-line global-require
+  const { calculateCost } = require('../src/domain/usage/pricing');
+  const provider = new LLMProvider('MIRACLE_ASSISTANT');
+  const rows = [];
+  const queue = [...fixture.casos];
+  const concurrency = Number(process.env.EVAL_CONCURRENCY) || 6;
+  async function worker() {
+    while (queue.length) {
+      const item = queue.shift();
+      const record = {};
+      const llm = {
+        get provider() { return provider.provider; },
+        get model() { return provider.model; },
+        hasApiKey: () => provider.hasApiKey(),
+        usesCompletionTokens: (...args) => provider.usesCompletionTokens(...args),
+        parseJsonObject: (content) => provider.parseJsonObject(content),
+        async chatExpectingJsonWithUsage(messages, format, options) {
+          const started = Date.now();
+          const result = await provider.chatExpectingJsonWithUsage(messages, format, options);
+          Object.assign(record, { ms: Date.now() - started, usage: result.usage, finishReason: result.finishReason, raw: result.content, maxTokens: options.maxTokens });
+          return result;
+        }
+      };
+      let result = null;
+      let error = null;
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        result = await makeService(llm).chat(requestFor(item));
+      } catch (caught) {
+        error = caught.message;
+      }
+      let reasoning = '';
+      let jsonValid = false;
+      try {
+        const parsed = provider.parseJsonObject(record.raw || '');
+        jsonValid = typeof parsed?.respuesta === 'string';
+        reasoning = `${parsed?.razonamiento || ''}`.trim();
+      } catch (caught) {
+        jsonValid = false;
+      }
+      const usage = record.usage || {};
+      // OpenAI incluye los cacheados en prompt_tokens; el catálogo los cobra aparte.
+      const cached = usage.prompt_tokens_details?.cached_tokens || 0;
+      const cost = calculateCost({ provider: provider.provider, model: provider.model, apiFamily: 'chat_completions', inputTokens: (usage.prompt_tokens || 0) - cached, cachedInputTokens: cached, outputTokens: usage.completion_tokens || 0 });
+      rows.push({
+        id: item.id,
+        grupo: item.grupo,
+        error,
+        abstains: result ? isAbstention(result) : true,
+        support: result?.support || null,
+        depth: result?.used_context?.answer_depth || null,
+        unverified: result ? result.unverified_figures.length : 0,
+        jsonValid,
+        truncated: record.finishReason === 'length',
+        leak: Boolean(result) && reasoning.length >= 60 && JSON.stringify(result).includes(JSON.stringify(reasoning).slice(1, -1)),
+        chars: result ? result.answer.length : 0,
+        ms: record.ms || null,
+        inputTokens: usage.prompt_tokens || 0,
+        outputTokens: usage.completion_tokens || 0,
+        reasoningTokens: usage.completion_tokens_details?.reasoning_tokens || 0,
+        costUsd: cost.costUsd,
+        answer: result?.answer || '',
+        raw: record.raw || ''
+      });
+      process.stderr.write('.');
+    }
+  }
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  process.stderr.write('\n');
+  rows.sort((a, b) => fixture.casos.findIndex((c) => c.id === a.id) - fixture.casos.findIndex((c) => c.id === b.id));
+  if (outFile) fs.writeFileSync(outFile, `${JSON.stringify({ modelo: provider.model, proveedor: provider.provider, prompt_version: ClinicalAssistantPromptBuilder.CHAT_PROMPT_VERSION, fecha: new Date().toISOString(), filas: rows }, null, 2)}\n`);
+  const n = rows.length;
+  const sorted = (key) => rows.map((row) => row[key]).filter((value) => typeof value === 'number').sort((a, b) => a - b);
+  const pctl = (values, q) => values[Math.min(values.length - 1, Math.floor(values.length * q))];
+  const pct = (value) => `${(value * 100).toFixed(1)} %`;
+  const ms = sorted('ms');
+  const costs = rows.map((row) => row.costUsd).filter((value) => typeof value === 'number');
+  console.log(`[eval-assistant-abstention] EN VIVO · ${provider.provider} ${provider.model} · ${n} preguntas · prompt ${ClinicalAssistantPromptBuilder.CHAT_PROMPT_VERSION}`);
+  for (const grupo of [...new Set(rows.map((row) => row.grupo))]) {
+    const subset = rows.filter((row) => row.grupo === grupo);
+    console.log(`  ${grupo.padEnd(14)} n=${String(subset.length).padStart(2)}  «no sé» ${pct(subset.filter((row) => row.abstains).length / subset.length).padStart(7)} · cifras sin respaldo ${(subset.reduce((sum, row) => sum + row.unverified, 0) / subset.length).toFixed(2)} · p50 ${(pctl(subset.map((row) => row.ms).filter(Boolean).sort((a, b) => a - b), 0.5) / 1000).toFixed(1)} s`);
+  }
+  console.log(`  global         «no sé» ${pct(rows.filter((row) => row.abstains).length / n)} · errores ${rows.filter((row) => row.error).length} · JSON válido ${pct(rows.filter((row) => row.jsonValid).length / n)} · cortadas ${rows.filter((row) => row.truncated).length} · razonamiento filtrado ${rows.filter((row) => row.leak).length}`);
+  console.log(`  tiempo         p50 ${(pctl(ms, 0.5) / 1000).toFixed(1)} s · p95 ${(pctl(ms, 0.95) / 1000).toFixed(1)} s · máx ${(ms[ms.length - 1] / 1000).toFixed(1)} s`);
+  console.log(`  tokens         entrada mediana ${pctl(sorted('inputTokens'), 0.5)} · salida mediana ${pctl(sorted('outputTokens'), 0.5)} (razonamiento ${pctl(sorted('reasoningTokens'), 0.5)}) · salida p95 ${pctl(sorted('outputTokens'), 0.95)}`);
+  if (costs.length) console.log(`  costo          ${(costs.reduce((a, b) => a + b, 0) / costs.length * 1000).toFixed(2)} USD por 1 000 preguntas`);
+  for (const row of rows.filter((item) => item.abstains || item.error || item.truncated)) console.log(`   ✗ ${row.id}: ${row.error ? `error ${row.error}` : row.truncated ? 'cortada por el tope' : `«no sé» (${row.support})`}`);
 }
 
 async function main() {
@@ -144,9 +232,8 @@ async function main() {
       console.log('[eval-assistant-abstention] --live: no ejecutado (falta MIRACLE_ASSISTANT_LLM_API_KEY)');
       return;
     }
-    const provider = new LLMProvider('MIRACLE_ASSISTANT');
-    contentFor = await liveContent(provider);
-    source = 'modelo configurado (en vivo)';
+    const outIndex = args.indexOf('--out');
+    return runLive(outIndex >= 0 ? args[outIndex + 1] : null);
   } else {
     const recorded = JSON.parse(fs.readFileSync(RECORDED_FILE, 'utf8'));
     if (recorded.prompt_version !== ClinicalAssistantPromptBuilder.CHAT_PROMPT_VERSION || recorded.prompt_hash !== promptHash()) {

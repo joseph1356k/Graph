@@ -21,7 +21,7 @@ const PROVIDERS = {
     requiresBaseUrl: false,
     requiresModel: true,
     defaultModel: 'openai/gpt-4o',
-    modelOptions: ['openai/gpt-4o', 'openai/gpt-4o-mini', 'openai/gpt-4.1-mini'],
+    modelOptions: ['openai/gpt-4o', 'openai/gpt-4o-mini', 'openai/gpt-4.1-mini', 'openai/gpt-5-mini'],
     defaultBaseUrl: 'https://openrouter.ai/api/v1',
     apiKeyEnv: 'MIRACLE_ASSISTANT_LLM_OPENROUTER_API_KEY'
   },
@@ -32,8 +32,12 @@ const PROVIDERS = {
     requiresApiKey: true,
     requiresBaseUrl: false,
     requiresModel: true,
-    defaultModel: 'gpt-4.1-mini',
-    modelOptions: ['gpt-4.1-mini', 'gpt-4.1', 'gpt-4o', 'gpt-4o-mini'],
+    // Recomendado por medición (docs/asistente/MODELOS-EN-VIVO.md, 2026-10-16):
+    // en evaluación ciega gpt-5.6-luna sacó 8,1/10 contra 5,7 de gpt-4.1-mini y
+    // cuesta menos. gpt-5-mini, gpt-5.6-luna y gpt-6-luna razonan: LLMProvider
+    // les manda max_completion_tokens y no les manda temperature.
+    defaultModel: 'gpt-5.6-luna',
+    modelOptions: ['gpt-5.6-luna', 'gpt-4.1-mini', 'gpt-5-mini', 'gpt-6-luna', 'gpt-4.1', 'gpt-4o', 'gpt-4o-mini'],
     defaultBaseUrl: 'https://api.openai.com/v1',
     apiKeyEnv: 'MIRACLE_ASSISTANT_LLM_OPENAI_API_KEY'
   },

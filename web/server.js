@@ -167,6 +167,7 @@ function withProviderFallback(primary, secondary) {
     get provider() { return pick().provider; },
     get model() { return pick().model; },
     hasApiKey: () => primary.hasApiKey() || secondary.hasApiKey(),
+    usesCompletionTokens: (...args) => pick().usesCompletionTokens(...args),
     chat: (...args) => pick().chat(...args),
     chatWithUsage: (...args) => pick().chatWithUsage(...args),
     chatExpectingJson: (...args) => pick().chatExpectingJson(...args),

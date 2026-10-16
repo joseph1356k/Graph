@@ -24,6 +24,10 @@ const MAX_CHAT_OUTPUT_TOKENS = 1800;
 // ve) y después una respuesta completa: necesita más salida. ~3 500 tokens
 // caben en el límite de Vercel con un modelo rápido.
 const MAX_CHAT_OUTPUT_TOKENS_REASONED = 3500;
+// Un modelo que razona (gpt-5-mini, gpt-5.6-luna, gpt-6-luna…) cuenta su
+// razonamiento dentro del mismo tope: con 1 800 cortaría el JSON. Su tope es más
+// alto y su esfuerzo de razonamiento, bajo en preguntas directas.
+const MAX_CHAT_OUTPUT_TOKENS_REASONING_MODEL = Object.freeze({ directo: 5000, razonado: 9000 });
 
 // «¿Qué hago con este paciente?», «¿cómo lo manejo?», «¿qué opinas del caso?».
 const CASE_QUESTION = /\b(?:que|q)\s+(?:hago|hacemos|harias|haria|hacer|me\s+recomiendas|recomiendas|opinas|le\s+(?:doy|mando|formulo|pongo|pido|hago))\b|\bcomo\s+(?:lo\s+|la\s+|le\s+)?(?:manejo|manejamos|manejar|abordo|abordar|trato|tratar|sigo|seguimos)\b|\b(?:este|esta|mi|el|la)\s+(?:caso|paciente|senor|senora|nino|nina|bebe|gestante|embarazada)\b|\b(?:conducta|plan de manejo|siguiente paso|siguientes pasos)\b/;
@@ -162,7 +166,10 @@ class ClinicalAssistantService {
 
     const depth = answerDepth({ message: cleanMessage, guidelines, retrievalMode: retrieval.mode });
     usedContext.answer_depth = depth;
-    const maxTokens = depth === 'razonado' ? MAX_CHAT_OUTPUT_TOKENS_REASONED : MAX_CHAT_OUTPUT_TOKENS;
+    const reasoningModel = typeof this.llmProvider.usesCompletionTokens === 'function' && this.llmProvider.usesCompletionTokens();
+    const maxTokens = reasoningModel
+      ? MAX_CHAT_OUTPUT_TOKENS_REASONING_MODEL[depth]
+      : (depth === 'razonado' ? MAX_CHAT_OUTPUT_TOKENS_REASONED : MAX_CHAT_OUTPUT_TOKENS);
 
     try {
       const messages = this.promptBuilder.buildChatMessages({
@@ -193,8 +200,8 @@ class ClinicalAssistantService {
             {
               temperature: TEMPERATURE.chat,
               maxTokens,
-              // Solo lo usan los modelos que razonan (gpt-5, o-series); los demás lo ignoran.
-              ...(depth === 'razonado' ? { reasoningEffort: 'medium' } : {})
+              // Solo lo usan los modelos que razonan (gpt-5…, gpt-6…, o-series); a los demás no se les manda.
+              reasoningEffort: depth === 'razonado' ? 'medium' : 'low'
             }
           ),
           {
@@ -622,6 +629,7 @@ class ClinicalAssistantService {
 ClinicalAssistantService.TEMPERATURE = TEMPERATURE;
 ClinicalAssistantService.answerDepth = answerDepth;
 ClinicalAssistantService.MAX_CHAT_OUTPUT_TOKENS_REASONED = MAX_CHAT_OUTPUT_TOKENS_REASONED;
+ClinicalAssistantService.MAX_CHAT_OUTPUT_TOKENS_REASONING_MODEL = MAX_CHAT_OUTPUT_TOKENS_REASONING_MODEL;
 ClinicalAssistantService.MAX_NOTE_TEXT_LENGTH = MAX_NOTE_TEXT_LENGTH;
 
 module.exports = ClinicalAssistantService;
