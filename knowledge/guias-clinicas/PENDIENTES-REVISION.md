@@ -327,6 +327,136 @@ No es un archivo de guía: `build-guideline-corpus` solo compila los `.md` con c
 - **Pendiente:** Vigencia de las recomendaciones CDC/ACIP, dados los cambios de política en EE. UU. desde 2025
 - **Pendiente:** Esquema de Td de 5 dosis: solo una fuente (anexo distrital del PAI) da los intervalos
 
+## conjuntivitis-y-ojo-rojo
+- **Nueva (2026-10-14):** redactada con búsqueda web; 23 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
+- **Retirado antes de entrar:** Olopatadina 0,1 % dos veces al día / 0,2 % una vez al día y ketotifeno 0,025 % (no encontré la posología verificada); Tiempo de resolución de la hemorragia subconjuntival (las fuentes dicen 1–2 semanas, 7–14 días o 4–6 semanas); Volumen y duración de la irrigación en quemadura química (1–2 L, al menos 2 L, 15–20 min, 30 min: las fuentes difieren); Manitol 1 g/kg si la PIO sigue por encima de 40 mmHg a la hora (una sola fuente local); Esquema de pilocarpina (dosis única y luego 4 veces al día frente a cada 15 minutos: las fuentes difieren); Iridotomía en las 24–48 horas siguientes a la crisis (solo BMJ Best Practice); Regreso al colegio 24 horas después del antibiótico como recomendación de los CDC (no la encontré en una página de los CDC); Resolución espontánea de la conjuntivitis bacteriana en 1–2 semanas según NICE CKS (las fuentes dicen 5–7 días o 2–3 semanas); Código Sivigila 900 para conjuntivitis viral (una sola fuente indirecta); Dosis de aciclovir o ganciclovir en herpes ocular (no la busqué); Precisión del 95 % de la prueba de fenilefrina y prevalencia de artritis reumatoide en la escleritis (fuente poco fiable).
+- **Pendiente:** Esquema de cloranfenicol 0,5 % y ácido fusídico 1 %: verificado en formularios del NHS que aplican NICE CKS, no en la página de CKS; confirmar también su disponibilidad en Colombia
+- **Pendiente:** La frase de la AAO 2023 sobre el curso de 5 a 7 días viene de una reproducción en Guideline Central; contrastar con el texto del PPP
+- **Pendiente:** Povidona yodada 2,5 % de la GPC del recién nacido sano de 2013 (MinSalud): tomada de una reproducción secundaria; verificar en el PDF original y si sigue vigente
+- **Pendiente:** Azitromicina 20 mg/kg/día por 3 días en clamidia neonatal: es régimen de la OMS y de MSF; la CDC 2021 solo dice que los datos son limitados
+- **Pendiente:** Indicación de hospitalizar todo recién nacido con oftalmía gonocócica
+- **Pendiente:** Fármacos de la crisis de glaucoma agudo (acetazolamida, timolol, pilocarpina): salen de protocolos locales de urgencias, no del PPP de la AAO
+- **Pendiente:** Exclusión de 14 días para trabajadores de la salud (Public Health Ontario) frente a la política local de salud ocupacional; no encontré norma colombiana sobre regreso al colegio o al trabajo
+- **Pendiente:** Fluoroquinolona tópica en usuarios de lentes de contacto: solo fuentes secundarias
+- **Pendiente:** Remisión de la escleritis el mismo día: es la práctica habitual, pero no la verifiqué en una guía
+- **Pendiente:** Notificación de brotes de conjuntivitis por Sivigila: confirmar el mecanismo vigente del INS
+
+## dermatitis-atopica
+- **Nueva (2026-10-14):** redactada con búsqueda web; 22 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
+- **Retirado antes de entrar:** Antihistamínico sedante por 7–14 días en mayores de 6 meses (NICE): no encontré el texto original; quedó como 'ciclo corto'; Concentraciones de los ejemplos de corticoides por potencia (hidrocortisona 1 %, clobetasona 0,05 %, betametasona 0,1 %, clobetasol 0,05 %); Unidades punta de dedo por brazo y por pierna (las fuentes dan 3 frente a 4 y 6 frente a 8); Dosis de aciclovir en eccema herpético; Dosis de ciclosporina y de los demás inmunosupresores clásicos; Edad mínima de crisaborol y de ruxolitinib crema; Concentración de los baños con cloro diluido; Prevalencia de la dermatitis atópica en niños y adultos; Franja de 6 meses a 3 años para humectantes en la guía pediátrica de la AAD 2026 (fuente ambigua; no se incluyó).
+- **Pendiente:** Confirmar si NICE CG57 sigue vigente o fue reemplazada (una fuente secundaria menciona una guía NICE nueva de 2025) y la redacción actual sobre antihistamínicos
+- **Pendiente:** Recomendaciones exactas y grados de la guía pediátrica de la AAD 2026 (solo se consultaron resúmenes de prensa)
+- **Pendiente:** Postura de AAAAI/ACAAI 2023 sobre baricitinib y los JAK orales frente a AAD 2024 (difieren en los inmunosupresores clásicos)
+- **Pendiente:** Que la valoración oftalmológica el mismo día en eccema herpético periocular sea de la PCDS (no se encontró en el texto de NICE)
+- **Pendiente:** Embarazo: posición de EuroGuiDerm sobre dupilumab, inhibidores JAK y potencia de los corticoides tópicos
+- **Pendiente:** Contenido y año vigente de la guía colombiana de AsoColDerma (2018, 2020 y actualización 2024) y del consenso de atención primaria con la asociación colombiana de alergia
+- **Pendiente:** Disponibilidad en Colombia de flucloxacilina, pimecrolimus, ruxolitinib crema y los biológicos más nuevos (registro INVIMA)
+- **Pendiente:** Datos bibliográficos completos (volumen y página) de las referencias AAD 2023, AAD 2024 y AAAAI/ACAAI
+
+## menopausia
+- **Nueva (2026-10-14):** redactada con búsqueda web; 18 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
+- **Retirado antes de entrar:** Dosis bajas/estándar de estradiol (oral 0,5, 1 o 2 mg; parche de 25 o 50 µg): no hay una equivalencia verificada y las definiciones de dosis estándar difieren entre fuentes; Estradiol en IOP de 100 µg/día transdérmico o 2 mg oral: no verificado en ESHRE 2024; Elinzanetant 120 mg al acostarse: una fuente habla de cápsulas de 60 mg y no se confirmó la dosis diaria; Umbrales de fezolinetant (no iniciar con 2 veces el LSN; suspender con 5 veces, o 3 veces con bilirrubina): una sola fuente secundaria que además discrepaba en el calendario; Venlafaxina meta de 75 mg o hasta 150 mg/día: las fuentes no coinciden; Gabapentina hasta 2 400 mg/día y desvenlafaxina 100–150 mg/día: solo una fuente secundaria; Sangrado no programado más allá de 6 meses como umbral de estudio: discrepa con otra fuente que dice 12 meses; Exceso de cáncer de mama de 3–4 casos por 1 000 mujeres con terapia combinada: no confirmado en NICE; Prevalencia de la premutación FMR1 en IOP (7,5–13 %): fuente previa a 2024, no incluida.
+- **Pendiente:** Las dosis de ISRS/IRSN y gabapentina salen de resúmenes secundarios; contrastar con la tabla de NAMS 2023
+- **Pendiente:** Cariotipo, FMR1 y anticuerpos anti-21-hidroxilasa/antitiroperoxidasa en IOP se tomaron de ESHRE 2015 y de guías australianas; confirmar la redacción de ESHRE 2024
+- **Pendiente:** La densitometría al diagnóstico de IOP se atribuyó a FEBRASGO 2020; verificar si ESHRE 2024 dice lo mismo
+- **Pendiente:** NICE NG23 pudo haber tenido una actualización en abril de 2026; la guía la cita como actualizada en 2024
+- **Pendiente:** La lista de contraindicaciones de la terapia sistémica viene de resúmenes secundarios de NAMS 2022
+- **Pendiente:** NAMS 2022 usa 'o' en el texto y 'y' en los puntos destacados para el criterio de menores de 60 años / menos de 10 años desde la menopausia
+- **Pendiente:** La afirmación de que los riesgos descritos en mujeres mayores no se trasladan a la IOP se apoya en una revisión, no en el texto de ESHRE
+- **Pendiente:** Confirmar si ACOG actualizó la opinión de 2018 sobre sangrado posmenopáusico y si sigue vigente la recomendación de no suspender rutinariamente a los 65
+- **Pendiente:** Confirmar el registro INVIMA de fezolinetant y elinzanetant en Colombia
+- **Pendiente:** No se encontró una guía de MinSalud específica sobre menopausia
+- **Pendiente:** Revisar los códigos CIE-10 (N95.0–N95.9, E28.3)
+
+## parto-pretermino
+- **Nueva (2026-10-14):** redactada con búsqueda web; 24 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
+- **Retirado antes de entrar:** Dosis de carga y mantenimiento de nifedipino: las fuentes no coinciden (carga de 20 o de 30 mg; mantenimiento de 10–20 mg cada 4–6 h o de 20–40 mg cuatro veces al día). Se dejó 'según protocolo institucional'; Criterio de 4 contracciones en 20 min u 8 en 60 min, y borramiento ≥80 %: solo aparece en un resumen del PB 127, la versión anterior; Profilaxis para estreptococo del grupo B con estado desconocido si la RPM dura ≥18 h o hay fiebre ≥38 °C: una sola fuente secundaria; se retiró del texto por extensión; NICE: corticoides entre 24+0 y 33+6 (ofrecer) y entre 34+0 y 35+6 (considerar): no se verificó; NICE: manejo con criterio clínico por debajo de 29+6 semanas: no se encontró en ninguna fuente; NICE: continuar la progesterona hasta al menos 34+0 semanas: no se encontró; Incidencia de prematurez en Colombia del 10,7 % en 2021: una sola fuente secundaria; Dosis de atosibán, vancomicina y clindamicina para alergia con alto riesgo de anafilaxia; Número y código de la Resolución 3280 de 2018 y código Sivigila de mortalidad perinatal: no se verificaron y no se citan; Umbral de remisión «antes de 34 semanas»: era una síntesis de las ventanas de tocólisis y corticoides, no una cifra de una fuente; el texto remite según la edad gestacional y la red materno perinatal.
+- **Pendiente:** Confirmar la vigencia de ACOG PB 171 (2016) y CO 713 (2017): ACOG pudo actualizar los corticoides en el pretérmino tardío y en las 22–23 semanas
+- **Pendiente:** Umbral de cérvix corto para progesterona vaginal según ACOG: ≤20 mm a ≤24 semanas (2012) o <25 mm a las 18–22 semanas (una fuente atribuye este último a la actualización de 2021)
+- **Pendiente:** Caproato de 17-hidroxiprogesterona: la FDA retiró su aprobación en EE. UU.; verificar si está disponible en Colombia (INVIMA) antes de mantenerlo como opción de FIGO
+- **Pendiente:** Si la recomendación de la OMS 2022 incluye tocólisis de mantenimiento con nifedipino, lo que contrasta con ACOG
+- **Pendiente:** Recomendaciones concretas de la GPC MinSalud 2013 sobre amenaza de parto pretérmino y de la sección de RPM de 2015 (tocolítico preferido, esquema de antibióticos): no se pudo leer el texto
+- **Pendiente:** Azitromicina en RPM: dosis única de 1 g o esquema de 500 mg seguido de 250 mg diarios
+- **Pendiente:** Betametasona en el pretérmino tardío: exclusión de la diabetes pregestacional y vigilancia de hipoglucemia neonatal
+- **Pendiente:** Monitoría del sulfato de magnesio (FIGO: al menos cada 4 h) y precaución al combinarlo con nifedipino
+
+## sangrado-uterino-anormal
+- **Nueva (2026-10-14):** redactada con búsqueda web; 20 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
+- **Retirado antes de entrar:** Ácido tranexámico: dosis máxima de 4 g al día (BNF), no se encontró; Umbrales de creatinina para ajustar el ácido tranexámico (1,4 / 2,8 / 5,7 mg/dL): las fuentes difieren en el primer corte, así que en el texto solo dice 'según la creatinina'; Noretisterona 5 mg tres veces al día del día 5 al 26: no figura en formularios y uno la considera ineficaz en dosis baja; Hasta 13 % de las mujeres con sangrado abundante tienen von Willebrand: solo una revisión, sin organismo; Frecuencias del tamizaje de coagulopatía (equimosis o epistaxis 1 a 2 veces al mes; más de 5 epistaxis al año); Adolescentes: 3 a 6 toallas al día y cambio cada 1 a 2 horas; SUA crónico definido como más de 6 meses; Volumen del balón de sonda Foley (30 a 50 mL) y tiempo de permanencia; Reducción de la pérdida sanguínea mayor del 90 % con el DIU de levonorgestrel; Puntos de corte del ISTH-BAT.
+- **Pendiente:** FIGO 2018: confirmar en la fuente primaria que el sangrado por anticoagulantes pasó a la categoría iatrogénica (I); solo lo dice una fuente secundaria
+- **Pendiente:** NICE NG88: el PDF oficial aparece actualizado en julio de 2026; revisar si cambió alguna recomendación respecto a 2018 y 2021
+- **Pendiente:** Dosis de ACOG 2013 (medroxiprogesterona 20 mg, anticonceptivo de 35 µg tres veces al día, ácido tranexámico IV): verificadas en fuentes secundarias, no en la tabla original. Confirmar si hay estrógenos conjugados IV en Colombia
+- **Pendiente:** Ácido tranexámico: diferencia entre el esquema del NHS (1 g) y el de la FDA (1 300 mg); revisar la presentación y la ficha INVIMA en Colombia y el ajuste renal
+- **Pendiente:** Ácido mefenámico: solo un formulario lo respalda, y el de Irlanda del Norte lo excluye por toxicidad en sobredosis
+- **Pendiente:** ACOG 2012 (biopsia como primera línea en mayores de 45 años): confirmar la redacción y la vigencia del boletín; NICE es más restrictiva
+- **Pendiente:** Ferritina: NICE no la pide de rutina, ACOG 2019 sí la incluye en adolescentes; ver cómo encaja con la guía de anemia ferropénica
+- **Pendiente:** No se encontró guía nacional de MinSalud; el Hospital Universitario Nacional de Colombia tiene un estándar institucional (2025) que podría revisarse
+
+## artrosis
+- **Nueva (2026-10-14):** redactada con búsqueda web; 6 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
+- **Retirado antes de entrar:** Beers 2023: evitar AINE con depuración de creatinina menor de 30 mL/min (no se encontró la tabla de función renal); Duración del alivio de la infiltración con corticoide de 2 a 10 semanas (una fuente dice 2-10 semanas y otra 2-4 semanas; no se confirmó la cifra de NG226); Intervalo mínimo de 3 meses o número máximo de infiltraciones de corticoide al año (ninguna guía revisada lo da); Remitir tras 3 meses de manejo conservador (solo aparece en políticas locales del NHS, no en NG226); Topes de IMC de 35 o 45 para remitir a cirugía (políticas locales del NHS que contradicen NICE); Dosis máxima diaria de acetaminofén en adultos mayores (no verificada); Duloxetina 60 mg/día como dosis de etiqueta FDA para dolor musculoesquelético crónico (no se confirmó la ficha técnica); Meta de pérdida de peso de 5-7,5 % (es de RACGP, que no es una guía citada).
+- **Pendiente:** ACR 2026: solo se verificó por resúmenes secundarios (Epocrates, Healio, Guideline Central, OA Action Alliance). Hay que confirmar en el texto completo la cita, la dirección de la recomendación sobre acetaminofén, el estado del tramadol, los opioides y el ácido hialurónico, y si la condroitina en mano pasó a recomendación fuerte en contra
+- **Pendiente:** ACR 2019, duloxetina: confirmar si la recomendación condicional abarca rodilla, cadera y mano o solo rodilla
+- **Pendiente:** ACR 2019, infiltración de cadera: confirmar si la guía ecográfica es recomendación fuerte (en el texto solo se dice que se hace guiada por imagen)
+- **Pendiente:** NICE NG226: confirmar la redacción exacta del AINE tópico en articulaciones distintas de la rodilla, de la gastroprotección con IBP, de la frase sobre el 10 % frente al 5 % de pérdida de peso y de los criterios de remisión para reemplazo (no condicionar la remisión a un puntaje ni al grado radiológico)
+- **Pendiente:** EULAR 2023: solo se verificaron los temas de las recomendaciones 4 a 8 (peso, calzado, ayudas para la marcha, trabajo), no su texto
+- **Pendiente:** Beers 2023: confirmar el umbral renal para los AINE y la redacción sobre el uso crónico
+- **Pendiente:** Colombia: no se encontró ni se incluyó una GPC del MinSalud sobre artrosis; confirmar si existe
+
+## otitis-externa
+- **Nueva (2026-10-14):** redactada con búsqueda web; 18 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
+- **Retirado antes de entrar:** Alcance de la guía AAO-HNSF 2014 limitado a pacientes de 2 años o más (solo se encontró para 2006); Frecuencia y duración del clotrimazol: cada 8 a 12 horas hasta 14 días después de la curación, frente a 3 o 4 veces al día por 10 a 14 días (las fuentes no coinciden); Mejoría del dolor esperada a las 48 a 72 horas y resolución a los 7 días; Tasas de curación clínica del 65 al 90 % con gotas; Recomendación de AAO-HNSF contra las gotas anestésicas tópicas; Opioides por corto tiempo para el dolor intenso; Ciprofloxacino 0,2 % con hidrocortisona 1 %: 3 gotas cada 12 horas; Mortalidad de la otitis externa necrotizante de alrededor del 20 % (revisión antigua); Duración del curso de antibiótico en la otitis externa necrotizante de 6 a 8 semanas o de 4 a 8 semanas (se dejó 'al menos 6 semanas'); Incidencia de 1 de cada 123 personas al año y hasta el 10 % a lo largo de la vida; Evitar la irrigación del conducto en diabéticos; Venta libre del ácido acético al 2 % a partir de los 12 años.
+- **Pendiente:** Contrastar con el texto completo de AAO-HNSF 2014 la duración de 7 + 7 días (tomada del material para pacientes de AAO-HNSF y de Cochrane 2010) y la lista de factores que modifican el manejo
+- **Pendiente:** Dosis de neomicina, polimixina B e hidrocortisona verificadas en la monografía de Mayo Clinic y no en una ficha técnica del INVIMA; confirmar con el producto disponible en Colombia
+- **Pendiente:** Flucloxacilina 500 mg cada 6 horas viene de formularios regionales escoceses, que no coinciden en la duración (5 frente a 7 días); en Colombia la flucloxacilina es poco usada, así que hay que definir el equivalente local
+- **Pendiente:** Confirmar el año (2025) y las recomendaciones de duración de la guía neerlandesa NVKNO sobre otitis externa necrotizante
+- **Pendiente:** Revisar la guía ACORL 2024 para adaptar las presentaciones y recomendaciones al contexto colombiano; no se encontró guía específica de MinSalud
+- **Pendiente:** Confirmar ante el INVIMA la disponibilidad en Colombia de ofloxacino ótico, ciprofloxacino con dexametasona y ácido acético al 2 %
+- **Pendiente:** Confirmar el año de la revisión Cochrane CD004740 (citada como 2010)
+- **Pendiente:** Duración y frecuencia del clotrimazol en la otomicosis según la ficha técnica local
+
+## quemaduras
+- **Nueva (2026-10-14):** redactada con búsqueda web; 19 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
+- **Retirado antes de entrar:** Edad de corte para la fórmula pediátrica de 3 mL/kg (12 frente a 14 años según la fuente); 4 mL/kg/% SCQ para quemadura eléctrica según ABLS (no encontré fuente); Meta de diuresis con mioglobinuria (75–100 mL/h, más de 100 mL/h o 1–2 mL/kg/h: las fuentes no coinciden); Duración del monitoreo cardiaco en quemadura eléctrica (6–8 h frente a 24 h); Morfina intravenosa 0,1 mg/kg (no encontré fuente); Porcentajes de Lund-Browder por edad (cabeza del lactante y miembros inferiores: las fuentes no coinciden); Tiempo de curación del espesor parcial profundo (más de 3 semanas) y de la quemadura epidérmica (3–6 días, una sola fuente); Umbrales británicos de remisión (2 % en niños, 3 % en adultos) y criterio ambulatorio de menos del 10 % en adultos y menos del 5 % en niños; Duración de la irrigación en quemaduras por álcali (más de 20 minutos); Vida media de la carboxihemoglobina con oxígeno al 100 %.
+- **Pendiente:** Confirmar la referencia completa de la guía ABA 2023 de reanimación (volumen y páginas, J Burn Care Res, doi irad125) y si la dosis de 2 mL/kg/% cubre 24 o 48 horas
+- **Pendiente:** Confirmar en el manual ABLS 2018: el corte de edad o peso para la fórmula pediátrica, la distribución horaria en niños y la meta de diuresis pediátrica
+- **Pendiente:** La guía usa la lista clásica de criterios de remisión de la ABA; contrastarla con las Guidelines for Burn Patient Referral 2022, que tienen formato por niveles
+- **Pendiente:** Revisar NICE CKS Burns and scalds directamente: intervalos de control, tiempo de enfriamiento (algunas hojas para pacientes dicen 30 minutos) y criterios ambulatorios
+- **Pendiente:** Quemadura eléctrica: duración del monitoreo cardiaco y meta de diuresis con mioglobinuria según el protocolo institucional
+- **Pendiente:** Ácido fluorhídrico: concentración del gel y riesgo de hipocalcemia sistémica según toxicología
+- **Pendiente:** Intervalo de repetición del fentanilo intranasal (5–10 min en Australia Occidental frente a 30 min en Glasgow)
+- **Pendiente:** No encontré una GPC colombiana de quemaduras del MinSalud; verificar si existe un protocolo nacional o de la red de unidades de quemados, y la ficha vigente del INS para los eventos 452 y 875, además de la ruta de notificación del maltrato infantil (ICBF)
+- **Pendiente:** Redacción del refuerzo antitetánico: 5 años o más frente a más de 5 años en la tabla de los CDC
+
+## tos-ferina
+- **Nueva (2026-10-14):** redactada con búsqueda web; 26 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
+- **Retirado antes de entrar:** Proporción de lactantes menores de 1 año que se hospitalizan (CDC, '1 de cada 3' o 'la mitad'); OMS 2015: serie primaria desde las 6 semanas con intervalos de 4 a 8 semanas, completa a los 6 meses, refuerzo de 1 a 6 años y meta de cobertura del 90 % (solo se encontró el texto de 2010); Plazo de la investigación de campo del INS: 72 h en un acta local frente a 48 h en la circular de 2012; Eritromicina en adultos (2 g/día); Definición de caso probable del INS para mayores de 12 años; Saturación menor de 92 % como criterio de gravedad (un solo estudio); Umbral de leucocitos para leucorreducción o exanguinotransfusión; Profilaxis hasta 6 semanas en contactos de alto riesgo (Iowa); Casos INS 2025 (7 099 probables y 1 033 confirmados): verificados, pero retirados por espacio; OR de estenosis pilórica con azitromicina (8,26 y 2,98): verificados, pero no incluidos.
+- **Pendiente:** La definición de caso probable del INS se tomó de un acta de un comité local de vigilancia de 2025; contrastarla con el protocolo vigente del INS
+- **Pendiente:** Plazo de notificación: el comité local habla de súper inmediata y la circular de 2012 fija 24 h; confirmar el código y la periodicidad en el Sivigila
+- **Pendiente:** Semana de Tdap en gestantes (26 o 20) y si MinSalud la indica en cada embarazo, como CDC/ACIP
+- **Pendiente:** Si el esquema acortado (6 semanas, 3 y 4,5 meses) sigue vigente en 2026 y si el refuerzo de 18 meses es con pentavalente o DPT
+- **Pendiente:** Dosis de claritromicina en niños: CDC usa 15 mg/kg/día y Oregon 20 mg/kg/día; tope de 1 g/día en niños
+- **Pendiente:** Las dosis de CDC 2005 se tomaron de fuentes secundarias; cotejarlas con la página actual de CDC y con el Red Book 2024
+- **Pendiente:** Reglas de regreso a clases: confirmar el texto del Red Book y si existe norma colombiana
+- **Pendiente:** Los criterios de hospitalización se redactaron sin un listado formal de guía; contrastarlos con el Red Book o con la GPC de MinSalud que cita la Circular 011
+- **Pendiente:** Si la profilaxis a todo contacto del hogar coincide con el protocolo del INS
+- **Pendiente:** Código CIE-10 Z27.1 (vacuna DPT combinada)
+
+## varicela-y-sarampion
+- **Nueva (2026-10-14):** redactada con búsqueda web; 31 cifras verificadas con al menos una fuente secundaria que las dice textualmente.
+- **Retirado antes de entrar:** OMS 2014: cobertura de 80 % o más para introducir la vacuna de varicela (no encontrada; se quitó también la frase sobre desplazamiento de edad); Panencefalitis esclerosante subaguda de 7 a 10 años después del sarampión; Día de inicio del aislamiento del expuesto a varicela (día 8 o día 10: las fuentes no coinciden); Plazos de toma de muestra del protocolo INS (suero hasta 30 días; hisopado y orina 5 a 14 días): las fuentes son de otros países y no coinciden; Aciclovir profiláctico posexposición en gestante (desde el día 7; 4 o 5 veces al día): las fuentes no coinciden; Mortalidad de la neumonía varicelosa en gestantes (10 a 41 %): solo series antiguas, que no coinciden; 100 lesiones o más como factor de riesgo de neumonía en la gestante (una sola fuente); Segunda muestra de suero a las 2 a 4 semanas (una sola fuente estatal); OMS 2017: primera dosis a los 9 o a los 12 meses según la transmisión (solo se verificó la de 9 meses); Intervalo de 4 semanas entre vacunas vivas no aplicadas el mismo día (no se verificó en esta sesión); Edades de mayor riesgo en sarampión (menores de 5 y mayores de 20 años); Estado de Colombia como país libre de sarampión (información que no coincide entre fuentes).
+- **Pendiente:** Dosis pediátrica de aciclovir IV: 500 mg/m² cada 8 horas (MHRA) o 20 mg/kg cada 8 horas en menores de 12 años (FDA); definir con la ficha INVIMA del producto disponible
+- **Pendiente:** Aciclovir oral en adultos: 800 mg 4 veces al día (FDA) o 5 veces al día (guías británicas, gestante); contrastar con la Green-top 13 del RCOG
+- **Pendiente:** Definición de caso sospechoso, muestras y plazos en el protocolo INS vigente (lineamientos 2026, Circular 04 de 2026); se usaron la Circular 0015 de 2015, la ficha de la SDS Bogotá y el informe INS 2023
+- **Pendiente:** Indicación de vitamina A: si es para todo niño con sarampión o solo donde hay deficiencia o en hospitalizados; contrastar con la OMS y el Red Book vigente (no se consultó el documento primario de la OMS)
+- **Pendiente:** Refuerzo de triple viral a los 18 meses: se verificó en prensa y en la Alcaldía de Bogotá; confirmar con el lineamiento PAI vigente
+- **Pendiente:** Corte de riesgo de varicela congénita: semana 12 o semana 13
+- **Pendiente:** Disponibilidad en Colombia (INVIMA) de VariZIG y de inmunoglobulina para sarampión
+- **Pendiente:** Riesgo de panencefalitis con sarampión antes de los 2 años: solo fuente secundaria
+- **Pendiente:** Asociación AINE y fascitis necrotizante en varicela: se basa en estudios pequeños; revisar la postura de la AAP
+- **Pendiente:** CIE-10 P35.8 para la varicela congénita: verificar el código preferido en Colombia
+- **Pendiente:** Duración del aislamiento del sarampión en inmunosuprimidos (se escribió 'más tiempo', sin cifra)
+
 ## Guías de la primera tanda (33)
 Redactadas sin acceso a las fuentes primarias. Todas requieren revisión médica completa antes de llenar
 `revisado_por`; prioridad: dosis pediátricas (antibióticos, IRA, EDA, fiebre sin foco), embarazo (control

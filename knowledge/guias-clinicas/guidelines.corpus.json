@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source_hash": "2c94796070c7e5600440c0932f1547745714322a8cd33d2525e6f92ea8bdfee8",
+  "source_hash": "552df2ad143cdbcf36ce3b0218142c246fc17f9240ff5b7dad0da3dca083a6c8",
   "guidelines": [
     {
       "id": "accidente-ofidico",
@@ -521,6 +521,92 @@
       ]
     },
     {
+      "id": "artrosis",
+      "titulo": "Artrosis de rodilla, cadera y mano: diagnóstico clínico, ejercicio, AINE e infiltración",
+      "organismo": "ACR · Arthritis Foundation · NICE · OARSI · EULAR",
+      "anio": 2022,
+      "fuente": "NICE. Osteoarthritis in over 16s: diagnosis and management (NG226), 2022; American College of Rheumatology/Arthritis Foundation. 2019 Guideline for the Management of Osteoarthritis of the Hand, Hip, and Knee (Arthritis Care Res 2020;72:149); American College of Rheumatology. 2026 Update of the ACR Recommendations for the Management of Osteoarthritis of the Knee, Hip, and Hand (resumen publicado en septiembre de 2026); OARSI. OARSI guidelines for the non-surgical management of knee, hip, and polyarticular osteoarthritis (Osteoarthritis Cartilage 2019;27:1578); EULAR. EULAR recommendations for the non-pharmacological core management of hip and knee osteoarthritis: 2023 update (Ann Rheum Dis 2024;83:730); EULAR. 2018 update of the EULAR recommendations for the management of hand osteoarthritis (Ann Rheum Dis 2019;78:16); American College of Rheumatology. Development of criteria for the classification and reporting of osteoarthritis of the knee (Arthritis Rheum 1986;29:1039); American Geriatrics Society. 2023 Updated AGS Beers Criteria for Potentially Inappropriate Medication Use in Older Adults (J Am Geriatr Soc 2023)",
+      "especialidades": [
+        "medicina_general",
+        "medicina_familiar",
+        "medicina_interna",
+        "reumatologia",
+        "ortopedia",
+        "geriatria",
+        "fisiatria"
+      ],
+      "cie10": [
+        "M15.0",
+        "M15.1",
+        "M15.2",
+        "M16.0",
+        "M16.1",
+        "M16.9",
+        "M17.0",
+        "M17.1",
+        "M17.9",
+        "M18.0",
+        "M18.1",
+        "M18.9",
+        "M19.9"
+      ],
+      "palabras_clave": [
+        "artrosis",
+        "osteoartritis",
+        "osteoartrosis",
+        "gonartrosis",
+        "coxartrosis",
+        "rizartrosis",
+        "artrosis de rodilla",
+        "artrosis de cadera",
+        "artrosis de mano",
+        "nodulos de Heberden",
+        "desgaste articular",
+        "dolor de rodilla",
+        "AINE topico",
+        "diclofenaco gel",
+        "duloxetina",
+        "infiltracion de corticoide",
+        "acido hialuronico",
+        "glucosamina",
+        "reemplazo articular",
+        "protesis de rodilla"
+      ],
+      "poblacion": [
+        "adultos",
+        "adultos_mayores"
+      ],
+      "fecha_revision": "2026-10-14",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; en adultos mayores revisar función renal, riesgo gastrointestinal y cardiovascular antes de indicar AINE orales, y ante una articulación caliente y tumefacta descartar artritis séptica.",
+      "secciones": [
+        {
+          "titulo": "Diagnóstico clínico: cuándo no hace falta la radiografía",
+          "texto": "NICE 2022 (NG226): diagnosticar la artrosis clínicamente, sin imágenes, en personas de 45 años o más con dolor articular relacionado con la actividad y sin rigidez matinal o con rigidez matinal que no dura más de 30 minutos. No usar imágenes de rutina para el diagnóstico salvo rasgos atípicos o que sugieran un diagnóstico alternativo o adicional: trauma reciente, rigidez matinal prolongada, empeoramiento rápido de los síntomas o de la deformidad, articulación caliente y tumefacta, o sospecha de infección o cáncer. Los cambios en la radiografía, la resonancia o la ecografía se correlacionan mal con los síntomas, por lo que no definen la gravedad ni la conducta. Criterios clínicos de clasificación del ACR (1986) para rodilla: dolor de rodilla más al menos 3 de 6 hallazgos (edad mayor de 50 años, rigidez de menos de 30 minutos, crepitación, dolor óseo a la palpación, aumento de volumen óseo y ausencia de calor palpable), con sensibilidad del 95 % y especificidad del 69 % en la serie original; son criterios de clasificación y rinden menos en la consulta general. Mano: nódulos de Heberden (interfalángicas distales) y de Bouchard (interfalángicas proximales) y compromiso de la base del pulgar (rizartrosis); la forma erosiva cursa con brotes inflamatorios. Cadera: dolor inguinal o en la cara anterior del muslo con limitación de la rotación interna; puede referirse a la rodilla. Diferenciales: artritis inflamatoria (rigidez prolongada, sinovitis de pequeñas articulaciones), gota y depósito de pirofosfato de calcio, artritis séptica, bursitis, dolor referido de columna lumbar, osteonecrosis y fractura."
+        },
+        {
+          "titulo": "Base del tratamiento: educación, ejercicio, peso y ayudas técnicas",
+          "texto": "El manejo no farmacológico es el núcleo en todas las guías. NICE 2022: el ejercicio terapéutico (fortalecimiento local y acondicionamiento general) es el tratamiento de base, por encima de los analgésicos, junto con información sobre la enfermedad y autocuidado. EULAR 2023 (cadera y rodilla): plan individualizado y multicomponente; educación y consejos de autocuidado reforzados en las consultas siguientes; programa de ejercicio de dosis suficiente, progresivo y adaptado a la función y preferencias de la persona; además control del peso, calzado y ayudas para la marcha, y apoyo para el trabajo y el cambio de comportamiento. ACR 2019 recomienda con fuerza el ejercicio, los programas de autocuidado, el tai chi en rodilla y cadera, y la pérdida de peso en sobrepeso u obesidad con artrosis de rodilla o cadera: la mejoría del dolor y la función sigue una relación dosis-respuesta a partir de una pérdida del 5 % del peso corporal. NICE: cualquier pérdida de peso probablemente ayuda, pero perder el 10 % probablemente aporta más que perder el 5 %. La actualización ACR 2026 mantiene como recomendaciones fuertes el ejercicio y la pérdida de peso, y añade de forma condicional los agonistas del receptor de GLP-1 en artrosis de rodilla con obesidad, siempre con dieta y ejercicio, y el masaje en rodilla y cadera. Ayudas técnicas (ACR 2019): bastón, recomendación fuerte en rodilla y cadera; rodillera tibiofemoral en artrosis tibiofemoral (fuerte) y rodillera patelofemoral en artrosis patelofemoral (condicional); ortesis de neopreno o rígida para la base del pulgar (fuerte) y para otras articulaciones de la mano (condicional); EULAR 2018 aconseja el uso prolongado de la ortesis del pulgar. OARSI: enseñar a usar el bastón en la mano contraria a la articulación afectada; usarlo del mismo lado aumenta la carga sobre la rodilla."
+        },
+        {
+          "titulo": "AINE tópicos y orales: precauciones en el adulto mayor",
+          "texto": "AINE tópico: ACR 2019 lo recomienda con fuerza en rodilla y de forma condicional en mano; NICE 2022 lo ofrece como primer fármaco en artrosis de rodilla; OARSI 2019 lo recomienda con fuerza en rodilla; EULAR 2018 lo considera el primer tratamiento farmacológico en mano y prefiere lo tópico a lo sistémico por seguridad. Cambiar el AINE oral por uno tópico reduce los eventos gastrointestinales graves, por lo que es la opción preferida en adultos mayores. AINE oral (ACR 2019, recomendación fuerte; NICE, si el tópico es ineficaz o no es adecuado): usar la menor dosis eficaz por el menor tiempo posible; NICE indica ofrecer gastroprotección (inhibidor de bomba de protones) mientras se toma el AINE; EULAR 2018 lo limita a periodos cortos en artrosis de mano. OARSI 2019: con comorbilidad gastrointestinal, preferir un inhibidor selectivo de COX-2 o un AINE no selectivo con inhibidor de bomba de protones; con comorbilidad cardiovascular o fragilidad no recomienda ningún AINE oral. Criterios de Beers 2023 (AGS): evitar el uso crónico de AINE en adultos mayores, en especial junto con corticoides o anticoagulantes; el inhibidor de bomba de protones reduce el riesgo de sangrado pero no lo elimina; evitar indometacina y ketorolaco por el riesgo de sangrado digestivo y lesión renal aguda, y evitar AINE en insuficiencia cardiaca. Antes de iniciar revisar función renal, presión arterial, antecedente de úlcera o sangrado y uso de anticoagulantes, diuréticos, IECA o ARA II; no usarlos en enfermedad renal crónica avanzada."
+        },
+        {
+          "titulo": "Acetaminofén, duloxetina e infiltración con corticoide",
+          "texto": "Acetaminofén: las guías recientes lo degradaron. NICE 2022 no lo ofrece de rutina, salvo uso infrecuente y breve cuando los demás tratamientos farmacológicos están contraindicados, no se toleran o no funcionan; OARSI 2019 lo desaconseja de forma condicional; ACR 2019 lo recomienda de forma condicional y los resúmenes de la actualización ACR 2026 lo mantienen entre las recomendaciones condicionales. Si se usa, controlar la dosis total diaria (incluidos los productos combinados), la hepatopatía y el consumo de alcohol. Duloxetina: ACR 2019 la recomienda de forma condicional, con evidencia sobre todo en rodilla, y sigue siendo condicional en ACR 2026. En los ensayos en artrosis de rodilla se inició con 30 mg al día durante una semana y luego 60 mg al día; subir a 120 mg en quienes no respondían no dio beneficio adicional significativo. En adultos mayores vigilar náuseas, mareo, caídas, hiponatremia e interacciones serotoninérgicas, y ajustar según la ficha técnica en insuficiencia renal o hepática. Infiltración intraarticular de corticoide: ACR 2019 la recomienda con fuerza en rodilla y cadera (la de cadera se hace guiada por imagen) y de forma condicional en mano; EULAR 2018 no la recomienda en general en mano, salvo en interfalángicas dolorosas. NICE 2022: considerarla cuando otros fármacos son ineficaces o inadecuados, o para facilitar el ejercicio, explicando que el alivio es de corta duración. En un ensayo aleatorizado, triamcinolona 40 mg cada 12 semanas durante 2 años produjo mayor pérdida de volumen de cartílago que la solución salina sin mejorar el dolor, por lo que conviene espaciar y reservar las infiltraciones. Descartar infección antes de infiltrar y advertir a la persona con diabetes sobre la hiperglucemia transitoria."
+        },
+        {
+          "titulo": "Lo que no se recomienda: glucosamina, condroitina, ácido hialurónico y opioides",
+          "texto": "Glucosamina: ACR 2019 recomienda con fuerza no usarla, sola o combinada con condroitina; NICE 2022 indica no ofrecerla. Condroitina: ACR 2019, recomendación fuerte en contra en rodilla y cadera y condicional a favor en mano, y EULAR 2018 la admite en mano; la actualización ACR 2026 pasó a recomendar con fuerza en contra de la glucosamina, la condroitina y sus combinaciones en rodilla, cadera y mano. Ácido hialurónico intraarticular: ACR 2019, recomendación fuerte en contra en cadera y condicional en contra en rodilla y en la base del pulgar, porque su efecto equivale al de la inyección de solución salina; NICE 2022 indica no ofrecerlo. Opioides: NICE 2022 no ofrece opioides potentes (los riesgos superan los beneficios) y no usa de rutina los opioides débiles, salvo uso infrecuente y breve cuando las demás opciones fallan o están contraindicadas; OARSI 2019 recomienda con fuerza no usar opioides orales ni transdérmicos y desaconseja de forma condicional el tramadol; ACR 2019 recomienda el tramadol de forma condicional y desaconseja de forma condicional los demás opioides. ACR 2019 también recomienda con fuerza no usar bisfosfonatos, hidroxicloroquina, metotrexato, biológicos ni estimulación eléctrica transcutánea (rodilla y cadera); ACR 2026 recomienda con fuerza no usar plasma rico en plaquetas ni células madre en rodilla y cadera, y acepta de forma condicional el metotrexato solo en artrosis erosiva de mano, manejada por reumatología."
+        },
+        {
+          "titulo": "Remisión a ortopedia para reemplazo articular y signos de alarma",
+          "texto": "NICE 2022: considerar la remisión para reemplazo articular cuando los síntomas (dolor, rigidez, pérdida de función o deformidad progresiva) afectan sustancialmente la calidad de vida y el manejo no quirúrgico (ejercicio terapéutico, pérdida de peso si aplica y analgesia) ha sido ineficaz o no es adecuado. No excluir a la persona de la remisión por edad, sexo, tabaquismo, comorbilidades, sobrepeso u obesidad: estos factores modifican el riesgo quirúrgico y deben optimizarse en paralelo (peso, tabaco, glucemia, anemia), pero no impiden la valoración. La decisión es clínica y compartida; el grado radiológico o un puntaje no deben ser por sí solos la condición para remitir. Enviar a urgencias o valorar el mismo día ante una articulación caliente, roja y tumefacta, sobre todo con fiebre (artrocentesis para descartar artritis séptica), trauma con imposibilidad de apoyar, deterioro rápido de la función o de la deformidad, dolor nocturno o de reposo con pérdida de peso (sospecha de tumor) o sospecha de osteonecrosis. Remitir a reumatología si se sospecha artritis inflamatoria, si hay artrosis erosiva de mano con brotes o si el diagnóstico es dudoso; a fisiatría o fisioterapia para el programa de ejercicio, el entrenamiento con el bastón y las ortesis. En cada control revisar adherencia al ejercicio, peso y beneficio real de cada analgésico."
+        }
+      ]
+    },
+    {
       "id": "asma-adultos-y-ninos",
       "titulo": "Asma en adultos, adolescentes y niños",
       "organismo": "GINA",
@@ -889,6 +975,92 @@
         {
           "titulo": "Tamizaje de carcinoma hepatocelular, signos de alarma y remisión",
           "texto": "AASLD 2023: vigilar a los adultos con cirrosis con ecografía hepática cada 6 meses junto con alfafetoproteína sérica (versiones previas la consideraban opcional); la alfafetoproteína sola no sirve como tamizaje. EASL 2018: ecografía abdominal cada 6 meses realizada por personal experimentado. AASLD sugiere no hacer vigilancia en cirrosis Child-Pugh C salvo que el paciente esté en lista de trasplante, por su baja supervivencia esperada. Un nódulo nuevo, el crecimiento de una lesión, una ecografía con mala visualización o una alfafetoproteína en ascenso requieren tomografía o resonancia multifásica y remisión a hepatología. En Colombia, las hepatitis B y C son eventos de notificación obligatoria al Sivigila del Instituto Nacional de Salud. Signos de alarma que exigen urgencias u hospitalización: fiebre o dolor abdominal con ascitis, confusión o somnolencia, hematemesis o melenas (ver guía de hemorragia digestiva), oliguria o ascenso de creatinina, hiponatremia grave, ictericia progresiva y ascitis a tensión. Remitir a hepatología: primera descompensación, MELD de 15 o más, ascitis refractaria, encefalopatía recurrente, sospecha de carcinoma hepatocelular o candidato a trasplante."
+        }
+      ]
+    },
+    {
+      "id": "conjuntivitis-y-ojo-rojo",
+      "titulo": "Ojo rojo y conjuntivitis: viral, bacteriana, alérgica, neonatal y signos de alarma",
+      "organismo": "AAO · NICE · CDC · AAP · UKHSA · MinSalud Colombia",
+      "anio": 2023,
+      "fuente": "American Academy of Ophthalmology. Conjunctivitis Preferred Practice Pattern, 2023; American Academy of Ophthalmology. Primary Angle-Closure Disease Preferred Practice Pattern, 2020; NICE Clinical Knowledge Summaries. Conjunctivitis - infective, y formularios del NHS que la aplican; Centers for Disease Control and Prevention. Sexually Transmitted Infections Treatment Guidelines, 2021 (MMWR Recomm Rep 2021;70(4)); American Academy of Pediatrics. Red Book y Managing Infectious Diseases in Child Care and Schools; UK Health Security Agency. Health protection in children and young people settings, tabla de exclusión; Public Health Ontario. Recommendations for the prevention of conjunctivitis in eye clinics, 2016; Ministerio de Salud y Protección Social de Colombia, Colciencias. Guía de práctica clínica del recién nacido sano, Guía No. 02, 2013; Community Eye Health Journal. Emergency management: angle-closure glaucoma",
+      "especialidades": [
+        "oftalmologia",
+        "medicina_general",
+        "medicina_familiar",
+        "pediatria",
+        "urgencias",
+        "neonatologia"
+      ],
+      "cie10": [
+        "H10.0",
+        "H10.1",
+        "H10.3",
+        "H10.9",
+        "B30.1",
+        "B30.9",
+        "A54.3",
+        "A74.0",
+        "P39.1",
+        "B00.5",
+        "H11.3",
+        "H15.0",
+        "H15.1",
+        "H16.0",
+        "H20.0",
+        "H40.2",
+        "T15.1",
+        "T26.6"
+      ],
+      "palabras_clave": [
+        "ojo rojo",
+        "conjuntivitis",
+        "conjuntivitis viral",
+        "conjuntivitis bacteriana",
+        "conjuntivitis alergica",
+        "laganas",
+        "oftalmia neonatal",
+        "conjuntivitis neonatal",
+        "profilaxis ocular",
+        "cloranfenicol",
+        "glaucoma agudo",
+        "cierre angular",
+        "queratitis",
+        "lentes de contacto",
+        "hemorragia subconjuntival",
+        "epiescleritis",
+        "escleritis",
+        "uveitis",
+        "cuerpo extrano ocular",
+        "quemadura quimica ocular"
+      ],
+      "poblacion": [
+        "adultos",
+        "pediatria"
+      ],
+      "fecha_revision": "2026-10-14",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; no formular anestésicos tópicos para uso en casa ni corticoides tópicos sin examen oftalmológico, y ante dolor intenso, baja de visión o fotofobia remitir a oftalmología el mismo día.",
+      "secciones": [
+        {
+          "titulo": "Cómo diferenciar la conjuntivitis viral, bacteriana y alérgica",
+          "texto": "La conjuntivitis es la causa más frecuente de ojo rojo en atención primaria: hiperemia conjuntival difusa, mayor en los fondos de saco, secreción y sensación de arenilla, sin dolor intenso, con agudeza visual conservada (mejora al parpadear o limpiar la secreción), pupila normal y córnea transparente. AAO 2023: el diagnóstico es clínico; preguntar por inicio, lateralidad, tipo de secreción, prurito, contactos enfermos, catarro reciente, lentes de contacto, exposición sexual y atopia, y teñir con fluoresceína para descartar lesión corneal. Viral (sobre todo adenovirus): secreción acuosa, folículos tarsales, adenopatía preauricular, antecedente de catarro o de otro caso; empieza en un ojo y pasa al otro en pocos días; AAO estima que el período de contagio suele ser de 10 a 14 días desde el inicio. Bacteriana: secreción mucopurulenta que pega las pestañas al despertar, menos prurito y sin adenopatía; en niños puede acompañar a la otitis media. La forma hiperaguda, con pus abundante que reaparece al limpiarlo, edema palpebral y quemosis, sugiere gonococo y es urgencia por riesgo de perforación corneal. Clamidia del adulto: conjuntivitis folicular crónica, de semanas, en persona sexualmente activa; buscar otras infecciones de transmisión sexual. Alérgica: bilateral, con prurito como síntoma cardinal, lagrimeo, secreción mucosa filante y, a menudo, rinitis alérgica o dermatitis atópica; no es contagiosa. Herpes simple: folicular unilateral, a veces con vesículas palpebrales; buscar dendritas con fluoresceína. Ningún signo aislado separa con certeza la viral de la bacteriana; el cultivo se reserva para la hiperaguda, neonatal, recurrente, refractaria o con sospecha de transmisión sexual."
+        },
+        {
+          "titulo": "Tratamiento inicial, antibiótico tópico y regreso al colegio o al trabajo",
+          "texto": "Para todas: lavado de manos, no compartir toallas ni almohadas, limpiar la secreción con suero fisiológico, compresas frías, lágrimas artificiales y suspender los lentes de contacto hasta la resolución. Viral: tratamiento sintomático; los antibióticos no sirven (AAO 2023), y AAO pide evitar el uso indiscriminado de corticoides tópicos, que solo indica el oftalmólogo. Bacteriana: AAO 2023 señala que la forma leve suele ser autolimitada en adultos inmunocompetentes, pero el antibiótico tópico acelera la remisión; un curso de 5 a 7 días de un antibiótico tópico de amplio espectro suele ser eficaz y ninguno ha mostrado superioridad, de modo que se elige por costo y disponibilidad. NICE CKS y los formularios del NHS admiten observar o diferir la receta en casos leves (iniciarla si persiste más de 3 días, según NHS Scotland); si se trata, cloranfenicol al 0,5 % colirio, una gota cada 2 horas por 2 días y luego cuatro veces al día, hasta 48 horas después de la resolución; alternativa, ácido fusídico al 1 % dos veces al día, sin cobertura de gramnegativos. En usuarios de lentes de contacto se prefiere una fluoroquinolona tópica por el riesgo de Pseudomonas. Gonocócica del adulto (CDC 2021): ceftriaxona 1 g IM en dosis única, considerar un lavado único del ojo con solución salina, tratar a las parejas y remitir a oftalmología. Alérgica (AAO 2023): evitar el alérgeno, compresas frías y antihistamínico tópico con acción estabilizadora de mastocitos (olopatadina, ketotifeno); corticoide tópico solo por oftalmología. Regreso a actividades: UKHSA no exige exclusión escolar por conjuntivitis salvo brote, y la AAP considera que un niño que se ve bien no debe excluirse automáticamente ni necesita antibiótico para regresar; muchos colegios piden, aun así, 24 horas de antibiótico en la bacteriana. Trabajadores de la salud con conjuntivitis por adenovirus: Public Health Ontario indica no atender pacientes durante 14 días desde el inicio, contados desde el segundo ojo si se afecta. En Colombia, los brotes en colegios o instituciones se notifican a la secretaría de salud por Sivigila."
+        },
+        {
+          "titulo": "Conjuntivitis neonatal y profilaxis ocular",
+          "texto": "Toda conjuntivitis en el primer mes de vida se evalúa el mismo día, con Gram, cultivo y pruebas para gonococo y Chlamydia trachomatis. Gonocócica: aparece típicamente entre 2 y 5 días después del nacimiento, con secreción purulenta abundante y edema palpebral marcado; sin tratamiento causa úlcera corneal y ceguera. CDC 2021: ceftriaxona 25–50 mg/kg IV o IM en dosis única, sin superar 250 mg, con precaución en hiperbilirrubinemia, sobre todo en prematuros; si recibe calcio IV, cefotaxima 100 mg/kg IV o IM en dosis única. El antibiótico tópico solo es insuficiente. Hospitalizar, buscar infección diseminada y coinfección por clamidia, y tratar a la madre y su pareja. Por clamidia: inicio habitual entre 5 y 14 días de vida, puede acompañarse de neumonía afebril. CDC 2021: eritromicina base o etilsuccinato 50 mg/kg/día por vía oral en 4 dosis durante 14 días; su eficacia ronda el 80 %, por lo que puede requerirse un segundo curso. Alternativa con menos datos: azitromicina en suspensión 20 mg/kg/día, una dosis diaria por 3 días (OMS). Ambos macrólidos orales se asocian con estenosis hipertrófica del píloro en menores de 6 semanas: advertir a los padres. Profilaxis: CDC 2021 recomienda eritromicina al 0,5 % en ungüento oftálmico en cada ojo, aplicación única al nacer; previene la gonocócica pero no la clamidial. MinSalud Colombia (guía del recién nacido sano, 2013) recomienda povidona yodada al 2,5 %, una gota en cada ojo lo antes posible tras el parto y sin interrumpir el contacto piel a piel, y considera equivalentes contra la oftalmía gonocócica la eritromicina al 0,5 %, la tetraciclina al 1 % y el nitrato de plata al 1 %. La profilaxis no reemplaza el tamizaje y tratamiento de gonorrea y clamidia en el control prenatal."
+        },
+        {
+          "titulo": "Signos de alarma y remisión a oftalmología el mismo día",
+          "texto": "Remitir el mismo día ante: dolor ocular moderado o intenso, baja de agudeza visual que no mejora al parpadear, fotofobia, pupila fija, arreactiva o irregular, inyección ciliar alrededor de la córnea, opacidad o úlcera corneal, hipopión o hifema, trauma penetrante, quemadura química, usuario de lentes de contacto con dolor o fotofobia, sospecha de herpes (vesículas palpebrales, dendritas, zóster oftálmico), conjuntivitis hiperaguda o neonatal, inmunosupresión o falta de mejoría. Glaucoma agudo de ángulo cerrado: dolor ocular intenso con cefalea frontal, visión borrosa, halos alrededor de las luces, náuseas y vómito (se confunde con migraña o abdomen agudo), córnea turbia, pupila en midriasis media fija o poco reactiva y ojo duro; la presión intraocular suele superar 35 mmHg. Puede desencadenarse por oscuridad, midriáticos o anticolinérgicos. Remitir de inmediato; si el traslado se demora, los protocolos de urgencia oftalmológica usan acetazolamida 500 mg, de preferencia IV (precaución en insuficiencia renal; contraindicada en drepanocitosis), timolol al 0,5 % una gota (evitar en asma o bloqueo cardiaco) y pilocarpina al 2 %, con analgesia y antiemético. AAO 2020: el tratamiento definitivo es la iridotomía periférica con láser, valorando también el ojo contralateral. Queratitis por lentes de contacto: dolor, fotofobia, baja de visión e infiltrado corneal blanco, con riesgo de Pseudomonas y Acanthamoeba; retirar el lente, no ocluir y remitir con los lentes y el estuche. Uveítis anterior: dolor sordo, fotofobia, inyección ciliar, pupila pequeña o irregular y visión borrosa."
+        },
+        {
+          "titulo": "Hemorragia subconjuntival, epiescleritis, escleritis, cuerpo extraño y quemadura química",
+          "texto": "Hemorragia subconjuntival: mancha roja homogénea, bien delimitada, indolora, sin secreción ni baja de visión, a menudo tras tos, vómito o esfuerzo; se reabsorbe sola y no requiere tratamiento. Tomar la presión arterial y revisar anticoagulantes o antiagregantes; si recurre, estudiar coagulopatía. Tras trauma importante, con dolor o baja de visión, descartar ruptura del globo. Epiescleritis: enrojecimiento sectorial rojo brillante, molestia leve y visión normal; benigna, se maneja con lágrimas artificiales y compresas frías, y se estudia solo si recurre. Escleritis: dolor profundo y taladrante que despierta en la noche e irradia a la cara, color violáceo y dolor a la presión; se asocia a artritis reumatoide y vasculitis y amenaza la visión: remitir el mismo día. Los vasos superficiales se blanquean con fenilefrina tópica al 2,5 % en la epiescleritis y no en la escleritis. Cuerpo extraño: con anestésico tópico solo para el examen, evertir el párpado y teñir con fluoresceína; el superficial se retira con irrigación o hisopo húmedo y se da antibiótico tópico; remitir si hay anillo de óxido, cuerpo extraño central o profundo, o antecedente de martillar o esmerilar metal (posible cuerpo extraño intraocular). Quemadura química, más grave por álcalis (cal, cemento, limpiadores): irrigar de inmediato, antes incluso de medir la agudeza visual, con solución salina o lactato de Ringer, o agua del grifo si no hay otra; anestésico tópico, separar y evertir los párpados y barrer los fondos de saco; continuar con varios litros hasta que el pH, medido con papel indicador 5 a 10 minutos después de suspender, sea cercano a 7,0. Las quemaduras por álcali pueden requerir horas de irrigación. Nunca neutralizar con ácidos o bases. Luego, remisión a oftalmología el mismo día."
         }
       ]
     },
@@ -1495,6 +1667,83 @@
         {
           "titulo": "Duración, suspensión y prevención de recaídas",
           "texto": "Tras la remisión (PHQ-9 <5 y recuperación funcional), continuar el antidepresivo a la misma dosis al menos 6 meses en un primer episodio (NICE), 12 meses si hubo síntomas residuales o episodio grave, y 2 años o indefinido con dos o más episodios recurrentes, episodios graves o con intento suicida, inicio temprano o comorbilidad. Mantener la psicoterapia o un plan de prevención de recaídas (reconocer señales tempranas, rutina de sueño y ejercicio, red de apoyo). Para suspender: reducir gradualmente a lo largo de 4 semanas o más (más lento en paroxetina y venlafaxina; la fluoxetina puede retirarse más rápido), vigilando el síndrome de discontinuación (mareo, parestesias «eléctricas», irritabilidad, insomnio, síntomas gripales) que se distingue de la recaída por su inicio en días y su resolución rápida al reiniciar. Volver a evaluar al mes de la suspensión. En cada control preguntar por ideación suicida, consumo de alcohol, adherencia y función (trabajo, relaciones, autocuidado); registrar el PHQ-9. Signos que exigen atención inmediata: ideas suicidas con plan o medios, intento reciente, síntomas psicóticos, incapacidad para alimentarse o cuidarse, conductas de riesgo para otros."
+        }
+      ]
+    },
+    {
+      "id": "dermatitis-atopica",
+      "titulo": "Dermatitis atópica (eccema atópico) en niños y adultos: diagnóstico, corticoides tópicos, terapia proactiva, sobreinfección y terapia sistémica",
+      "organismo": "AAD · NICE · EuroGuiDerm · AAAAI/ACAAI · NIAID · AsoColDerma",
+      "anio": 2023,
+      "fuente": "American Academy of Dermatology. Guidelines of care for the management of atopic dermatitis in adults with topical therapies (J Am Acad Dermatol 2023;89:e1); American Academy of Dermatology. Guidelines of care for the management of atopic dermatitis in adults with phototherapy and systemic therapies (J Am Acad Dermatol 2024;90:e43); American Academy of Dermatology. Guidelines of care for the management of pediatric atopic dermatitis (J Am Acad Dermatol 2026); NICE. Atopic eczema in under 12s: diagnosis and management, CG57 (2007, actualizada 2023) y estándar de calidad QS44; NICE. Secondary bacterial infection of eczema and other common skin conditions: antimicrobial prescribing, NG190 (2021); EuroGuiDerm. European guideline on atopic eczema (2022 y actualización viva 2025); AAAAI/ACAAI Joint Task Force on Practice Parameters. Atopic dermatitis (eczema) guidelines: 2023 (Ann Allergy Asthma Immunol 2024;132:274); NIAID. Addendum guidelines for the prevention of peanut allergy in the United States (2017); Cochrane. Skin care interventions in infants for preventing eczema and food allergy (actualización 2022); Primary Care Dermatology Society. Eczema herpeticum; AsoColDerma. Diagnóstico y tratamiento de la dermatitis atópica en Colombia: actualización de la guía de práctica clínica (Rev Asoc Colomb Dermatol 2024); fichas técnicas FDA de tacrolimus, pimecrolimus, dupilumab, tralokinumab, lebrikizumab, nemolizumab, upadacitinib y abrocitinib",
+      "especialidades": [
+        "dermatologia",
+        "pediatria",
+        "medicina_general",
+        "medicina_familiar",
+        "alergologia",
+        "medicina_interna"
+      ],
+      "cie10": [
+        "L20.0",
+        "L20.8",
+        "L20.9",
+        "B00.0",
+        "L01.1"
+      ],
+      "palabras_clave": [
+        "dermatitis atopica",
+        "eccema atopico",
+        "eczema",
+        "piel atopica",
+        "rasquiña",
+        "prurito",
+        "xerosis",
+        "emolientes",
+        "corticoide topico",
+        "unidad punta de dedo",
+        "tacrolimus",
+        "pimecrolimus",
+        "terapia proactiva",
+        "SCORAD",
+        "EASI",
+        "eccema herpetico",
+        "dupilumab",
+        "inhibidores JAK",
+        "alergia alimentaria",
+        "Hanifin Rajka"
+      ],
+      "poblacion": [
+        "pediatria",
+        "adultos"
+      ],
+      "fecha_revision": "2026-10-14",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; no usar corticoides tópicos potentes en menores de 12 meses ni muy potentes en ningún niño sin indicación del dermatólogo, y ante sospecha de eccema herpético iniciar aciclovir sistémico de inmediato y obtener valoración especializada el mismo día.",
+      "secciones": [
+        {
+          "titulo": "Definición y diagnóstico: criterios del UK Working Party y de Hanifin y Rajka",
+          "texto": "Enfermedad inflamatoria crónica y recidivante de la piel, con prurito, xerosis y eccema de distribución típica según la edad: mejillas y superficies extensoras en lactantes; pliegues en niños mayores y adultos, con liquenificación en la fase crónica. El diagnóstico es clínico. Criterios del UK Working Party (los que adopta NICE): enfermedad cutánea pruriginosa en los últimos 12 meses más 3 o más de los siguientes: antecedente de compromiso de pliegues (o de mejillas en menores de 10 años); antecedente personal de asma o rinitis alérgica (o de un familiar de primer grado en menores de 4 años); piel generalmente seca en el último año; eccema visible en pliegues (o en mejillas, frente y cara externa de las extremidades en menores de 4 años), e inicio antes de los 2 años (criterio que no se aplica en menores de 4 años). Criterios de Hanifin y Rajka, los más usados en ensayos clínicos: 3 de 4 mayores (prurito; morfología y distribución típicas; curso crónico o recidivante; antecedente personal o familiar de atopia) y 3 de 23 menores, como xerosis, hiperlinealidad palmar, IgE elevada, inicio temprano, tendencia a infecciones cutáneas y pliegue de Dennie-Morgan. Diferenciales: dermatitis seborreica, dermatitis de contacto irritativa o alérgica, escabiosis, psoriasis, tiña e ictiosis; en el adulto con inicio tardío o sin respuesta al tratamiento, considerar además erupción medicamentosa y linfoma cutáneo de células T."
+        },
+        {
+          "titulo": "Gravedad, cuidado de la piel, alergia alimentaria y prevención",
+          "texto": "SCORAD combina extensión, intensidad y síntomas subjetivos (prurito y pérdida de sueño), con un máximo de 103 puntos: leve menos de 25, moderada 25–50 y grave más de 50 (algunos estudios proponen otros cortes). EASI suma extensión e intensidad por regiones, con máximo de 72: 0 sin lesiones, 0,1–1 casi sin lesiones, 1,1–7 leve, 7,1–21 moderada, 21,1–50 grave y 50,1–72 muy grave. En la consulta general basta la escala práctica de NICE (leve: piel seca y prurito ocasional; moderada: prurito frecuente, eritema y engrosamiento localizado; grave: compromiso extenso, prurito incesante, sangrado o fisuras), más el efecto sobre el sueño y la calidad de vida. Emolientes sin perfume a diario, en cantidad abundante y aun con la piel sana: NICE fija para niños 250–500 g por semana. AAD 2023 recomienda humectantes y, de forma condicional, baño y vendajes húmedos; AAAAI/ACAAI 2023 sugiere baños con cloro diluido como complemento en enfermedad moderada a grave. Alergia alimentaria (NICE): sospecharla si hubo síntomas inmediatos tras un alimento, o en lactantes y niños pequeños con eccema moderado o grave no controlado con manejo óptimo, sobre todo con cólico, vómito, cambios del hábito intestinal o falla de medro; los alimentos más implicados son leche de vaca, huevo y nueces, y la evaluación es por especialista. AAAAI/ACAAI 2023 sugiere no usar dietas de eliminación para tratar la dermatitis. Prevención: NIAID 2017, en lactantes con eccema grave o alergia al huevo, considerar IgE específica o prueba cutánea para maní y, según el resultado, introducirlo desde los 4–6 meses; con eccema leve a moderado, hacia los 6 meses. Cochrane 2022: los emolientes rutinarios en el primer año probablemente no previenen el eccema en lactantes sanos y podrían aumentar las infecciones cutáneas."
+        },
+        {
+          "titulo": "Corticoides tópicos por potencia y zona; unidad punta de dedo",
+          "texto": "Son el tratamiento de base del brote (AAD 2023, recomendación fuerte). NICE: elegir la potencia según la gravedad y la zona, aplicar 1 o 2 veces al día solo sobre lesiones activas o activas en las últimas 48 horas, y continuar los emolientes. Cara y cuello: potencia baja (por ejemplo, hidrocortisona); en brotes graves, potencia moderada solo por 3–5 días; nunca potentes. Axilas e ingles: moderada o potente únicamente en cursos cortos de 7–14 días. La potencia (moderada, como clobetasona; potente, como betametasona valerato; muy potente, como clobetasol) depende también de la concentración y el vehículo; verificarla en la ficha técnica. AAD 2023 favorece agentes de menor potencia en cara, cuello, genitales y pliegues. Niños (NICE): no usar potentes en menores de 12 meses ni muy potentes a ninguna edad sin indicación del dermatólogo; si un corticoide leve o moderado no controla en 7–14 días, descartar infección y, desde los 12 meses, usar uno potente por no más de 14 días y nunca en cara o cuello; si persiste, revisar el diagnóstico y pedir concepto de dermatología. Unidad punta de dedo: la cantidad que sale de un tubo de boquilla estándar desde el pliegue distal hasta la punta del índice de un adulto, cerca de 0,5 g, alcanza para un área equivalente a dos palmas de adulto (aproximadamente 2 % de la superficie corporal); cara y cuello del adulto requieren unas 2,5 unidades."
+        },
+        {
+          "titulo": "Inhibidores de calcineurina, terapia proactiva, otros tópicos y antihistamínicos",
+          "texto": "Inhibidores de calcineurina tópicos (AAD 2023, recomendación fuerte): tacrolimus pomada 0,03 % autorizado desde los 2 hasta los 15 años, y 0,03 % o 0,1 % en adultos (0,1 % desde los 16 años); pimecrolimus crema 1 % desde los 2 años para enfermedad leve a moderada. Capa fina 2 veces al día, sin oclusión. EuroGuiDerm 2022 los prefiere en zonas con riesgo de atrofia por corticoide: cara, pliegues y región anogenital. Terapia proactiva (EuroGuiDerm 2022, recomendación fuerte): controlado el brote, aplicar corticoide tópico o inhibidor de calcineurina 2 veces por semana en las zonas que suelen recaer; AAD 2023 recomienda con fuerza en adultos el corticoide de potencia media 2 veces por semana como mantenimiento. Otros tópicos: AAD 2023 recomienda crisaborol pomada (inhibidor de fosfodiesterasa 4) y ruxolitinib crema 1,5 % (inhibidor JAK), este último sin superar el 20 % de la superficie corporal ni 60 g por semana; AAAAI/ACAAI 2023, en cambio, sugiere no añadir un inhibidor JAK tópico en enfermedad leve a moderada que no responde solo a humectantes. AAD 2023 desaconseja antimicrobianos, antisépticos y antihistamínicos tópicos. Antihistamínicos orales: NICE no los recomienda de rutina; en prurito intenso permite una prueba de un mes con uno no sedante, que se continúa solo si ayuda, y en brotes con alteración del sueño un ciclo corto de uno sedante apropiado para la edad. Un metanálisis en red de 2026 halló solo una reducción del prurito clínicamente poco relevante, sin beneficio claro en el sueño y con más somnolencia con los de primera generación."
+        },
+        {
+          "titulo": "Sobreinfección, eccema herpético y criterios de remisión",
+          "texto": "Sobreinfección bacteriana (impetiginización): exudado, costras melicéricas, pústulas o empeoramiento rápido, por Staphylococcus aureus o Streptococcus pyogenes. NICE 2021: no tomar frotis de rutina al inicio, pues la piel atópica suele estar colonizada; si el paciente no está sistémicamente enfermo, no ofrecer antibiótico tópico ni oral de rutina y optimizar el corticoide tópico; si se decide tratar, ácido fusídico tópico en lesiones localizadas o un betalactámico antiestafilocócico oral (NICE nombra flucloxacilina), habitualmente por 5 a 7 días; reevaluar si aparece compromiso sistémico o dolor desproporcionado. Eccema herpético (erupción variceliforme de Kaposi): urgencia; sospecharlo ante empeoramiento brusco con dolor, vesículas agrupadas, erosiones en sacabocado y a menudo fiebre. NICE indica aciclovir sistémico inmediato y valoración por dermatología el mismo día, porque sin tratamiento puede ser mortal o causar ceguera; si compromete la piel periocular, la Primary Care Dermatology Society indica valoración oftalmológica el mismo día. Dosis de aciclovir según peso y función renal. Remisión (NICE): el mismo día ante sospecha de eccema herpético; urgente, en 2 semanas, si el eccema grave no responde al tratamiento tópico óptimo después de 1 semana o si el eccema infectado no responde al tratamiento; programada si hay duda diagnóstica, falta de control con tratamiento óptimo, infecciones recurrentes o impacto psicosocial importante."
+        },
+        {
+          "titulo": "Fototerapia y terapia sistémica: opciones, límites de edad y poblaciones especiales",
+          "texto": "Las indica dermatología en enfermedad moderada a grave no controlada con tópicos bien usados. AAD 2024 (adultos): fuerte a favor de dupilumab, tralokinumab, abrocitinib, baricitinib y upadacitinib; condicional para fototerapia, azatioprina, ciclosporina, metotrexato y micofenolato; y condicional en contra de los corticoides sistémicos. AAAAI/ACAAI 2023 difiere: sugiere no usar azatioprina, metotrexato, micofenolato ni corticoides sistémicos, y reserva la ciclosporina para adolescentes y adultos refractarios. La guía pediátrica de la AAD 2026 recomienda con fuerza biológicos e inhibidores JAK orales en la enfermedad moderada a grave y evitar los corticoides sistémicos. Límites de edad según la FDA: dupilumab desde los 6 meses (en adultos, 600 mg subcutáneos de carga y luego 300 mg cada 2 semanas; en niños, dosis según peso); tralokinumab y nemolizumab desde los 12 años; lebrikizumab desde los 12 años con peso de al menos 40 kg; upadacitinib y abrocitinib desde los 12 años, cuando otros sistémicos, incluidos los biológicos, no controlan o no son aconsejables. Dupilumab produce con frecuencia conjuntivitis y blefaritis. Los inhibidores JAK orales tienen advertencia en recuadro de la FDA por infecciones graves, mortalidad, neoplasias, eventos cardiovasculares mayores y trombosis, derivada de un estudio en personas de 50 años o más con al menos un factor de riesgo cardiovascular: tamizar tuberculosis y sopesar ese riesgo en el adulto mayor. Gestantes: los emolientes y corticoides tópicos siguen siendo la base; si se necesita terapia sistémica, EuroGuiDerm sugiere ciclosporina y desaconseja el corticoide sistémico prolongado (prednisolona solo como rescate corto); el metotrexato está contraindicado. En Colombia, la actualización 2024 de la guía de AsoColDerma destaca la evidencia de crisaborol, dupilumab, abrocitinib y upadacitinib."
         }
       ]
     },
@@ -4390,6 +4639,83 @@
       ]
     },
     {
+      "id": "menopausia",
+      "titulo": "Menopausia y climaterio: diagnóstico, terapia hormonal y alternativas no hormonales",
+      "organismo": "The Menopause Society (NAMS) · NICE · ESHRE · IMS · BMS · ACOG",
+      "anio": 2022,
+      "fuente": "The North American Menopause Society. The 2022 hormone therapy position statement of The North American Menopause Society (Menopause 2022;29:767); The North American Menopause Society. The 2023 nonhormone therapy position statement of The North American Menopause Society (Menopause 2023;30:573); NICE. Menopause: identification and management, guía NG23 (2015, actualizada en 2024); International Menopause Society. Menopause and MHT in 2024: addressing the key controversies, white paper (Climacteric 2024;27:441); ESHRE, ASRM, IMS. Evidence-based guideline: premature ovarian insufficiency (Hum Reprod Open 2024, hoae065); British Menopause Society. Tools for clinicians: progestogens and endometrial protection; ACOG. Committee Opinion: The role of transvaginal ultrasonography in evaluating the endometrium of women with postmenopausal bleeding (2018); USPSTF. Hormone therapy for the primary prevention of chronic conditions in postmenopausal persons (2022); FDA. Fichas técnicas y comunicaciones de seguridad de fezolinetant (2023, 2024), elinzanetant (2025) y terapia hormonal de la menopausia (2025)",
+      "especialidades": [
+        "ginecologia_y_obstetricia",
+        "medicina_general",
+        "medicina_familiar",
+        "medicina_interna",
+        "endocrinologia"
+      ],
+      "cie10": [
+        "N95.1",
+        "N95.2",
+        "N95.0",
+        "N95.3",
+        "N95.8",
+        "N95.9",
+        "E28.3"
+      ],
+      "palabras_clave": [
+        "menopausia",
+        "climaterio",
+        "perimenopausia",
+        "sofocos",
+        "calores",
+        "bochornos",
+        "sudores nocturnos",
+        "sintomas vasomotores",
+        "terapia hormonal de la menopausia",
+        "THM",
+        "TRH",
+        "reemplazo hormonal",
+        "progesterona micronizada",
+        "sindrome genitourinario de la menopausia",
+        "atrofia vaginal",
+        "sequedad vaginal",
+        "insuficiencia ovarica primaria",
+        "menopausia precoz",
+        "fezolinetant",
+        "FSH"
+      ],
+      "poblacion": [
+        "adultos"
+      ],
+      "fecha_revision": "2026-10-14",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; individualizar la terapia hormonal según edad, años desde la menopausia y riesgo trombótico, cardiovascular y de cáncer de mama, y confirmar el registro INVIMA de fezolinetant y elinzanetant en Colombia.",
+      "secciones": [
+        {
+          "titulo": "Definición, diagnóstico clínico y cuándo pedir FSH",
+          "texto": "La menopausia es el cese permanente de la menstruación por pérdida de la función folicular ovárica y se establece de forma retrospectiva tras 12 meses consecutivos de amenorrea sin otra causa. La perimenopausia o transición comienza con la irregularidad del ciclo y los síntomas, y el climaterio abarca todo el periodo de cambio. La edad promedio de la menopausia natural ronda los 51 años; la que ocurre entre los 40 y los 45 años se considera menopausia temprana, y antes de los 40, insuficiencia ovárica primaria (IOP). NICE NG23: en mujeres sanas mayores de 45 años, diagnosticar sin laboratorio la perimenopausia por síntomas vasomotores con ciclos irregulares, y la menopausia tras 12 meses sin menstruación si no usan anticoncepción hormonal, o por los síntomas si no tienen útero. En ese grupo no se recomiendan FSH, hormona antimülleriana, estradiol ni ecografía ovárica, porque las hormonas fluctúan durante la transición. Considerar FSH entre los 40 y los 45 años con síntomas y cambio del patrón menstrual, y medirla ante sospecha de IOP en menores de 40. No usar FSH para diagnosticar menopausia en mujeres con anticonceptivo combinado o progestágeno en dosis alta. Síntomas: vasomotores (sofocos, sudoración nocturna), trastornos del sueño, del ánimo y de la concentración, artralgias y menor libido. El síndrome genitourinario de la menopausia incluye sequedad, ardor e irritación vulvovaginal, dispareunia, urgencia, disuria e infecciones urinarias recurrentes, y a diferencia de los sofocos tiende a progresar. En el estudio SWAN, la duración mediana de los síntomas vasomotores frecuentes fue de 7,4 años. Descartar embarazo, disfunción tiroidea e hiperprolactinemia según el cuadro. Todo sangrado después de 12 meses de amenorrea es sangrado posmenopáusico y exige estudio."
+        },
+        {
+          "titulo": "Terapia hormonal: indicaciones, contraindicaciones y ventana de inicio",
+          "texto": "NAMS 2022: la terapia hormonal es el tratamiento más eficaz para los síntomas vasomotores y el síndrome genitourinario, y previene la pérdida ósea y las fracturas. En mujeres menores de 60 años o con menos de 10 años desde la menopausia, sin contraindicaciones, la relación beneficio-riesgo es favorable para tratar síntomas vasomotores molestos y prevenir la pérdida ósea. Iniciarla a partir de los 60 años o más de 10 años después de la menopausia es menos favorable por el mayor riesgo absoluto de enfermedad coronaria, ataque cerebrovascular, tromboembolia venosa y demencia. Las vías transdérmicas y las dosis bajas pueden disminuir el riesgo de tromboembolia y de ataque cerebrovascular. Contraindicaciones de la terapia sistémica: sangrado vaginal no explicado (estudiarlo antes), cáncer de mama u otra neoplasia estrogenodependiente, enfermedad coronaria o infarto previo, ataque cerebrovascular previo, tromboembolia venosa previa o trombofilia, y enfermedad hepática activa; algunas no son absolutas y se deciden con el especialista. NICE: la terapia oral aumenta el riesgo de tromboembolia, mientras la transdérmica en dosis estándar no lo eleva por encima del de la población general; considerar la vía transdérmica si hay mayor riesgo de tromboembolia, incluido un índice de masa corporal mayor de 30 kg/m², y remitir a hematología antes de iniciar si el riesgo es alto. USPSTF 2022 desaconseja la terapia hormonal con el fin de prevenir enfermedades crónicas en la posmenopausia. FDA: en noviembre de 2025 anunció retirar del recuadro de advertencia de estos productos los riesgos cardiovasculares, de cáncer de mama y de probable demencia; esto no modifica las contraindicaciones individuales."
+        },
+        {
+          "titulo": "Esquemas: estrógeno solo o con progestágeno, vía y estrógeno vaginal",
+          "texto": "Con útero, el estrógeno sistémico siempre se acompaña de un progestágeno para proteger el endometrio de la hiperplasia y el cáncer; sin útero se usa estrógeno solo. Iniciar con la menor dosis eficaz y ajustar según la respuesta, prefiriendo la vía transdérmica (parche o gel) cuando hay riesgo trombótico. BMS: la progesterona micronizada oral protege el endometrio en esquema secuencial con 200 mg al día durante 12–14 días de cada mes, o en esquema continuo con 100 mg al día cuando se usa estradiol en dosis estándar; la dosis del progestágeno debe ser proporcional a la del estrógeno, y el dispositivo intrauterino de levonorgestrel de 52 mg da protección endometrial hasta por 5 años. El esquema secuencial produce un sangrado por deprivación cada mes y suele usarse cuando aún hay menstruaciones; el continuo busca la amenorrea. BMS no recomienda las hormonas magistrales (compuestas). Síndrome genitourinario, NAMS 2022: si los lubricantes e hidratantes vaginales de venta libre no bastan y no hay indicación de terapia sistémica, se recomienda estrógeno vaginal en dosis baja u otras opciones como DHEA vaginal (prasterona) u ospemifeno oral; el estrógeno vaginal puede usarse a cualquier edad y por tiempo prolongado si es necesario. NICE: ofrecer estrógeno vaginal en la atrofia urogenital, también a quienes ya reciben terapia sistémica, y mantenerlo mientras se necesite; sus efectos adversos son muy raros. Con antecedente de cáncer de mama, decidir el estrógeno vaginal junto con oncología."
+        },
+        {
+          "titulo": "Alternativas no hormonales para los síntomas vasomotores",
+          "texto": "Indicadas cuando la terapia hormonal está contraindicada (cáncer de mama, tromboembolia, ataque cerebrovascular) o la paciente no la desea. NAMS 2023 recomienda, con evidencia de nivel I, terapia cognitivo-conductual, hipnosis clínica, inhibidores selectivos de la recaptación de serotonina (ISRS) o de serotonina y noradrenalina (IRSN), gabapentina y fezolinetant; con evidencia menor, oxibutinina, pérdida de peso y bloqueo del ganglio estrellado. No recomienda para los sofocos los suplementos herbales, el yoga, la acupuntura, los cannabinoides ni la pregabalina. El mesilato de paroxetina 7,5 mg al acostarse está aprobado por la FDA para los sofocos; es inhibidor potente del CYP2D6 y reduce la eficacia del tamoxifeno, por lo que se evita en mujeres que lo reciben. Dosis empleadas en los estudios: escitalopram 10–20 mg al día; venlafaxina iniciando con 37,5 mg al día y titulando; gabapentina 900 mg al día, la dosis de la mayoría de los ensayos, con somnolencia y mareo como efectos frecuentes. Fezolinetant, antagonista del receptor de neurocinina 3, fue aprobado por la FDA en 2023 a 45 mg una vez al día; desde diciembre de 2024 tiene recuadro de advertencia por lesión hepática: perfil hepático antes de iniciar, mensual los 2 primeros meses y luego a los 3, 6 y 9 meses; no iniciarlo si hay elevación significativa de aminotransferasas o bilirrubina (ver ficha técnica) y suspenderlo ante fatiga inusual, náuseas, ictericia u orina oscura. Elinzanetant, antagonista dual de los receptores de neurocinina 1 y 3, de toma nocturna, fue aprobado por la FDA en octubre de 2025. La oxibutinina exige precaución en adultas mayores por sus efectos anticolinérgicos y la asociación de su uso prolongado con demencia."
+        },
+        {
+          "titulo": "Insuficiencia ovárica primaria (IOP)",
+          "texto": "ESHRE 2024, elaborada con ASRM e IMS: se diagnostica en mujeres menores de 40 años con oligomenorrea o amenorrea de al menos 4 meses y una FSH mayor de 25 UI/L en una sola medición, lo que cambia la exigencia previa de dos mediciones; si hay incertidumbre diagnóstica, repetir la FSH o medir hormona antimülleriana. Descartar antes embarazo, hiperprolactinemia y disfunción tiroidea. Las causas pueden ser iatrogénicas (quimioterapia, radioterapia pélvica, cirugía ovárica), genéticas (síndrome de Turner y sus mosaicismos, premutación del gen FMR1 del X frágil) o autoinmunes, aunque a menudo no se identifica causa. En la IOP no iatrogénica, las guías de ESHRE recomiendan cariotipo y estudio de la premutación FMR1, con remisión a genética si hay alteración, y anticuerpos anti-21-hidroxilasa y antitiroperoxidasa; si los anti-21-hidroxilasa son positivos, remitir a endocrinología para evaluar la función suprarrenal. El reemplazo hormonal es el pilar del tratamiento y debe mantenerse al menos hasta la edad promedio de la menopausia natural para controlar los síntomas y proteger el hueso; las mujeres jóvenes con IOP suelen requerir dosis de estrógeno mayores que las posmenopáusicas, y los riesgos de la terapia hormonal descritos en mujeres mayores no se trasladan a este grupo. La IOP no garantiza anticoncepción, porque puede haber ovulación y embarazo espontáneos. FEBRASGO 2020 recomienda densitometría ósea desde el diagnóstico. Ofrecer apoyo psicológico y consejería reproductiva."
+        },
+        {
+          "titulo": "Salud ósea y cardiovascular, seguimiento y remisión",
+          "texto": "La caída del estrógeno acelera la pérdida ósea: evaluar el riesgo de fractura y tamizar osteoporosis según la guía correspondiente; NAMS 2022 reconoce que la terapia hormonal previene la pérdida ósea y las fracturas. Aprovechar la consulta para estimar el riesgo cardiovascular (presión arterial, lípidos, glucemia, peso, tabaquismo); la terapia hormonal no se indica para prevención cardiovascular. Seguimiento, NICE: revisar a los 3 meses de iniciar o cambiar el tratamiento y luego una vez al año, salvo que se requiera antes; explicar que el sangrado no programado es frecuente en los primeros 3 meses y debe informarse en esa revisión, o de inmediato si aparece después. Duración: NAMS 2022 indica que el uso prolongado debe responder a una indicación documentada, como síntomas persistentes, con decisión compartida y reevaluación periódica; The Menopause Society 2026 afirma que no existe una edad universal para suspenderla y que continuarla después de los 65 años puede ser razonable en mujeres sanas con síntomas persistentes; ACOG desaconseja la suspensión rutinaria a los 65 años. Sangrado posmenopáusico, ACOG 2018: la ecografía transvaginal basta como evaluación inicial si el endometrio mide 4 mm o menos, con valor predictivo negativo mayor de 99 % para cáncer; si el sangrado persiste o recurre, se requiere muestreo endometrial, y el umbral está menos validado en usuarias de terapia hormonal. Remitir a ginecología ante sangrado posmenopáusico, sangrado no programado persistente, sospecha de IOP, antecedente de cáncer hormonodependiente o síntomas intensos con contraindicaciones."
+        }
+      ]
+    },
+    {
       "id": "mordeduras-y-profilaxis-de-rabia",
       "titulo": "Mordeduras y agresiones por animales: clasificación de la exposición rábica, vacuna y suero antirrábico, antibiótico y tétanos",
       "organismo": "MinSalud · INS · OMS · IDSA · CDC",
@@ -4694,6 +5020,78 @@
         {
           "titulo": "Vacaciones del bifosfonato, suspensión de denosumab, seguimiento y caídas",
           "texto": "Vacaciones terapéuticas: los bifosfonatos se fijan al hueso y su efecto persiste tras suspenderlos, por lo que se reevalúa el riesgo a los 5 años de vía oral o a los 3 años de ácido zoledrónico. AACE 2020: en riesgo moderado y estable, considerar pausa tras 5 años de bifosfonato oral o 3 dosis anuales de zoledrónico; en alto riesgo, continuar hasta 6–10 años de vía oral o 6 dosis anuales de zoledrónico antes de considerar la pausa, durante la cual puede usarse teriparatida o raloxifeno. Terminar la pausa si aparece una fractura, disminuye de forma significativa la densidad mineral ósea o suben los marcadores de recambio. Denosumab: no admite vacaciones; al suspenderlo o retrasar dosis se pierde rápidamente la densidad ganada y aumenta el riesgo de fracturas vertebrales múltiples por rebote; si se decide suspender, hacer transición a un bifosfonato y no omitir ni retrasar las aplicaciones semestrales. Seguimiento (BHOF): repetir DXA 1–2 años después de iniciar el tratamiento y luego cada 2 años, en el mismo equipo; medir talla cada año; verificar adherencia y técnica de toma. Una fractura durante el tratamiento obliga a revisar adherencia, causas secundarias y escalar la terapia. Prevención de caídas: preguntar cada año por caídas y evaluar marcha y equilibrio; revisar medicamentos que causan sedación u ortostatismo (benzodiacepinas, hipnóticos, antihipertensivos); corregir visión y calzado; eliminar riesgos en casa (tapetes, iluminación, barras de apoyo); ejercicio con carga, fortalecimiento muscular y equilibrio (por ejemplo tai chi); ingesta adecuada de proteína; dejar de fumar y evitar el exceso de alcohol. Tras una fractura de cadera o vertebral, iniciar tratamiento y no limitarse a la reparación ortopédica."
+        }
+      ]
+    },
+    {
+      "id": "otitis-externa",
+      "titulo": "Otitis externa aguda (oído de nadador), otomicosis y otitis externa necrotizante",
+      "organismo": "AAO-HNSF · NICE CKS · Cochrane · NVKNO · CDC",
+      "anio": 2014,
+      "fuente": "American Academy of Otolaryngology–Head and Neck Surgery Foundation. Clinical Practice Guideline: Acute Otitis Externa, 2014 update (Otolaryngol Head Neck Surg 2014;150(1 Suppl):S1-S24) e instrucciones y preguntas frecuentes para pacientes de la misma guía; NICE Clinical Knowledge Summaries. Otitis externa, con formularios regionales del NHS de Escocia (Otitis externa, East y West of Scotland); Cochrane. Interventions for acute otitis externa (Cochrane Database Syst Rev 2010); NVKNO. Richtlijn Necrotiserende otitis externa – osteomyelitis schedelbasis (Richtlijnendatabase, 2025); NHS Lothian. Antimicrobial guidance: necrotising otitis externa; CDC. Preventing Swimmer's Ear; fichas técnicas (FDA) de ofloxacino ótico 0,3 % y de ciprofloxacino 0,3 % con dexametasona 0,1 % en suspensión ótica",
+      "especialidades": [
+        "otorrinolaringologia",
+        "medicina_general",
+        "medicina_familiar",
+        "pediatria",
+        "urgencias"
+      ],
+      "cie10": [
+        "H60.0",
+        "H60.1",
+        "H60.2",
+        "H60.3",
+        "H60.5",
+        "H60.9",
+        "H62.2"
+      ],
+      "palabras_clave": [
+        "otitis externa",
+        "otitis externa aguda",
+        "OEA",
+        "oido de nadador",
+        "otitis del nadador",
+        "dolor al jalar la oreja",
+        "trago",
+        "conducto auditivo externo",
+        "gotas oticas",
+        "ciprofloxacino dexametasona",
+        "ofloxacino otico",
+        "mecha otica",
+        "otomicosis",
+        "hongos en el oido",
+        "otitis externa maligna",
+        "otitis externa necrotizante",
+        "tubos de timpanostomia",
+        "perforacion timpanica"
+      ],
+      "poblacion": [
+        "adultos",
+        "pediatria"
+      ],
+      "fecha_revision": "2026-10-14",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; no usar gotas con aminoglucósido si la membrana timpánica no está íntegra o no se logra ver, y sospechar otitis externa necrotizante en el diabético, inmunosuprimido o adulto mayor con dolor que no cede.",
+      "secciones": [
+        {
+          "titulo": "Diagnóstico de otitis externa aguda y diferencia con la otitis media",
+          "texto": "La otitis externa aguda difusa es la inflamación, casi siempre bacteriana, de la piel del conducto auditivo externo, favorecida por la humedad (natación, baño), el trauma local (hisopos, uñas, audífonos, tapones) y la dermatitis; los gérmenes habituales son Pseudomonas aeruginosa y Staphylococcus aureus. AAO-HNSF 2014 pide tres elementos para el diagnóstico: inicio rápido (en general en 48 horas) dentro de las últimas 3 semanas; síntomas de inflamación del conducto (otalgia, a menudo intensa, prurito o sensación de oído tapado, con o sin hipoacusia o dolor mandibular); y signos de inflamación del conducto: dolor a la presión del trago o a la tracción del pabellón, o edema o eritema difuso del conducto, con o sin otorrea, adenopatía regional, eritema de la membrana timpánica o celulitis del pabellón y la piel vecina. El dolor al traccionar el pabellón o al presionar el trago es el dato que más la separa de la otitis media aguda, en la que manipular la oreja no duele y el hallazgo central es la membrana timpánica abombada con efusión en el oído medio. Si la membrana se ve normal tras un conducto inflamado, el cuadro es externo; si la otorrea viene de una otitis media perforada, se maneja como membrana no íntegra. Diferenciales: forúnculo del conducto (lesión focal), otomicosis, dermatitis de contacto o eccematosa, cuerpo extraño, herpes zóster ótico, otitis media crónica supurativa y, en el diabético o inmunosuprimido, otitis externa necrotizante. AAO-HNSF indica buscar siempre los factores que modifican el manejo: membrana timpánica no íntegra (perforación conocida o sospechada), tubos de timpanostomía, diabetes, inmunosupresión y radioterapia previa."
+        },
+        {
+          "titulo": "Tratamiento tópico: elección de gotas, técnica y duración",
+          "texto": "AAO-HNSF 2014: en la otitis externa difusa no complicada el tratamiento inicial son las gotas tópicas; todas las aprobadas (antibiótico con o sin corticoide, antiséptico o acidificante) son muy eficaces y sin ventaja consistente de una clase sobre otra, por lo que se eligen por costo, disponibilidad, frecuencia de aplicación, riesgo de ototoxicidad y estado de la membrana. Formularios del NHS basados en NICE CKS: en casos leves sirve el ácido acético al 2 % (una aplicación cada 8 horas por 7 días); en casos moderados o graves, antibiótico tópico con corticoide. Si hay perforación conocida o sospechada, la membrana no se logra ver o hay tubos de timpanostomía, AAO-HNSF recomienda una preparación no ototóxica: quinolona tópica (ofloxacino o ciprofloxacino, solo o con corticoide), evitando las gotas con aminoglucósido (neomicina, gentamicina) y las gotas secantes o acidificantes. Dosis según ficha técnica: ofloxacino ótico al 0,3 %, 5 gotas una vez al día por 7 días entre 6 meses y 13 años, y 10 gotas una vez al día por 7 días desde los 13 años; ciprofloxacino al 0,3 % con dexametasona al 0,1 %, 4 gotas cada 12 horas por 7 días desde los 6 meses; neomicina, polimixina B e hidrocortisona, 4 gotas 3 o 4 veces al día en adultos y 3 gotas 3 o 4 veces al día en niños desde los 2 años, solo con membrana íntegra. Técnica (instrucciones de AAO-HNSF): idealmente otra persona aplica las gotas; el paciente se acuesta con el oído afectado hacia arriba, se llena el conducto y se mantiene la posición 3 a 5 minutos; presionar el trago con movimientos de entrada y salida ayuda a que penetren; después limpiar el exceso y no manipular el oído. Entibiar el frasco en la mano antes de aplicarlo evita el mareo, y conviene mantener el oído seco mientras se usan las gotas. Duración (AAO-HNSF; Cochrane 2010): al menos 7 días aunque mejore antes; si los síntomas persisten, continuar hasta que cedan, por un máximo de 7 días adicionales. Síntomas que persisten más de 2 semanas se consideran falla del tratamiento y obligan a replantear el manejo."
+        },
+        {
+          "titulo": "Conducto edematizado, analgesia, antibiótico sistémico y falla terapéutica",
+          "texto": "Cuando el edema o los detritos impiden que las gotas lleguen, AAO-HNSF recomienda mejorar la entrega con limpieza atraumática del conducto (aspiración o retiro suave de detritos por personal entrenado), colocación de una mecha de celulosa comprimida o gasa, o ambas. La mecha se empapa con las gotas, que se siguen aplicando sobre ella; se revisa o retira a las 48 a 72 horas y, si el conducto sigue ocluido, se recambia. El paciente no debe retirarla por su cuenta; si cae sola, suele indicar que el edema cedió. Analgesia (AAO-HNSF, recomendación fuerte): evaluar siempre la intensidad del dolor y recomendar analgesia acorde a ella, con dosis suficientes de analgésicos orales como acetaminofén o antiinflamatorios no esteroideos, para que el paciente descanse y mantenga sus actividades. Antibiótico sistémico (AAO-HNSF 2014, recomendación fuerte): no usarlo como tratamiento inicial de la forma difusa no complicada, porque los orales no eliminan bien los gérmenes del conducto y favorecen resistencias. Se reserva para la extensión fuera del conducto (celulitis del pabellón, la región periauricular o la cara), factores del huésped como diabetes, inmunosupresión o radioterapia previa, o cuando las gotas no pueden llegar al conducto. Formularios del NHS: flucloxacilina oral 500 mg cada 6 horas por 5 a 7 días según el formulario, o claritromicina en alergia a la penicilina, y valoración por otorrinolaringología para descartar otitis externa necrotizante ante celulitis o extensión fuera del conducto; si se sospecha esta última, el esquema debe cubrir Pseudomonas. Si no hay respuesta a las 48 a 72 horas, AAO-HNSF pide reevaluar para confirmar el diagnóstico y excluir otras causas: conducto obstruido, mala técnica o adherencia, otomicosis, dermatitis de contacto por el propio medicamento, cuerpo extraño, otitis media o enfermedad invasiva."
+        },
+        {
+          "titulo": "Otomicosis y otitis externa necrotizante (maligna)",
+          "texto": "Otomicosis: infección del conducto por hongos, sobre todo Aspergillus (en especial A. niger) y Candida, favorecida por la humedad y por el uso prolongado de gotas antibióticas. La sugieren el prurito marcado, la sensación de oído tapado, los detritos blanquecinos o algodonosos con puntos negros o grises y la falta de respuesta a las gotas antibacterianas. Tratamiento: limpieza cuidadosa del conducto, suspender los antibióticos tópicos y aplicar un antifúngico tópico, por ejemplo clotrimazol al 1 % en solución, prolongándolo más allá de la desaparición de los signos según la ficha técnica; con perforación timpánica o falla, remitir a otorrinolaringología. Otitis externa necrotizante: osteomielitis de la base del cráneo que se inicia como otitis externa, casi siempre por Pseudomonas aeruginosa, en adultos mayores, diabéticos (en especial con mal control) e inmunosuprimidos; es una urgencia. NVKNO 2025: sospecharla ante una otitis externa que no responde al tratamiento habitual en una persona con esos factores. Orientan la otalgia intensa y persistente, desproporcionada a lo que se ve, la otorrea, el tejido de granulación en el piso del conducto en la unión osteocartilaginosa y la parálisis de pares craneales, de los cuales el facial es el más afectado. Ante la sospecha, remisión urgente a otorrinolaringología para cultivo, biopsia si se sospecha tumor e imagen: NVKNO 2025 prefiere la tomografía como estudio inicial para ver la erosión ósea y la resonancia con contraste para tejidos blandos y complicaciones vasculares o intracraneales. El tratamiento es hospitalario y conjunto con infectología, con antibiótico antipseudomónico (por ejemplo ceftazidima intravenosa y luego ciprofloxacino oral) y control de la glucemia; NVKNO 2025 y NHS Lothian indican al menos 6 semanas, con decisión de suspender según la evolución clínica, y NVKNO pide seguimiento mínimo de 3 meses porque la recaída es frecuente."
+        },
+        {
+          "titulo": "Prevención en nadadores, signos de alarma y remisión",
+          "texto": "Prevención (CDC): usar gorro, tapones o moldes a la medida al nadar; secar bien los oídos con toalla e inclinar la cabeza hacia cada lado para que salga el agua; si queda agua, usar secador de pelo en la temperatura y velocidad más bajas, a cierta distancia del oído; no introducir hisopos, dedos ni otros objetos en el conducto y no retirar el cerumen, que protege la piel. Las gotas secantes después de nadar se usan solo con indicación profesional y nunca con tubos de timpanostomía, perforación timpánica, otitis externa activa o supuración. Controlar la dermatitis del conducto y revisar audífonos o tapones que lastimen la piel. Signos de alarma y criterios de remisión a otorrinolaringología: dolor intenso o persistente pese al tratamiento, sobre todo en diabético, inmunosuprimido o adulto mayor; tejido de granulación en el conducto; parálisis facial u otro par craneal; fiebre o compromiso del estado general; celulitis que se extiende al pabellón o la cara; edema retroauricular con desplazamiento del pabellón (orienta a mastoiditis por otitis media); vértigo o hipoacusia súbita; conducto ocluido que requiere limpieza o mecha no disponible en el primer nivel; falta de respuesta a las 48 a 72 horas sin causa corregible; síntomas por más de 2 semanas; otomicosis con perforación; episodios recurrentes o crónicos, y sospecha de tumor del conducto. En niños con otalgia, fiebre y otorrea hay que visualizar la membrana para no confundir una otitis media perforada con una otitis externa y elegir siempre gotas no ototóxicas si hay duda. En Colombia no se encontró una guía específica del Ministerio de Salud; la Asociación Colombiana de Otorrinolaringología publicó en 2024 una guía de diagnóstico y tratamiento de la otitis externa aguda que conviene consultar para las presentaciones disponibles en el país."
         }
       ]
     },
@@ -5016,6 +5414,85 @@
       ]
     },
     {
+      "id": "parto-pretermino",
+      "titulo": "Amenaza y trabajo de parto pretérmino: tocólisis, corticoides antenatales, sulfato de magnesio y RPM pretérmino",
+      "organismo": "ACOG · NICE · OMS · FIGO · MinSalud Colombia",
+      "anio": 2016,
+      "fuente": "American College of Obstetricians and Gynecologists. Practice Bulletin No. 171: Management of Preterm Labor (Obstet Gynecol 2016;128:e155, reafirmado); ACOG. Practice Bulletin No. 217: Prelabor Rupture of Membranes (Obstet Gynecol 2020;135:e80); ACOG. Committee Opinion No. 713: Antenatal Corticosteroid Therapy for Fetal Maturation (2017); ACOG. Committee Opinion No. 797: Prevention of Group B Streptococcal Early-Onset Disease in Newborns (2020); NICE. NG25 Preterm labour and birth (2015, actualizada 2022) y DG33 Biomarker tests to help diagnose preterm labour in women with intact membranes; OMS. WHO recommendations on antenatal corticosteroids for improving preterm birth outcomes (2022); OMS. WHO recommendation on tocolytic therapy for improving preterm birth outcomes (2022); OMS. WHO recommendations on interventions to improve preterm birth outcomes (2015); FIGO. Good practice recommendations on progestogens for prevention of preterm delivery (Int J Gynecol Obstet 2021;155:16); FIGO. Good practice recommendations on magnesium sulfate administration for preterm fetal neuroprotection (Int J Gynecol Obstet 2021); MinSalud y Colciencias. Guía de práctica clínica para la prevención, detección temprana y tratamiento de las complicaciones del embarazo, parto o puerperio (2013) y su sección de ruptura prematura de membranas (Rev Colomb Obstet Ginecol 2015)",
+      "especialidades": [
+        "ginecologia_y_obstetricia",
+        "medicina_general",
+        "medicina_familiar",
+        "urgencias",
+        "neonatologia"
+      ],
+      "cie10": [
+        "O60.0",
+        "O60.1",
+        "O47.0",
+        "O42.0",
+        "O42.1",
+        "O42.2",
+        "O42.9",
+        "O34.3",
+        "P07.3"
+      ],
+      "palabras_clave": [
+        "amenaza de parto pretermino",
+        "APP",
+        "trabajo de parto pretermino",
+        "parto prematuro",
+        "contracciones antes de tiempo",
+        "prematurez",
+        "tocolisis",
+        "nifedipino",
+        "indometacina",
+        "atosiban",
+        "corticoides antenatales",
+        "betametasona",
+        "dexametasona",
+        "maduracion pulmonar",
+        "sulfato de magnesio neuroproteccion",
+        "ruptura prematura de membranas pretermino",
+        "RPMP",
+        "cervix corto",
+        "progesterona vaginal",
+        "fibronectina fetal"
+      ],
+      "poblacion": [
+        "gestantes"
+      ],
+      "fecha_revision": "2026-10-14",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; los esquemas de tocólisis y de antibióticos varían entre protocolos, y la remisión no debe retrasar la primera dosis de corticoide ni el sulfato de magnesio cuando están indicados.",
+      "secciones": [
+        {
+          "titulo": "Definición, clasificación y diagnóstico",
+          "texto": "OMS: parto pretérmino es el nacimiento antes de completar 37 semanas de gestación; se clasifica en extremadamente prematuro (menos de 28 semanas), muy prematuro (28 a menos de 32 semanas) y prematuro moderado a tardío (32 a menos de 37 semanas). ACOG 2016 define el trabajo de parto pretérmino como contracciones uterinas regulares que producen cambios en la dilatación o el borramiento del cuello, o contracciones regulares con dilatación de al menos 2 cm desde el ingreso, entre las 20 0/7 y las 36 6/7 semanas; las contracciones sin cambio cervical demostrado corresponden a amenaza de parto pretérmino y no justifican tocólisis, pues muchas de esas gestantes no están en trabajo de parto. Evaluar edad gestacional, bienestar fetal y desencadenantes (infección urinaria, corioamnionitis, desprendimiento), con especuloscopia antes del tacto. NICE (DG33 y NG25): desde las 30 0/7 semanas puede medirse la longitud cervical por ecografía transvaginal; si es mayor de 15 mm es poco probable que la mujer esté en trabajo de parto pretérmino, y si es de 15 mm o menos se diagnostica y se ofrece tratamiento. Si la ecografía no está disponible, considerar fibronectina fetal desde las 30 0/7 semanas: un valor de 50 ng/mL o menos hace improbable el trabajo de parto y uno mayor de 50 ng/mL indica tratarlo; la muestra se toma antes de cualquier tacto vaginal."
+        },
+        {
+          "titulo": "Tocólisis: indicaciones, ventana, fármacos y contraindicaciones",
+          "texto": "La tocólisis busca ganar hasta 48 horas para completar los corticoides antenatales, administrar sulfato de magnesio y trasladar a la gestante a una institución con UCI neonatal. ACOG 2016: solo si ese retraso beneficia al feto, en general antes de las 34 semanas y máximo 48 horas; agonistas beta, bloqueadores de calcio y AINE son de primera línea a corto plazo; no repetir la tocólisis. OMS 2022 (recomendación dependiente del contexto): nifedipino entre las 24 0/7 y 33 6/7 semanas en trabajo de parto pretérmino espontáneo sospechado o confirmado, sin sangrado, desprendimiento ni infección intrauterina, con atención del parto adecuada y acceso a reanimación neonatal. NICE: considerar nifedipino entre 24 0/7 y 25 6/7 semanas y ofrecerlo entre 26 0/7 y 33 6/7 semanas con membranas íntegras; si está contraindicado, antagonista del receptor de oxitocina (atosibán); no ofrecer betamiméticos. Nifedipino oral: carga y mantenimiento según el protocolo institucional (los esquemas publicados varían), vigilando la presión arterial; evitarlo en hipotensión o cardiopatía materna. Indometacina: solo antes de las 32 semanas y por no más de 48 horas, por riesgo de cierre del ductus arterioso y oligohidramnios; los protocolos describen carga de 50–100 mg oral o rectal y luego 25–50 mg cada 4–6 horas. La FDA advierte contra la terbutalina en tocólisis prolongada o de mantenimiento. Contraindicaciones (ACOG): muerte fetal, anomalía fetal letal, estado fetal no tranquilizador, preeclampsia con criterios de severidad o eclampsia, sangrado con inestabilidad hemodinámica, corioamnionitis, ruptura de membranas (salvo excepciones) y contraindicación materna al fármaco."
+        },
+        {
+          "titulo": "Corticoides antenatales y sulfato de magnesio para neuroprotección",
+          "texto": "ACOG 2017: un curso único entre las 24 0/7 y 33 6/7 semanas en gestantes con riesgo de parto en los 7 días siguientes, incluidas las que tienen ruptura de membranas o embarazo múltiple; puede considerarse desde las 23 0/7 semanas según la decisión de reanimación de la familia. Esquemas: betametasona 12 mg intramuscular, 2 dosis con 24 horas de intervalo, o dexametasona 6 mg intramuscular, 4 dosis cada 12 horas; aplicar la primera dosis aunque no se alcance a completar el esquema. Pretérmino tardío (34 0/7 a 36 6/7 semanas): ACOG permite considerar betametasona si hay riesgo de parto en 7 días y no hubo un curso previo. Curso de rescate (ACOG): uno solo, antes de las 34 0/7 semanas, si el curso anterior se aplicó hace más de 14 días y el parto es probable en 7 días; puede darse desde 7 días después si la situación clínica lo exige. OMS 2022: corticoides entre las 24 y 34 semanas si el parto es probable en 7 días, la edad gestacional es confiable, no hay infección materna y el recién nacido tendrá reanimación y soporte respiratorio; admite un solo curso de repetición si el parto no ocurre en 7 días y el riesgo sigue alto. Sulfato de magnesio: ACOG y OMS lo recomiendan para neuroprotección fetal (prevención de parálisis cerebral) cuando el parto es inminente antes de las 32 semanas; NICE lo ofrece entre 24 0/7 y 29 6/7 semanas y lo considera entre 30 0/7 y 33 6/7 semanas, en trabajo de parto establecido o con nacimiento planeado en 24 horas. FIGO 2021: 4 g intravenosos lentos en 20–30 minutos y luego 1 g/h hasta el parto, suspendiendo a las 24 horas si no ha nacido; algunos protocolos usan 6 g y 2 g/h. Vigilar reflejos osteotendinosos, frecuencia respiratoria y diuresis, con gluconato de calcio disponible."
+        },
+        {
+          "titulo": "Estreptococo del grupo B y ruptura prematura de membranas pretérmino",
+          "texto": "ACOG 2020 tamiza el estreptococo del grupo B entre las 36 0/7 y 37 6/7 semanas, así que en el trabajo de parto pretérmino el estado suele ser desconocido: tomar cultivo rectovaginal e iniciar profilaxis intraparto. Esquemas: penicilina G 5 millones de UI IV y luego 2,5–3 millones de UI cada 4 horas hasta el parto; alternativa, ampicilina 2 g IV y luego 1 g cada 4 horas; en alergia a penicilina con bajo riesgo de anafilaxia, cefazolina 2 g IV y luego 1 g cada 8 horas; con alto riesgo de anafilaxia, antibiótico según sensibilidad o vancomicina. Ruptura prematura de membranas pretérmino: diagnóstico con especuloscopia, sin tacto vaginal salvo parto inminente. ACOG 2020, manejo expectante antes de las 34 0/7 semanas con antibióticos de latencia: ampicilina 2 g IV cada 6 horas más eritromicina 250 mg IV cada 6 horas por 48 horas, seguidas de amoxicilina 250 mg oral cada 8 horas más eritromicina 333 mg oral cada 8 horas por 5 días; si no hay eritromicina o no se tolera, azitromicina (1 g oral en dosis única en varios protocolos). NICE: eritromicina 250 mg oral 4 veces al día hasta 10 días o hasta el trabajo de parto establecido, lo que ocurra primero; penicilina oral si no se puede usar eritromicina; no usar amoxicilina con ácido clavulánico por su asociación con enterocolitis necrosante. Sumar corticoides y sulfato de magnesio según la edad gestacional. Entre 34 0/7 y 36 6/7 semanas, ACOG 2020 considera apropiados tanto el parto como el manejo expectante tras asesoría, sin prolongarlo más allá de las 37 0/7 semanas. Ante corioamnionitis (fiebre, taquicardia materna o fetal, útero doloroso, líquido fétido): antibióticos de amplio espectro y finalizar la gestación, sin tocólisis."
+        },
+        {
+          "titulo": "Prevención con progesterona vaginal en cérvix corto",
+          "texto": "FIGO 2021: en embarazo único con parto pretérmino espontáneo previo o cérvix corto por ecografía, ofrecer progesterona vaginal diaria o caproato de 17-hidroxiprogesterona semanal; no se recomienda en gestantes asintomáticas sin esos factores ni en embarazos múltiples no seleccionados. FIGO 2015: medir la longitud cervical por ecografía transvaginal a todas las gestantes entre las 19 0/7 y 23 6/7 semanas y ofrecer progesterona micronizada vaginal diaria si es de 25 mm o menos. ACOG y SMFM 2012: progesterona vaginal en embarazo único sin parto pretérmino previo con cérvix de 20 mm o menos a las 24 semanas o antes; en los ensayos se usaron óvulos de 200 mg o gel de 90 mg al día, y los protocolos la mantienen hasta el final de la semana 36. NICE 2022: con antecedente de parto pretérmino espontáneo o pérdida del segundo trimestre y longitud cervical de 25 mm o menos entre las 16 0/7 y 24 0/7 semanas, ofrecer elegir entre progesterona vaginal y cerclaje; sin antecedente y con cérvix menor de 25 mm en esa ventana, considerar progesterona vaginal. Remitir a ginecoobstetricia ante cérvix corto o antecedente de parto pretérmino espontáneo."
+        },
+        {
+          "titulo": "Signos de alarma, remisión y contexto colombiano",
+          "texto": "Signos de alarma para consultar de inmediato: contracciones regulares o dolor tipo cólico, presión pélvica o dolor lumbar persistente, salida de líquido o sangrado por la vagina, fiebre, flujo fétido o disminución de los movimientos fetales. Remisión: la gestante con trabajo de parto pretérmino, amenaza con cambios cervicales o ruptura prematura de membranas se remite, por la red materno perinatal, a una institución con servicio obstétrico y con el nivel de cuidado neonatal que exija la edad gestacional, y también, a cualquier edad pretérmino, si hay corioamnionitis, desprendimiento de placenta, preeclampsia con criterios de severidad o estado fetal no tranquilizador. La propuesta de actualización del Programa Madre Canguro del MinSalud prioriza la remisión materna in útero, más segura que trasladar al recién nacido, hacia la institución con el nivel de cuidado neonatal que exijan la edad gestacional y las condiciones previstas del recién nacido. Antes del traslado: primera dosis de corticoide, tocólisis si no hay contraindicación, sulfato de magnesio si la gestación es menor de 32 semanas y profilaxis para estreptococo del grupo B, documentando dosis y horas. Si el parto es inminente, no trasladar: atenderlo con personal entrenado en reanimación neonatal y solicitar transporte neonatal. En Colombia orientan el manejo la GPC de embarazo y parto del MinSalud y Colciencias (2013), con su sección de ruptura prematura de membranas, y la ruta integral de atención materno perinatal; la morbilidad materna extrema y la mortalidad perinatal y neonatal son de notificación obligatoria al Sivigila del INS."
+        }
+      ]
+    },
+    {
       "id": "preeclampsia-trastornos-hipertensivos-embarazo",
       "titulo": "Preeclampsia y trastornos hipertensivos del embarazo",
       "organismo": "ACOG · ISSHP · MinSalud Colombia",
@@ -5082,6 +5559,93 @@
         {
           "titulo": "Prevención, puerperio y seguimiento a largo plazo",
           "texto": "Prevención: aspirina 81–150 mg/día (ACOG: 81 mg; ISSHP/FIGO: 150 mg en la noche) desde las semanas 12–16 hasta la 36 en gestantes con un factor de riesgo alto (preeclampsia previa, embarazo múltiple, hipertensión crónica, diabetes pregestacional, enfermedad renal, enfermedad autoinmune) o dos moderados (nuliparidad, obesidad, edad ≥35 años, antecedente familiar, intervalo intergenésico >10 años, bajo nivel socioeconómico, afrodescendencia); calcio 1,2–2 g/día en poblaciones con baja ingesta; no se recomiendan reposo, restricción de sal, vitaminas C y E ni heparina para prevenir preeclampsia. Puerperio: medir la presión arterial a las 72 h y entre los 7 y 10 días posparto (riesgo de eclampsia y crisis tardías); continuar antihipertensivos y ajustarlos (nifedipino, enalapril o labetalol son compatibles con la lactancia), evitar AINE si hay hipertensión grave o lesión renal; consultar de inmediato con cefalea intensa, alteraciones visuales, epigastralgia, disnea o presión ≥150/100. A largo plazo la preeclampsia duplica el riesgo cardiovascular y renal: control de presión arterial, glucemia y lípidos al año y luego periódico, estilo de vida, planificar embarazos con intervalo ≥18 meses y aspirina preventiva en el siguiente."
+        }
+      ]
+    },
+    {
+      "id": "quemaduras",
+      "titulo": "Quemaduras: profundidad, superficie corporal quemada, enfriamiento, reanimación con líquidos y criterios de remisión",
+      "organismo": "ABA · ISBI · NICE · OMS · CDC · INS Colombia",
+      "anio": 2023,
+      "fuente": "American Burn Association. American Burn Association Clinical Practice Guidelines on Burn Shock Resuscitation (J Burn Care Res 2023, doi 10.1093/jbcr/irad125); American Burn Association. Advanced Burn Life Support (ABLS) Provider Manual, actualización 2018; American Burn Association. Burn Center Referral Criteria y Guidelines for Burn Patient Referral (2022); ISBI Practice Guidelines Committee. ISBI Practice Guidelines for Burn Care (Burns 2016;42(5):953-1021) y ISBI Practice Guidelines for Burn Care, Part 2 (Burns 2018); NICE CKS. Burns and scalds; NICE. Child maltreatment: when to suspect maltreatment in under 18s (CG89, 2009, actualizada 2017); British Burn Association. Guía de primeros auxilios en quemaduras; Royal College of Emergency Medicine (RCEM Learning). Burns; OMS. Burns, nota descriptiva (13 de octubre de 2023); CDC. Clinical Guidance for Wound Management to Prevent Tetanus; Instituto Nacional de Salud. Protocolo de vigilancia de lesiones por artefactos explosivos, pólvora pirotécnica y minas antipersonal (evento 452 del Sivigila); Instituto Nacional de Salud. Vigilancia de violencia de género e intrafamiliar y ataques con agentes químicos (evento 875 del Sivigila)",
+      "especialidades": [
+        "urgencias",
+        "cirugia_general",
+        "medicina_general",
+        "medicina_familiar",
+        "pediatria",
+        "cuidado_intensivo"
+      ],
+      "cie10": [
+        "T20",
+        "T21",
+        "T22",
+        "T23",
+        "T24",
+        "T25",
+        "T26",
+        "T27",
+        "T29",
+        "T30",
+        "T31",
+        "T32",
+        "T58",
+        "T75.4",
+        "T74.1"
+      ],
+      "palabras_clave": [
+        "quemadura",
+        "quemaduras",
+        "quemado",
+        "escaldadura",
+        "regla de los nueves",
+        "superficie corporal quemada",
+        "SCQ",
+        "TBSA",
+        "Lund Browder",
+        "formula de Parkland",
+        "reanimacion con liquidos",
+        "lactato de Ringer",
+        "quemadura por inhalacion",
+        "monoxido de carbono",
+        "quemadura quimica",
+        "quemadura electrica",
+        "unidad de quemados",
+        "ampollas",
+        "polvora",
+        "maltrato infantil"
+      ],
+      "poblacion": [
+        "adultos",
+        "pediatria"
+      ],
+      "fecha_revision": "2026-10-14",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; las fórmulas de líquidos solo dan el punto de partida y se ajustan cada hora según la diuresis, y ante duda sobre profundidad, extensión o mecanismo conviene consultar con una unidad de quemados.",
+      "secciones": [
+        {
+          "titulo": "Profundidad de la quemadura y cálculo de la superficie corporal quemada",
+          "texto": "OMS 2023: las quemaduras causan cerca de 180 000 muertes al año. Profundidad: la quemadura superficial o epidérmica (antes \"de primer grado\") produce eritema doloroso sin ampollas y cura en pocos días. La de espesor parcial superficial compromete la dermis papilar: ampollas, lecho rosado y húmedo que blanquea a la presión y dolor intenso; cura en 7 a 21 días con cicatriz mínima. La de espesor parcial profundo alcanza la dermis reticular: lecho pálido o moteado, blanqueo escaso o ausente y menor sensibilidad. La de espesor total destruye toda la dermis: aspecto blanco nacarado, acartonado o carbonizado, poco dolorosa. La profundidad puede progresar en los primeros días y se reevalúa en cada control. Superficie corporal quemada (SCQ): solo se suman las áreas de espesor parcial y total; el eritema simple no cuenta. Regla de los nueves en el adulto: cabeza y cuello 9 %, cada miembro superior 9 %, cara anterior del tronco 18 %, cara posterior del tronco 18 %, cada miembro inferior 18 % y periné 1 %. Para quemaduras pequeñas o dispersas, la palma de la mano del paciente con los dedos equivale a cerca del 1 % de su superficie corporal. En niños la cabeza es proporcionalmente más grande y los miembros inferiores más pequeños, de modo que la regla de los nueves es inexacta: se prefiere la tabla de Lund-Browder, que ajusta los porcentajes de cada región según la edad."
+        },
+        {
+          "titulo": "Atención inicial: detener la quemadura, enfriar y asegurar la vía aérea",
+          "texto": "Primero detener el proceso: apagar las llamas, separar al paciente de la fuente de calor y retirar la ropa, anillos, relojes y joyas de la zona afectada antes de que aparezca el edema, salvo lo adherido a la piel. Enfriar con agua corriente fría o templada durante 20 minutos; según la British Burn Association, el enfriamiento sigue siendo útil hasta 3 horas después de la lesión. No usar hielo ni agua helada, que aumentan el daño tisular y el riesgo de hipotermia; en niños pequeños y quemaduras extensas se enfría la herida pero se abriga el resto del cuerpo. No aplicar cremas ni remedios caseros y no romper las ampollas; cubrir con película plástica transparente colocada sobre la herida o con un apósito limpio no adherente. La quemadura extensa se aborda como un paciente de trauma, con revisión primaria completa. Lesión por inhalación: sospecharla ante incendio en espacio cerrado, quemaduras faciales, vibrisas chamuscadas, hollín en boca o nariz, esputo carbonáceo, ronquera o estridor. Estos signos no predicen con certeza la gravedad y el edema de la vía aérea progresa con rapidez; ante estridor, ronquera progresiva, taquipnea creciente o secreciones abundantes se considera la intubación temprana. Ante sospecha de intoxicación por monóxido de carbono se administra oxígeno al 100 % con mascarilla de no reinhalación; la oximetría de pulso convencional puede mostrar una saturación normal o falsamente alta pese a la intoxicación, por lo que se mide la carboxihemoglobina en gases sanguíneos."
+        },
+        {
+          "titulo": "Reanimación con líquidos: a partir de qué porcentaje y cuánto",
+          "texto": "ABA 2023 (guía de reanimación del choque por quemaduras): aplica a adultos con SCQ del 20 % o más. Las fuentes británicas de urgencias (RCEM) indican reanimación formal con más del 15 % en adultos y más del 10 % en niños; en todos los casos solo cuentan las áreas de espesor parcial y total. Se usa cristaloide isotónico, de preferencia lactato de Ringer, y sonda vesical para medir la diuresis horaria. Fórmula de Parkland clásica: 4 mL × peso en kg × % de SCQ en 24 horas, con la mitad en las primeras 8 horas contadas desde la hora de la quemadura (no desde la llegada) y el resto en las 16 horas siguientes. ABA 2023 recomienda iniciar con 2 mL/kg por % de SCQ para reducir el volumen total y la sobrerreanimación, y ajustar la velocidad cada hora según la diuresis, con meta de 0,5 mL/kg/h en el adulto; prefiere titular por diuresis antes que por monitoreo invasivo, sugiere considerar albúmina humana en quemaduras extensas o cuando la reanimación se deteriora pese a aumentar el cristaloide, y recomienda vigilar selectivamente la presión intraabdominal. RCEM suele calcular con 3 mL/kg por % (rango de 2 a 4 mL). Toda fórmula es solo el punto de partida. Niños (ABLS 2018, según protocolos derivados de ese curso): se inicia con 3 mL/kg por % de SCQ y, en los de 30 kg o menos, se añade líquido de mantenimiento con dextrosa (lactato de Ringer con dextrosa al 5 %) por su menor reserva de glucógeno; la meta de diuresis en menores de 30 kg es de alrededor de 1 mL/kg/h. Si la diuresis no mejora pese a más volumen, revisar la SCQ y buscar inhalación o síndrome compartimental."
+        },
+        {
+          "titulo": "Analgesia, profilaxis antitetánica y curación de quemaduras menores",
+          "texto": "El enfriamiento y la cobertura de la herida alivian el dolor. Dolor leve a moderado: paracetamol o AINE por vía oral. Dolor intenso: opioides; en niños mayores de 1 año sin acceso venoso, guías pediátricas de urgencias del Reino Unido y de Australia Occidental usan fentanilo intranasal 1,5 µg/kg con atomizador, repetible una vez según el protocolo local; con acceso venoso, morfina o fentanilo intravenoso titulado por peso, sin combinar varios opioides intravenosos. Dar analgesia antes de cada curación. Tétanos (CDC): las quemaduras son heridas con tejido desvitalizado y se manejan como propensas a tétanos; con 3 o más dosis previas, refuerzo con toxoide si la última fue hace 5 años o más; con menos de 3 dosis o antecedente desconocido, toxoide más inmunoglobulina antitetánica 250 UI intramuscular en un sitio distinto. Quemaduras menores ambulatorias (superficiales o de espesor parcial superficial pequeñas, sin criterios de remisión): limpiar con agua o solución salina; dejar intactas las ampollas pequeñas, retirar el techo de las grandes rotas y aspirar las tensas; cubrir con apósito no adherente y una capa absorbente. Primer cambio a las 48 horas y luego cada 3 a 5 días, o antes si se satura, huele mal, se desplaza o hay signos de infección como fiebre; no arrancar un apósito adherido. La sulfadiazina de plata es de uso frecuente, pero algunas guías la desaconsejan porque puede retrasar la cicatrización. La quemadura epidérmica solo requiere hidratante y analgesia. Toda quemadura que no ha cicatrizado en 2 semanas debe ser valorada por un cirujano de quemados, y la que no reepiteliza en 14 a 21 días se considera para injerto."
+        },
+        {
+          "titulo": "Quemaduras químicas y eléctricas",
+          "texto": "Químicas: el personal se protege primero; retirar la ropa contaminada, cepillar los polvos secos (como la cal) antes de mojar, porque el agua puede formar una solución que sigue quemando, y luego irrigar con abundante agua corriente durante 20 minutos, repitiendo si persiste el ardor. En los ojos, irrigación inmediata y abundante y valoración oftalmológica. Ácido fluorhídrico: irrigar y aplicar gel de gluconato de calcio al 2,5 %. ABA: toda quemadura química es criterio de remisión. En Colombia, las lesiones por ataques con agentes químicos (ácidos, álcalis) se notifican al Sivigila dentro del evento 875. Eléctricas: la lesión de la piel en los puntos de entrada y salida subestima el daño profundo de músculo, nervios y vasos; hay riesgo de arritmias, rabdomiólisis con mioglobinuria y lesión renal, síndrome compartimental y fracturas o trauma por caída. Electrocardiograma a todos; monitoreo cardiaco ante alto voltaje, pérdida de conciencia, dolor torácico o electrocardiograma anormal (las fuentes difieren en su duración). Si la orina es oscura por mioglobinuria, aumentar los líquidos con una meta de diuresis mayor que la habitual hasta que la orina se aclare (las cifras varían entre protocolos), y usar diuréticos solo tras una reposición adecuada. Vigilar pulsos distales y signos de síndrome compartimental. ABA: las quemaduras eléctricas, incluido el rayo, son criterio de remisión."
+        },
+        {
+          "titulo": "Criterios de remisión, sospecha de maltrato infantil y vigilancia en Colombia",
+          "texto": "Criterios de remisión a unidad de quemados (ABA): quemaduras de espesor parcial mayores del 10 % de la SCQ; quemaduras de cara, manos, pies, genitales, periné o grandes articulaciones; quemaduras de espesor total a cualquier edad; quemaduras eléctricas (incluido el rayo); quemaduras químicas; lesión por inhalación; enfermedades previas que compliquen el manejo o la recuperación; trauma asociado cuando la quemadura es el mayor riesgo; niños en hospitales sin personal ni equipos pediátricos calificados, y necesidad de apoyo social, emocional o de rehabilitación prolongada. Maltrato infantil (NICE CG89): sospecharlo cuando la explicación está ausente o no es compatible con la lesión; cuando el niño quemado aún no se desplaza por sí mismo; cuando la quemadura está en sitios que no suelen tocar objetos calientes por accidente (dorso de las manos, plantas, glúteos, espalda); cuando reproduce la forma de un objeto (cigarrillo, plancha), y ante escaldaduras por inmersión: glúteos, periné y miembros inferiores, distribución en guante o en calcetín, compromiso simétrico de extremidades y bordes nítidos. El niño que entra solo a una tina caliente suele quemarse un solo pie o pierna. Ante sospecha, documentar y activar la ruta institucional de protección de niños, niñas y adolescentes. Colombia: las lesiones por pólvora pirotécnica se notifican al Sivigila como evento 452 (lesiones por artefactos explosivos); entre el 1 de diciembre y la segunda semana de enero hay vigilancia intensificada con notificación inmediata. La violencia intrafamiliar, incluido el maltrato infantil, se notifica en el evento 875."
         }
       ]
     },
@@ -5240,6 +5804,86 @@
         {
           "titulo": "Colombia: interrupción voluntaria del embarazo (IVE)",
           "texto": "La sentencia C-055 de 2022 de la Corte Constitucional despenalizó el aborto consentido hasta la semana 24 de gestación; después de esa semana sigue siendo legal cuando se configura alguna de las tres causales de la sentencia C-355 de 2006: riesgo para la vida o la salud física o mental de la gestante, malformación fetal incompatible con la vida extrauterina, o embarazo producto de violación, incesto o inseminación o transferencia de óvulo no consentidas. La Resolución 051 de 2023 de MinSalud adoptó una regulación única para la atención integral en salud de la IVE: el servicio se presta a partir de la manifestación de voluntad de la niña, adolescente, mujer o persona gestante y está exento de copagos y cuotas moderadoras. La objeción de conciencia es individual, se presenta por escrito e implica remitir a un profesional que preste el servicio. La niña menor de 14 años puede decidir de forma autónoma. Todo embarazo en menor de 14 años implica un delito sexual según el Código Penal (acceso carnal abusivo con menor de catorce años): además de ofrecer la IVE, activar la ruta de atención integral a víctimas de violencia sexual, notificar al Sivigila y dar aviso a las autoridades. Métodos (OMS 2022): antes de las 12 semanas, mifepristona 200 mg oral seguida 1 a 2 días después de misoprostol 800 µg bucal, sublingual o vaginal, con dosis adicionales si es necesario. Ofrecer anticoncepción en la misma atención. Verificar la vigencia de la norma."
+        }
+      ]
+    },
+    {
+      "id": "sangrado-uterino-anormal",
+      "titulo": "Sangrado uterino anormal en no gestantes: PALM-COEIN, estudio, tratamiento y alarmas",
+      "organismo": "FIGO · ACOG · NICE",
+      "anio": 2018,
+      "fuente": "FIGO. The two FIGO systems for normal and abnormal uterine bleeding symptoms and classification of causes of abnormal uterine bleeding in the reproductive years: 2018 revisions (Int J Gynaecol Obstet 2018); ACOG. Practice Bulletin 128: Diagnosis of abnormal uterine bleeding in reproductive-aged women (Obstet Gynecol 2012;120:197); ACOG. Committee Opinion 557: Management of acute abnormal uterine bleeding in nonpregnant reproductive-aged women (Obstet Gynecol 2013;121:891); ACOG. Committee Opinion 651: Menstruation in girls and adolescents: using the menstrual cycle as a vital sign (Obstet Gynecol 2015;126:e143); ACOG. Committee Opinion 785: Screening and management of bleeding disorders in adolescents with heavy menstrual bleeding (Obstet Gynecol 2019;134:e71); ACOG. Committee Opinion 734: The role of transvaginal ultrasonography in evaluating the endometrium of women with postmenopausal bleeding (Obstet Gynecol 2018); NICE. Heavy menstrual bleeding: assessment and management (NG88, 2018, con actualizaciones posteriores); NICE. Suspected cancer: recognition and referral (NG12); Revisión sistemática y metaanálisis sobre sangrado posmenopáusico y cáncer de endometrio (JAMA Intern Med 2018); FDA. Ficha técnica de ácido tranexámico oral para sangrado menstrual abundante",
+      "especialidades": [
+        "ginecologia_y_obstetricia",
+        "medicina_general",
+        "medicina_familiar"
+      ],
+      "cie10": [
+        "N92.0",
+        "N92.1",
+        "N92.2",
+        "N92.4",
+        "N92.6",
+        "N93.8",
+        "N93.9",
+        "N95.0",
+        "D25.9",
+        "N84.0",
+        "D68.0",
+        "D50.0"
+      ],
+      "palabras_clave": [
+        "sangrado uterino anormal",
+        "SUA",
+        "hemorragia uterina anormal",
+        "sangrado menstrual abundante",
+        "menorragia",
+        "metrorragia",
+        "regla abundante",
+        "periodo muy largo",
+        "sangrado entre reglas",
+        "PALM-COEIN",
+        "FIGO",
+        "miomas",
+        "polipo endometrial",
+        "adenomiosis",
+        "biopsia de endometrio",
+        "DIU de levonorgestrel",
+        "acido tranexamico",
+        "von Willebrand",
+        "sangrado posmenopausico",
+        "hiperplasia endometrial"
+      ],
+      "poblacion": [
+        "adultos"
+      ],
+      "fecha_revision": "2026-10-14",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; descartar siempre embarazo, priorizar la reanimación ante inestabilidad hemodinámica y estudiar el endometrio en todo sangrado posmenopáusico.",
+      "secciones": [
+        {
+          "titulo": "Definición, parámetros normales del ciclo (FIGO) y clasificación PALM-COEIN",
+          "texto": "FIGO 2018 (sistema 1 revisado) define el sangrado uterino anormal como la alteración de la frecuencia, duración, regularidad o volumen de la menstruación, o el sangrado intermenstrual, en mujer no gestante en edad reproductiva. Parámetros normales: frecuencia, ciclo de 24 a 38 días (menos de 24 días es frecuente y más de 38 días, infrecuente); duración, hasta 8 días (más es prolongada); regularidad, diferencia entre el ciclo más corto y el más largo de hasta 7 a 9 días según la edad (hasta 7 días entre 26 y 41 años; hasta 9 días entre 18 y 25 y entre 42 y 45 años); volumen, el que la paciente percibe como normal. NICE 2018 define el sangrado menstrual abundante como la pérdida excesiva que interfiere con la calidad de vida física, social, emocional o material; el umbral de 80 mL por ciclo es una definición de investigación que no se mide en la consulta. FIGO recomienda abandonar los términos menorragia, metrorragia y sangrado uterino disfuncional. El sistema 2 (PALM-COEIN) clasifica las causas en estructurales, evaluables por imagen o histología: pólipo (P), adenomiosis (A), leiomioma (L, distinguiendo el submucoso) y malignidad o hiperplasia (M); y no estructurales: coagulopatía (C), disfunción ovulatoria (O, por ejemplo síndrome de ovario poliquístico, hipotiroidismo, hiperprolactinemia o los extremos de la vida reproductiva), trastorno endometrial primario (E), iatrogénica (I, hormonales, dispositivos intrauterinos y, según la revisión de 2018, anticoagulantes) y no clasificada (N). Una misma paciente puede tener varias causas, y muchos miomas o pólipos son hallazgos que no explican por sí solos el sangrado."
+        },
+        {
+          "titulo": "Evaluación inicial: embarazo, laboratorio, imagen y biopsia de endometrio",
+          "texto": "Interrogar el patrón del sangrado (idealmente con calendario), el impacto en la vida diaria, síntomas de anemia, dolor, síntomas de coagulopatía, medicamentos (anticoagulantes, hormonales), deseo reproductivo y tamizaje cervical. Examinar estabilidad hemodinámica, abdomen y pelvis con especuloscopia en adultas, para descartar origen cervical o vaginal. Prueba de embarazo en toda mujer en edad reproductiva. NICE 2018: hemograma a toda mujer con sangrado abundante, en paralelo con el tratamiento; no medir ferritina de rutina, ni hormonas femeninas, ni función tiroidea salvo signos o síntomas de enfermedad tiroidea. Coagulación: NICE indica considerar el estudio de coagulopatías (por ejemplo, von Willebrand) si hay sangrado abundante desde la menarquia y antecedente personal o familiar sugestivo; ACOG 2012 indica pruebas de laboratorio en toda adolescente con sangrado abundante y en adultas con tamizaje clínico positivo. Imagen: la ecografía transvaginal es la imagen inicial usual. NICE ofrece ecografía pélvica si el útero se palpa por abdomen, hay sospecha de masa pélvica o el examen es difícil o no concluyente (por ejemplo, obesidad), y prefiere la transvaginal si se sospecha adenomiosis (dismenorrea importante, útero aumentado y doloroso); ofrece histeroscopia ambulatoria con o sin biopsia si la historia sugiere mioma submucoso, pólipo o patología endometrial. ACOG 2012: la histerosonografía con solución salina detecta mejor que la ecografía transvaginal las lesiones intracavitarias. Biopsia de endometrio: ACOG 2012 la indica como prueba de primera línea en mayores de 45 años con sangrado uterino anormal, y en menores de 45 con exposición prolongada a estrógenos sin oposición (obesidad, síndrome de ovario poliquístico), falla del tratamiento médico o sangrado persistente. NICE 2018 es más restrictiva: biopsia ante sangrado intermenstrual persistente o en mujeres de 45 años o más con falla o ineficacia del tratamiento."
+        },
+        {
+          "titulo": "Tratamiento médico del sangrado menstrual abundante",
+          "texto": "Tratar en paralelo la ferropenia o la anemia. NICE 2018: en mujeres sin patología identificada, con miomas menores de 3 cm que no deforman la cavidad, o con adenomiosis sospechada o diagnosticada, considerar el sistema intrauterino de levonorgestrel (52 mg) como primer tratamiento, advirtiendo que el sangrado irregular es frecuente en los primeros meses. Si lo rechaza o no es adecuado: opciones no hormonales, ácido tranexámico y antiinflamatorios no esteroideos (AINE); u hormonales, anticonceptivos hormonales combinados y progestágenos orales cíclicos; los anticonceptivos solo de progestágeno (inyectable, implante) pueden suprimir la menstruación. Ácido tranexámico, solo durante la menstruación y desde su inicio: formularios del NHS, 1 g tres veces al día hasta 4 días; ficha técnica de la FDA, 1 300 mg tres veces al día hasta 5 días por ciclo, con reducción de dosis en insuficiencia renal según la creatinina. La FDA lo contraindica en enfermedad tromboembólica activa, antecedente de trombosis o riesgo trombótico intrínseco, y advierte mayor riesgo de trombosis si se usa con anticonceptivos hormonales combinados; no es anticonceptivo. AINE durante la menstruación, que además alivian la dismenorrea (por ejemplo, ácido mefenámico 500 mg tres veces al día por 5 días desde el inicio del sangrado, según formularios del NHS); evitarlos si hay coagulopatía, trombocitopenia o contraindicación gastrointestinal o renal. Los anticonceptivos combinados sirven a quien además desea anticoncepción, previa revisión de los criterios de elegibilidad. Si el tratamiento falla, reevaluar el diagnóstico (biopsia, histeroscopia) y remitir a ginecología para opciones como ablación endometrial (solo sin deseo reproductivo), miomectomía, embolización de arterias uterinas o histerectomía."
+        },
+        {
+          "titulo": "Sangrado agudo abundante",
+          "texto": "ACOG 2013: es el episodio de sangrado de cantidad suficiente para requerir intervención inmediata. Valorar estabilidad hemodinámica (incluidas presión arterial y pulso ortostáticos), solicitar hemograma, hemoclasificación y pruebas cruzadas, prueba de embarazo y pruebas de coagulación; si estas son anormales o el tamizaje clínico es positivo, considerar pruebas específicas para von Willebrand. Ante inestabilidad: reanimación, transfusión según la clínica y manejo quirúrgico. ACOG 2013, opciones médicas en la paciente estable: estrógenos conjugados 25 mg intravenosos cada 4 a 6 horas hasta por 24 horas, donde existan; anticonceptivo oral combinado monofásico con 35 µg de etinilestradiol tres veces al día por 7 días; acetato de medroxiprogesterona 20 mg por vía oral tres veces al día por 7 días; ácido tranexámico 1 300 mg por vía oral tres veces al día por 5 días o 10 mg/kg intravenosos cada 8 horas (máximo 600 mg por dosis). Evitar estrógenos si hay riesgo tromboembólico alto, antecedente de trombosis, cáncer de mama o enfermedad hepática. El manejo quirúrgico se reserva para la paciente inestable, no candidata a tratamiento médico o sin respuesta: taponamiento intrauterino con balón (sonda de Foley), aspiración o legrado con estudio histológico, embolización de arterias uterinas o, como último recurso, histerectomía. Controlado el episodio, pasar a tratamiento de mantenimiento a largo plazo y reponer hierro."
+        },
+        {
+          "titulo": "Adolescentes y coagulopatías (von Willebrand)",
+          "texto": "ACOG (2015 y 2019), que considera la menstruación un signo vital: en adolescentes el ciclo normal dura de 21 a 45 días y el sangrado no más de 7 días; la irregularidad de los primeros años se debe a la inmadurez del eje hipotálamo-hipófisis-ovario, y la anovulación es causa frecuente de sangrado abundante. Señal de alarma: sangrado abundante con antecedente de equimosis o sangrado excesivo. ACOG 2019: en la adolescente con sangrado abundante evaluar anemia (incluida ferritina), trastornos endocrinos que causen anovulación y trastornos de la coagulación. Estos afectan al 1 a 2 % de la población general, pero a cerca del 20 % de las adolescentes evaluadas por sangrado menstrual abundante y a cerca del 33 % de las hospitalizadas por esa causa; la enfermedad de von Willebrand es de los más frecuentes, junto con defectos de función plaquetaria, trombocitopenia y deficiencias de factores. Tamizaje clínico en adolescentes y adultas: sangrado abundante desde la menarquia, hemorragia posparto, sangrado en cirugías o procedimientos dentales, equimosis o epistaxis frecuentes, gingivorragia y antecedente familiar de sangrado; un antecedente familiar negativo no descarta la enfermedad. ACOG 2019 desaconseja especuloscopias y ecografías innecesarias en adolescentes, así como transfusiones o cirugías precoces. La prueba de embarazo se hace siempre. Ante sospecha de coagulopatía, el estudio y el tratamiento específico se coordinan con hematología; mientras tanto, evitar AINE."
+        },
+        {
+          "titulo": "Sangrado posmenopáusico y criterios de remisión",
+          "texto": "NICE define el sangrado posmenopáusico como sangrado vaginal inexplicado más de 12 meses después de la última menstruación por menopausia; es signo de alarma de cáncer de endometrio. Un metaanálisis de 2018 estimó un riesgo de cáncer de endometrio cercano al 9 % en mujeres con sangrado posmenopáusico, y que el 91 % de las mujeres con ese cáncer lo presentaron. NICE: remitir por ruta de sospecha de cáncer, con cita en 2 semanas, a mujeres de 55 años o más con sangrado posmenopáusico y considerarlo en menores de 55. ACOG 2018: la ecografía transvaginal basta como evaluación inicial si el endometrio mide 4 mm o menos (valor predictivo negativo mayor del 99 % para cáncer); si mide más o no se visualiza bien, biopsia; si el sangrado persiste o recurre con biopsia no diagnóstica o benigna, histeroscopia. El punto de corte está menos establecido en usuarias de terapia hormonal de la menopausia. No se identificó una guía nacional del Ministerio de Salud de Colombia específica para este tema. Remitir a urgencias u hospitalizar: inestabilidad hemodinámica, sangrado agudo que no cede, anemia sintomática o con necesidad de transfusión. Remitir a ginecología: sangrado posmenopáusico, necesidad de biopsia o histeroscopia no disponible, sangrado intermenstrual persistente o poscoital, masa pélvica o útero palpable, miomas que deforman la cavidad, hiperplasia en la biopsia y falla del tratamiento médico. Remitir a hematología: sospecha de coagulopatía."
         }
       ]
     },
@@ -5541,6 +6185,85 @@
         {
           "titulo": "Tamizaje de cáncer de próstata con PSA y de pulmón con tomografía de baja dosis",
           "texto": "Próstata, Colombia (Resolución 3280 de 2018): la ruta de promoción y mantenimiento incluye la detección temprana con antígeno prostático específico (PSA) y tacto rectal, previa información sobre beneficios y riesgos para una decisión informada; confirmar edades y periodicidad en el texto vigente de la resolución. USPSTF 2018: de 55 a 69 años, decisión individual tras discutir el posible beneficio (pequeña reducción de la mortalidad por cáncer de próstata) y los daños (falsos positivos, biopsias y sus complicaciones, sobrediagnóstico, incontinencia y disfunción eréctil por el tratamiento) (recomendación C); desde los 70 años, no tamizar (D); no incluye el tacto rectal como prueba de tamizaje por falta de evidencia de beneficio. Diferencias: la norma colombiana incluye el tacto rectal, mientras la USPSTF limita el tamizaje a 55–69 años con decisión compartida y sin tacto rectal. Considerar el mayor riesgo en hombres afrodescendientes y con antecedente familiar. Pulmón: la Resolución 3280 no incluye tamizaje de cáncer de pulmón y en Colombia no hay un programa poblacional; la decisión es individual, con neumología y según disponibilidad. USPSTF 2021: tomografía de tórax de baja dosis anual en personas de 50 a 80 años con 20 o más paquetes-año (paquetes al día por años fumados) que fuman actualmente o dejaron de fumar en los últimos 15 años (recomendación B); suspender cuando la persona complete 15 años sin fumar o tenga un problema de salud que limite su expectativa de vida o su capacidad o disposición para una cirugía curativa. Debe acompañarse de decisión compartida (falsos positivos, radiación, sobrediagnóstico) y de consejería para dejar de fumar; la radiografía de tórax no sirve como tamizaje. La cesación del tabaquismo sí forma parte de la ruta colombiana de promoción y mantenimiento."
+        }
+      ]
+    },
+    {
+      "id": "tos-ferina",
+      "titulo": "Tos ferina (tosferina): fases, caso INS, PCR, antibiótico por edad, contactos y Tdap en el embarazo",
+      "organismo": "CDC · AAP · INS Colombia · MinSalud (PAI) · OMS",
+      "anio": 2025,
+      "fuente": "CDC. Treatment of Pertussis (clinical care); CDC. Recommended Antimicrobial Agents for the Treatment and Postexposure Prophylaxis of Pertussis: 2005 CDC Guidelines (MMWR Recomm Rep 2005;54(RR-14)); CDC. Clinical Features of Pertussis y Epidemiology and Prevention of Vaccine-Preventable Diseases (Pink Book), capítulo 16: Pertussis; CDC. Laboratory Testing for Pertussis; CDC. Pertussis Postexposure Prophylaxis; CDC. Infection Control in Healthcare Personnel: Pertussis (2024); American Academy of Pediatrics. Red Book 2024: Report of the Committee on Infectious Diseases, 33.ª ed. (capítulo de pertussis); CDC/ACIP. Tdap en cada embarazo (actualización de la ventana de aplicación, 2016); Instituto Nacional de Salud (INS). Protocolo de vigilancia en salud pública de tos ferina y boletín epidemiológico semanal 2025; MinSalud e INS. Circular Externa Conjunta 0009 de 2012 (vigilancia y control de tos ferina); MinSalud. Circular Externa Conjunta 011 de 2025 (tos ferina: vigilancia, atención y vacunación); MinSalud. Ajuste del esquema de vacunación por casos de tosferina en niñas, niños y gestantes (infografía PAI 2025); OMS. Pertussis vaccines: WHO position paper, August 2015 (Wkly Epidemiol Rec 2015;90(35):433-460); Pediatrics 2015. Azithromycin in early infancy and pyloric stenosis",
+      "especialidades": [
+        "pediatria",
+        "neonatologia",
+        "infectologia",
+        "medicina_general",
+        "medicina_familiar",
+        "urgencias",
+        "ginecologia_y_obstetricia"
+      ],
+      "cie10": [
+        "A37.0",
+        "A37.1",
+        "A37.8",
+        "A37.9",
+        "Z27.1"
+      ],
+      "palabras_clave": [
+        "tos ferina",
+        "tosferina",
+        "pertussis",
+        "coqueluche",
+        "tos convulsiva",
+        "Bordetella pertussis",
+        "tos paroxistica",
+        "estridor inspiratorio",
+        "gallo inspiratorio",
+        "vomito despues de toser",
+        "apnea del lactante",
+        "PCR para Bordetella",
+        "azitromicina",
+        "estenosis pilorica",
+        "profilaxis de contactos",
+        "Sivigila",
+        "Tdap en el embarazo",
+        "pentavalente",
+        "esquema acortado PAI"
+      ],
+      "poblacion": [
+        "pediatria",
+        "neonatos",
+        "adultos",
+        "gestantes"
+      ],
+      "fecha_revision": "2026-10-14",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; el esquema PAI y la semana de Tdap en gestantes cambiaron en 2025: confirmar el lineamiento vigente del PAI y el protocolo del INS, y no retrasar el antibiótico en el lactante pequeño mientras llega la PCR.",
+      "secciones": [
+        {
+          "titulo": "Fases clínicas y sospecha según la edad",
+          "texto": "Infección respiratoria por Bordetella pertussis, muy contagiosa y grave sobre todo en el lactante pequeño. CDC (Pink Book): incubación habitual de 7 a 10 días, con rango de 4 a 21 días. Fase catarral, de 1 a 2 semanas: rinorrea, estornudos, fiebre baja o ausente y tos leve que empeora; pasa como un resfriado y es cuando más se contagia. Fase paroxística, que suele durar de 1 a 6 semanas y puede prolongarse hasta 10: accesos de tos en salvas seguidos de estridor inspiratorio («gallo»), vómito posttusígeno y agotamiento, con el paciente aparentemente bien entre los accesos. Convalecencia: la tos cede en 2 a 3 semanas, aunque los paroxismos pueden reaparecer durante meses con nuevas infecciones respiratorias. Presentación según la edad (CDC): el menor de 6 meses puede no hacer estridor y debutar con apnea, cianosis, atoros o bradicardia, a veces con poca tos; el adolescente, el adulto y el vacunado suelen tener tos persistente sin estridor y son la fuente de contagio habitual del lactante en el hogar. Sospechar ante tos de dos semanas o más con paroxismos, estridor o vómito tras la tos, ante todo lactante con apnea o cianosis asociadas a tos y ante tos en el contacto de un caso."
+        },
+        {
+          "titulo": "Definición de caso del INS, notificación al Sivigila y diagnóstico",
+          "texto": "INS (definición operativa de caso probable usada en 2025; confirmar en el protocolo vigente): en menores de 3 meses, toda infección respiratoria aguda con al menos uno de: accesos de tos, estridor, apnea, cianosis o vómito tras los accesos; de 3 meses a 12 años, tos paroxística intensa de cualquier duración con estridor o, sin un diagnóstico más probable, infección respiratoria con tos de más de 7 días y al menos uno de: tos paroxística, estridor o vómito posttusígeno. En adolescentes y adultos se usa la definición clínica clásica (p. ej., protocolo de vigilancia de España): tos de al menos 2 semanas con tos paroxística, estridor inspiratorio o vómito provocado por la tos. Todo caso probable se notifica de inmediato al Sivigila (la circular conjunta de MinSalud e INS de 2012 fijó un máximo de 24 horas), con muestra de aspirado o hisopado nasofaríngeo e investigación epidemiológica de campo, que en menores de 2 meses incluye el antecedente materno de Tdap. Laboratorio (CDC): la PCR nasofaríngea es la prueba de elección, con mejor rendimiento en las primeras 3 semanas de tos y utilidad hasta las 3 a 4 semanas; después cae la carga de ADN y aumentan los falsos negativos. El cultivo permite estudiar sensibilidad, pero solo rinde en las primeras 2 semanas de tos y antes del antibiótico; la serología se reserva para fases tardías, entre 2 y 8 semanas del inicio de la tos. Usar hisopo de poliéster, rayón o nailon, no de algodón, y no frotis faríngeo. Una prueba negativa no descarta la enfermedad: tratar y aislar según la clínica."
+        },
+        {
+          "titulo": "Tratamiento antibiótico y dosis por edad",
+          "texto": "CDC: iniciar el antibiótico ante la sospecha, sin esperar la PCR; en mayores de 1 año, si han pasado menos de 3 semanas desde el inicio de la tos, y en menores de 1 año y gestantes (sobre todo cerca del término), hasta 6 semanas. Dado tarde no cambia el curso de la tos ni evita el contagio. Primera línea, macrólidos (CDC 2005). Azitromicina, preferida en todas las edades: menores de 6 meses, incluidos los menores de 1 mes, 10 mg/kg/día en dosis única durante 5 días; desde los 6 meses, 10 mg/kg el día 1 (máximo 500 mg) y 5 mg/kg/día los días 2 a 5 (máximo 250 mg); adolescentes y adultos, 500 mg el día 1 y 250 mg/día los días 2 a 5. En el menor de 1 mes la azitromicina es el fármaco recomendado, con datos de seguridad limitados: los macrólidos orales se asocian con estenosis hipertrófica del píloro, y en una cohorte publicada en Pediatrics en 2015 el riesgo fue mayor con la exposición en las primeras 2 semanas de vida y menor, pero presente, entre las 2 y 6 semanas. Tratar igual, porque la tos ferina neonatal puede ser mortal, y vigilar vómito en proyectil o pérdida de peso en las semanas siguientes. Claritromicina: no recomendada en menores de 1 mes; desde 1 mes, 15 mg/kg/día dividida en 2 dosis durante 7 días, sin pasar de 1 g/día; adultos, 500 mg cada 12 horas durante 7 días. Eritromicina: 40 a 50 mg/kg/día en 4 dosis durante 14 días, peor tolerada y no preferida en menores de 1 mes. Alternativa ante alergia o intolerancia a macrólidos, solo desde los 2 meses: trimetoprim-sulfametoxazol, 8 mg/kg/día de trimetoprim y 40 mg/kg/día de sulfametoxazol en 2 dosis durante 14 días; adultos, 320 mg/día de trimetoprim y 1 600 mg/día de sulfametoxazol en 2 dosis (160/800 mg cada 12 horas) durante 14 días. Está contraindicado en menores de 2 meses por riesgo de kernícterus."
+        },
+        {
+          "titulo": "Profilaxis de contactos, aislamiento y regreso a clases",
+          "texto": "CDC: la profilaxis posexposición busca evitar muertes y complicaciones en quienes tienen riesgo de enfermedad grave; se indica a todos los contactos del hogar, a las personas con alto riesgo (lactantes y gestantes del tercer trimestre) y a quienes estarán en contacto con ellas, sin importar el estado de vacunación, dentro de los 21 días siguientes al inicio de la tos del caso índice; se usan los mismos antibióticos, dosis y duraciones del tratamiento. Colombia (circular conjunta de 2012): seguimiento de los contactos hasta el día 21 desde el inicio de síntomas del caso, quimioprofilaxis según el protocolo del INS, muestra nasofaríngea a los contactos cercanos según la evaluación del caso y aislamiento respiratorio, en especial frente a niños no vacunados o con esquema incompleto. Regreso a clases, jardín o trabajo (guías de salud pública de EE. UU. basadas en el Red Book 2024): excluir hasta completar 5 días de antibiótico adecuado; si no recibió tratamiento, hasta 21 días después del inicio de la tos. CDC 2024, trabajador de la salud expuesto y sin síntomas que atiende pacientes de riesgo: darle profilaxis; si no la recibe, restringir su contacto con esos pacientes durante 21 días desde la última exposición. Revisar el carné de vacunas de todos los contactos y vigilar tos nueva durante 21 días."
+        },
+        {
+          "titulo": "Lactantes pequeños: gravedad y criterios de hospitalización",
+          "texto": "El menor de 1 año, sobre todo el menor de 3 meses, el prematuro y el que aún no ha recibido vacunas, es el grupo de mayor riesgo: en los datos de vigilancia de CDC la mayoría de las hospitalizaciones, la ventilación mecánica y las muertes se concentran en los menores de 3 meses. En Colombia, los fallecidos de 2025 fueron principalmente bebés sin esquema completo, y la falta de vacunación materna se identificó como factor de riesgo. Complicaciones: apnea, bradicardia, neumonía, convulsiones, encefalopatía, deshidratación e hipertensión pulmonar. En series de lactantes, la apnea, la falta de vacunación y la edad menor de 2 meses se asociaron con ingreso a cuidado intensivo, y la hiperleucocitosis (30 × 10⁹/L o más) y la hipertensión pulmonar, con muerte. Criterios orientativos de hospitalización (las fuentes consultadas no traen un listado único): lactante pequeño con sospecha, en especial menor de 3 meses; apnea, cianosis o bradicardia, aun sin estridor; dificultad respiratoria, hipoxemia o neumonía; incapacidad para alimentarse o deshidratación; convulsiones o alteración de la conciencia; leucocitosis marcada, y familia que no puede vigilar los accesos. Remitir a cuidado intensivo pediátrico ante apneas repetidas, hipoxemia persistente, inestabilidad hemodinámica, hiperleucocitosis o signos de hipertensión pulmonar. En el hospital, monitoreo cardiorrespiratorio continuo y vigilancia de los accesos y de la alimentación."
+        },
+        {
+          "titulo": "Vacunación: esquema PAI y Tdap en cada embarazo",
+          "texto": "MinSalud (PAI): la tos ferina se cubre con la pentavalente (difteria, tétanos, tos ferina, Haemophilus influenzae tipo b y hepatitis B), o con la hexavalente acelular en los grupos que defina el lineamiento, con refuerzos a los 18 meses y a los 5 años; la Circular 011 de 2025 menciona pentavalente a los 2, 4, 6 y 18 meses y DPT a los 5 años. Ajuste por tosferina (MinSalud, noviembre de 2025): la serie primaria inicia a las 6 semanas y sigue con intervalos de 6 semanas, es decir a los 3 y a los 4,5 meses, sin cambios en los refuerzos; confirmar cuál calendario rige. Gestantes: la Circular 011 de 2025 indicó Tdap desde la semana 26, o desde la semana 20 en zona rural dispersa; con el ajuste de 2025, MinSalud la adelantó a la semana 20 para todas las gestantes del país, para que los anticuerpos maternos pasen al recién nacido antes de que pueda vacunarse. CDC/ACIP: una dosis de Tdap en cada embarazo, sin importar la vacunación previa, entre las semanas 27 y 36 y preferiblemente al inicio de esa ventana; la madre que nunca recibió Tdap y no se vacunó en el embarazo la recibe inmediatamente después del parto. OMS (documento de posición de 2015, que reemplaza al de 2010): revisa la elección entre vacunas de células enteras y acelulares e incorpora la vacunación en el embarazo como estrategia adicional para prevenir la mortalidad temprana del lactante. Completar la vacunación de convivientes y cuidadores del recién nacido según el lineamiento vigente. Haber recibido la vacuna no descarta el diagnóstico: el niño o el adulto vacunado puede tener una tos ferina leve y contagiar."
         }
       ]
     },
@@ -5868,6 +6591,87 @@
         {
           "titulo": "Esquemas atrasados y oportunidades perdidas",
           "texto": "CDC (esquema de puesta al día 2025): un esquema no se reinicia sin importar el tiempo transcurrido entre dosis; las dosis previas válidas cuentan y se continúa con la siguiente, respetando edades e intervalos mínimos. ACIP: las vacunas vivas parenterales (triple viral, varicela, fiebre amarilla) que no se aplican el mismo día se separan al menos 4 semanas; si se aplican el mismo día no hay que esperar. Rotavirus: no iniciar después de los 3 meses y 21 días ni aplicar la segunda dosis después de los 11 meses y 29 días; el niño que perdió esa ventana no recupera la vacuna. Para las edades máximas de pentavalente, neumococo, polio y DPT en niños mayores, usar la tabla de recuperación del lineamiento vigente del PAI y no extrapolar de otros países. Revisar el carné en toda consulta, urgencia u hospitalización y vacunar en ese momento si no hay contraindicación verdadera; las vacunas del PAI son gratuitas, también para extranjeros y personas sin afiliación. Prioridades de puesta al día: refuerzo de triple viral en niños de 2 a 5 años, tosferina en lactantes y gestantes, fiebre amarilla en zonas de riesgo y VPH hasta los 17 años. Consultar con el PAI territorial o con infectología los casos de inmunocompromiso, trasplante, asplenia o esquemas sin documentar."
+        }
+      ]
+    },
+    {
+      "id": "varicela-y-sarampion",
+      "titulo": "Varicela y sarampión: contagio, aciclovir, vitamina A, profilaxis posexposición y notificación",
+      "organismo": "CDC · ACIP · AAP · OMS · INS · MinSalud",
+      "anio": 2017,
+      "fuente": "CDC. Clinical Overview of Measles y Measles Clinical Diagnosis Fact Sheet; CDC. Chickenpox (Varicella) for Healthcare Professionals: Clinical Overview y Clinical Guidance for People at Risk for Severe Varicella; CDC. Epidemiology and Prevention of Vaccine-Preventable Diseases (Pink Book), capítulo de varicela; ACIP. Prevention of Varicella (MMWR Recomm Rep 2007;56[RR-4]); CDC. Updated Recommendations for Use of VariZIG, United States, 2013 (MMWR 2013;62:574); ACIP. Prevention of Measles, Rubella, Congenital Rubella Syndrome, and Mumps, 2013 (MMWR Recomm Rep 2013;62[RR-04]); CDC. Infection Control in Healthcare Personnel: measles y varicela; American Academy of Pediatrics. Red Book: Report of the Committee on Infectious Diseases, capítulos de sarampión y varicela; OMS. Measles vaccines: WHO position paper, April 2017 (Wkly Epidemiol Rec 2017;92:205); OMS. Recomendación de vitamina A en el tratamiento del sarampión; Instituto Nacional de Salud. Protocolo de vigilancia en salud pública de sarampión y rubéola e informe de evento 2023; MinSalud. Circular externa 0015 de 2015 (vigilancia de sarampión y rubéola); MinSalud. Circular externa 0027 de 2015 y lineamientos del PAI (refuerzo de varicela 2019, refuerzo de triple viral 2023); fichas técnicas de aciclovir (FDA y MHRA)",
+      "especialidades": [
+        "pediatria",
+        "infectologia",
+        "medicina_general",
+        "medicina_familiar",
+        "urgencias",
+        "ginecologia_y_obstetricia"
+      ],
+      "cie10": [
+        "B01.9",
+        "B01.2",
+        "B01.1",
+        "B01.8",
+        "B05.9",
+        "B05.2",
+        "B05.0",
+        "B05.3",
+        "P35.8"
+      ],
+      "palabras_clave": [
+        "varicela",
+        "sarampion",
+        "viruela loca",
+        "lechina",
+        "exantema febril",
+        "exantema vesicular",
+        "manchas de Koplik",
+        "aciclovir",
+        "triple viral",
+        "SRP",
+        "vacuna de varicela",
+        "VariZIG",
+        "inmunoglobulina",
+        "profilaxis posexposicion",
+        "caso sospechoso de sarampion",
+        "Sivigila",
+        "varicela congenita",
+        "varicela neonatal",
+        "sindrome de Reye"
+      ],
+      "poblacion": [
+        "pediatria",
+        "adultos",
+        "gestantes"
+      ],
+      "fecha_revision": "2026-10-14",
+      "revisado_por": "",
+      "nota": "Resumen orientativo elaborado a partir de las guías citadas. Verificar en la fuente antes de decidir; todo caso sospechoso de sarampión se notifica de inmediato al Sivigila, y el aciclovir se ajusta a la función renal.",
+      "secciones": [
+        {
+          "titulo": "Presentación clínica y periodo de contagio",
+          "texto": "Varicela: incubación habitual de 14 a 16 días (rango de 10 a 21, Pink Book de los CDC). Cursa con fiebre, malestar y un exantema pruriginoso que pasa de máculas a pápulas, vesículas y costras en brotes sucesivos, de modo que coexisten lesiones en distintos estadios, sobre todo en tronco, cara y cuero cabelludo. CDC: contagia desde 1 a 2 días antes del exantema hasta que todas las lesiones están en costra, por lo general hacia el quinto día del exantema. La varicela de brecha (en vacunados) es más leve, con pocas lesiones, a menudo maculopapulares, y contagia hasta que pasan 24 horas sin lesiones nuevas. Sarampión (CDC): de la exposición a los primeros síntomas suelen pasar 11 a 12 días, y el exantema aparece hacia el día 14. El pródromo trae fiebre alta, tos, coriza y conjuntivitis; las manchas de Koplik (puntos blanquecinos en la mucosa yugal) preceden al exantema maculopapular, que empieza en la cara y la línea del cabello y desciende al tronco y las extremidades. Contagia desde 4 días antes hasta 4 días después del inicio del exantema, por vía aérea: el virus puede quedar en el aire de un espacio cerrado hasta 2 horas después de que el paciente salió, así que compartir sala de espera cuenta como exposición. Diferenciales: rubéola, dengue, escarlatina, Kawasaki y reacción a fármacos; en la varicela, impétigo ampolloso, mpox y zóster diseminado."
+        },
+        {
+          "titulo": "Diagnóstico del sarampión y notificación inmediata en Colombia",
+          "texto": "Varicela: el diagnóstico es clínico; si hay duda (vacunados, inmunosuprimidos, cuadro atípico) se confirma con PCR de líquido de vesícula o de costra. Sarampión: toda sospecha se confirma por laboratorio. Caso sospechoso (vigilancia integrada de sarampión y rubéola del INS): persona con fiebre y erupción maculopapular, con o sin tos, coriza, conjuntivitis, adenopatías retroauriculares, cervicales u occipitales o artralgias, o cualquier persona en quien un profesional de la salud sospeche sarampión o rubéola. En Colombia se notifica de inmediato al Sivigila, sin esperar resultados (MinSalud, circular 0015 de 2015; evento 730 sarampión, 710 rubéola), y la investigación epidemiológica de campo debe hacerse en menos de 48 horas desde la notificación (INS, informe de evento 2023). En el primer contacto tomar suero para IgM y muestra respiratoria (hisopado nasofaríngeo o faríngeo) más orina para RT-PCR, y enviarlas por la red de laboratorios de salud pública al INS. CDC: la RT-PCR es más sensible en los primeros 3 días del exantema y puede ser positiva hasta 10 días después; la IgM es más sensible desde el tercer día, así que una IgM negativa temprana se interpreta con cautela y se repite el suero si persiste la sospecha. La IgM puede ser positiva tras una vacunación reciente: clasificar con el antecedente vacunal. Desde la sospecha: aislamiento respiratorio, mascarilla al paciente, censo de contactos y búsqueda activa institucional y comunitaria."
+        },
+        {
+          "titulo": "Tratamiento de la varicela: aciclovir, antipiréticos y signos de alarma",
+          "texto": "Niño sano: soporte con hidratación, uñas cortas, antihistamínico oral o loción para el prurito y acetaminofén para la fiebre. No usar aspirina ni otros salicilatos por el riesgo de síndrome de Reye. Precaución con los AINE: estudios de casos y controles asociaron el ibuprofeno con fascitis necrotizante e infección invasiva por estreptococo del grupo A en niños con varicela. Aciclovir oral (CDC): no es de rutina en el niño sano; se considera por riesgo de enfermedad grave en mayores de 12 años, enfermedad crónica cutánea o pulmonar, tratamiento prolongado con salicilatos y cursos cortos, intermitentes o inhalados de corticoide, y a criterio clínico en los casos secundarios del hogar. Debe iniciarse dentro de las primeras 24 horas del exantema. Dosis (ficha de la FDA): niños desde los 2 años, 20 mg/kg por dosis 4 veces al día durante 5 días, sin superar 800 mg por dosis (ficha europea); adultos y niños de más de 40 kg, 800 mg 4 veces al día durante 5 días. En la gestante, las guías británicas usan 800 mg 5 veces al día durante 7 días. Aciclovir intravenoso (CDC): neumonía, encefalitis u otra enfermedad grave, y varicela en inmunosuprimidos, incluidos quienes reciben corticoide en dosis altas por más de 14 días. Adultos, 10 mg/kg cada 8 horas; niños, 500 mg/m² cada 8 horas según la ficha británica (la estadounidense da 20 mg/kg cada 8 horas en menores de 12 años), durante 7 a 10 días, con buena hidratación y ajuste a la función renal. Hospitalizar o valorar con urgencia: fiebre que persiste o reaparece, lesiones dolorosas, calientes, hemorrágicas o con eritema que avanza, tos, dificultad respiratoria o dolor torácico, alteración de la conciencia, ataxia, convulsiones o deshidratación, y toda varicela en inmunosuprimido, gestante o recién nacido."
+        },
+        {
+          "titulo": "Complicaciones, grupos de riesgo y vitamina A en el sarampión",
+          "texto": "Varicela: la complicación más frecuente en niños es la sobreinfección bacteriana de la piel (estafilococo, estreptococo del grupo A), que puede llegar a celulitis, fascitis necrotizante o sepsis; además, neumonía (principal complicación grave del adulto), ataxia cerebelosa, encefalitis y síndrome de Reye con aspirina. Más riesgo: adolescentes, adultos, inmunosuprimidos, gestantes y recién nacidos. En la gestante la neumonía varicelosa es más grave, sobre todo al avanzar el embarazo y en fumadoras; el síndrome de varicela congénita (cicatrices, hipoplasia de extremidades, lesiones oculares y neurológicas) ocurre en alrededor de 0,4 % si la infección materna es antes de la semana 13 y en cerca de 2 % entre las semanas 13 y 20. La varicela neonatal es más grave si el exantema materno aparece alrededor del parto (ver VariZIG). Sarampión (CDC): otitis media en cerca de 1 de cada 10 niños; neumonía hasta en 1 de cada 20, la causa más frecuente de muerte por sarampión en niños pequeños; encefalitis en 1 de cada 1 000, con riesgo de sordera o discapacidad intelectual; mueren entre 1 y 3 de cada 1 000 niños infectados. Años después puede aparecer panencefalitis esclerosante subaguda, más probable si el sarampión ocurrió antes de los 2 años. Más riesgo: niños pequeños, adultos, gestantes (aborto, parto pretérmino, bajo peso al nacer), desnutridos e inmunosuprimidos. El tratamiento es de soporte, con antibiótico solo ante sobreinfección bacteriana. Vitamina A (OMS; la AAP y los CDC usan el mismo esquema): a todo niño con sarampión agudo, una dosis oral diaria durante 2 días consecutivos: menores de 6 meses, 50 000 UI; de 6 a 11 meses, 100 000 UI; desde los 12 meses, 200 000 UI. Con signos oculares de deficiencia de vitamina A, tercera dosis a las 2 a 4 semanas (OMS) o a las 2 a 6 semanas (AAP)."
+        },
+        {
+          "titulo": "Profilaxis posexposición y aislamiento",
+          "texto": "Varicela, expuesto sin evidencia de inmunidad (ACIP): vacuna de varicela idealmente dentro de los 3 días y posiblemente hasta 5 días después de la exposición; pasado ese plazo igual se ofrece para protección futura. Gestantes e inmunosuprimidos no se vacunan: reciben inmunoglobulina contra varicela-zóster (VariZIG, CDC 2013) lo antes posible y dentro de los 10 días, 125 UI por cada 10 kg de peso, máximo 625 UI y mínimo 62,5 UI si pesa 2 kg o menos. Otros candidatos: recién nacido cuya madre inicia varicela entre 5 días antes y 2 días después del parto; prematuro hospitalizado nacido con 28 semanas o más cuya madre no es inmune, y nacido con menos de 28 semanas o con 1 000 g o menos, sin importar la inmunidad materna. Sin inmunoglobulina, algunas guías usan aciclovir oral (esquemas variables, acordar con infectología). La vacuna se aplica al menos 5 meses después de la VariZIG. Sarampión, expuesto sin evidencia de inmunidad (ACIP 2013): triple viral dentro de las 72 horas, también en lactantes de 6 a 11 meses; inmunoglobulina dentro de los 6 días en menores de 12 meses (intramuscular, 0,5 mL/kg, máximo 15 mL) y en gestantes susceptibles e inmunosuprimidos graves (intravenosa, 400 mg/kg). Después, la triple viral se aplaza al menos 6 meses tras la intramuscular u 8 meses tras la intravenosa. Aislamiento: varicela, precauciones aéreas y de contacto hasta que todas las lesiones estén en costra; el expuesto susceptible hospitalizado se aísla hasta el día 21 posexposición (día 28 si recibió inmunoglobulina). Sarampión, aislamiento aéreo en habitación individual, idealmente con presión negativa, hasta 4 días después del inicio del exantema (más tiempo en inmunosuprimidos); el trabajador de salud expuesto sin evidencia de inmunidad se retira desde el día 5 tras la primera exposición hasta el día 21 tras la última, aunque haya recibido profilaxis. En ambas, el personal usa respirador N95."
+        },
+        {
+          "titulo": "Vacunación: triple viral y varicela en el PAI",
+          "texto": "PAI de Colombia (MinSalud): triple viral (sarampión, rubéola y paperas) a los 12 meses con refuerzo a los 18 meses desde 2023 (antes el refuerzo era a los 5 años), con puesta al día de todo niño que no lo recibió; varicela a los 12 meses (circular 0027 de 2015) con refuerzo a los 5 años, incluido desde julio de 2019. Son gratuitas. OMS 2017: dos dosis contra el sarampión para todo niño, la segunda entre los 15 y 18 meses, sin condicionarla a la cobertura de la primera; la dosis desde los 6 meses se reserva para alto riesgo, como brotes, y no reemplaza las del esquema. Ambas son vacunas de virus vivos: contraindicadas en el embarazo y en la inmunodeficiencia grave; la mujer susceptible se vacuna antes de la gestación o en el posparto, compatible con la lactancia. Consultar con infectología o pediatría: inmunosuprimidos, gestantes y recién nacidos expuestos o enfermos, y casos complicados."
         }
       ]
     },
