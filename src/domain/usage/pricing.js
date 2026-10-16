@@ -38,6 +38,10 @@ const RATE_CARDS = Object.freeze([
   rate('openai', 'gpt-4.1-nano', 'chat_completions', { input: 0.10, cachedInput: 0.025, output: 0.40 }),
   rate('openai', 'gpt-4o', 'chat_completions', { input: 2.50, cachedInput: 1.25, output: 10.00 }),
   rate('openai', 'gpt-4o-mini', 'chat_completions', { input: 0.15, cachedInput: 0.075, output: 0.60 }),
+  // Tarifa estándar de platform.openai.com/docs/pricing, leída el 2026-10-16.
+  rate('openai', 'gpt-5-mini', 'chat_completions', { input: 0.25, cachedInput: 0.025, output: 2.00 }),
+  rate('openai', 'gpt-5.6-luna', 'chat_completions', { input: 0.20, cachedInput: 0.02, output: 1.20 }),
+  rate('openai', 'gpt-6-luna', 'chat_completions', { input: 0.10, cachedInput: 0.01, output: 0.50 }),
 
   // ---- OpenAI · transcripción ----
   rate('openai', 'gpt-4o-transcribe', 'transcription', { input: 2.50, output: 10.00, perMinute: 0.006 }),
