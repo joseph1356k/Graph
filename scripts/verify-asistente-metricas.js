@@ -17,7 +17,7 @@ const { promesa, cerrar } = require('./lib/promesas');
 const METRICAS = [
   {
     numero: 605,
-    enunciado: 'Sobre la evaluación de retrieval, con al menos 300 preguntas, 60 fuera de tema y 40 fuera del corpus: recall@3 de 97 % o más, recall@1 de 90 % o más, MRR de 0,93 o más, ninguna guía en las preguntas fuera de tema, 90 % o más de las preguntas fuera del corpus sin extracto de relevancia alta, búsqueda p95 de 10 ms o menos e índice construido en 300 ms o menos',
+    enunciado: 'Sobre la evaluación de retrieval, con al menos 300 preguntas, 60 fuera de tema y 40 fuera del corpus: recall@3 de 97 % o más, recall@1 de 96 % o más, MRR de 0,98 o más, ninguna guía en las preguntas fuera de tema, 90 % o más de las preguntas fuera del corpus sin extracto de relevancia alta, búsqueda p95 de 10 ms o menos e índice construido en 300 ms o menos',
     script: 'eval-guideline-retrieval.js',
     resumen: /^\s+(global|fuera del corpus)/
   },

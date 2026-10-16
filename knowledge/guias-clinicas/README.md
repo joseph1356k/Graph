@@ -41,4 +41,7 @@ Reglas:
 - `poblacion` es obligatoria: el índice sube la guía cuya población coincide con la del paciente (edad, embarazo) o con la que nombra la pregunta («en niños»), y baja la que no.
 - Mientras redactas: `node scripts/check-guideline-drafts.js <archivo.md>` revisa formato, tamaño de cada fragmento y escudo sin tocar el JSON.
 
-Después de editar: `npm run build:corpus && node scripts/verify-guideline-corpus.js && node scripts/verify-guideline-index.js`.
+- `consultas.json`: por cada guía, **al menos 6 consultas** como las diría un médico colombiano («lo mordió una culebra en el monte», «cuántas ampollas de suero antiofídico le pongo»): 3 que describen el cuadro sin nombrarlo, 1 con el nombre coloquial y 2 prácticas con siglas o fármacos. Ayudan a *encontrar* la guía; nunca llegan al prompt. No copies preguntas de `scripts/fixtures/` (el verificador lo rechaza: la evaluación mediría memoria).
+- `guideline-head.json`: la cabeza léxica (spec 007), generada con `npm run build:head` (~45 s, sin red). Se regenera cada vez que cambia el corpus o la evaluación del repo; `npm test` falla si quedó de otro corpus.
+
+Después de editar: `npm run build:corpus && npm run build:head && node scripts/verify-guideline-corpus.js && node scripts/verify-guideline-index.js && npm run eval:prompt`.

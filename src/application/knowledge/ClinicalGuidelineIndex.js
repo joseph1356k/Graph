@@ -12,6 +12,15 @@
 // sinónimos; `loadDefaultIndex()` es el único sitio que hace `require` de los
 // archivos commiteados (ruta estática, que es lo que Vercel empaqueta).
 //
+// CONSULTAS (doc2query): cada guía trae unas preguntas como las diría un
+// médico colombiano («lo mordió una culebra en el monte»), escritas una vez y
+// revisadas en el PR (knowledge/guias-clinicas/consultas.json). Se indexan como
+// un campo más del fragmento: suman a la puntuación, pero no cuentan como
+// título ni palabra clave (no bastan para la relevancia «alta»). Nunca llegan
+// al prompt: solo ayudan a encontrar la guía. Ganó el torneo de RAG del
+// 2026-10-14 frente a embeddings, reordenadores y contexto largo
+// (docs/asistente/RAG-LEXICO-REFORZADO.md).
+//
 // CUÁNDO DEVUELVE VACÍO: a propósito. Un corpus de treinta documentos tiene
 // un IDF inestable, así que además del umbral de puntuación se exige que la
 // pregunta del médico aporte términos propios al match. «Hola» o «¿cómo
@@ -19,6 +28,18 @@
 // para que no invente una cita.
 
 const BM25_K1 = 1.2;
+// Muletillas de pregunta que traen las consultas y no nombran el tema
+// (filtro tipo doc2query--). Además se descarta todo término de las consultas
+// que aparezca en las de más del 10 % de las guías.
+const QUERY_FILLER = new Set([
+  'necesito', 'pongo', 'pido', 'sirve', 'toca', 'salio', 'quiere', 'trato', 'manejo', 'despue', 'cuanto', 'cuanta',
+  'cuando', 'deberia', 'hacemo', 'mandaria', 'ayuda'
+]);
+const QUERY_MAX_GUIDE_SHARE = 0.1;
+// «alta» exige que el fragmento cubra al menos el 70 % del peso (IDF) de los
+// términos propios de la pregunta: cubrir «dolor» y «niño» no es cubrir
+// «dolor de oído en un niño».
+const HIGH_IDF_COVERAGE = 0.7;
 const BM25_B = 0.75;
 const DEFAULT_TOP_K = 6;
 const DEFAULT_PER_GUIDE_CAP = 3;
@@ -26,6 +47,9 @@ const DEFAULT_CHAR_BUDGET = 9000;
 // Presupuesto de guías dentro del prompt del chat (ver selectForPrompt).
 const PROMPT_CHAR_BUDGET = 5000;
 const PROMPT_ALWAYS_KEEP = 2;
+const PROMPT_DIVERSE_GUIDES = 3;
+// La cabeza léxica opina cuando otra guía queda a ≥ 80 % de la puntuación de la G1.
+const HEAD_DOUBT_RATIO = 0.8;
 const RELATIVE_THRESHOLD = 0.35;
 const MIN_ABSOLUTE_SCORE = 1.5;
 const HEAD_WEIGHT = 2;
@@ -71,10 +95,13 @@ const FOLLOW_TOPIC_IDF_RATIO = 0.75;
 
 // Valores de laboratorio escritos en la pregunta («sodio de 127», «K 6,8»,
 // «azúcar a 50»): se traducen al trastorno que definen, con los cortes de las
-// guías del corpus (hiponatremia < 135, hiperpotasemia ≥ 5,5, hipoglucemia < 70).
+// guías del corpus (hiponatremia < 135, hiperpotasemia ≥ 5,5, hipoglucemia < 70,
+// sistólica ≥ 140 hipertensión y < 90 hipotensión).
 const LAB_SIGNALS = [
   { pattern: /\b(?:sodio|na)\s*(?:de|en|a|:|=)?\s*(\d{2,3}(?:[.,]\d+)?)\b/g, terms: (v) => (v < 135 ? ['hiponatremia'] : v > 145 ? ['hipernatremia'] : []), range: [90, 200] },
   { pattern: /\b(?:potasio|k)\s*(?:de|en|a|:|=)?\s*(\d{1,2}(?:[.,]\d+)?)\b/g, terms: (v) => (v >= 5.5 ? ['hiperpotasemia'] : v < 3.5 ? ['hipopotasemia'] : []), range: [1, 12] },
+  // Presión arterial escrita como cifra («PA 165/100», «tensión de 80/50»).
+  { pattern: /\b(?:presion(?: arterial)?|tension(?: arterial)?|pa|ta)\s*(?:de|en|a|:|=|por)?\s*(?:de\s*)?(\d{2,3})\s*\/\s*\d{2,3}\b/g, terms: (v) => (v >= 140 ? ['hipertension'] : v < 90 ? ['hipotension', 'choque'] : []), range: [40, 300] },
   { pattern: /\bimc\s*(?:de|en|:|=)?\s*(\d{2}(?:[.,]\d+)?)\b/g, terms: (v) => (v >= 30 ? ['obesidad'] : v >= 25 ? ['sobrepeso'] : []), range: [12, 80] },
   { pattern: /\b(?:glucosa|glucemia|glicemia|azucar|glucometria)\s*(?:de|en|a|:|=)?\s*(\d{2,4})\b/g, terms: (v) => (v < 70 ? ['hipoglucemia'] : v >= 250 ? ['hiperglucemia'] : []), range: [10, 2000] }
 ];
@@ -143,21 +170,42 @@ function isGenericTerm(term) {
   return GENERIC_TERMS.has(term) || /^\d+$/.test(term);
 }
 
+// Cada carácter no ASCII se descompone (NFD) una sola vez por proceso: el
+// resultado es idéntico al de descomponer el texto entero (se comprobó en
+// todo el plano básico de Unicode) y construir el índice tarda ~20 ms menos.
+const foldedChars = new Map();
+
+function foldChar(char) {
+  let folded = foldedChars.get(char);
+  if (folded === undefined) {
+    folded = char.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    foldedChars.set(char, folded);
+  }
+  return folded;
+}
+
 function normalizeText(value) {
   return `${value || ''}`
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
+    .replace(/[^\x00-\x7f]/g, foldChar)
     .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/\s+/g, ' ')
     .trim();
 }
 
 // Raíz ligera y determinista: lo importante no es la morfología correcta sino
 // que pregunta y guía lleguen a la misma forma («cefaleas» y «cefalea»).
+// Un infinitivo o gerundio con el pronombre pegado pierde el pronombre
+// («quitarse» → «quitar», «tomandolo» → «tomando»): regla morfológica, no
+// una lista de sinónimos.
+const ENCLITIC = /^(.{2,}(?:ar|er|ir|ando|iendo))(?:se|le|lo|la|les|los|las|me|selo|sela|selos|selas)$/;
+
 function stem(token) {
   if (/^\d+$/.test(token)) return token;
   let word = token;
+  if (word.length > 6) {
+    const enclitic = word.match(ENCLITIC);
+    if (enclitic) word = enclitic[1];
+  }
   if (word.length > 7 && word.endsWith('mente')) word = word.slice(0, -5);
   if (word.length > 4 && word.endsWith('es') && !/[aeiou]es$/.test(word)) word = word.slice(0, -2);
   else if (word.length > 3 && word.endsWith('s')) word = word.slice(0, -1);
@@ -362,16 +410,35 @@ function diceSimilarity(a, b) {
  * palabras clave); «baja» si apenas pasó el umbral. El prompt lo muestra para
  * que el modelo no se apoye en un vecino cercano como si fuera la respuesta.
  */
-function relevanceLabel({ score, top, coverage, headHit }) {
+function relevanceLabel({ score, top, coverage, headHit, idfCoverage = 1 }) {
   const relative = top > 0 ? score / top : 0;
-  if (coverage >= 0.6 && headHit && relative >= 0.6) return 'alta';
+  if (coverage >= 0.6 && headHit && relative >= 0.6) return idfCoverage >= HIGH_IDF_COVERAGE ? 'alta' : 'media';
   if (coverage >= 0.34 && relative >= 0.45) return 'media';
   return 'baja';
 }
 
+// «pa» (para) y «ta» (está) del habla colombiana chocan con las siglas PA/TA
+// (presión/tensión arterial). Son sigla solo en MAYÚSCULA o junto a una cifra
+// («PA 150/90», «ta de 160»); si no, son la palabra coloquial.
+function guardColloquial(text) {
+  return String(text || '').replace(
+    /(^|[^A-Za-zÁÉÍÓÚÑáéíóúñ])(pa|ta|Pa|Ta)(?=[^A-Za-zÁÉÍÓÚÑáéíóúñ]|$)(?!\s*(?:de\s+|en\s+|:|=)?\s*\d)/g,
+    (all, pre, word) => `${pre}${word.toLowerCase() === 'pa' ? 'para' : 'esta'}`
+  );
+}
+
 class ClinicalGuidelineIndex {
-  constructor({ corpus, synonyms = {}, topK = DEFAULT_TOP_K, perGuideCap = DEFAULT_PER_GUIDE_CAP, charBudget = DEFAULT_CHAR_BUDGET } = {}) {
+  /**
+   * @param {object} options
+   * @param {object|Function} [options.head] cabeza léxica (GuidelineHead) o una
+   *   función que la carga la primera vez que hace falta (loadDefaultIndex).
+   */
+  constructor({ corpus, synonyms = {}, topK = DEFAULT_TOP_K, perGuideCap = DEFAULT_PER_GUIDE_CAP, charBudget = DEFAULT_CHAR_BUDGET, head = null } = {}) {
     this.synonyms = synonyms || {};
+    this.sourceHash = corpus?.source_hash || '';
+    this.headSource = head;
+    this.headLoaded = typeof head !== 'function';
+    this.headInstance = typeof head === 'function' ? null : head;
     this.topK = topK;
     this.perGuideCap = perGuideCap;
     this.charBudget = charBudget;
@@ -386,9 +453,25 @@ class ClinicalGuidelineIndex {
     const guidelines = Array.isArray(corpus?.guidelines) ? corpus.guidelines : [];
     this.guidelineCount = guidelines.length;
     let totalLength = 0;
+    // Términos de las consultas presentes en las de muchas guías: muletillas.
+    const queryTokens = new Map(guidelines.map((guideline) => [
+      guideline.id,
+      tokenize((guideline.consultas || []).join(' . '), this.synonyms)
+    ]));
+    const guidesPerQueryTerm = new Map();
+    for (const tokens of queryTokens.values()) {
+      for (const term of new Set(tokens)) guidesPerQueryTerm.set(term, (guidesPerQueryTerm.get(term) || 0) + 1);
+    }
+    const shareLimit = Math.max(2, Math.ceil(guidelines.length * QUERY_MAX_GUIDE_SHARE));
+    // La corrección de digitación solo propone palabras del texto de las guías,
+    // nunca de las consultas («correo» no debe volverse «corre»).
+    this.corpusTerms = new Set();
     for (const guideline of guidelines) {
       const headText = [guideline.titulo, ...(guideline.palabras_clave || [])].join(' ');
       const headTokens = tokenize(headText, this.synonyms);
+      const consultaTokens = queryTokens.get(guideline.id).filter((term) => (
+        !isGenericTerm(term) && !QUERY_FILLER.has(term) && (guidesPerQueryTerm.get(term) || 0) <= shareLimit
+      ));
       const specialties = new Set((guideline.especialidades || []).map((value) => normalizeText(value).replace(/ /g, '_')));
       const cie10 = new Set((guideline.cie10 || []).map(normalizeCie10));
       const populations = new Set(guideline.poblacion || []);
@@ -400,8 +483,11 @@ class ClinicalGuidelineIndex {
         const sectionTokens = tokenize(section.titulo, this.synonyms);
         const bodyTokens = tokenize(section.texto, this.synonyms);
         const head = [...headTokens, ...sectionTokens];
+        for (const term of head) this.corpusTerms.add(term);
+        for (const term of bodyTokens) this.corpusTerms.add(term);
         const tokens = [...bodyTokens];
         for (let i = 0; i < HEAD_WEIGHT; i += 1) tokens.push(...head);
+        tokens.push(...consultaTokens);
         const tf = termFrequencies(tokens);
         for (const term of tf.keys()) this.df.set(term, (this.df.get(term) || 0) + 1);
         totalLength += tokens.length;
@@ -428,7 +514,8 @@ class ClinicalGuidelineIndex {
       }
     }
     this.avgLength = this.chunks.length ? totalLength / this.chunks.length : 1;
-    this.buildFuzzyVocabulary();
+    // El vocabulario de digitación se arma en la primera pregunta que lo necesita.
+    this.gramIndex = null;
   }
 
   /** Índice de trigramas del vocabulario (solo palabras, no números) para corregir digitación. */
@@ -436,6 +523,7 @@ class ClinicalGuidelineIndex {
     this.gramIndex = new Map();
     this.termGrams = new Map();
     for (const term of this.df.keys()) {
+      if (!this.corpusTerms.has(term)) continue;
       if (term.length < FUZZY_MIN_LENGTH - 1 || /\d/.test(term)) continue;
       const grams = trigrams(term);
       this.termGrams.set(term, grams);
@@ -449,6 +537,7 @@ class ClinicalGuidelineIndex {
   /** Término del corpus más parecido a uno que no existe en él, o null. */
   closestTerm(token) {
     if (token.length < FUZZY_MIN_LENGTH || /\d/.test(token) || this.df.has(token)) return null;
+    if (!this.gramIndex) this.buildFuzzyVocabulary();
     const grams = trigrams(token);
     const candidates = new Set();
     for (const gram of grams) for (const term of this.gramIndex.get(gram) || []) candidates.add(term);
@@ -460,6 +549,47 @@ class ClinicalGuidelineIndex {
       if (similarity > bestScore || (similarity === bestScore && best && (this.df.get(term) || 0) > (this.df.get(best) || 0))) {
         best = term;
         bestScore = similarity;
+      }
+    }
+    return best;
+  }
+
+  /** La cabeza léxica, cargada al primer uso. null si no hay o no corresponde a este corpus. */
+  getHead() {
+    if (!this.headLoaded) {
+      this.headLoaded = true;
+      try {
+        this.headInstance = this.headSource() || null;
+      } catch (error) {
+        console.warn(`[GuidelineIndex] cabeza léxica no disponible: ${error.message}`);
+        this.headInstance = null;
+      }
+      if (this.headInstance && this.sourceHash && this.headInstance.sourceHash !== this.sourceHash) {
+        // Entrenada con otro corpus: sus guías y umbrales no son los de este índice.
+        console.warn('[GuidelineIndex] la cabeza léxica es de otro corpus (npm run build:head); se usa solo el buscador');
+        this.headInstance = null;
+      }
+    }
+    return this.headInstance;
+  }
+
+  /**
+   * Fragmento de una guía para el cupo de la cabeza: el que comparte más
+   * palabras con la pregunta (empate: el primero).
+   */
+  bestChunkFor(guidelineId, text) {
+    const words = (value) => normalizeText(value).split(' ').filter((word) => word.length > 2);
+    const wanted = new Set(words(text));
+    let best = null;
+    let bestShared = -1;
+    for (const chunk of this.chunks) {
+      if (chunk.guideline_id !== guidelineId) continue;
+      const own = new Set(words(`${chunk.section} ${chunk.text}`));
+      let shared = 0;
+      for (const word of wanted) if (own.has(word)) shared += 1;
+      if (shared > bestShared) {
+        best = chunk;
+        bestShared = shared;
       }
     }
     return best;
@@ -487,6 +617,8 @@ class ClinicalGuidelineIndex {
    */
   search({ message = '', context = '', followUp = '', specialty = '', cie10 = [], populations = [], k = this.topK } = {}) {
     if (!this.chunks.length) return [];
+    message = guardColloquial(message);
+    followUp = guardColloquial(followUp);
     const labTerms = labSignals(message);
     const messageText = labTerms.length ? `${message} ${labTerms.join(' ')}` : message;
     const rawMessageTokens = new Set(tokenize(messageText, this.synonyms));
@@ -531,6 +663,10 @@ class ClinicalGuidelineIndex {
       }
     }
     if (!weights.size) return [];
+    // Peso IDF de los términos propios de la pregunta actual (sin el
+    // seguimiento): lo que un extracto «alta» tiene que cubrir.
+    let specificIdfTotal = 0;
+    for (const term of messageTokens) if (!isGenericTerm(term)) specificIdfTotal += this.idf(term);
     const wantedPopulations = new Set(Array.isArray(populations) ? populations : []);
 
     const wantedCodes = new Set([
@@ -546,11 +682,15 @@ class ClinicalGuidelineIndex {
       let matchedSpecific = 0;
       let matchedTotal = 0;
       let headHit = false;
+      let matchedIdf = 0;
       for (const [term, weight] of weights) {
         const tf = chunk.tf.get(term) || 0;
         if (!tf) continue;
         matchedTotal += 1;
-        if (specificMessage.has(term)) matchedSpecific += 1;
+        if (specificMessage.has(term)) {
+          matchedSpecific += 1;
+          matchedIdf += this.idf(term);
+        }
         // Un término corregido por digitación no basta para decir que la guía
         // trata del tema («factura» no puede convertirse en «fractura» y traer
         // una guía por sí solo).
@@ -590,7 +730,8 @@ class ClinicalGuidelineIndex {
         score *= matches ? SECTION_POPULATION_BOOST : SECTION_POPULATION_MISMATCH_FACTOR;
       }
       const coverage = specificMessage.size ? matchedSpecific / specificMessage.size : (headHit ? 0.5 : 0);
-      scored.push({ chunk, score, coverage, headHit });
+      const idfCoverage = specificIdfTotal > 0 ? matchedIdf / specificIdfTotal : coverage;
+      scored.push({ chunk, score, coverage, headHit, idfCoverage });
     }
     if (!scored.length) return [];
 
@@ -600,7 +741,7 @@ class ClinicalGuidelineIndex {
     const results = [];
     let budget = this.charBudget;
     const top = scored[0].score;
-    for (const { chunk, score, coverage, headHit } of scored) {
+    for (const { chunk, score, coverage, headHit, idfCoverage } of scored) {
       if (score < threshold || results.length >= k) break;
       const used = perGuide.get(chunk.guideline_id) || 0;
       if (used >= this.perGuideCap) continue;
@@ -618,7 +759,7 @@ class ClinicalGuidelineIndex {
         section: chunk.section,
         text: chunk.text,
         score: Number(score.toFixed(3)),
-        relevance: relevanceLabel({ score, top, coverage, headHit })
+        relevance: relevanceLabel({ score, top, coverage, headHit, idfCoverage })
       });
     }
     return results;
@@ -631,11 +772,26 @@ class ClinicalGuidelineIndex {
  * relevancia baja más allá de los dos primeros eran vecinos lejanos que costaban
  * tokens sin aportar («revisa la redacción de la nota» traía 8 000 caracteres de
  * guías). Las referencias se renumeran G1..Gn.
+ *
+ * Selección diversa: primero el mejor fragmento de cada una de las tres
+ * primeras guías y después el resto en su orden. Antes, tres secciones de la
+ * G1 podían llenar el presupuesto y dejar fuera la guía correcta en segundo
+ * lugar.
  */
-function selectForPrompt(results, { charBudget = PROMPT_CHAR_BUDGET, alwaysKeep = PROMPT_ALWAYS_KEEP } = {}) {
+function selectForPrompt(results, { charBudget = PROMPT_CHAR_BUDGET, alwaysKeep = PROMPT_ALWAYS_KEEP, diverseGuides = PROMPT_DIVERSE_GUIDES } = {}) {
+  const list = Array.isArray(results) ? results : [];
+  const firstOfGuide = [];
+  const seen = new Set();
+  for (const result of list) {
+    if (seen.size >= diverseGuides) break;
+    if (seen.has(result.guideline_id)) continue;
+    seen.add(result.guideline_id);
+    firstOfGuide.push(result);
+  }
+  const ordered = [...firstOfGuide, ...list.filter((result) => !firstOfGuide.includes(result))];
   const selected = [];
   let used = 0;
-  for (const result of Array.isArray(results) ? results : []) {
+  for (const result of ordered) {
     const size = `${result.text || ''}`.length;
     const lowRelevance = result.relevance === 'baja';
     if (selected.length >= alwaysKeep && lowRelevance) continue;
@@ -646,7 +802,114 @@ function selectForPrompt(results, { charBudget = PROMPT_CHAR_BUDGET, alwaysKeep 
   return selected.map((result, index) => ({ ...result, ref: `G${index + 1}` }));
 }
 
+/**
+ * Parámetros de búsqueda para una pregunta del chat: los mismos en el servicio
+ * y en las evaluaciones, para que lo que se mide sea lo que corre.
+ */
+function buildSearchQuery({ message = '', noteJson = null, codes = [], history = [], specialty = '', patient = null } = {}) {
+  const codeList = Array.isArray(codes) ? codes : [];
+  const context = buildRetrievalContext({ noteJson, codes: codeList });
+  return {
+    message,
+    context,
+    followUp: lastUserQuestion(history),
+    specialty: specialty || '',
+    cie10: codeList.filter((code) => code?.sistema === 'CIE-10').map((code) => code.codigo),
+    populations: inferPopulations({ message, patient, context, codes: codeList })
+  };
+}
+
+/** off | shadow | on (por defecto on). */
+function headMode(env = process.env) {
+  const value = `${env.MIRACLE_ASSISTANT_RAG_HEAD || ''}`.trim().toLowerCase();
+  return value === 'off' || value === 'shadow' ? value : 'on';
+}
+
+/**
+ * El buscador duda cuando su G1 no es «alta» o cuando otra guía queda a menos
+ * del 20 % de su puntuación. Solo entonces opina la cabeza léxica.
+ */
+function inDoubt(results) {
+  if (!results.length) return false;
+  const first = results[0];
+  const rival = results.find((result) => result.guideline_id !== first.guideline_id);
+  return first.relevance !== 'alta' || Boolean(rival && rival.score / first.score >= HEAD_DOUBT_RATIO);
+}
+
+function uniqueGuides(results) {
+  return [...new Set(results.map((result) => result.guideline_id))];
+}
+
+/**
+ * Qué haría la cabeza léxica con esta búsqueda: 'veto' (el prompt va vacío),
+ * 'cupo' (entra el mejor fragmento de su guía) o 'lexico' (nada).
+ */
+function headDecision(index, results, query, { head, vetoK, cupoP }) {
+  if (!inDoubt(results)) return { decision: 'lexico', results };
+  const text = query.followUp ? `${query.followUp} ${query.message}` : `${query.message || ''}`;
+  const ranking = head.rank(text, Math.max(vetoK || 1, 1));
+  const promptGuides = uniqueGuides(selectForPrompt(results));
+  if (vetoK && results[0].relevance !== 'alta') {
+    const plausible = new Set(ranking.slice(0, vetoK).map(([id]) => id));
+    if (!promptGuides.some((id) => plausible.has(id))) return { decision: 'veto', results: [] };
+  }
+  const [bestId, probability] = ranking[0] || [];
+  if (cupoP !== null && cupoP !== undefined && bestId && probability >= cupoP && !promptGuides.includes(bestId)) {
+    const chunk = index.bestChunkFor(bestId, text);
+    if (chunk) {
+      const fragment = {
+        ref: 'G0',
+        guideline_id: chunk.guideline_id,
+        title: chunk.title,
+        organism: chunk.organism,
+        year: chunk.year,
+        source: chunk.source,
+        reviewed_by: chunk.reviewed_by,
+        section: chunk.section,
+        text: chunk.text,
+        score: 0,
+        relevance: 'baja'
+      };
+      const rest = results.filter((result) => !(result.guideline_id === fragment.guideline_id && result.section === fragment.section));
+      return { decision: 'cupo', results: [rest[0], fragment, ...rest.slice(1)] };
+    }
+  }
+  return { decision: 'lexico', results };
+}
+
+/**
+ * Lo que llega al prompt para una pregunta: búsqueda léxica, segunda opinión
+ * de la cabeza léxica cuando el buscador duda (veto o cupo, ver
+ * GuidelineHead.js) y selección dentro del presupuesto. Devuelve también cómo
+ * se decidió (`mode`), para auditar sin guardar texto; en modo sombra
+ * (MIRACLE_ASSISTANT_RAG_HEAD=shadow) el prompt es el del buscador y `shadow`
+ * dice qué habría hecho la cabeza.
+ */
+function retrieveForPrompt(index, query, options = {}) {
+  const results = index.search(query);
+  const lexical = selectForPrompt(results);
+  const mode = options.mode || headMode();
+  if (mode === 'off' || !results.length) return { guidelines: lexical, mode: 'lexico' };
+  const head = options.head !== undefined ? options.head : (typeof index.getHead === 'function' ? index.getHead() : null);
+  if (!head) return { guidelines: lexical, mode: 'lexico' };
+  const { decision, results: decided } = headDecision(index, results, query, {
+    head,
+    vetoK: options.vetoK !== undefined ? options.vetoK : head.vetoK,
+    cupoP: options.cupoP !== undefined ? options.cupoP : head.cupoP
+  });
+  if (mode === 'shadow') return { guidelines: lexical, mode: 'lexico', shadow: decision };
+  return { guidelines: decision === 'lexico' ? lexical : selectForPrompt(decided), mode: decision };
+}
+
 let defaultIndex = null;
+
+/** Cabeza léxica commiteada (scripts/build-guideline-head.js); ruta estática para Vercel. */
+function loadDefaultHead() {
+  // eslint-disable-next-line global-require
+  const { GuidelineHead } = require('./GuidelineHead');
+  // eslint-disable-next-line global-require
+  return new GuidelineHead(require('../../../knowledge/guias-clinicas/guideline-head.json'));
+}
 
 /**
  * Índice sobre el corpus commiteado. Rutas estáticas a propósito: son las que
@@ -660,7 +923,7 @@ function loadDefaultIndex(options = {}) {
   // eslint-disable-next-line global-require
   const synonyms = require('../../../knowledge/guias-clinicas/sinonimos.json');
   const topK = Number(process.env.MIRACLE_ASSISTANT_RAG_TOP_K) || DEFAULT_TOP_K;
-  defaultIndex = new ClinicalGuidelineIndex({ corpus, synonyms, topK, ...options });
+  defaultIndex = new ClinicalGuidelineIndex({ corpus, synonyms, topK, head: loadDefaultHead, ...options });
   return defaultIndex;
 }
 
@@ -682,7 +945,14 @@ module.exports = {
   inferPopulations,
   populationsInText,
   labSignals,
+  guardColloquial,
   selectForPrompt,
+  buildSearchQuery,
+  retrieveForPrompt,
+  headDecision,
+  headMode,
+  inDoubt,
+  loadDefaultHead,
   PROMPT_CHAR_BUDGET,
   trigrams,
   diceSimilarity,

@@ -304,6 +304,34 @@ obstetricia (control prenatal Res. 3280, sangrado del primer trimestre, diabetes
 - **Relevancia.** Cada extracto lleva `relevance` (alta, media, baja) según cuánto de la pregunta cubre y su
   distancia al mejor; el prompt la muestra para que el modelo no tome un vecino cercano como respuesta.
 
+### Retrieval v3: léxico reforzado (2026-10-16, spec 007)
+
+Ganó el torneo de RAG del 2026-10-14 frente a embeddings locales, embeddings gestionados, reordenadores y
+contexto largo. El detalle, los rivales y las métricas: `docs/asistente/RAG-LEXICO-REFORZADO.md`.
+
+- **Consultas (doc2query).** `knowledge/guias-clinicas/consultas.json`: al menos 6 preguntas por guía como las
+  diría un médico colombiano. Se indexan como un campo más (suman tf, no cuentan como título ni dan «alta»), con un
+  filtro de muletillas y de términos presentes en las consultas de más del 10 % de las guías. Nunca llegan al prompt.
+- **Reglas léxicas.** «pa»/«ta» son «para»/«está» salvo en mayúscula o junto a una cifra; la presión en cifras
+  («PA 165/100», «tensión 80/50») agrega hipertensión o hipotensión/choque; un infinitivo o gerundio pierde el
+  pronombre pegado («quitarse» → «quitar»); la digitación solo corrige hacia palabras del texto de las guías.
+- **«alta» más estricta.** Además de lo anterior, el extracto tiene que cubrir el 70 % del peso IDF de los términos
+  propios de la pregunta.
+- **Selección diversa.** `selectForPrompt` pone primero el mejor fragmento de cada una de las tres primeras guías;
+  tres secciones de la G1 ya no dejan fuera la guía correcta en segundo lugar.
+- **Cabeza léxica** (`GuidelineHead.js`, `knowledge/guias-clinicas/guideline-head.json`, `npm run build:head`).
+  Regresión logística de 90 clases sobre TF-IDF de palabras y de n-gramas de caracteres, entrenada en Node solo con
+  texto público de las guías (4,2 MB int8, carga ~50 ms al primer uso, ~0,3 ms por pregunta). Opina solo cuando el
+  buscador duda (G1 no «alta» o rival a ≥ 80 %): **veto** si ninguna guía del prompt está entre sus `veto_k` más
+  probables (el prompt va vacío y el modelo se abstiene), **cupo** si está segura (p ≥ `cupo_p`) de una guía que el
+  buscador dejó fuera. `veto_k` y `cupo_p` se calibran en el build solo con la evaluación del repo.
+- **Bandera.** `MIRACLE_ASSISTANT_RAG_HEAD=on|shadow|off` (por defecto `on`). En `shadow` el prompt es el del
+  buscador y el ledger guarda `retrievalShadow` con lo que habría hecho la cabeza.
+- **Auditoría.** `used_context.retrieval_mode` (lexico, veto, cupo, apagado, error) y `used_context.guideline_ids`;
+  en el ledger, `retrievalMode`. Solo ids, nunca texto.
+- **Evaluación.** `npm run eval:prompt` mide lo que llega al prompt (la misma `retrieveForPrompt` del chat) sobre el
+  repo y sobre los conjuntos ciegos de `scripts/fixtures/rag-ciego/`, contra los que no se ajusta nada.
+
 ### Fichas técnicas oficiales (`src/application/knowledge/DrugLabelService.js`)
 
 - Para preguntas de dosis, contraindicaciones (4.3), interacciones (4.5), embarazo y lactancia (4.6) o reacciones

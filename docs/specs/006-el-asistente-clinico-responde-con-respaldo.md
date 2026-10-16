@@ -27,7 +27,7 @@ antes y después, en [`docs/asistente/ESTADO-LOOP.md`](../asistente/ESTADO-LOOP.
 | 602 | Las preguntas canónicas recuperan su guía entre las tres primeras, las que no son clínicas no recuperan ninguna, y al prompt llegan como mucho unos 5 000 caracteres de extractos numerados G1 a Gn | `verify-guideline-index.js` |
 | 603 | Una cifra de la respuesta que no está en las fuentes citadas ni en la consulta se marca para el médico, y cada extracto declara su relevancia | `verify-assistant-grounding.js` |
 | 604 | Una pregunta de dosis trae la ficha técnica del medicamento del diccionario cerrado, y a CIMA solo sale el principio activo | `verify-drug-labels.js` |
-| 605 | Sobre la evaluación de retrieval, con al menos 300 preguntas, 60 fuera de tema y 40 fuera del corpus: recall@3 de 97 % o más, recall@1 de 90 % o más, MRR de 0,93 o más, ninguna guía en las preguntas fuera de tema, 90 % o más de las preguntas fuera del corpus sin extracto de relevancia alta, búsqueda p95 de 10 ms o menos e índice construido en 300 ms o menos | `verify-asistente-metricas.js` |
+| 605 | Sobre la evaluación de retrieval, con al menos 300 preguntas, 60 fuera de tema y 40 fuera del corpus: recall@3 de 97 % o más, recall@1 de 96 % o más, MRR de 0,98 o más, ninguna guía en las preguntas fuera de tema, 90 % o más de las preguntas fuera del corpus sin extracto de relevancia alta, búsqueda p95 de 10 ms o menos e índice construido en 300 ms o menos | `verify-asistente-metricas.js` |
 | 606 | Sobre al menos 150 respuestas de modelo grabadas: 100 % de las referencias inventadas eliminadas, 95 % o más de las cifras plantadas detectadas, 5 % o menos de falsos positivos del verificador, 100 % de los casos sin respaldo en abstención o con cifras marcadas, 100 % de las salidas rotas sin romper el chat y 100 % de las propuestas de nota sin persistir y respetando la nota firmada | `verify-asistente-metricas.js` |
 | 607 | La mediana de tokens de entrada del chat en una consulta típica es de 6 000 o menos, con una sola llamada al modelo por pregunta | `verify-asistente-metricas.js` |
 
@@ -67,6 +67,9 @@ historia está en `docs/asistente/ESTADO-LOOP.md`).
 - 2026-10-09: al integrar `main`, el límite de rol nuevo del chat (`roleBoundary`) suma también
   `<guias_clinicas>` y `<fichas_tecnicas>` como dato: una ficha que llega de fuera no puede dar
   órdenes. El texto nuevo subía la mediana de tokens a 5 915; se compactaron dos frases y quedó en 5 896.
+
+- 2026-10-16: la spec 007 (léxico reforzado, ganador del torneo de RAG) sube la 605: recall@1 de 90 % a
+  96 % y MRR de 0,93 a 0,98, con el repo en 96,6 % y 0,983.
 
 ## Cierre
 

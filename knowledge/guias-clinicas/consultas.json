@@ -1,0 +1,723 @@
+{
+  "_comentario": "Consultas (doc2query) por guía: cómo preguntaría un médico colombiano por el tema de la guía, sin nombrarlo siempre. Solo ayudan a ENCONTRAR la guía; nunca llegan al prompt ni se citan. Mínimo 6 por guía; cada guía nueva trae las suyas en el mismo PR. No copies aquí preguntas de scripts/fixtures (la evaluación quedaría contaminada). Ver docs/asistente/RAG-LEXICO-REFORZADO.md.",
+  "accidente-ofidico": [
+    "lo mordió una culebra en el monte y se le hinchó el pie",
+    "picadura de serpiente, le sangran las encías y la sangre no coagula",
+    "le picó una víbora mapaná en la finca",
+    "cuántas ampollas de suero antiofídico le pongo",
+    "mordedura de culebra coral, qué hago",
+    "campesino con dos huellas de colmillos en la pierna y mucho dolor"
+  ],
+  "acv-isquemico-agudo": [
+    "se le torció la cara y no mueve el brazo derecho",
+    "de repente habla enredado y se le cae la boca",
+    "le dio un derrame, hasta cuándo se puede trombolizar",
+    "perdió la fuerza de medio cuerpo hace dos horas",
+    "le dio un mareíto con la mano dormida y se le pasó a los 10 minutos",
+    "trombólisis con alteplasa, ventana de tiempo"
+  ],
+  "anafilaxia": [
+    "se le cerró la garganta y se brotó todo después de una inyección",
+    "se hinchó de la cara y le pita el pecho después de comer mariscos",
+    "reacción alérgica fuerte con la presión bajita",
+    "cuánta adrenalina intramuscular le pongo a un niño",
+    "le picaron las abejas y se está ahogando",
+    "ronchas en todo el cuerpo y se desmayó tras tomar un antibiótico"
+  ],
+  "anemia-ferropenica": [
+    "está pálida, cansada y con la hemoglobina baja",
+    "falta de hierro en la niña, qué sulfato ferroso le doy",
+    "anemia por la regla abundante",
+    "la ferritina salió bajita",
+    "come tierra y está descolorido",
+    "cuándo le pongo hierro por la vena"
+  ],
+  "ansiedad-y-riesgo-suicida": [
+    "tiene ideas de quitarse la vida",
+    "vive nervioso, con el corazón acelerado, le dan ataques de pánico",
+    "se cortó las muñecas y dice que no vale la pena vivir",
+    "se preocupa por todo y no se puede calmar",
+    "se tomó un frasco de pastillas para morirse",
+    "cómo le pregunto si tiene pensamientos de muerte"
+  ],
+  "antibioticos-dosis-frecuentes": [
+    "cuánta amoxicilina le doy a un niño de 15 kilos",
+    "dosis de azitromicina en pediatría",
+    "qué antibiótico le mando por la boca y a qué dosis",
+    "cefalexina cada cuánto",
+    "dosis de amoxicilina clavulánico en jarabe",
+    "alérgico a la penicilina, qué antibiótico le doy"
+  ],
+  "anticoncepcion": [
+    "quiere planificar, qué método le sirve",
+    "la pastilla del día después hasta cuántas horas",
+    "se le olvidaron dos pastas de planificar, qué hace",
+    "quiere ponerse el implante subdérmico o la T de cobre",
+    "puede planificar con pastillas si tiene migraña con aura",
+    "inyección mensual para no quedar embarazada"
+  ],
+  "artrosis": [
+    "le duelen las rodillas al caminar y se le traban en la mañana",
+    "desgaste de las rodillas en una señora mayor",
+    "le crujen las rodillas y tiene nudos en los dedos",
+    "qué le doy para el dolor de las coyunturas",
+    "infiltración de rodilla con corticoide",
+    "dolor de cadera por desgaste del cartílago"
+  ],
+  "asma-adultos-y-ninos": [
+    "el niño se ahoga y le silba el pecho cuando corre",
+    "tos de noche con pitos en el pecho",
+    "crisis de ahogo, cuántos puff de salbutamol",
+    "inhalador de beclometasona para mantenimiento",
+    "se agita con el frío y tiene alergias",
+    "le pita el pecho cada que se resfría"
+  ],
+  "bronquiolitis": [
+    "bebé de 4 meses con mocos, tos y respira rapidito",
+    "lactante que se hunde entre las costillas y le silba el pecho",
+    "le sirven las nebulizaciones al bebé con virus respiratorio",
+    "bebito que no quiere comer porque se cansa al respirar",
+    "primer episodio de sibilancias en menor de 2 años",
+    "saturación baja en un bebé con gripa"
+  ],
+  "cefalea-migrana-tensional": [
+    "dolor de cabeza que late de un lado con vómito y le molesta la luz",
+    "jaqueca que no se le quita con acetaminofén",
+    "el peor dolor de cabeza de su vida, de golpe",
+    "dolor de cabeza como una banda apretada por estrés",
+    "ve lucecitas antes del dolor de cabeza",
+    "qué le doy para prevenir las migrañas"
+  ],
+  "cie10-frecuente-atencion-primaria": [
+    "qué código le pongo a la gripa",
+    "código del diagnóstico para la historia clínica",
+    "con qué CIE-10 codifico la hipertensión",
+    "diagnóstico principal y relacionado en los RIPS",
+    "código para el control de niño sano",
+    "cómo codifico una consulta de seguimiento"
+  ],
+  "cirrosis-y-complicaciones": [
+    "toma mucho trago y tiene la barriga llena de agua y los ojos amarillos",
+    "hígado dañado por el alcohol",
+    "hígado graso que ya se volvió cirrosis, cómo lo clasifico",
+    "le sacamos líquido de la barriga, cuánta albúmina le pongo",
+    "está confuso y con temblor de manos, tiene el hígado malo",
+    "fiebre y dolor de barriga en un paciente con ascitis"
+  ],
+  "conjuntivitis-y-ojo-rojo": [
+    "tiene el ojo rojo con lagañas amarillas",
+    "le pica el ojo y le lagrimea",
+    "recién nacido con pus en los ojitos",
+    "ojo rojo con dolor y ve borroso",
+    "qué gotas le mando para el ojo pegado en la mañana",
+    "puede ir al colegio con el ojo rojo"
+  ],
+  "consumo-de-alcohol": [
+    "se emborracha cada fin de semana y no para de tomar",
+    "dejó de beber y está temblando y sudando",
+    "lleva días sin tomar y ve cosas que no hay",
+    "cuántas cervezas a la semana es mucho",
+    "toma aguardiente, guaro, todos los días, cómo lo tamizo",
+    "tiamina antes de la dextrosa en el paciente borracho"
+  ],
+  "control-prenatal": [
+    "qué laboratorios pido en el primer control del embarazo",
+    "cada cuánto controlo a la gestante de bajo riesgo",
+    "qué vitaminas le doy en el embarazo, ácido fólico y calcio",
+    "embarazada de 20 semanas, qué paraclínicos tocan",
+    "signos de peligro que le explico a la embarazada",
+    "vacunas durante el embarazo"
+  ],
+  "convulsiones-estatus-y-febril": [
+    "le dio un ataque y se sacudía todo el cuerpo",
+    "echa espuma por la boca, se pone morado y no responde",
+    "el niño con fiebre se privó y se sacudió",
+    "lleva 10 minutos convulsionando, qué le pongo",
+    "midazolam intranasal o diazepam rectal, dosis",
+    "le dio un ataque, se mordió la lengua y se orinó"
+  ],
+  "crecimiento-y-desarrollo-infantil": [
+    "el niño está bajito para la edad",
+    "a qué edad debe caminar y hablar",
+    "control de niño sano, cada cuánto",
+    "curvas de peso y talla de la OMS",
+    "no gatea a los 10 meses, me preocupa",
+    "escala de desarrollo en la consulta de primera infancia"
+  ],
+  "crisis-hiperglucemicas-e-hipoglucemia": [
+    "diabético con la glucometría altísima, vomitando y respira profundo",
+    "le bajó el azúcar y está sudando frío",
+    "la glucometría marca HI y le huele el aliento a frutas",
+    "cetoacidosis, cuánta insulina en infusión",
+    "se desmayó con el azúcar en 40",
+    "abuelo diabético deshidratado y confuso con glucosa en 800"
+  ],
+  "delirium-y-demencia": [
+    "el abuelo amaneció confundido y agitado de noche",
+    "la abuela se pierde y olvida todo",
+    "adulto mayor que desvaría desde que lo hospitalizaron",
+    "de un día para otro ve cosas y no reconoce a la familia",
+    "qué le doy al viejito agitado de noche",
+    "se le olvidan las cosas cada vez más"
+  ],
+  "dengue": [
+    "fiebre alta con dolor detrás de los ojos y en los huesos",
+    "le salieron petequias y le bajaron las plaquetas",
+    "fiebre quebrantahuesos",
+    "dolor de barriga y vómito después de que se le quitó la fiebre",
+    "líquidos para el paciente con fiebre y plaquetas bajas",
+    "picadura de zancudo, fiebre de tres días y brote"
+  ],
+  "depresion-adultos": [
+    "está triste todo el tiempo y nada le provoca",
+    "llora todo el día y no quiere salir de la cama",
+    "perdió las ganas de todo hace un mes",
+    "qué antidepresivo le doy, fluoxetina o sertralina",
+    "está decaído, no duerme y bajó de peso",
+    "PHQ-9 alto, qué hago"
+  ],
+  "dermatitis-atopica": [
+    "el niño tiene la piel reseca y se rasca en los pliegues",
+    "eccema en los cachetes del bebé",
+    "piel áspera con picazón en codos y rodillas",
+    "qué crema con corticoide le pongo",
+    "brotes de rasquiña en la piel desde chiquito",
+    "hidratación de la piel en niño alérgico"
+  ],
+  "desnutricion-aguda-infantil": [
+    "el niño está muy flaquito y se le ven las costillas",
+    "perímetro braquial en rojo",
+    "niño con los pies hinchados y el pelo descolorido",
+    "prueba de apetito con fórmula terapéutica",
+    "bajo peso para la talla en menor de 5 años",
+    "no ha ganado peso y está desganado"
+  ],
+  "diabetes-gestacional": [
+    "embarazada con el azúcar alto en la curva",
+    "prueba de tolerancia a la glucosa a las 24 semanas",
+    "glucosa en ayunas de 95 en el embarazo",
+    "puede tomar metformina la embarazada",
+    "embarazada con mucha sed y bebé grande en la eco",
+    "control de glucosa después del parto si tuvo diabetes en el embarazo"
+  ],
+  "diabetes-mellitus-tipo-2": [
+    "tiene el azúcar alto en la sangre y toma metformina",
+    "hemoglobina glicosilada en 9",
+    "orina mucho, tiene sed y bajó de peso",
+    "señor con azúcar en la sangre que no se controla con pastillas",
+    "cuándo le agrego insulina",
+    "pie del diabético, cada cuánto lo reviso"
+  ],
+  "diarrea-aguda-y-deshidratacion-pediatrica": [
+    "el niño tiene churrias y vómito",
+    "bebé con popó líquido y los ojos hundidos",
+    "cuánto suero oral le doy al niño con diarrea",
+    "está con soltura desde ayer y no orina",
+    "plan B de hidratación",
+    "deposiciones aguadas muchas veces al día en un niño de 2 años"
+  ],
+  "dislipidemia-riesgo-cardiovascular": [
+    "tiene el colesterol alto, le doy atorvastatina",
+    "triglicéridos en 400",
+    "LDL de 190 en un joven",
+    "grasa en la sangre, qué estatina le doy",
+    "calcular el riesgo cardiovascular",
+    "le duelen los músculos con la estatina"
+  ],
+  "dispepsia-erge-helicobacter": [
+    "le arde la boca del estómago después de comer",
+    "agrieras y le sube ácido a la garganta",
+    "gastritis que no mejora con omeprazol",
+    "tratamiento para la bacteria del estómago",
+    "llenura y ardor en el estómago",
+    "cuándo le pido endoscopia por gastritis"
+  ],
+  "dolor-abdominal-agudo-apendicitis": [
+    "dolor de barriga que empezó en el ombligo y se fue para abajo a la derecha",
+    "dolor en la fosa ilíaca derecha con fiebre",
+    "cólico de riñón que le baja a la ingle",
+    "piedra en el riñón, qué le doy para el dolor",
+    "dolor de barriga muy fuerte con la barriga dura",
+    "escala de Alvarado"
+  ],
+  "dolor-cronico-y-opioides": [
+    "lleva años con un dolor que no se le quita",
+    "dolor quemante en los pies, como corrientazos",
+    "cuánta morfina o tramadol le puedo formular",
+    "dolor neuropático, pregabalina",
+    "paciente que pide cada vez más analgésico fuerte",
+    "dolor crónico de espalda que no mejora"
+  ],
+  "dolor-toracico-sindrome-coronario-agudo": [
+    "le duele el pecho como un peso y le baja al brazo izquierdo",
+    "dolor en el pecho con sudor frío y náuseas",
+    "señor con opresión en el pecho al subir escaleras",
+    "infarto, cuándo pido troponina",
+    "le apretó el pecho y se le fue al cuello y a la mandíbula",
+    "dolor precordial de 30 minutos"
+  ],
+  "enfermedad-de-chagas": [
+    "lo picó el pito en la casa de bahareque",
+    "chinche que pica de noche y tiene el corazón grande",
+    "embarazada de zona rural con serología para Chagas",
+    "corazón grande y vive en el campo",
+    "benznidazol, dosis",
+    "tamizaje del recién nacido de mamá con Chagas"
+  ],
+  "enfermedad-renal-cronica": [
+    "creatinina alta y le sale proteína en la orina",
+    "los riñones le funcionan poco, tasa de filtración de 40",
+    "diabético con los riñones dañados",
+    "cuándo lo mando al nefrólogo",
+    "microalbuminuria positiva",
+    "dosis de medicamentos con el riñón malo"
+  ],
+  "epoc": [
+    "fumador viejo que se ahoga al caminar",
+    "tos con flema todas las mañanas y se cansa",
+    "enfisema, qué inhalador le dejo",
+    "se le empeoró la ahogadera y la flema está verde",
+    "espirometría con obstrucción que no revierte",
+    "oxígeno en casa para el fumador"
+  ],
+  "escabiosis-y-pediculosis": [
+    "le pica todo el cuerpo de noche y a la familia también",
+    "piojos en el colegio, qué champú",
+    "rasquiña entre los dedos con granitos",
+    "sarna en el niño, cómo uso la permetrina",
+    "liendres en el pelo",
+    "toda la casa con picazón"
+  ],
+  "faringoamigdalitis-aguda": [
+    "le duele la garganta y tiene las amígdalas con pus",
+    "fiebre y placas blancas en la garganta",
+    "dolor de garganta, cuándo doy penicilina",
+    "amigdalitis en el niño de 8 años",
+    "garganta roja sin tos y ganglios en el cuello",
+    "criterios de Centor"
+  ],
+  "fibrilacion-auricular-anticoagulacion": [
+    "tiene el pulso irregular y se fatiga",
+    "le palpita el corazón rápido y desordenado",
+    "arritmia, debe tomar warfarina o apixabán",
+    "CHA2DS2-VASc",
+    "palpitaciones y el electro sin ondas P",
+    "anticoagular al anciano con arritmia"
+  ],
+  "fiebre-sin-foco-lactante": [
+    "bebé de un mes con fiebre y no se le encuentra nada",
+    "lactante con calentura sin tos ni diarrea",
+    "recién nacido calenturiento, lo hospitalizo",
+    "fiebre de 39 en un bebé de 2 meses",
+    "qué exámenes le pido al lactante con fiebre",
+    "acetaminofén en bebé con fiebre"
+  ],
+  "gota": [
+    "se le hinchó el dedo gordo del pie y está rojo y caliente",
+    "ácido úrico alto con dolor en el pie",
+    "ataque de gota, colchicina",
+    "no aguanta ni la sábana sobre el pie por el dolor",
+    "cuándo le doy alopurinol",
+    "bolitas en las orejas y en las articulaciones"
+  ],
+  "hemorragia-digestiva": [
+    "vomitó sangre",
+    "heces negras como alquitrán",
+    "vómito como cuncho de café",
+    "sangrado por el recto y está pálido",
+    "cirrótico vomitando sangre por várices",
+    "cuándo transfundo en sangrado digestivo"
+  ],
+  "hemorragia-posparto": [
+    "después de parir sangró mucho",
+    "la mujer recién parida está empapando las toallas",
+    "útero blandito después del parto y no deja de sangrar",
+    "código rojo obstétrico",
+    "oxitocina después del parto, cuánto",
+    "se le fue mucha sangre en el parto y está pálida y fría"
+  ],
+  "hepatitis-b-y-c": [
+    "prueba de hepatitis B positiva en la embarazada",
+    "antígeno de superficie positivo, qué hago",
+    "tamizaje de hepatitis C",
+    "el bebé de mamá con hepatitis B, qué vacuna",
+    "transaminasas altas crónicas",
+    "tratamiento para la hepatitis C"
+  ],
+  "hipertension-arterial-adultos": [
+    "tiene la presión alta, qué le doy",
+    "tensión en 160/100",
+    "losartán o enalapril para empezar",
+    "le duele la nuca y tiene la presión subida",
+    "meta de presión en el diabético",
+    "se toma la presión en la casa y le sale alta"
+  ],
+  "hiponatremia-e-hiperpotasemia": [
+    "sodio en 120 y está confundido",
+    "potasio en 7 con cambios en el electro",
+    "corrección del sodio, cuánto por día",
+    "solución salina al 3 por ciento",
+    "gluconato de calcio por potasio alto",
+    "sodio bajito en el abuelo que toma diurético"
+  ],
+  "hipotiroidismo": [
+    "está cansada, engordando y con frío, la TSH alta",
+    "levotiroxina, cuántos microgramos",
+    "TSH en 8 con T4 normal",
+    "tiroides lenta en la embarazada",
+    "nódulo en el cuello, en la tiroides",
+    "se le está cayendo el pelo y está estreñida"
+  ],
+  "ictericia-neonatal": [
+    "el bebé está amarillito",
+    "recién nacido amarillo hasta el pecho",
+    "bilirrubina en 15 en bebé de 3 días",
+    "cuándo pongo fototerapia",
+    "ojos amarillos en el neonato",
+    "piel amarilla en el bebé que toma seno"
+  ],
+  "infeccion-respiratoria-aguda-pediatrica": [
+    "el niño tiene tos y respira rápido con tiraje",
+    "neumonía en el niño, cuánta amoxicilina",
+    "niño con gripa y fiebre que se hunde al respirar",
+    "respiración rápida en el niño de 1 año",
+    "AIEPI tos o dificultad para respirar",
+    "niño con fiebre y le suena el pecho"
+  ],
+  "infeccion-urinaria-adultos": [
+    "le arde al orinar y va al baño a cada rato",
+    "dolor en la espalda baja con fiebre, escalofrío y ardor al orinar",
+    "cistitis en la mujer, nitrofurantoína",
+    "el parcial de orina salió con bacterias pero no tiene síntomas",
+    "orina turbia y con mal olor",
+    "pielonefritis, qué antibiótico"
+  ],
+  "infeccion-urinaria-pediatrica": [
+    "niña con fiebre y le duele al orinar",
+    "bebé con fiebre y el parcial de orina con leucocitos",
+    "urocultivo en el niño, cómo recojo la muestra",
+    "el niño llora al hacer chichí",
+    "ecografía renal después de la primera infección urinaria en el niño",
+    "antibiótico para la infección de orina en la niña"
+  ],
+  "infecciones-piel-tejidos-blandos": [
+    "tiene la pierna roja, caliente e hinchada",
+    "forúnculo con pus en la nalga",
+    "costras color miel en la cara del niño",
+    "absceso, lo drené, le doy antibiótico",
+    "la piel se le está poniendo morada y le duele muchísimo",
+    "celulitis, cefalexina"
+  ],
+  "infecciones-transmision-sexual": [
+    "le sale pus por el pene",
+    "flujo vaginal con mal olor",
+    "ardor y secreción después de una relación",
+    "tratamiento para la gonorrea",
+    "dolor bajito en la barriga y flujo en la mujer",
+    "verrugas en los genitales"
+  ],
+  "insomnio": [
+    "no puede dormir de noche",
+    "se despierta a las 3 de la mañana y no vuelve a dormir",
+    "le doy zolpidem o clonazepam para dormir",
+    "higiene del sueño",
+    "lleva meses durmiendo mal",
+    "pastillas para dormir en el abuelo"
+  ],
+  "insuficiencia-cardiaca": [
+    "se ahoga acostado y tiene los pies hinchados",
+    "se despierta ahogado en la noche",
+    "corazón grande y débil, fracción de eyección baja",
+    "le doy furosemida por la hinchazón",
+    "se cansa al caminar una cuadra y tiene las piernas hinchadas",
+    "los cuatro medicamentos para el corazón débil"
+  ],
+  "intoxicacion-por-organofosforados": [
+    "se tomó un veneno para fumigar",
+    "babeo, pupilas chiquitas y diarrea después de fumigar",
+    "campesino intoxicado con insecticida",
+    "cuánta atropina le pongo",
+    "huele a ajo y está sudando mucho",
+    "se intentó envenenar con un plaguicida"
+  ],
+  "lactancia-materna": [
+    "le duele el seno al dar teta",
+    "pezones agrietados",
+    "seno rojo y caliente con fiebre en la mamá que lacta",
+    "cómo guardo la leche materna en la nevera",
+    "el bebé no se pega bien al pecho",
+    "puede lactar si toma este medicamento"
+  ],
+  "leishmaniasis": [
+    "úlcera en la pierna que no sana, estuvo en el monte",
+    "llaga con bordes levantados después de ir a la selva",
+    "glucantime, dosis",
+    "soldado con una herida que no cierra",
+    "úlcera de la montaña",
+    "lesión en la nariz que le destruyó el tabique"
+  ],
+  "leptospirosis": [
+    "fiebre y dolor en las pantorrillas después de una inundación",
+    "trabaja en el arrozal con ratas y tiene fiebre y ojos rojos",
+    "fiebre, ojos amarillos y no orina después de meterse al río",
+    "doxiciclina para la enfermedad de las ratas",
+    "orina de ratón y fiebre",
+    "síndrome de Weil"
+  ],
+  "lesion-renal-aguda": [
+    "dejó de orinar y le subió la creatinina",
+    "orina muy poquito después de la diarrea",
+    "falla renal aguda por medio de contraste",
+    "la creatinina se duplicó en dos días",
+    "cuándo dializar",
+    "el riñón se le paró de repente"
+  ],
+  "lumbalgia-aguda": [
+    "le duele la espalda baja después de cargar algo pesado",
+    "dolor de cintura que no lo deja agacharse",
+    "lumbago, qué le doy",
+    "le pido radiografía de columna por dolor de espalda",
+    "dolor de espalda que baja por la pierna",
+    "se le torció la espalda en el trabajo"
+  ],
+  "malaria": [
+    "fiebre con escalofríos cada tercer día y vive en el Chocó",
+    "gota gruesa positiva para vivax",
+    "paludismo, qué le doy",
+    "cloroquina y primaquina, dosis",
+    "fiebre después de viajar a una zona minera",
+    "falciparum complicada"
+  ],
+  "meningitis-bacteriana": [
+    "fiebre, dolor de cabeza fuerte y no puede doblar el cuello",
+    "nuca rígida y manchas moradas en la piel",
+    "ceftriaxona antes de la punción lumbar",
+    "el niño con fiebre está muy dormido y vomita en proyectil",
+    "dexametasona en meningitis",
+    "infección en las meninges"
+  ],
+  "menopausia": [
+    "calores y sudores en la noche, ya no le viene la regla",
+    "bochornos a los 50 años",
+    "terapia de reemplazo hormonal",
+    "sequedad vaginal en la mujer mayor",
+    "cuándo pido FSH para menopausia",
+    "cambios de genio y calores a los cincuenta"
+  ],
+  "mordeduras-y-profilaxis-de-rabia": [
+    "lo mordió un perro callejero",
+    "mordedura de gato en la mano",
+    "le pongo vacuna antirrábica",
+    "un murciélago le mordió el dedo en la finca",
+    "suero antirrábico, cuándo",
+    "el perro que lo mordió se perdió"
+  ],
+  "neumonia-adquirida-comunidad-adulto": [
+    "fiebre, tos con flema y le duele el costado al respirar",
+    "neumonía en el adulto, qué antibiótico",
+    "CURB-65",
+    "abuelo con fiebre que respira rápido y tiene crépitos en la base",
+    "infección del pulmón, lo hospitalizo",
+    "consolidación en la placa de tórax"
+  ],
+  "obesidad-y-tabaquismo": [
+    "quiere dejar de fumar",
+    "está muy gordo, IMC de 35",
+    "parches de nicotina o vareniclina",
+    "quiere bajar de peso, qué le doy",
+    "cirugía bariátrica, a quién",
+    "se fuma una cajetilla al día"
+  ],
+  "osteoporosis": [
+    "huesos frágiles en la señora mayor",
+    "se fracturó la cadera con una caída leve",
+    "densitometría con T-score de -3",
+    "alendronato, cómo se toma",
+    "pérdida de estatura y joroba",
+    "calcio y vitamina D para los huesos"
+  ],
+  "otitis-externa": [
+    "le duele el oído al jalarle la oreja",
+    "se metió a la piscina y le duele el oído",
+    "oído tapado con secreción y hongos",
+    "gotas para el oído con antibiótico",
+    "diabético con dolor de oído muy fuerte y supuración",
+    "oído del nadador"
+  ],
+  "otitis-media-y-sinusitis-aguda": [
+    "niño con dolor de oído y fiebre después de una gripa",
+    "el tímpano rojo y abombado",
+    "sinusitis, cuándo le doy antibiótico",
+    "dolor en la cara y moco verde por más de 10 días",
+    "le supura el oído al niño",
+    "amoxicilina para la otitis, dosis"
+  ],
+  "pancreatitis-y-colecistitis": [
+    "dolor arriba en la barriga que se le va a la espalda como un cinturón",
+    "dolor debajo de las costillas derechas después de comer grasa",
+    "piedras en la vesícula con fiebre y ojos amarillos",
+    "amilasa y lipasa altas",
+    "vómito y dolor de barriga después de una borrachera",
+    "colangitis, qué antibiótico"
+  ],
+  "parasitosis-intestinal": [
+    "le salieron parásitos al niño en el examen de materia fecal",
+    "picazón en el ano de noche",
+    "albendazol para desparasitar",
+    "gusanitos en el popó",
+    "barriga grande y come tierra",
+    "amebas en el coprológico"
+  ],
+  "paro-cardiorrespiratorio-rcp": [
+    "lo encontré sin pulso y no respira",
+    "se desplomó y no responde",
+    "cuántas compresiones por minuto",
+    "adrenalina en el paro, cada cuánto",
+    "el niño se atoró con un pedazo de comida",
+    "desfibrilar, cuántos joules"
+  ],
+  "parto-pretermino": [
+    "embarazada de 30 semanas con contracciones",
+    "se le está viniendo el bebé antes de tiempo",
+    "betametasona para maduración pulmonar",
+    "nifedipino para frenar las contracciones",
+    "rompió fuente a las 32 semanas",
+    "sulfato de magnesio para neuroprotección"
+  ],
+  "preeclampsia-trastornos-hipertensivos-embarazo": [
+    "embarazada con la presión alta y dolor de cabeza",
+    "gestante de 34 semanas con hinchazón y ve lucecitas",
+    "proteínas en la orina en el embarazo",
+    "sulfato de magnesio en la embarazada que convulsionó",
+    "aspirina para prevenir la preeclampsia",
+    "plaquetas bajas y transaminasas altas en el embarazo"
+  ],
+  "quemaduras": [
+    "se quemó con agua hirviendo",
+    "quemadura con ampollas en el brazo",
+    "cuánto líquido le paso al quemado",
+    "regla de los nueves",
+    "el niño se echó encima la olla de sopa",
+    "quemadura con pólvora"
+  ],
+  "rinitis-alergica": [
+    "estornuda todas las mañanas y le moquea la nariz",
+    "nariz tapada y le pica, alergia al polvo",
+    "spray nasal de corticoide",
+    "loratadina o cetirizina",
+    "rinitis que no lo deja dormir",
+    "ojos llorosos y estornudos con el polvo"
+  ],
+  "sangrado-primer-trimestre": [
+    "embarazada de 8 semanas manchando",
+    "tiene un atraso y le duele un lado de la barriga",
+    "se le vino sangre con cólicos a las 10 semanas",
+    "embarazo ectópico, metotrexato",
+    "amenaza de aborto",
+    "beta hCG positiva y la eco no muestra el saco"
+  ],
+  "sangrado-uterino-anormal": [
+    "la regla le dura 15 días y viene abundante",
+    "sangra entre reglas",
+    "le viene la menstruación dos veces al mes",
+    "mioma y sangrado abundante",
+    "ácido tranexámico para la regla abundante",
+    "sangrado después de la menopausia"
+  ],
+  "sepsis-adultos": [
+    "fiebre, presión bajita y está confundido",
+    "infección con presión baja que no sube con líquidos",
+    "qSOFA",
+    "lactato alto con infección",
+    "antibiótico en la primera hora",
+    "frío, sudoroso y con el pulso rápido por una infección"
+  ],
+  "sifilis": [
+    "VDRL positivo en la embarazada",
+    "chancro que no duele en los genitales",
+    "penicilina benzatínica, cuántas dosis",
+    "manchas en las palmas de las manos y en las plantas",
+    "prueba rápida de sífilis reactiva",
+    "bebé de mamá con sífilis"
+  ],
+  "sincope": [
+    "se desmayó de repente",
+    "se privó estando de pie mucho rato",
+    "perdió el conocimiento haciendo ejercicio",
+    "se desmaya cada que se para rápido",
+    "electro en el paciente que se desmayó",
+    "le dio un patatús"
+  ],
+  "tamizaje-de-cancer": [
+    "cada cuánto la citología",
+    "mamografía a qué edad",
+    "antígeno prostático en el señor de 55",
+    "sangre oculta en heces para colon",
+    "prueba de VPH",
+    "fumador, tomografía de pulmón"
+  ],
+  "tos-ferina": [
+    "el bebé tose y tose hasta ponerse morado y vomitar",
+    "tos con gallo al final",
+    "tos en accesos que termina en vómito",
+    "azitromicina para tos ferina en el lactante",
+    "contactos de un caso de tosferina",
+    "vacuna Tdap en el embarazo"
+  ],
+  "trauma-menor-reglas-de-decision": [
+    "se pegó en la cabeza, le pido TAC",
+    "el niño se cayó de la cama y se golpeó la cabeza",
+    "se torció el tobillo, radiografía",
+    "golpe en el cuello en un accidente de moto",
+    "reglas de Ottawa",
+    "se cayó y se golpeó la rodilla"
+  ],
+  "tromboembolia-venosa": [
+    "le duele y se le hinchó una sola pantorrilla",
+    "se ahoga de repente después de una cirugía",
+    "dímero D alto",
+    "Wells para trombosis",
+    "anticoagulación por un coágulo en la pierna",
+    "embolia en el pulmón"
+  ],
+  "tuberculosis": [
+    "tos con flema por más de 15 días",
+    "suda de noche y está bajando de peso con tos",
+    "baciloscopia, cuántas muestras",
+    "tuberculosis en el preso",
+    "tratamiento acortado con cuatro medicamentos",
+    "tose sangre y está flaco"
+  ],
+  "vacunacion-pai-y-adulto": [
+    "qué vacunas le tocan al bebé de 2 meses",
+    "esquema de vacunas atrasado",
+    "vacuna de la influenza en el adulto mayor",
+    "vacuna del VPH en niñas",
+    "vacunas a los 18 meses",
+    "neumococo en el adulto"
+  ],
+  "varicela-y-sarampion": [
+    "le salieron ampollitas que pican por todo el cuerpo",
+    "viruela loca",
+    "brote rojo con fiebre, tos y ojos rojos",
+    "aciclovir para la varicela",
+    "embarazada que estuvo en contacto con un niño con varicela",
+    "manchas rojas que empezaron en la cara"
+  ],
+  "vertigo-y-mareo": [
+    "siente que el cuarto le da vueltas al acostarse o al girar",
+    "mareo con náuseas al mover la cabeza",
+    "maniobra de Epley",
+    "vértigo que no se le pasa y camina como borracho",
+    "se marea al levantarse",
+    "zumbido de oído y mareo"
+  ],
+  "vih-tamizaje-y-profilaxis": [
+    "prueba de VIH positiva",
+    "tuvo relaciones sin condón con alguien positivo, qué le doy",
+    "profilaxis después de una relación de riesgo",
+    "pastilla para prevenir el VIH",
+    "pinchazo con aguja en el hospital",
+    "embarazada con VIH"
+  ]
+}

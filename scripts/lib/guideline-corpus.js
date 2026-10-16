@@ -25,6 +25,10 @@
 //   texto…
 //
 // Cada `##` es un fragmento recuperable por separado.
+//
+// Las consultas de cada guía (doc2query: cómo preguntaría un médico por ese
+// tema) van aparte, en consultas.json, porque llevan comas y se revisan juntas.
+// Se compilan dentro de cada guía (`consultas`) y entran al hash de las fuentes.
 
 const fs = require('fs');
 const path = require('path');
@@ -33,6 +37,9 @@ const crypto = require('crypto');
 const CORPUS_DIR = path.join(__dirname, '..', '..', 'knowledge', 'guias-clinicas');
 const CORPUS_FILE = path.join(CORPUS_DIR, 'guidelines.corpus.json');
 const SYNONYMS_FILE = path.join(CORPUS_DIR, 'sinonimos.json');
+const QUERIES_FILENAME = 'consultas.json';
+const MIN_QUERIES = 6;
+const MAX_QUERY_CHARS = 200;
 const CORPUS_VERSION = 1;
 
 const REQUIRED_FIELDS = Object.freeze(['id', 'titulo', 'organismo', 'anio', 'fuente', 'especialidades', 'palabras_clave']);
@@ -189,9 +196,9 @@ function listGuidelineFiles(dir = CORPUS_DIR) {
     .map((name) => path.join(dir, name));
 }
 
-function sourceHash(files) {
+function sourceHash(files, extraFiles = []) {
   const hash = crypto.createHash('sha256');
-  for (const file of files) {
+  for (const file of [...files, ...extraFiles.filter((extra) => fs.existsSync(extra))]) {
     hash.update(path.basename(file));
     hash.update('\n');
     hash.update(fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n'));
@@ -200,8 +207,30 @@ function sourceHash(files) {
   return hash.digest('hex');
 }
 
+/**
+ * Consultas por guía: { id: [texto, …] }. Cada guía necesita al menos
+ * MIN_QUERIES y no puede haber consultas de una guía que no existe.
+ */
+function readQueries(dir, ids) {
+  const file = path.join(dir, QUERIES_FILENAME);
+  const raw = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {};
+  const queries = new Map();
+  for (const [id, list] of Object.entries(raw)) {
+    if (id.startsWith('_')) continue;
+    if (!ids.has(id)) throw new Error(`${QUERIES_FILENAME}: "${id}" no es una guía del corpus`);
+    if (!Array.isArray(list)) throw new Error(`${QUERIES_FILENAME}: "${id}" debe ser una lista de textos`);
+    const clean = list.map((item) => `${item || ''}`.trim()).filter(Boolean);
+    for (const item of clean) {
+      if (item.length > MAX_QUERY_CHARS) throw new Error(`${QUERIES_FILENAME}: "${id}" tiene una consulta de más de ${MAX_QUERY_CHARS} caracteres`);
+    }
+    if (new Set(clean).size !== clean.length) throw new Error(`${QUERIES_FILENAME}: "${id}" tiene consultas repetidas`);
+    queries.set(id, clean);
+  }
+  return queries;
+}
+
 /** Compila todas las guías del directorio al objeto que se escribe como JSON. */
-function buildCorpus(dir = CORPUS_DIR) {
+function buildCorpus(dir = CORPUS_DIR, { requireQueries = true } = {}) {
   const files = listGuidelineFiles(dir);
   const guidelines = [];
   const ids = new Set();
@@ -213,9 +242,16 @@ function buildCorpus(dir = CORPUS_DIR) {
     ids.add(guideline.id);
     guidelines.push(guideline);
   }
+  const queries = readQueries(dir, ids);
+  for (const guideline of guidelines) {
+    guideline.consultas = queries.get(guideline.id) || [];
+    if (requireQueries && guideline.consultas.length < MIN_QUERIES) {
+      throw new Error(`${guideline.id}: necesita al menos ${MIN_QUERIES} consultas en ${QUERIES_FILENAME} (tiene ${guideline.consultas.length})`);
+    }
+  }
   return {
     version: CORPUS_VERSION,
-    source_hash: sourceHash(files),
+    source_hash: sourceHash(files, [path.join(dir, QUERIES_FILENAME)]),
     guidelines
   };
 }
@@ -235,6 +271,8 @@ module.exports = {
   CORPUS_VERSION,
   MAX_CHUNK_CHARS,
   MIN_SECTIONS,
+  MIN_QUERIES,
+  QUERIES_FILENAME,
   REQUIRED_FIELDS,
   POPULATIONS,
   parseFrontMatter,
@@ -244,6 +282,7 @@ module.exports = {
   listGuidelineFiles,
   sourceHash,
   buildCorpus,
+  readQueries,
   readCorpusFile,
   readSynonyms
 };

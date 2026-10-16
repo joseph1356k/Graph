@@ -1,0 +1,2465 @@
+{
+ "_protocolo": "Conjuntos CIEGOS del torneo de RAG (2026-10-14). Los escribieron cuatro autores distintos de los redactores de las guías, sin mirar sinonimos.json. NADA del buscador se ajusta contra estos conjuntos: sirven solo para medir. «limpia» = autor distinto de A, no citada en el debate y sin una consulta doc2query casi igual (Jaccard < 0,5) — es la medida menos contaminada. «citada» = la frase se citó en el debate (posible sobreajuste).",
+ "coloquiales": [
+  {
+   "autor": "A",
+   "message": "me llegó un man con la tensión por las nubes, 190/120, sin dolor de pecho, lo mando pa la casa?",
+   "expected": [
+    "hipertension-arterial-adultos"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "la señora tiene el azúcar por el piso, está sudando y temblando",
+   "expected": [
+    "crisis-hiperglucemicas-e-hipoglucemia"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "pelao de 15 años con glucometría en 450 y respira raro, huele a manzana",
+   "expected": [
+    "crisis-hiperglucemicas-e-hipoglucemia"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "chuzón en el pecho que se le va al brazo izquierdo desde hace una hora",
+   "expected": [
+    "dolor-toracico-sindrome-coronario-agudo"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "se le torció la boca y no mueve el brazo derecho desde hace 2 horas",
+   "expected": [
+    "acv-isquemico-agudo"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "abuelo con el corazón brincando irregular, le doy algo para que no le de trombo?",
+   "expected": [
+    "fibrilacion-auricular-anticoagulacion"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "se hincha de los pies y se ahoga cuando se acuesta, ya usa furosemida",
+   "expected": [
+    "insuficiencia-cardiaca"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "fumador de toda la vida que se ahoga subiendo escaleras, qué inhalador",
+   "expected": [
+    "epoc"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "niño con pitos en el pecho cada vez que le da gripa, le dejo inhalador?",
+   "expected": [
+    "asma-adultos-y-ninos",
+    "bronquiolitis"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "bebé de 6 meses con mocos, tos y que se le hunden las costillas al respirar",
+   "expected": [
+    "bronquiolitis",
+    "infeccion-respiratoria-aguda-pediatrica"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "tos de perro que no para y vomita después de toser, bebé de 2 meses",
+   "expected": [
+    "tos-ferina"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "tose hace 3 semanas, bajó de peso y suda de noche",
+   "expected": [
+    "tuberculosis"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "el pelao tiene churrias desde ayer y no quiere tomar nada",
+   "expected": [
+    "diarrea-aguda-y-deshidratacion-pediatrica"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "niña con lombrices, con qué la desparasito",
+   "expected": [
+    "parasitosis-intestinal"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "fiebre y dolor detrás de los ojos, ronchas, plaquetas bajando",
+   "expected": [
+    "dengue"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "volvió del Guaviare con escalofríos y fiebre cada tercer día",
+   "expected": [
+    "malaria"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "trabaja en arrozal, fiebre, dolor en las pantorrillas y ojos rojos",
+   "expected": [
+    "leptospirosis"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "llaga en la pierna que no cierra después de estar en el monte con el ejército",
+   "expected": [
+    "leishmaniasis"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "le picó un pito en la cara mientras dormía en casa de bahareque",
+   "expected": [
+    "enfermedad-de-chagas"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "lo mordió una mapaná en el pie, cuántas ampollas de suero",
+   "expected": [
+    "accidente-ofidico"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "lo mordió el perro del vecino que anda suelto, le pongo vacuna antirrábica?",
+   "expected": [
+    "mordeduras-y-profilaxis-de-rabia"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "se tomó un veneno para fumigar, tiene babeo y pupilas chiquitas",
+   "expected": [
+    "intoxicacion-por-organofosforados"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "comió camarón y se le cerró la garganta, está con ronchas",
+   "expected": [
+    "anafilaxia"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "estornuda todo el día, picazón en la nariz, qué antihistamínico",
+   "expected": [
+    "rinitis-alergica"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "bebé con la piel reseca y rojita en los cachetes que le pica mucho",
+   "expected": [
+    "dermatitis-atopica"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "se echó agua hirviendo en el brazo, ampollas, qué le aplico",
+   "expected": [
+    "quemaduras"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "en el colegio todos tienen piojos, qué champú",
+   "expected": [
+    "escabiosis-y-pediculosis"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "picazón que empeora de noche entre los dedos y la familia también se rasca",
+   "expected": [
+    "escabiosis-y-pediculosis"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "pierna roja, caliente y brillante con fiebre",
+   "expected": [
+    "infecciones-piel-tejidos-blandos"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "le duele el oído desde que fue a la piscina y le jalo la oreja y grita",
+   "expected": [
+    "otitis-externa"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "nariz tapada con moco verde hace 12 días y dolor en la cara",
+   "expected": [
+    "otitis-media-y-sinusitis-aguda"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "ojo rojo con lagaña amarilla pegajosa en la mañana",
+   "expected": [
+    "conjuntivitis-y-ojo-rojo"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "garganta con pus y ganglios, sin tos, penicilina benzatínica?",
+   "expected": [
+    "faringoamigdalitis-aguda",
+    "antibioticos-dosis-frecuentes"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "ardor al orinar en una niña de 3 años con fiebre",
+   "expected": [
+    "infeccion-urinaria-pediatrica"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "señora con ganas de orinar a cada rato y le arde, nitrofurantoína cuántos días",
+   "expected": [
+    "infeccion-urinaria-adultos",
+    "antibioticos-dosis-frecuentes"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "pus por el pene y ardor, qué le formulo a él y a la pareja",
+   "expected": [
+    "infecciones-transmision-sexual"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "chancro que no duele en el pene, VDRL reactivo",
+   "expected": [
+    "sifilis"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "enfermera se chuzó con aguja de un paciente con VIH",
+   "expected": [
+    "vih-tamizaje-y-profilaxis"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "pastilla del día después hasta cuántas horas sirve",
+   "expected": [
+    "anticoncepcion"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "quiere planificar con el implante del brazo, tiene migraña con aura",
+   "expected": [
+    "anticoncepcion"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "la regla le dura 10 días y le baja a chorros, hemoglobina de 9",
+   "expected": [
+    "sangrado-uterino-anormal",
+    "anemia-ferropenica"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "embarazada de 8 semanas que está manchando y con cólico",
+   "expected": [
+    "sangrado-primer-trimestre"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "gestante de 34 semanas con tensión 160/110 y dolor de cabeza",
+   "expected": [
+    "preeclampsia-trastornos-hipertensivos-embarazo"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "curva de glucosa en el embarazo salió alterada, qué hago",
+   "expected": [
+    "diabetes-gestacional"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "contracciones cada 5 minutos a las 31 semanas, le pongo betametasona?",
+   "expected": [
+    "parto-pretermino"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "después del parto sangra mucho y el útero está blandito",
+   "expected": [
+    "hemorragia-posparto"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "primera cita de la embarazada, qué exámenes le pido",
+   "expected": [
+    "control-prenatal"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "la mamá tiene los pezones agrietados y el pecho duro y rojo",
+   "expected": [
+    "lactancia-materna"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "bebé de 3 días amarillito hasta la barriga",
+   "expected": [
+    "ictericia-neonatal"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "bebé de 20 días con fiebre de 38.5 sin nada más",
+   "expected": [
+    "fiebre-sin-foco-lactante"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "niño de 2 años que convulsionó con la fiebre, se quedó bien después",
+   "expected": [
+    "convulsiones-estatus-y-febril"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "niño flaquito que no sube de peso, peso para la talla bajo -3",
+   "expected": [
+    "desnutricion-aguda-infantil",
+    "crecimiento-y-desarrollo-infantil"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "a qué edad debe caminar y decir palabras un niño",
+   "expected": [
+    "crecimiento-y-desarrollo-infantil"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "qué vacunas le tocan al niño de 18 meses",
+   "expected": [
+    "vacunacion-pai-y-adulto"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "niño con fiebre y ampollitas que pican por todo el cuerpo, el hermano también",
+   "expected": [
+    "varicela-y-sarampion"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "fiebre, cuello tieso y manchas moradas en las piernas",
+   "expected": [
+    "meningitis-bacteriana"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "señora con calores, sudores de noche y no le baja la regla hace un año",
+   "expected": [
+    "menopausia"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "abuelita con huesos débiles, cuánto tiempo el alendronato",
+   "expected": [
+    "osteoporosis"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "rodilla que suena y duele al bajar escaleras, señor de 68",
+   "expected": [
+    "artrosis"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "dedo gordo del pie hinchado, rojo y que no se deja tocar",
+   "expected": [
+    "gota"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "dolor de espalda baja después de alzar un bulto, le doy incapacidad?",
+   "expected": [
+    "lumbalgia-aguda"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "dolor crónico de rodilla que ya no le sirve el acetaminofén, le paso a tramadol?",
+   "expected": [
+    "dolor-cronico-y-opioides",
+    "artrosis"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "todo le da vueltas cuando se voltea en la cama",
+   "expected": [
+    "vertigo-y-mareo"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "se desmayó parado en la fila del banco, volvió en sí rapidito",
+   "expected": [
+    "sincope"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "se golpeó la cabeza, vomitó dos veces, le pido TAC?",
+   "expected": [
+    "trauma-menor-reglas-de-decision"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "se torció el tobillo jugando fútbol, radiografía o no",
+   "expected": [
+    "trauma-menor-reglas-de-decision"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "pantorrilla hinchada y dura después de un viaje largo en bus",
+   "expected": [
+    "tromboembolia-venosa"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "vomitó sangre como cuncho de café y la popó negra",
+   "expected": [
+    "hemorragia-digestiva"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "ardor en la boca del estómago que le sube a la garganta",
+   "expected": [
+    "dispepsia-erge-helicobacter"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "dolor en el lado derecho abajo de la barriga que empezó en el ombligo",
+   "expected": [
+    "dolor-abdominal-agudo-apendicitis"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "dolor en la boca del estómago que va a la espalda después de una comilona, lipasa alta",
+   "expected": [
+    "pancreatitis-y-colecistitis"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "cirrótico con la barriga llena de agua y fiebre",
+   "expected": [
+    "cirrosis-y-complicaciones"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "salió positivo el antígeno de superficie de hepatitis",
+   "expected": [
+    "hepatitis-b-y-c"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "creatinina subiendo de 1 a 2.5 en dos días, orina poquito",
+   "expected": [
+    "lesion-renal-aguda"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "diabético con filtración en 40 y proteína en la orina",
+   "expected": [
+    "enfermedad-renal-cronica",
+    "diabetes-mellitus-tipo-2"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "el sodio en 122 y está confundido",
+   "expected": [
+    "hiponatremia-e-hiperpotasemia"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "colesterol malo en 190, le arranco estatina?",
+   "expected": [
+    "dislipidemia-riesgo-cardiovascular"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "señor gordito que quiere bajar de peso y dejar el cigarrillo",
+   "expected": [
+    "obesidad-y-tabaquismo"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "toma trago todos los fines de semana hasta perderse",
+   "expected": [
+    "consumo-de-alcohol"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "alcohólico que dejó de tomar hace 2 días y está temblando y viendo bichos",
+   "expected": [
+    "consumo-de-alcohol"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "abuelito que amaneció confundido y agitado, ayer estaba bien",
+   "expected": [
+    "delirium-y-demencia"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "se le olvidan las cosas y se pierde en el barrio",
+   "expected": [
+    "delirium-y-demencia"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "está triste, sin ganas de nada, llora todo el tiempo hace 2 meses",
+   "expected": [
+    "depresion-adultos"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "dice que se quiere quitar la vida",
+   "expected": [
+    "ansiedad-y-riesgo-suicida"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "ataques de nervios con palpitaciones y sensación de que se va a morir",
+   "expected": [
+    "ansiedad-y-riesgo-suicida"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "no pega el ojo en toda la noche hace meses, le doy zolpidem?",
+   "expected": [
+    "insomnio"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "cansancio, frío, piel reseca y TSH alta",
+   "expected": [
+    "hipotiroidismo"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "pálida, uñas en cuchara, hemoglobina en 8",
+   "expected": [
+    "anemia-ferropenica"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "le dio un dolor de cabeza horrible de un momento a otro, el peor de su vida",
+   "expected": [
+    "cefalea-migrana-tensional"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "no respira y no tiene pulso, cuántas compresiones",
+   "expected": [
+    "paro-cardiorrespiratorio-rcp"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "fiebre, tensión 80/50 y confundido, sospecho infección",
+   "expected": [
+    "sepsis-adultos"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "viejito con tos, fiebre y crépitos en la base derecha, lo dejo en casa?",
+   "expected": [
+    "neumonia-adquirida-comunidad-adulto"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "a qué edad empiezo la mamografía",
+   "expected": [
+    "tamizaje-de-cancer"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "qué código CIE10 pongo para una gripa común",
+   "expected": [
+    "cie10-frecuente-atencion-primaria"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "amoxicilina para un niño de 18 kilos, cuántos mililitros",
+   "expected": [
+    "antibioticos-dosis-frecuentes"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "hipertensa diabetica con ojo rojo y dolor, ve borroso",
+   "expected": [
+    "conjuntivitis-y-ojo-rojo"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "metformina cuando la filtracion baja, la suspendo?",
+   "expected": [
+    "diabetes-mellitus-tipo-2",
+    "enfermedad-renal-cronica"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "anticoagulado con warfarina con INR en 6",
+   "expected": [
+    "fibrilacion-auricular-anticoagulacion",
+    "tromboembolia-venosa"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "A",
+   "message": "sindrome nefrotico en adulto que hago",
+   "expected": [
+    "enfermedad-renal-cronica"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "le dio un patatús y se desmayó en la fila del banco, qué estudios pido",
+   "expected": [
+    "sincope"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "la señora tiene los pies hinchados y se ahoga cuando se acuesta, qué le subo",
+   "expected": [
+    "insuficiencia-cardiaca"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "el pelado tiene ronchas que le pican de noche y a la hermanita también",
+   "expected": [
+    "escabiosis-y-pediculosis",
+    "dermatitis-atopica"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "abuelo de 80 que se le olvidan las cosas y se pierde en el barrio",
+   "expected": [
+    "delirium-y-demencia"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "no pega el ojo en toda la noche desde hace dos meses",
+   "expected": [
+    "insomnio"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "le bajó la regla dos veces este mes y muy abundante",
+   "expected": [
+    "sangrado-uterino-anormal"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "ya no le viene la regla, tiene calores y sudores de noche, 52 años",
+   "expected": [
+    "menopausia"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "le dan unos ataques en que se pone rígido y echa espuma por la boca",
+   "expected": [
+    "convulsiones-estatus-y-febril"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "el niño respira rapidito y se le hunden las costillas",
+   "expected": [
+    "infeccion-respiratoria-aguda-pediatrica",
+    "bronquiolitis",
+    "asma-adultos-y-ninos"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "la señora se cayó y se partió la cadera, tiene los huesos frágiles, qué le doy",
+   "expected": [
+    "osteoporosis"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "dolor en el dedo gordo del pie, rojo y caliente después de una fiesta",
+   "expected": [
+    "gota"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "tiene la rodilla gastada, le duele al subir escaleras",
+   "expected": [
+    "artrosis"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "el bebé se pone morado tosiendo y luego hace un ruido al tomar aire",
+   "expected": [
+    "tos-ferina"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "lleva tres semanas tosiendo con sangre y sudando de noche",
+   "expected": [
+    "tuberculosis"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "se tomó un frasco de veneno para las plagas en la finca y está babeando",
+   "expected": [
+    "intoxicacion-por-organofosforados"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "lo mordió un perro callejero en la mano",
+   "expected": [
+    "mordeduras-y-profilaxis-de-rabia"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "se echó agua hirviendo encima y tiene ampollas, cuánto líquido le paso",
+   "expected": [
+    "quemaduras"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "fuma dos cajetillas al día y quiere dejarlo",
+   "expected": [
+    "obesidad-y-tabaquismo"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "toma guaro todos los fines de semana hasta perderse",
+   "expected": [
+    "consumo-de-alcohol"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "está muy triste, no disfruta nada y dice que se quiere morir",
+   "expected": [
+    "depresion-adultos",
+    "ansiedad-y-riesgo-suicida"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "le duele la barriga abajo a la derecha y vomitó, le palpo rebote",
+   "expected": [
+    "dolor-abdominal-agudo-apendicitis"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "vomitó sangre oscura como cuncho de café",
+   "expected": [
+    "hemorragia-digestiva"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "tiene la pierna hinchada, roja y dura después de un viaje largo en bus",
+   "expected": [
+    "tromboembolia-venosa"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "lleva días con fiebre después de bañarse en un río y le duelen las pantorrillas",
+   "expected": [
+    "leptospirosis"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "volvió del Chocó con fiebre y escalofríos cada dos días",
+   "expected": [
+    "malaria"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "le salió una llaga que no duele en los genitales",
+   "expected": [
+    "sifilis",
+    "infecciones-transmision-sexual"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "el niño está muy flaco, con el pelo como de muñeca y las piernas hinchadas",
+   "expected": [
+    "desnutricion-aguda-infantil"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "le salió un granito con pus que se agrandó y está caliente en la pierna",
+   "expected": [
+    "infecciones-piel-tejidos-blandos"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "tiene los ojos rojos con lagaña amarilla",
+   "expected": [
+    "conjuntivitis-y-ojo-rojo"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "siente que todo le da vueltas cuando se voltea en la cama",
+   "expected": [
+    "vertigo-y-mareo"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "estornuda todas las mañanas y le moquea la nariz con el polvo",
+   "expected": [
+    "rinitis-alergica"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "le duele el oído después de ir a la piscina",
+   "expected": [
+    "otitis-externa"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "embarazada con la tensión en 150/100, dolor de cabeza y ve lucecitas",
+   "expected": [
+    "preeclampsia-trastornos-hipertensivos-embarazo"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "le duele el pecho como si tuviera un peso encima y suda frío",
+   "expected": [
+    "dolor-toracico-sindrome-coronario-agudo"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "la creatinina le subió de 1 a 2,5 en dos días",
+   "expected": [
+    "lesion-renal-aguda"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "el bebé de 8 meses todavía no se sienta solo",
+   "expected": [
+    "crecimiento-y-desarrollo-infantil"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "le salen gusanitos en la popó al niño",
+   "expected": [
+    "parasitosis-intestinal"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "quedó sangrando mucho después de parir",
+   "expected": [
+    "hemorragia-posparto"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "está con contracciones a las 30 semanas",
+   "expected": [
+    "parto-pretermino"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "tiene una llaga como un cráter que no cierra después de ir al monte",
+   "expected": [
+    "leishmaniasis"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "se le hincharon los labios y se le cerró la garganta después de comer camarón",
+   "expected": [
+    "anafilaxia"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "tiene mucha sed, orina a toda hora y el glucómetro marca HI",
+   "expected": [
+    "crisis-hiperglucemicas-e-hipoglucemia",
+    "diabetes-mellitus-tipo-2"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "se puso amarillito el recién nacido al tercer día",
+   "expected": [
+    "ictericia-neonatal"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "la mamá dice que no le sale leche y el bebé llora",
+   "expected": [
+    "lactancia-materna"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "quiere planificar pero se le olvida la pastilla",
+   "expected": [
+    "anticoncepcion"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "se le hinchó el abdomen con líquido, es alcohólico, tiene los ojos amarillos",
+   "expected": [
+    "cirrosis-y-complicaciones"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "le salió un dolor en la boca del estómago que va a la espalda después de comer frito",
+   "expected": [
+    "pancreatitis-y-colecistitis",
+    "dispepsia-erge-helicobacter"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "se golpeó la cabeza, vomitó dos veces, le hago escanografía?",
+   "expected": [
+    "trauma-menor-reglas-de-decision"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "C",
+   "message": "lo encontré sin pulso en la sala de espera",
+   "expected": [
+    "paro-cardiorrespiratorio-rcp"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "C",
+   "message": "le salieron vesículas por todo el cuerpo que pican, con fiebre, tiene 6 años",
+   "expected": [
+    "varicela-y-sarampion"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "niño de 9 meses con mocos, tos y le silba el pecho, es la primera vez",
+   "expected": [
+    "bronquiolitis",
+    "infeccion-respiratoria-aguda-pediatrica"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "señora de 80 que se volvió confusa de un día para otro, no reconoce a la hija",
+   "expected": [
+    "delirium-y-demencia"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "al muchacho le picó una culebra en la finca, qué le pongo",
+   "expected": [
+    "accidente-ofidico"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "le duele el dedo gordo del pie, lo tiene rojo y caliente, se tomó unas cervezas el fin de semana",
+   "expected": [
+    "gota"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "mujer de 52 con calores y sudores en la noche, ya no le viene la regla",
+   "expected": [
+    "menopausia"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "bebé de 5 días amarillito, toma seno",
+   "expected": [
+    "ictericia-neonatal"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "señor que estaba fumigando el cultivo y llegó babeando y con las pupilas chiquitas",
+   "expected": [
+    "intoxicacion-por-organofosforados"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "el niño tiene ronchitas que pican entre los dedos y a toda la familia le pica de noche",
+   "expected": [
+    "escabiosis-y-pediculosis"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "se le hinchó la pantorrilla izquierda después de un viaje largo en bus",
+   "expected": [
+    "tromboembolia-venosa"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "señora con las piernas hinchadas que se ahoga al acostarse y duerme con tres almohadas",
+   "expected": [
+    "insuficiencia-cardiaca"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "muchacho que se desmayó en la fila del banco y se recuperó rápido",
+   "expected": [
+    "sincope"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "le da vueltas todo cuando se voltea en la cama",
+   "expected": [
+    "vertigo-y-mareo"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "tiene placas blancas en las amígdalas y fiebre, sin tos",
+   "expected": [
+    "faringoamigdalitis-aguda"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "le arde al orinar y va al baño a cada rato, 25 años, no está embarazada",
+   "expected": [
+    "infeccion-urinaria-adultos"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "le duele el oído al jalarle la oreja después de ir a la piscina",
+   "expected": [
+    "otitis-externa"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "señor tomador con la barriga llena de agua",
+   "expected": [
+    "cirrosis-y-complicaciones"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "vomitó con sangre como cuncho de café",
+   "expected": [
+    "hemorragia-digestiva"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "lo mordió un perro callejero en la mano",
+   "expected": [
+    "mordeduras-y-profilaxis-de-rabia"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "volvió de Tumaco con escalofríos y fiebre cada tercer día",
+   "expected": [
+    "malaria"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "trabaja en un arrozal, fiebre, dolor en las pantorrillas y los ojos rojos",
+   "expected": [
+    "leptospirosis"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "tiene una llaga que no sana en el brazo desde que estuvo en el monte",
+   "expected": [
+    "leishmaniasis"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "el pelado está flaquito, con los pies hinchados y se le cae el pelo",
+   "expected": [
+    "desnutricion-aguda-infantil"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "cada cuánto tiene que venir la embarazada a controles",
+   "expected": [
+    "control-prenatal"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "la señora sangró mucho después de tener el bebé",
+   "expected": [
+    "hemorragia-posparto"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "niño con chorrillo hace 3 días y los ojos hundidos",
+   "expected": [
+    "diarrea-aguda-y-deshidratacion-pediatrica"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "le tembló todo el cuerpo con la fiebre, tiene 18 meses, ya se le pasó",
+   "expected": [
+    "convulsiones-estatus-y-febril"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "se le torció la boca y no puede hablar bien desde hace una hora",
+   "expected": [
+    "acv-isquemico-agudo"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "dolor en el pecho como un peso que se le va al brazo izquierdo",
+   "expected": [
+    "dolor-toracico-sindrome-coronario-agudo"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "el corazón le late desordenado, tiene 75 años, qué le doy para que no haga trombos",
+   "expected": [
+    "fibrilacion-auricular-anticoagulacion"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "no puede dormir desde hace meses, qué hago aparte de pastillas",
+   "expected": [
+    "insomnio"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "está muy aburrido, no quiere hacer nada y dice que mejor estar muerto",
+   "expected": [
+    "depresion-adultos",
+    "ansiedad-y-riesgo-suicida"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "le salió una bolita en el cuello por delante que sube al tragar",
+   "expected": [
+    "hipotiroidismo"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "quiere planificar con algo que le dure años",
+   "expected": [
+    "anticoncepcion"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "a qué edad le mando la mamografía a una mujer",
+   "expected": [
+    "tamizaje-de-cancer"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "bebé de 2 meses con fiebre de 38,5 sin nada más",
+   "expected": [
+    "fiebre-sin-foco-lactante"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "se echó agua hirviendo en el brazo y el pecho",
+   "expected": [
+    "quemaduras"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "le cuesta respirar, fumó 40 años y gargajea todas las mañanas",
+   "expected": [
+    "epoc"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "le salieron granitos con costra color miel en la cara al niño",
+   "expected": [
+    "infecciones-piel-tejidos-blandos"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "tiene la piel reseca y le pica en los pliegues de los codos desde bebé",
+   "expected": [
+    "dermatitis-atopica"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "tose y tose sin parar hasta vomitar y después hace como un gallo al coger aire",
+   "expected": [
+    "tos-ferina"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "le salieron ampollitas que pican por todo el cuerpo, empezaron en la cara, va al jardín",
+   "expected": [
+    "varicela-y-sarampion"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "se cayó de la moto y se pegó en la cabeza, le pido escanografía?",
+   "expected": [
+    "trauma-menor-reglas-de-decision"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "los riñones le vienen fallando hace años, creatinina de 2,1",
+   "expected": [
+    "enfermedad-renal-cronica"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "vivió en Boyacá en casa de bahareque y le picó un pito",
+   "expected": [
+    "enfermedad-de-chagas"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "el niño tiene lombrices",
+   "expected": [
+    "parasitosis-intestinal"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "a la mamá se le puso el seno duro y rojo y le dio fiebre",
+   "expected": [
+    "lactancia-materna"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "se fracturó la cadera con una caída de su propia altura, cómo prevengo otra",
+   "expected": [
+    "osteoporosis"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "estornuda todas las mañanas, le pica la nariz y tiene los ojos llorosos",
+   "expected": [
+    "rinitis-alergica"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "E",
+   "message": "muchacha de 19 con atraso, dolor bajito de un lado y manchado",
+   "expected": [
+    "sangrado-primer-trimestre"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "E",
+   "message": "la regla le dura 10 días y le bajan coágulos",
+   "expected": [
+    "sangrado-uterino-anormal"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "señora con el azúcar por las nubes, aliento a frutas y respirando rápido, ¿cómo le paso la insulina?",
+   "expected": [
+    "crisis-hiperglucemicas-e-hipoglucemia"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "fiebre alta, dolor detrás de los ojos y las plaquetas bajando, ¿cuándo lo hospitalizo?",
+   "expected": [
+    "dengue"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "a un campesino le picó una culebra en la pierna y está sangrando por las encías, ¿cuántos viales le pongo?",
+   "expected": [
+    "accidente-ofidico"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "se le hinchó la cara y la garganta después de comer camarón y tiene la presión en el piso",
+   "expected": [
+    "anafilaxia"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "abuelito que de un día para otro está desorientado, agitado en la noche y ve cosas",
+   "expected": [
+    "delirium-y-demencia"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "muchacha que dice que nada le provoca, llora todo el día y no duerme hace dos meses",
+   "expected": [
+    "depresion-adultos"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "el pelado se rasca toda la noche, tiene surcos entre los dedos y el hermanito también se rasca",
+   "expected": [
+    "escabiosis-y-pediculosis"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "a la niña le salieron liendres en el cabello en el colegio, ¿con qué la trato?",
+   "expected": [
+    "escabiosis-y-pediculosis"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "dolor en el dedo gordo del pie, rojo y caliente, amaneció así después de una parranda",
+   "expected": [
+    "gota"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "señor que vomitó como cuncho de café y está pálido y sudoroso",
+   "expected": [
+    "hemorragia-digestiva"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "la mamá dice que el bebé está amarillito desde el segundo día de nacido",
+   "expected": [
+    "ictericia-neonatal"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "ardor al orinar y ganas de ir a cada rato en mujer joven no embarazada",
+   "expected": [
+    "infeccion-urinaria-adultos"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "muchacho con secreción por el pene y le arde, ¿qué le formulo a él y a la pareja?",
+   "expected": [
+    "infecciones-transmision-sexual"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "no pega el ojo en toda la noche hace meses, ¿le formulo zolpidem?",
+   "expected": [
+    "insomnio"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "se ahoga al acostarse, tiene las piernas hinchadas y crepita en las bases",
+   "expected": [
+    "insuficiencia-cardiaca"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "trabajador que fumigó y llegó babeando, con las pupilas chiquitas y temblando",
+   "expected": [
+    "intoxicacion-por-organofosforados"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "a la mamá le duele el seno, está rojo y caliente y está dando teta",
+   "expected": [
+    "lactancia-materna"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "úlcera en el brazo que no sana, volvió de la selva hace dos meses, con el borde levantado",
+   "expected": [
+    "leishmaniasis"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "estuvo en el río después de la inundación y ahora tiene dolor en las pantorrillas y ojos amarillos",
+   "expected": [
+    "leptospirosis"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "la creatinina se le duplicó después del contraste y casi no orina",
+   "expected": [
+    "lesion-renal-aguda"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "alzó una caja y quedó tieso de la espalda, no se le corre a la pierna",
+   "expected": [
+    "lumbalgia-aguda"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "escalofríos cada tercer día, vive en el Chocó, ¿qué examen le pido?",
+   "expected": [
+    "malaria"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "rigidez de nuca, fiebre y petequias en un muchacho de 17 años",
+   "expected": [
+    "meningitis-bacteriana"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "señora de 50 con calorones y sudores de noche, ¿le puedo dar hormonas?",
+   "expected": [
+    "menopausia"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "un perro callejero mordió a un niño en la cara, ¿le pongo la vacuna y el suero?",
+   "expected": [
+    "mordeduras-y-profilaxis-de-rabia"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "quiere dejar el cigarrillo, ¿vareniclina o parches?",
+   "expected": [
+    "obesidad-y-tabaquismo"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "le pica el oído después de ir a la piscina y le duele al jalarle la oreja",
+   "expected": [
+    "otitis-externa"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "dolor en la boca del estómago que se va a la espalda como un cinturón, después de tomar trago",
+   "expected": [
+    "pancreatitis-y-colecistitis"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "el niño tiene lombrices, ¿con qué lo desparasito y cada cuánto?",
+   "expected": [
+    "parasitosis-intestinal"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "se desplomó en la sala de espera, no respira y no tiene pulso, ¿cada cuánto le pongo adrenalina?",
+   "expected": [
+    "paro-cardiorrespiratorio-rcp"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "gestante de 30 semanas con contracciones seguidas y el cuello borrado",
+   "expected": [
+    "parto-pretermino"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "se echó agua hirviendo en el pecho y los brazos, ¿cuánto líquido le paso?",
+   "expected": [
+    "quemaduras"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "estornuda todas las mañanas, moquea y le pican los ojos cuando barre",
+   "expected": [
+    "rinitis-alergica"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "tiene 7 semanas de atraso, está sangrando y le duele un lado del bajo vientre",
+   "expected": [
+    "sangrado-primer-trimestre"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "reglas muy abundantes y largas, ¿qué le estudio y cómo se las controlo?",
+   "expected": [
+    "sangrado-uterino-anormal"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "la VDRL salió reactiva en la embarazada, ¿cuántas dosis le pongo?",
+   "expected": [
+    "sifilis"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "se desmayó estando de pie en misa y se recuperó rápido, ¿lo estudio?",
+   "expected": [
+    "sincope"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "¿a qué edad le mando la citología y la mamografía?",
+   "expected": [
+    "tamizaje-de-cancer"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "bebé de 2 meses con tos en accesos que se pone morado y hace un gallo al final",
+   "expected": [
+    "tos-ferina"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "el niño se cayó de la cama y se pegó en la cabeza, ¿le hago escanografía?",
+   "expected": [
+    "trauma-menor-reglas-de-decision"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "pantorrilla hinchada y dolorosa después de un viaje largo en bus",
+   "expected": [
+    "tromboembolia-venosa"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "tose hace más de quince días, bota flema con sangre y bajó de peso",
+   "expected": [
+    "tuberculosis"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "le faltan las vacunas de los 18 meses, ¿cómo lo pongo al día?",
+   "expected": [
+    "vacunacion-pai-y-adulto"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "todo le da vueltas cuando se voltea en la cama",
+   "expected": [
+    "vertigo-y-mareo"
+   ],
+   "citada": false,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "se pinchó con una aguja de un paciente en urgencias, ¿qué antirretrovirales le doy?",
+   "expected": [
+    "vih-tamizaje-y-profilaxis"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "ojos rojos con lagañas amarillas pegadas al despertar",
+   "expected": [
+    "conjuntivitis-y-ojo-rojo"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "toma guaro todos los días y ahora que dejó de tomar está temblando y viendo bichos",
+   "expected": [
+    "consumo-de-alcohol"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "la niña de 3 años está muy flaquita, con los piecitos hinchados y el perímetro braquial bajo",
+   "expected": [
+    "desnutricion-aguda-infantil"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "el niño hace popó líquida muchas veces y tiene los ojos hundidos, ¿qué plan le doy?",
+   "expected": [
+    "diarrea-aguda-y-deshidratacion-pediatrica"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "se le olvida dónde deja las cosas y ya no sabe manejar la plata, señor de 78",
+   "expected": [
+    "delirium-y-demencia"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "le pica la piel en los pliegues de los codos desde bebé y se le reseca mucho",
+   "expected": [
+    "dermatitis-atopica"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "¿cuánto le puedo subir el sodio por día sin que se dañe el cerebro?",
+   "expected": [
+    "hiponatremia-e-hiperpotasemia"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "señora de 70 que se fracturó la muñeca con una caída simple, ¿le doy alendronato?",
+   "expected": [
+    "osteoporosis"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "tiene el colesterol malo en 190, ¿arranco atorvastatina?",
+   "expected": [
+    "dislipidemia-riesgo-cardiovascular"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "acidez y agrieras después de comer, ¿le hago prueba para la bacteria?",
+   "expected": [
+    "dispepsia-erge-helicobacter"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "dolor en el pecho opresivo que se va al brazo izquierdo con sudoración",
+   "expected": [
+    "dolor-toracico-sindrome-coronario-agudo"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "el corazón le late desordenado y el pulso es irregular, ¿lo anticoagulo?",
+   "expected": [
+    "fibrilacion-auricular-anticoagulacion"
+   ],
+   "citada": true,
+   "limpia": false
+  },
+  {
+   "autor": "B",
+   "message": "niño de zona rural de Casanare al que le picó un pito y se le hinchó un ojo",
+   "expected": [
+    "enfermedad-de-chagas"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "bebé de 2 meses con 38,5 de temperatura y sin nada más, ¿le hago punción lumbar?",
+   "expected": [
+    "fiebre-sin-foco-lactante"
+   ],
+   "citada": false,
+   "limpia": true
+  },
+  {
+   "autor": "B",
+   "message": "pequeño de 8 meses con mocos, silbido en el pecho y tiraje, primera vez",
+   "expected": [
+    "bronquiolitis"
+   ],
+   "citada": false,
+   "limpia": true
+  }
+ ],
+ "fueraDelCorpus": [
+  {
+   "autor": "A",
+   "message": "le salió culebrilla en la espalda, qué antiviral"
+  },
+  {
+   "autor": "A",
+   "message": "uña encarnada del dedo gordo que supura"
+  },
+  {
+   "autor": "A",
+   "message": "hongos en las uñas de los pies, terbinafina cuánto tiempo"
+  },
+  {
+   "autor": "A",
+   "message": "juanete que le duele con el zapato"
+  },
+  {
+   "autor": "A",
+   "message": "várices en las piernas, medias de compresión"
+  },
+  {
+   "autor": "A",
+   "message": "verrugas en las manos de un niño"
+  },
+  {
+   "autor": "A",
+   "message": "orzuelo en el párpado"
+  },
+  {
+   "autor": "A",
+   "message": "manchas blancas en la piel que no pican, pitiriasis versicolor"
+  },
+  {
+   "autor": "A",
+   "message": "acné en un adolescente, isotretinoína"
+  },
+  {
+   "autor": "A",
+   "message": "caída del pelo en mujer joven"
+  },
+  {
+   "autor": "A",
+   "message": "cálculo en la vesícula sin síntomas, lo opero?"
+  },
+  {
+   "autor": "A",
+   "message": "túnel carpiano, me duermen las manos de noche"
+  },
+  {
+   "autor": "A",
+   "message": "hombro congelado que no levanta el brazo"
+  },
+  {
+   "autor": "A",
+   "message": "fisura anal que sangra al hacer popó"
+  },
+  {
+   "autor": "A",
+   "message": "ronca mucho y se queda sin respirar dormido"
+  },
+  {
+   "autor": "A",
+   "message": "tartamudez en un niño de 4 años"
+  },
+  {
+   "autor": "A",
+   "message": "cuánto debe medir la próstata en ecografía"
+  },
+  {
+   "autor": "A",
+   "message": "dolor de muela con la cara hinchada"
+  },
+  {
+   "autor": "A",
+   "message": "temblor en las manos de un señor de 70 sin rigidez"
+  },
+  {
+   "autor": "A",
+   "message": "lunar que cambió de color y sangra"
+  },
+  {
+   "autor": "C",
+   "message": "la muchacha no quiere comer, está flaquita y se provoca el vómito"
+  },
+  {
+   "autor": "C",
+   "message": "le tiembla la mano, está ansioso, palpitaciones y bajó de peso, TSH suprimida"
+  },
+  {
+   "autor": "C",
+   "message": "señor que orina mucho de noche con chorro débil, próstata grande"
+  },
+  {
+   "autor": "C",
+   "message": "le salió una mancha que cambia de color en la espalda y sangra"
+  },
+  {
+   "autor": "C",
+   "message": "tiene los dedos blancos y morados con el frío"
+  }
+ ],
+ "fueraDeTema": [
+  "parce no me carga la grabación",
+  "cómo exporto la nota a la historia clínica",
+  "qué hora es",
+  "listo doc, gracias",
+  "me cambias el formato de la nota a SOAP",
+  "quién te hizo"
+ ]
+}
