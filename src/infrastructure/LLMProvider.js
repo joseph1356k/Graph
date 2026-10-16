@@ -3,6 +3,8 @@ const { fromOpenAiCompatible, toRecorderUsage } = require('../domain/usage/provi
 const { currentContext } = require('./usage/UsageContext');
 const { API_FAMILIES } = require('../domain/usage/vocabulary');
 
+const REASONING_EFFORTS = ['minimal', 'low', 'medium', 'high'];
+
 // Grabador de consumo compartido por todas las instancias. Se inyecta una vez
 // desde el arranque (`LLMProvider.setUsageRecorder`) en vez de pasarlo por
 // constructor: este archivo se instancia en varios sitios (GRAPH, asistente,
@@ -72,6 +74,12 @@ class LLMProvider {
     this.timeoutMs = Number(process.env[`${prefix}_LLM_TIMEOUT_MS`]) || 60000;
     // Escape para modelos que rechazan `temperature` (familias de razonamiento).
     this.sendTemperature = `${process.env[`${prefix}_LLM_DISABLE_TEMPERATURE`] || ''}`.trim() !== '1';
+    // Esfuerzo de razonamiento cuando el llamador no lo fija. «low» y no el
+    // «medium» de OpenAI: con gpt-5.6-luna la nota sale igual de buena y en
+    // menos tiempo, y gpt-5-mini en «medium» tardó 72 s en una consulta larga,
+    // más que los 60 s de Vercel (docs/modelos/MODELOS-POR-FUNCION.md).
+    const effort = `${process.env[`${prefix}_LLM_REASONING_EFFORT`] || ''}`.trim().toLowerCase();
+    this.reasoningEffort = REASONING_EFFORTS.includes(effort) ? effort : 'low';
     const explicitProvider = (process.env[`${prefix}_LLM_PROVIDER`] || '').trim().toLowerCase();
     const explicitApiKey = (process.env[`${prefix}_LLM_API_KEY`] || '').trim();
     const explicitBaseUrl = (process.env[`${prefix}_LLM_BASE_URL`] || '').trim().replace(/\/+$/, '');
@@ -297,8 +305,9 @@ class LLMProvider {
       params[reasoning ? 'max_completion_tokens' : 'max_tokens'] = Math.floor(options.maxTokens);
     }
     // Solo a quien lo entiende: un modelo que no razona lo rechaza como parámetro desconocido.
-    if (reasoning && ['minimal', 'low', 'medium', 'high'].includes(options.reasoningEffort)) {
-      params.reasoning_effort = options.reasoningEffort;
+    if (reasoning) {
+      const effort = REASONING_EFFORTS.includes(options.reasoningEffort) ? options.reasoningEffort : this.reasoningEffort;
+      if (effort) params.reasoning_effort = effort;
     }
     return params;
   }

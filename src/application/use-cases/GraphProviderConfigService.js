@@ -32,8 +32,12 @@ const PROVIDERS = {
     requiresApiKey: true,
     requiresBaseUrl: false,
     requiresModel: true,
-    defaultModel: 'gpt-4.1-mini',
-    modelOptions: ['gpt-4.1-mini', 'gpt-4.1', 'gpt-4o', 'gpt-4o-mini'],
+    // gpt-5.6-luna escribe las notas mejor que gpt-4.1-mini (8,4 contra 5,9 a
+    // ciegas; 0,2 errores graves por nota contra 1,1) y cuesta menos; con la
+    // regla de unidades llena los campos igual de bien. Medido el 2026-10-16:
+    // docs/modelos/MODELOS-POR-FUNCION.md.
+    defaultModel: 'gpt-5.6-luna',
+    modelOptions: ['gpt-5.6-luna', 'gpt-4.1-mini', 'gpt-6-luna', 'gpt-4.1', 'gpt-4o', 'gpt-4o-mini'],
     defaultBaseUrl: 'https://api.openai.com/v1',
     apiKeyEnv: 'GRAPH_LLM_OPENAI_API_KEY'
   },

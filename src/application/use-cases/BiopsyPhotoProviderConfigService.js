@@ -12,8 +12,11 @@ const PROVIDERS = {
     requiresApiKey: true,
     requiresBaseUrl: false,
     requiresModel: true,
-    defaultModel: 'gpt-4o',
-    modelOptions: ['gpt-4o', 'gpt-4.1', 'gpt-4o-mini'],
+    // gpt-4.1-mini lee las hojas mejor que gpt-4o y cuesta un tercio: con fotos
+    // borrosas, torcidas y con sombra acertó el 89 % de las cifras contra el 80 %
+    // de gpt-4o (docs/modelos/MODELOS-POR-FUNCION.md, medido el 2026-10-16).
+    defaultModel: 'gpt-4.1-mini',
+    modelOptions: ['gpt-4.1-mini', 'gpt-4o', 'gpt-4.1', 'gpt-4o-mini'],
     defaultBaseUrl: 'https://api.openai.com/v1',
     apiKeyEnv: 'MIRACLE_BIOPSY_LLM_OPENAI_API_KEY'
   },

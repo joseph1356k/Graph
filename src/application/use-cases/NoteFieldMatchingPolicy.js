@@ -5,7 +5,7 @@
 // calibración de cada proveedor.
 const clauses = require('../prompts/PromptClauses');
 
-const PROMPT_VERSION = clauses.promptVersion('note-field-matching', '2026-10-01.1');
+const PROMPT_VERSION = clauses.promptVersion('note-field-matching', '2026-10-16.1');
 
 // En español, con las cláusulas españolas: era uno de los prompts en inglés de
 // un producto que habla español, y usaba la fidelidad con «frase prudente y
@@ -30,6 +30,7 @@ function buildNoteFieldMatchingPrompt() {
     '- No derives diagnósticos, medicamentos, dosis, fechas, números de documento, teléfonos, direcciones ni nombres de pacientes salvo que el valor exacto esté en la nota.',
     '- Para action_type "select", value TIENE que ser exactamente uno de los allowedOptions.value. Si la nota expresa un equivalente semántico, devuelve el value de la opción, no la frase de la nota.',
     '- Para action_type "input", devuelve el valor literal que dice la nota (número, fecha, texto libre), sin la etiqueta que lo rodea.',
+    '- Si la etiqueta del campo ya trae la unidad o la escala ("Peso (kg)", "Saturación (%)", "Dolor (0-10)"), value es SOLO el número tal como lo escribe la nota: "92", no "92 kg"; "7", no "7/10"; "38,9", no "38,9 °C". El campo de la historia clínica es numérico y la unidad sobra. Si la etiqueta NO trae la unidad ("Tiempo de evolución", "Próximo control"), conserva la unidad que dice la nota: "3 horas", no "3".',
     '- Para action_type "click" ("guardar", "siguiente", "enviar"), incluye el click SOLO si la nota indica claramente que el usuario terminó de dictar Y todos los campos input/select requeridos parecen llenos. En ese caso readyToSubmit=true con un submitReason corto.',
     '- Si alreadyFulfilled trae un {stepOrder, value} igual a lo que dice ahora la nota, omite ese paso; si es distinto, incluye el match (el usuario cambió de idea).',
     '- evidence es un fragmento literal de la nota, de máximo 200 caracteres.',
