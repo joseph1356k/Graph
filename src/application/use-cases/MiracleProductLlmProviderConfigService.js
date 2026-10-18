@@ -8,8 +8,12 @@ const PROVIDERS = {
     requiresApiKey: true,
     requiresBaseUrl: false,
     requiresModel: true,
-    defaultModel: 'gpt-4.1-mini',
-    modelOptions: ['gpt-4.1-mini', 'gpt-4.1', 'gpt-4o', 'gpt-4o-mini'],
+    // La hoja en blanco escribe la nota a partir del dictado: la misma tarea
+    // donde gpt-5.6-luna sacó 8,4/10 contra 6,9 de gpt-4.1 y 5,9 de
+    // gpt-4.1-mini (docs/modelos/MODELOS-POR-FUNCION.md). El runtime Python le
+    // pide esfuerzo bajo y le deja espacio de salida para razonar.
+    defaultModel: 'gpt-5.6-luna',
+    modelOptions: ['gpt-5.6-luna', 'gpt-6-luna', 'gpt-4.1-mini', 'gpt-4.1', 'gpt-4o', 'gpt-4o-mini'],
     defaultBaseUrl: 'https://api.openai.com',
     apiKeyEnv: 'MIRACLE_PRODUCT_LLM_OPENAI_API_KEY'
   },

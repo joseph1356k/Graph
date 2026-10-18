@@ -13,7 +13,8 @@
       "maxDuration": 300
     },
     "api/miracle_runtime.py": {
-      "includeFiles": "bounded/miracle-ai/**"
+      "includeFiles": "bounded/miracle-ai/**",
+      "maxDuration": 60
     }
   },
   "crons": [
