@@ -6,7 +6,7 @@ from dataclasses import replace
 from typing import Protocol
 
 from .client import OpenAICompatibleProductLLMClient, ProductLLMClientError
-from .config import ProductLLMSettings
+from .config import REASONING_OUTPUT_FLOOR, ProductLLMSettings, is_reasoning_model
 from .prompt_clauses import IDENTIFIER_FIDELITY_EN, NO_INVENTION_EN, PRIVACY_MARKERS_EN, ROLE_BOUNDARY_EN
 from .models import (
     ProductLLMAgentTask,
@@ -144,8 +144,15 @@ class _OpenAICompatiblePlanner:
         }
         if self._settings.model:
             payload["model"] = self._settings.model
+        reasoning = is_reasoning_model(self._settings.model)
         if self._settings.max_output_tokens is not None:
-            payload["max_output_tokens"] = self._settings.max_output_tokens
+            payload["max_output_tokens"] = (
+                max(self._settings.max_output_tokens, REASONING_OUTPUT_FLOOR)
+                if reasoning
+                else self._settings.max_output_tokens
+            )
+        if reasoning:
+            payload["reasoning"] = {"effort": self._settings.reasoning_effort}
         return payload
 
     def _extract_output(

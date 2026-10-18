@@ -90,3 +90,51 @@ def test_truncated_output_keeps_the_structured_block_and_records_the_spend() -> 
     [update] = out.note_updates
     assert update.content == block + "\n\nirradiado al brazo izquierdo"
     assert out.usage is not None and out.usage.output_tokens == 2000
+
+
+def test_reasoning_model_gets_low_effort_and_room_to_think() -> None:
+    """gpt-5.6-luna o gpt-6-luna en la hoja en blanco: esfuerzo bajo (no el
+    «medium» de OpenAI) y un tope de salida que no se coma el razonamiento. A
+    un modelo que no razona no se le manda `reasoning`: la API respondería 400."""
+    import os
+    from miracle_agent.integrations.product_llm.config import ProductLLMSettings
+    from miracle_agent.integrations.product_llm.models import ProductLLMOrchestratorInput, VoiceTranscriptSegment
+    from miracle_agent.integrations.product_llm.note_orchestrator_adapter import ProductLLMOrchestratorAdapter
+
+    seg = VoiceTranscriptSegment(segment_id="s", kind="final", transcript="dolor torácico")
+    req = ProductLLMOrchestratorInput(
+        voice_session_id="v", note_path=None, note_title="n", note_content="",
+        last_applied_note_block=None, transcript_history=["dolor torácico"], segment=seg,
+    )
+
+    def payload_for(model: str) -> dict:
+        adapter = ProductLLMOrchestratorAdapter(ProductLLMSettings(provider="openai", base_url="https://x", api_key="k", model=model))
+        return adapter._planner._build_payload(req)  # type: ignore[attr-defined]
+
+    for model in ("gpt-5.6-luna", "gpt-6-luna", "gpt-5-mini", "o4-mini"):
+        payload = payload_for(model)
+        assert payload["reasoning"] == {"effort": "low"}, model
+        assert payload["max_output_tokens"] >= 8000, model
+        assert "temperature" not in payload, model
+    for model in ("gpt-4.1", "gpt-4.1-mini", "gpt-4o"):
+        payload = payload_for(model)
+        assert "reasoning" not in payload, model
+        assert payload["max_output_tokens"] == 2000, model
+
+    env = {"MIRACLE_PRODUCT_LLM_PROVIDER": "openai", "MIRACLE_PRODUCT_LLM_API_KEY": "k", "MIRACLE_PRODUCT_LLM_MODEL": "gpt-5.6-luna"}
+    saved = {k: os.environ.get(k) for k in [*env, "MIRACLE_PRODUCT_LLM_REASONING_EFFORT", "MIRACLE_PRODUCT_LLM_TIMEOUT_SECONDS"]}
+    try:
+        os.environ.update(env)
+        os.environ.pop("MIRACLE_PRODUCT_LLM_TIMEOUT_SECONDS", None)
+        os.environ["MIRACLE_PRODUCT_LLM_REASONING_EFFORT"] = "medium"
+        settings = ProductLLMSettings.from_env()
+        assert settings.reasoning_effort == "medium"
+        assert settings.timeout_seconds == 40.0
+        os.environ["MIRACLE_PRODUCT_LLM_MODEL"] = "gpt-4.1"
+        assert ProductLLMSettings.from_env().timeout_seconds == 20.0
+    finally:
+        for k, v in saved.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v

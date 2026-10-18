@@ -24,7 +24,7 @@ Precios oficiales de OpenAI usados (USD por millón de tokens, entrada / salida)
 | Llenado de campos (mismo panel) | gpt-4.1-mini | **gpt-5.6-luna** (con la regla de unidades de esta rama) | 134/135 campos correctos, 0 inventados; gpt-4.1-mini 135/135 |
 | Revisión de la nota (`MIRACLE_REVIEW`, cae a `GRAPH_LLM`) | gpt-4.1-mini | gpt-5.6-luna (lo hereda); **gpt-6-luna** si se le da proveedor propio | Errores sutiles detectados: gpt-4.1-mini 54 %, gpt-5.6-luna 94 %, gpt-6-luna 100 % |
 | Biopsia | gpt-4o | **gpt-4.1-mini** | Con fotos malas, cifras exactas: 89 % contra 80 %, con un tercio del costo |
-| Hoja en blanco | gpt-4.1 | sin cambio por ahora | No se puede medir aquí (ver abajo) |
+| Hoja en blanco (orquestador del dictado) | gpt-4.1 | **gpt-5.6-luna** | Hace la misma tarea que las notas, donde luna sacó 8,4 contra 6,9 de gpt-4.1, y cuesta un décimo; no medido con su prompt propio (ver abajo) |
 
 ## Notas clínicas
 
@@ -128,7 +128,19 @@ Con `detail: high` en la imagen el orden no cambia: gpt-4.1-mini 71/78, gpt-5-mi
 
 ## Hoja en blanco
 
-«Hoja en blanco» es el agente que maneja la pantalla en Windows (Responses API con capturas y las herramientas `map_*`), y su calidad depende de manejar un PC real. La batería que lo mide, `apps/windows/scripts/nivel4-voz/correr.ps1`, necesita ese PC con la app, la voz y el escritorio desbloqueado. Desde el sandbox no se puede, y una cifra sin esa prueba sería inventada. El modelo se queda en gpt-4.1 hasta correr esa batería con gpt-5.6-luna y gpt-4.1-mini en el PC.
+«Hoja en blanco» es el orquestador del dictado: el runtime Python `bounded/miracle-ai` (`product_llm`) convierte lo dictado en el bloque de la nota con la Responses API y un JSON estricto. No es el agente de pantalla de Windows; esa primera versión de este documento lo confundía.
+
+Es la misma tarea que se midió en notas: escribir la nota fiel a lo dictado. Ahí gpt-5.6-luna sacó 8,38 contra 6,94 de gpt-4.1, el modelo que hoy usa la hoja en blanco, y cuesta un décimo (0,20/1,20 USD contra 2/8). Por eso la recomendación es **gpt-5.6-luna**, con gpt-6-luna como opción más barata.
+
+No se midió con el prompt propio de la hoja en blanco: esta rama no tenía clave para hacerlo.
+
+Para que un modelo que razona no la rompa, el runtime ahora:
+
+- le pide esfuerzo bajo (`reasoning.effort`; `MIRACLE_PRODUCT_LLM_REASONING_EFFORT` lo cambia);
+- sube su tope de salida de 2 000 a 8 000 tokens, porque el razonamiento cuenta dentro de ese tope y con 2 000 el JSON llegaría cortado;
+- le da 40 s en vez de 20 antes de caer al modo heurístico (la función queda con 60 s en `vercel.json`).
+
+Si algo falla, el dictado no se pierde: cae al modo heurístico como antes.
 
 ## Límites
 
